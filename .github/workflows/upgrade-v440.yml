@@ -1,0 +1,33 @@
+name: Upgrade WOF V4.4
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/patch_v440.py'
+      - '.github/workflows/upgrade-v440.yml'
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch runtime to V4.4
+        run: |
+          python3 tools/patch_v440.py
+          node --check wof_v4_install_once.js
+          grep -q "offline-dynamic-spectator-calibrated-v4.4" wof_v4_install_once.js
+          grep -q "WOF V4.4 跨玩家Family在线校准观战版启动" wof_v4_install_once.js
+          grep -q "calibration(){return calibrationSnapshot();}" wof_v4_install_once.js
+          grep -q "Family降级WATCH" wof_v4_install_once.js
+          grep -q "Family恢复行动" wof_v4_install_once.js
+          echo "V4.4 bytes: $(wc -c < wof_v4_install_once.js)"
+          sha256sum wof_v4_install_once.js
+      - name: Commit runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wof_v4_install_once.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Upgrade WOF V4.4 cross-player Family calibration"
+          git push
