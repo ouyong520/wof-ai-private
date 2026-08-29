@@ -28,6 +28,8 @@ function __WOF_START_V4(DB){
     survivalActionThreshold:0.35,
     auditRevokeLeadMs:60,
     auditRepeatBlockMs:700,
+    fallbackZThreshold:80,
+    fallbackZActionCore:16,
     padX:3,
     padY:2,
     padZ:2
@@ -157,7 +159,12 @@ function __WOF_START_V4(DB){
   }
 
   const getFamily=id=>DB.f[id]||null;
-  function radius(f){return {rx:(+f[3]||115)+CFG.padX,ry:(+f[4]||22)+CFG.padY,rz:(+f[5]||8)+CFG.padZ};}
+  function radius(f){
+    const rawRz=(+f[5]||8),geometryFallbackZ=rawRz>=CFG.fallbackZThreshold;
+    const actionRawRz=geometryFallbackZ?CFG.fallbackZActionCore:rawRz;
+    return {rx:(+f[3]||115)+CFG.padX,ry:(+f[4]||22)+CFG.padY,
+      rz:rawRz+CFG.padZ,actionRz:actionRawRz+CFG.padZ,rawRz,geometryFallbackZ};
+  }
 
   // Cross-player online reliability. P1/P2/P3 all contribute to the same Family evidence.
   // Only confirmed hit/fp events enter this table. Demotion affects actionability only.
@@ -294,7 +301,8 @@ function __WOF_START_V4(DB){
           if(confidence<CFG.minConfidence)continue;
           const cal=calPolicy(fc.id,'startup');
           out.danger.push({t,x:org.x+sg*sw.x,y:org.y+sw.y,z:org.z+sw.z,
-            rx:rad.rx,ry:rad.ry,rz:rad.rz,slot:o.slot,type:o.type,family:fc.id,
+            rx:rad.rx,ry:rad.ry,rz:rad.rz,actionRz:rad.actionRz,geometryFallbackZ:rad.geometryFallbackZ,
+            slot:o.slot,type:o.type,family:fc.id,
             confidence,survival,actionable:survival>=CFG.survivalActionThreshold&&!cal.watchOnly,
             calWatchOnly:cal.watchOnly,calPrecision:cal.sourcePrecision??cal.familyPrecision,
             calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),
@@ -325,7 +333,8 @@ function __WOF_START_V4(DB){
       if(survival<CFG.minConfidence)continue;
       const cal=calPolicy(s.locked,'active');
       out.danger.push({t,x:s.origin.x+sg*sw.x,y:s.origin.y+sw.y,z:s.origin.z+sw.z,
-        rx:rad.rx,ry:rad.ry,rz:rad.rz,slot:o.slot,type:o.type,family:s.locked,
+        rx:rad.rx,ry:rad.ry,rz:rad.rz,actionRz:rad.actionRz,geometryFallbackZ:rad.geometryFallbackZ,
+        slot:o.slot,type:o.type,family:s.locked,
         confidence:survival,survival,actionable:survival>=CFG.survivalActionThreshold&&!cal.watchOnly,
         calWatchOnly:cal.watchOnly,calPrecision:cal.sourcePrecision??cal.familyPrecision,
         calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),
@@ -376,13 +385,14 @@ function __WOF_START_V4(DB){
   }
 
   function decision(p,danger){
-  const actionDanger=danger.filter(d=>d.source!=='active-unknown'&&d.actionable!==false);
+  const actionDanger=danger.filter(d=>d.source!=='active-unknown'&&d.actionable!==false)
+    .map(d=>d.geometryFallbackZ?{...d,rz:d.actionRz,geometryCore:true}:d);
   const fullCur=evalPath(p,'CONTINUE',danger,0);
   const cur=evalPath(p,'CONTINUE',actionDanger,0);
 
   if(cur.safe){
-    if(!fullCur.safe&&(fullCur.hit?.source==='active-unknown'||fullCur.hit?.actionable===false))
-      return{danger:true,watchOnly:true,best:'WATCH',hitMs:fullCur.collisionMs,hit:fullCur.hit,stay:fullCur};
+    if(!fullCur.safe&&(fullCur.hit?.source==='active-unknown'||fullCur.hit?.actionable===false||fullCur.hit?.geometryFallbackZ))
+      return{danger:true,watchOnly:true,geometryWatchOnly:!!fullCur.hit?.geometryFallbackZ,best:'WATCH',hitMs:fullCur.collisionMs,hit:fullCur.hit,stay:fullCur};
     return{danger:false,best:'CONTINUE',stay:cur};
   }
 
@@ -437,6 +447,8 @@ function stable(name,r){
   if(!r.danger)console.log('🟢',name,'OFFLINE SAFE','预测怪',enemyCount);
   else if(action==='WATCH'&&r.noRoute)console.log('🟠',name,'WATCH无路','当前'+r.hitMs+'ms',h.family||'?',
     'UP堵'+r.upHitMs+'ms',uh.family||'?','DOWN堵'+r.downHitMs+'ms',dh.family||'?','窗口'+r.routeUntil+'ms');
+  else if(action==='WATCH'&&r.geometryWatchOnly)console.log('🟣',name,'WATCH-Z壳','约'+r.hitMs+'ms','slot',h.slot,'family',h.family||'?',
+    'fullZ',h.rz,'coreZ',h.actionRz,'source',h.source||'?');
   else if(action==='WATCH')console.log('🟠',name,'WATCH','约'+r.hitMs+'ms','slot',h.slot,'type',h.type,'family',h.family||'?','source',h.source||'?');
   else if(action==='AB')console.log('🆘',name,'OFFLINE AB候选','当前'+r.hitMs+'ms',h.family,
     'src',h.source||'?','UP堵'+r.upHitMs+'ms',uh.family||'?','DOWN堵'+r.downHitMs+'ms',dh.family||'?');
@@ -541,6 +553,7 @@ function auditStep(name,ps,st,now){
   if(st&&action!=='SAFE')A.lastWarnAt=now;
   if(!A.pending&&st&&action!=='SAFE'&&st.hitMs!=null){
     const h=st.hit||{};
+    if(st.geometryWatchOnly)return;
     if(h.family==null||h.source==='active-unknown'||(h.actionable===false&&!h.calWatchOnly))return;
     const hitMs=Math.max(CFG.reactFloorMs,+st.hitMs||0);
     const instance=h.instance||((h.source||'?')+':'+(h.slot??-1)+':'+(h.family||'?'));
@@ -605,7 +618,7 @@ function auditFamilies(){
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.4.1',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.5',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -621,10 +634,11 @@ function auditFamilies(){
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  console.log('✅ WOF V4.4.1 攻击实例去重校准观战版启动');
+  console.log('✅ WOF V4.5 双层Z几何观战版启动');
   console.log('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   console.log('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   console.log('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
+  console.log('🧭 Z几何: DB中rz>=80视为低信息外壳；外壳只WATCH，行动使用coreZ='+(CFG.fallbackZActionCore+CFG.padZ));
   console.log('🧯 在线校准: 同一攻击实例只记一次；全局降级需至少2名玩家共同提供误报证据');
   console.log('⚠️ 只预测，不控制任何玩家');
 }
