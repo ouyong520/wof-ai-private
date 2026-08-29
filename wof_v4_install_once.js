@@ -50,6 +50,7 @@ function __WOF_START_V4(DB){
     activeGuardMinRz:14,
     activeGuardMaxRz:26,
     watchPromoteMaxMs:280,
+    debounceBridgeMs:350,
     attackTailGuardMs:280,
     attackTailHorizonMs:220,
     attackTailMinRx:88,
@@ -122,7 +123,7 @@ function __WOF_START_V4(DB){
   }
   function resetPlayerRuntime(name){
     PH[name]=[];delete PS[name];
-    const A=AUD?.[name];if(A){A.pending=null;A.prevHp=null;A.lastWarnAt=-1e9;A.lastRawWarnAt=-1e9;A.lastShadowWarnAt=-1e9;A.lastShadowRawAt=-1e9;A.lastGuardWarnAt=-1e9;A.lastGuardRawAt=-1e9;A.lastTailWarnAt=-1e9;A.lastWatchEvidence=null;A.recent={};A.dead=false;A.absent=false;A.suppressUntil=-1e9;A.lastDamageAt=-1e9;}
+    const A=AUD?.[name];if(A){A.pending=null;A.prevHp=null;A.lastWarnAt=-1e9;A.lastRawWarnAt=-1e9;A.lastShadowWarnAt=-1e9;A.lastShadowRawAt=-1e9;A.lastGuardWarnAt=-1e9;A.lastGuardRawAt=-1e9;A.lastTailWarnAt=-1e9;A.lastBridgeWarnAt=-1e9;A.lastWatchEvidence=null;A.recent={};A.dead=false;A.absent=false;A.suppressUntil=-1e9;A.lastDamageAt=-1e9;}
     const S=ST?.[name];if(S){S.k='';S.n=0;S.v=null;}
     if(name in PRINT)PRINT[name]='';
   }
@@ -710,7 +711,11 @@ function stable(name,r){
   if(k===s.k)s.n++;else{s.k=k;s.n=1;s.v=null;}
   const imminentWatch=action==='WATCH'&&(+r.hitMs||9999)<=150;
   const need=(r.shadowWatchOnly||r.guardWatchOnly||imminentWatch)?1:action==='SAFE'?2:action==='WATCH'?2:action==='AB'?3:((+r.hitMs||9999)<=300?2:3);
-  if(s.n>=need)s.v=r;
+  if(s.n>=need){s.v=r;return s.v;}
+  // A raw actionable warning can flicker before it reaches its action debounce count.
+  // Bridge only the warning layer: never emit movement/AB and never calibrate FP from it.
+  if(action!=='SAFE'&&(+r.hitMs||9999)<=CFG.debounceBridgeMs)
+    return {...r,watchOnly:true,debounceWatchOnly:true,best:'WATCH'};
   return s.v;
 }
 
@@ -721,6 +726,7 @@ function stable(name,r){
   const sig=name+'|'+action+'|'+(h.slot??-1)+'|'+(h.family??'')+'|'+(uh.family??'')+'|'+(dh.family??'');
   if(sig===PRINT[name])return;PRINT[name]=sig;
   if(!r.danger)qlog('🟢',name,'OFFLINE SAFE','预测怪',enemyCount);
+  else if(action==='WATCH'&&r.debounceWatchOnly)qlog('🟦',name,'WATCH-稳定桥','约'+r.hitMs+'ms','slot',h.slot,'type',h.type,'family',h.family||'?', 'source',h.source||'?');
   else if(action==='WATCH'&&r.noRoute)qlog('🟠',name,'WATCH无路','当前'+r.hitMs+'ms',h.family||'?',
     'UP堵'+r.upHitMs+'ms',uh.family||'?','DOWN堵'+r.downHitMs+'ms',dh.family||'?','窗口'+r.routeUntil+'ms');
   else if(action==='WATCH'&&r.geometryWatchOnly)qlog('🟣',name,'WATCH-壳','约'+r.hitMs+'ms','slot',h.slot,'family',h.family||'?',
@@ -740,9 +746,9 @@ function stable(name,r){
 }
 
 const AUD={
-  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastTailWarnAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,tailCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}},
-  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastTailWarnAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,tailCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}},
-  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastTailWarnAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,tailCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}}
+  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastTailWarnAt:-1e9,lastBridgeWarnAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,tailCovered:0,bridgeCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}},
+  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastTailWarnAt:-1e9,lastBridgeWarnAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,tailCovered:0,bridgeCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}},
+  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastTailWarnAt:-1e9,lastBridgeWarnAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,tailCovered:0,bridgeCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}}
 };
 
 function famStat(A,e){
@@ -858,16 +864,17 @@ function auditStep(name,ps,st,raw,now){
       else auditResolve(name,'ambiguous',e,'HP '+hpBefore+'→'+hp);
     }else if(now-A.lastWarnAt<=350){
       A.stats.watchCovered++;
-      const shadow=now-A.lastShadowWarnAt<=350,guard=now-A.lastGuardWarnAt<=350,tail=now-A.lastTailWarnAt<=350;
+      const shadow=now-A.lastShadowWarnAt<=350,guard=now-A.lastGuardWarnAt<=350,tail=now-A.lastTailWarnAt<=350,bridge=now-A.lastBridgeWarnAt<=350;
       if(shadow)A.stats.shadowCovered++;
       if(guard)A.stats.guardCovered++;
       if(tail)A.stats.tailCovered++;
+      if(bridge)A.stats.bridgeCovered++;
       const we=A.lastWatchEvidence;
       if(!guard&&!shadow&&we&&now-we.at<=350&&we.hitMs<=CFG.watchPromoteMaxMs&&we.e?.family&&we.e.source==='active'){
         calRecord({...we.e,player:name},'hit');A.stats.watchPromoted++;
         qlog('🧪',name,'WATCH真实掉血→提升active Family证据',we.e.family,'slot',we.e.slot,'hitMs',we.hitMs);
       }
-      qlog(tail?'🟧':guard?'🟫':shadow?'🟨':'🟩',name,tail?'攻击尾帧护栏覆盖掉血':guard?'主动攻击护栏覆盖掉血':shadow?'安全影子WATCH覆盖掉血':'稳定WATCH覆盖掉血','HP '+hpBefore+'→'+hp);
+      qlog(tail?'🟧':guard?'🟫':shadow?'🟨':bridge?'🟦':'🟩',name,tail?'攻击尾帧护栏覆盖掉血':guard?'主动攻击护栏覆盖掉血':shadow?'安全影子WATCH覆盖掉血':bridge?'稳定桥WATCH覆盖掉血':'稳定WATCH覆盖掉血','HP '+hpBefore+'→'+hp);
     }else if(now-A.lastRawWarnAt<=350){
       A.stats.unstableCovered++;
       const mc=captureMissCase('unstableCovered',name,ps,raw,now,hpBefore,hp);
@@ -919,13 +926,14 @@ function auditStep(name,ps,st,raw,now){
   if(st?.shadowWatchOnly)A.lastShadowWarnAt=now;
   if(st?.guardWatchOnly)A.lastGuardWarnAt=now;
   if(st?.tailWatchOnly)A.lastTailWarnAt=now;
-  if(st&&action==='WATCH'&&!st.shadowWatchOnly&&!st.guardWatchOnly){
+  if(st?.debounceWatchOnly)A.lastBridgeWarnAt=now;
+  if(st&&action==='WATCH'&&!st.shadowWatchOnly&&!st.guardWatchOnly&&!st.debounceWatchOnly){
     const wh=st.hit||{};
     if(wh.family&&wh.source!=='active-unknown')A.lastWatchEvidence={at:now,hitMs:+st.hitMs||9999,e:{...wh,player:name}};
   }
   if(!A.pending&&st&&action!=='SAFE'&&st.hitMs!=null){
     const h=st.hit||{};
-    if(st.geometryWatchOnly||st.edgeWatchOnly||st.shadowWatchOnly||st.guardWatchOnly)return;
+    if(st.geometryWatchOnly||st.edgeWatchOnly||st.shadowWatchOnly||st.guardWatchOnly||st.debounceWatchOnly)return;
     if(h.family==null||h.source==='active-unknown'||(h.actionable===false&&!h.calWatchOnly))return;
     const hitMs=Math.max(CFG.reactFloorMs,+st.hitMs||0);
     const instance=h.instance||((h.source||'?')+':'+(h.slot??-1)+':'+(h.family||'?'));
@@ -967,7 +975,7 @@ function reportSnapshot(){
 }
 function summarySnapshot(){
   const a=auditSnapshot(),af=auditFamilies(),c=calibrationSnapshot();
-  const total={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,tailCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0};
+  const total={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,tailCovered:0,bridgeCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0};
   for(const n of ['P1','P2','P3'])for(const k of Object.keys(total))total[k]+=+a[n]?.[k]||0;
   const fam=[];
   for(const n of ['P1','P2','P3'])for(const r of af[n]||[])fam.push({player:n,...r});
@@ -991,6 +999,7 @@ function summarySnapshot(){
     shadowDamageCoverage:damageEvents?+(total.shadowCovered/damageEvents).toFixed(3):null,
     guardDamageCoverage:damageEvents?+(total.guardCovered/damageEvents).toFixed(3):null,
     tailDamageCoverage:damageEvents?+(total.tailCovered/damageEvents).toFixed(3):null,
+    bridgeDamageCoverage:damageEvents?+(total.bridgeCovered/damageEvents).toFixed(3):null,
     validated,damageEvents};
   const missTop=MISS_CASES.slice(-6).map(c=>({id:c.id,kind:c.kind,player:c.player,hp:c.hp,rawHit:c.rawHit,nearest:c.nearest,
     candidates:(c.candidates||[]).slice(0,3).map(x=>({slot:x.slot,type:x.type,attack:x.attack,locked:x.locked,ageMs:x.ageMs,dx:x.dx,dy:x.dy,dz:x.dz,startupTop:x.startupTop}))}));
@@ -1034,7 +1043,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.9.8',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.9.9',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -1059,7 +1068,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.9.8 攻击尾帧护栏/漏判聚合版启动');
+  qlog('✅ WOF V4.9.9 稳定桥/覆盖收敛版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
@@ -1074,7 +1083,8 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   qlog('📈 WATCH学习: 已知active Family在稳定WATCH下真实掉血会积累命中证据，不需要先冒险发动作建议');
   qlog('📐 自适应几何: Family/Variant独立学习 + fallback几何类跨Family共享学习；完整危险外壳始终保留WATCH');
   qlog('🔬 漏判取证: unstable/safeMiss同时保存rawHit与nearest，并保留最近600ms敌人ATTACK/Family候选');
-  qlog('⚡ 稳定器: WATCH不再绑定具体slot/Family；任意连续WATCH可确认，<=150ms紧急WATCH单帧确认；UP/DOWN/AB规则不变');
+  qlog('⚡ 稳定器: WATCH连续性保持；UP/DOWN/AB未确认期间若raw危险<=350ms，先输出WATCH稳定桥，绝不提前动作/AB');
+  qlog('🟦 稳定桥审计: bridgeCovered=raw危险已出现但动作分支尚未稳定时，由WATCH桥成功覆盖真实掉血；不进入FP校准');
   qlog('🧱 共享几何类: 至少4次高可信误报且来自>=3个Family才开始收缩行动核心');
   qlog('🟧 审计: guardCovered=主动攻击护栏覆盖；tailCovered=ATTACK结束尾帧覆盖；watchCovered=稳定WATCH覆盖；safeMiss=完全未覆盖');
   qlog('💾 热更新继承: Family/source/variant在线校准在同一Worker内升级版本时保留');
