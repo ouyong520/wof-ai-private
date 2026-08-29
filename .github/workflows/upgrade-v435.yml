@@ -1,0 +1,32 @@
+name: Upgrade WOF V4.3.5
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/patch_v435.py'
+      - '.github/workflows/upgrade-v435.yml'
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch current runtime to V4.3.5
+        run: |
+          python3 tools/patch_v435.py
+          node --check wof_v4_install_once.js
+          grep -q "offline-dynamic-local-p123-v4.3.5" wof_v4_install_once.js
+          grep -q "WOF V4.3.5 本机玩家自动识别观战版启动" wof_v4_install_once.js
+          grep -q "_0x2f9e12" wof_v4_install_once.js
+          grep -q "P3',base:0xFFBFDC" wof_v4_install_once.js
+          echo "V4.3.5 bytes: $(wc -c < wof_v4_install_once.js)"
+          sha256sum wof_v4_install_once.js
+      - name: Commit runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wof_v4_install_once.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Upgrade WOF V4.3.5 local player auto tracking"
+          git push
