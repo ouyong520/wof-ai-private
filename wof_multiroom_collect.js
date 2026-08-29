@@ -46,7 +46,7 @@
     return Array.isArray(a)?clone(a.slice(-120)):[];
   }
 
-  if(!self.WOFV4||!String(self.WOFV4.version||'').includes('v4.11.2')){
+  if(!self.WOFV4||!String(self.WOFV4.version||'').includes('v4.11.3')){
     const code=await fetch(CFG.runtimeUrl+'?'+Date.now()).then(r=>{if(!r.ok)throw new Error('runtime fetch '+r.status);return r.text();});
     (0,eval)(code);
     for(let i=0;i<50&&!self.WOFV4;i++)await sleep(100);
@@ -132,7 +132,7 @@
     finish(){return finish('stopped');}
   };
 
-  console.log('🟢 多房间采集启动',sid,'| 10分钟 | 每10秒落盘 | V4.11.2掉血警告归因');
+  console.log('🟢 多房间采集启动',sid,'| 10分钟 | 每10秒落盘 | V4.11.3 GUARD/GEOMETRY细分');
   console.log('🟢 房间中途关闭也没关系：已落盘的片段仍会保留，导出时自动标记 interrupted');
   return self.__WOF_MULTIROOM_COLLECTOR.status();
 })().catch(e=>console.error('❌ 多房间采集启动失败',e));
