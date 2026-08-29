@@ -752,6 +752,51 @@ function __WOF_START_V4(DB){
     P2:{ACTION:0,GUARD:0,TAIL:0,SHADOW:0,BRIDGE:0,PHASE:0,GEOMETRY:0,EDGE:0,WATCH:0},
     P3:{ACTION:0,GUARD:0,TAIL:0,SHADOW:0,BRIDGE:0,PHASE:0,GEOMETRY:0,EDGE:0,WATCH:0}
   };
+  const WARN_HISTORY={P1:[],P2:[],P3:[]};
+  const blankWarningSources=()=>({ACTION:0,GUARD:0,TAIL:0,SHADOW:0,BRIDGE:0,PHASE:0,GEOMETRY:0,EDGE:0,WATCH:0});
+  const DAMAGE_WARNING={
+    hpDrops:0,withStableWarning:0,noStableWarning:0,
+    latest:blankWarningSources(),any:blankWarningSources(),exclusive:blankWarningSources(),
+    leadSumMs:0,leadCount:0,leadBuckets:{lte100:0,ms101_200:0,ms201_350:0},
+    players:{P1:{hpDrops:0,withStableWarning:0,noStableWarning:0},P2:{hpDrops:0,withStableWarning:0,noStableWarning:0},P3:{hpDrops:0,withStableWarning:0,noStableWarning:0}}
+  };
+  function warningSourceOf(st,da){
+    if(!st||da==='SAFE'||da==='NONE')return null;
+    return (da==='UP'||da==='DOWN'||da==='AB')?'ACTION':
+      st.tailWatchOnly?'TAIL':st.guardWatchOnly?'GUARD':st.shadowWatchOnly?'SHADOW':st.debounceWatchOnly?'BRIDGE':
+      st.phaseWatchOnly?'PHASE':st.geometryWatchOnly?'GEOMETRY':st.edgeWatchOnly?'EDGE':'WATCH';
+  }
+  function warningTelemetry(name,st,da,now){
+    const h=WARN_HISTORY[name];if(!h)return null;
+    while(h.length&&now-h[0].lastAt>1200)h.shift();
+    const src=warningSourceOf(st,da);if(!src)return null;
+    if(WARNING_SOURCE_TICKS[name]?.[src]!=null)WARNING_SOURCE_TICKS[name][src]++;
+    const last=h[h.length-1];
+    if(last&&last.src===src&&now-last.lastAt<=CFG.tickMs*3){
+      last.lastAt=now;last.hitMs=Number.isFinite(+st?.hitMs)?+st.hitMs:last.hitMs;
+    }else h.push({src,startAt:now,lastAt:now,hitMs:Number.isFinite(+st?.hitMs)?+st.hitMs:null});
+    return src;
+  }
+  function damageWarningRecord(name,now){
+    const h=(WARN_HISTORY[name]||[]).filter(x=>x.lastAt>=now-350);
+    const D=DAMAGE_WARNING,P=D.players[name];D.hpDrops++;if(P)P.hpDrops++;
+    if(!h.length){D.noStableWarning++;if(P)P.noStableWarning++;return;}
+    D.withStableWarning++;if(P)P.withStableWarning++;
+    const sources=[...new Set(h.map(x=>x.src))];for(const src of sources)if(D.any[src]!=null)D.any[src]++;
+    if(sources.length===1&&D.exclusive[sources[0]]!=null)D.exclusive[sources[0]]++;
+    const latest=h.reduce((a,b)=>!a||b.lastAt>a.lastAt?b:a,null);if(latest&&D.latest[latest.src]!=null)D.latest[latest.src]++;
+    const earliest=Math.min(...h.map(x=>x.startAt));const lead=Math.max(0,Math.min(350,now-earliest));
+    D.leadSumMs+=lead;D.leadCount++;
+    if(lead<=100)D.leadBuckets.lte100++;else if(lead<=200)D.leadBuckets.ms101_200++;else D.leadBuckets.ms201_350++;
+  }
+  function damageWarningSnapshot(){
+    const D=DAMAGE_WARNING;
+    return {hpDrops:D.hpDrops,withStableWarning:D.withStableWarning,noStableWarning:D.noStableWarning,
+      stableWarningCoverage:D.hpDrops?+(D.withStableWarning/D.hpDrops).toFixed(3):null,
+      latest:{...D.latest},any:{...D.any},exclusive:{...D.exclusive},
+      avgFirstLeadMs:D.leadCount?+(D.leadSumMs/D.leadCount).toFixed(1):null,leadBuckets:{...D.leadBuckets},
+      players:{P1:{...D.players.P1},P2:{...D.players.P2},P3:{...D.players.P3}}};
+  }
 function actionOf(r){return !r?.danger?'SAFE':r.watchOnly?'WATCH':r.noRoute?(r.abReady?'AB':'WATCH'):r.best;}
 function stable(name,r){
   const s=ST[name],h=r.hit||{},uh=r.upHit||{},dh=r.downHit||{};
@@ -915,6 +960,7 @@ function auditStep(name,ps,st,raw,now){
     return;
   }
   if(dropped){
+    damageWarningRecord(name,now);
     if(e&&now>=e.due-CFG.auditHitEarlyMs&&now<=e.deadline+120){
       if(e.attackEndedEarly)auditResolve(name,'ambiguous',e,'预测已撤销后发生 HP '+hpBefore+'→'+hp);
       else if(e.source==='active'||e.familySeen)auditResolve(name,'hit',e,'HP '+hpBefore+'→'+hp);
@@ -1057,7 +1103,8 @@ function decisionLoadSnapshot(){
     warningRate:ticks?+(warn/ticks).toFixed(3):null,
     actionRate:ticks?+(act/ticks).toFixed(3):null,
     watchRate:ticks?+(total.WATCH/ticks).toFixed(3):null},
-    warningSourcePlayers,warningSources,warningSourceRates:sourceRates};
+    warningSourcePlayers,warningSources,warningSourceRates:sourceRates,
+    damageWarningAttribution:damageWarningSnapshot()};
 }
 function reportSnapshot(){
   return frozenCopy({at:Date.now(),audit:auditSnapshot(),auditFamilies:auditFamilies(),calibration:calibrationSnapshot(),decisionLoad:decisionLoadSnapshot()});
@@ -1137,12 +1184,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
     const ps=PS[p.name];if(!ps){auditMarkAbsent(p.name,now);continue;}
     const raw=decision(ps,d.danger),st=stable(p.name,raw);
     const da=st?actionOf(st):'NONE';if(DECISION_TICKS[p.name]&&DECISION_TICKS[p.name][da]!=null)DECISION_TICKS[p.name][da]++;
-    if(st&&da!=='SAFE'&&da!=='NONE'){
-      const src=(da==='UP'||da==='DOWN'||da==='AB')?'ACTION':
-        st.tailWatchOnly?'TAIL':st.guardWatchOnly?'GUARD':st.shadowWatchOnly?'SHADOW':st.debounceWatchOnly?'BRIDGE':
-        st.phaseWatchOnly?'PHASE':st.geometryWatchOnly?'GEOMETRY':st.edgeWatchOnly?'EDGE':'WATCH';
-      if(WARNING_SOURCE_TICKS[p.name]?.[src]!=null)WARNING_SOURCE_TICKS[p.name][src]++;
-    }
+    warningTelemetry(p.name,st,da,now);
     last.players[p.name]={raw,stable:st,state:{...ps}};
     auditStep(p.name,ps,st,raw,now);
     print(p.name,st,d.enemies.size);
@@ -1166,7 +1208,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.11.1',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.11.2',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -1193,12 +1235,13 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.11.1 多房间审计去污染/警告负担拆分版启动');
+  qlog('✅ WOF V4.11.2 实际掉血警告来源归因版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('🧊 V4.11.1仍不修改Family/轨迹/范围/护栏/稳定器/行动门槛；只修审计污染并拆分警告来源；V4.10.1仍为冻结基线');
   qlog('🧹 审计去污染: HP异常基线重建与最近600ms完全无敌方证据的掉血单独统计，不再自动算enemy SAFE漏判');
   qlog('📚 漏判取证: MISS_CASES由16扩到120，适配多房间10分钟批量测试');
   qlog('📊 警告来源: decisionLoad.warningSources拆分ACTION/GUARD/TAIL/SHADOW/BRIDGE/PHASE/GEOMETRY/EDGE/WATCH');
+  qlog('🧬 掉血归因: decisionLoad.damageWarningAttribution记录掉血前350ms内警告来源的any/exclusive/latest与提前量；仍不改变预测/HUD行为');
   qlog('👤 玩家水平拆分: changed单列为自然路径改变；reportShort().evaluation同时报告攻击materialization与玩家路径改变率，不再把高手/普通玩家混成一个精度数字');
   qlog('🖥️ 提示负担: reportShort().evaluation.decisionLoad统计SAFE/WATCH/UP/DOWN/AB时间占比，防止为了覆盖率把最终HUD调成满屏警告');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
