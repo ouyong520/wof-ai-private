@@ -1,0 +1,37 @@
+name: Upgrade WOF V4.10.0
+
+on:
+  push:
+    paths:
+      - 'tools/patch_v4100.py'
+      - '.github/workflows/upgrade-v4100.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch runtime to V4.10.0
+        run: |
+          python tools/patch_v4100.py
+          node --check wof_v4_install_once.js
+          grep -q "offline-dynamic-spectator-calibrated-v4.10.0" wof_v4_install_once.js
+          grep -q "active多阶段Family重锁版启动" wof_v4_install_once.js
+          grep -q "PHASE_RELOCKS" wof_v4_install_once.js
+          grep -q "phaseMismatch" wof_v4_install_once.js
+          grep -q "active phase relock" wof_v4_install_once.js
+      - name: Commit runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wof_v4_install_once.js
+          if git diff --cached --quiet; then
+            echo "No runtime changes"
+          else
+            git commit -m "Upgrade runtime to V4.10.0"
+            git push
+          fi
