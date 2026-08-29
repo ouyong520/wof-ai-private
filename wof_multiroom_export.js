@@ -46,6 +46,18 @@
     const startSeq=+S.caseSeq||0,cases=(E.exclusiveCases||[]).filter(x=>(+x.seq||0)>startSeq);
     return {guard:layer('guard'),geometry:layer('geometry'),caseSeqDelta:(+E.caseSeq||0)-startSeq,exclusiveCases:cases};
   }
+  function hudShadowDelta(e,s){
+    const E=e?.hudShadow||{},S=s?.hudShadow||{};
+    if(!Object.keys(E).length)return null;
+    const ticks=subObj(E.ticks||{},S.ticks||{}),episodes=subObj(E.episodes||{},S.episodes||{}),damage=subObj(E.damage||{},S.damage||{});
+    const pulses=(+E.pulses||0)-(+S.pulses||0),pulseTicks=(+E.pulseTicks||0)-(+S.pulseTicks||0),hp=+damage.hpDrops||0;
+    return {ticks,episodes,pulses,pulseTicks,damage:{...damage,
+      actionCoverage:hp?+((damage.actionCovered||0)/hp).toFixed(4):null,
+      specificOrActionCoverage:hp?+((damage.specificOrActionCovered||0)/hp).toFixed(4):null,
+      anyCoverage:hp?+((damage.anyCovered||0)/hp).toFixed(4):null,
+      broadOnlyRate:hp?+((damage.broadOnly||0)/hp).toFixed(4):null,
+      pulseRecentCoverage:hp?+((damage.pulseRecent||0)/hp).toFixed(4):null}};
+  }
   function damageWarningDelta(ed,sd){
     const e=ed?.damageWarningAttribution||{},s=sd?.damageWarningAttribution||{};
     if(!Object.keys(e).length)return null;
@@ -59,7 +71,7 @@
     return {hpDrops,enemyDamageEvents,nonEnemyDamage,hpBaselineReset,withStableWarning,noStableWarning,
       stableWarningCoverage:hpDrops?+(withStableWarning/hpDrops).toFixed(4):null,
       latest,any,exclusive,avgFirstLeadMs:dN?+((eSum-sSum)/dN).toFixed(1):null,leadBuckets,players,
-      watchDiagnostics:watchDiagDelta(e,s)};
+      watchDiagnostics:watchDiagDelta(e,s),hudShadow:hudShadowDelta(e,s)};
   }
   function decisionDelta(end,start){
     const ed=end?.evaluation?.decisionLoad||end?.decisionLoad||{},sd=start?.evaluation?.decisionLoad||start?.decisionLoad||{};
@@ -70,12 +82,18 @@
     const action=(d.UP||0)+(d.DOWN||0)+(d.AB||0);
     const ws=subObj(ed.warningSources||{},sd.warningSources||{}),wsTotal=Object.values(ws).reduce((a,b)=>a+(+b||0),0),wsRate={};
     for(const k of Object.keys(ws))wsRate[k]=wsTotal?+(ws[k]/wsTotal).toFixed(4):null;
+    const dwa=damageWarningDelta(ed,sd);
+    if(dwa?.hudShadow){
+      dwa.hudShadow.pulseRate=ticks?+(dwa.hudShadow.pulseTicks/ticks).toFixed(4):null;
+      dwa.hudShadow.levelRates={};
+      for(const k of Object.keys(dwa.hudShadow.ticks||{}))dwa.hudShadow.levelRates[k]=ticks?+(dwa.hudShadow.ticks[k]/ticks).toFixed(4):null;
+    }
     return {...d,ticks,warningTicks:warning,actionTicks:action,
       warningRate:ticks?+(warning/ticks).toFixed(4):null,
       actionRate:ticks?+(action/ticks).toFixed(4):null,
       watchRate:ticks?+((d.WATCH||0)/ticks).toFixed(4):null,
       warningSources:ws,warningSourceRates:wsRate,
-      damageWarningAttribution:damageWarningDelta(ed,sd)};
+      damageWarningAttribution:dwa};
   }
   function effectiveStatus(r,now){
     if(r.status!=='running')return r.status||'unknown';
@@ -139,7 +157,7 @@
   const blob=new Blob([text],{type:'application/json'}),url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),30000);
-  console.table(summaries.map(x=>({room:x.id,status:x.status,min:(x.durationSec/60).toFixed(1),tested:x.total.tested||0,damage:x.evaluation.damageEvents,nonEnemy:x.evaluation.nonEnemyDamage,safeMiss:x.total.safeMiss||0,materialize:x.evaluation.materializationRate,warningRate:x.evaluation.decisionLoad.warningRate,damageWarn:x.evaluation.decisionLoad.damageWarningAttribution?.stableWarningCoverage??null})));
+  console.table(summaries.map(x=>{const h=x.evaluation.decisionLoad.damageWarningAttribution?.hudShadow;return {room:x.id,status:x.status,min:(x.durationSec/60).toFixed(1),tested:x.total.tested||0,damage:x.evaluation.damageEvents,safeMiss:x.total.safeMiss||0,warningRate:x.evaluation.decisionLoad.warningRate,pulseRate:h?.pulseRate??null,broadOnly:h?.damage?.broadOnlyRate??null,pulseCover:h?.damage?.pulseRecentCoverage??null};}));
   console.log('✅ 已下载',name,'版本',latestVersion,'本批房间',sessions.length,'已隐藏旧版session',bundle.hiddenOlderSessionCount,'完整',bundle.completeCount,'中断',bundle.interruptedCount,'部分样本',bundle.partialCount);
   return bundle;
 })().catch(e=>console.error('❌ 多房间导出失败',e));
