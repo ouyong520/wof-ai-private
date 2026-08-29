@@ -1,0 +1,36 @@
+name: Upgrade WOF V4.10.1
+
+on:
+  push:
+    paths:
+      - 'tools/patch_v4101.py'
+      - '.github/workflows/upgrade-v4101.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch runtime to V4.10.1
+        run: |
+          python tools/patch_v4101.py
+          node --check wof_v4_install_once.js
+          grep -q "offline-dynamic-spectator-calibrated-v4.10.1" wof_v4_install_once.js
+          grep -q "非破坏式阶段叠加/覆盖回归修复版启动" wof_v4_install_once.js
+          grep -q "phaseOverlayHorizonMs" wof_v4_install_once.js
+          grep -q "active-phase-watch" wof_v4_install_once.js
+      - name: Commit runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wof_v4_install_once.js
+          if git diff --cached --quiet; then
+            echo "No runtime changes"
+          else
+            git commit -m "Upgrade runtime to V4.10.1"
+            git push
+          fi
