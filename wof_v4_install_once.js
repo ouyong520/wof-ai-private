@@ -74,8 +74,8 @@ function __WOF_START_V4(DB){
 
   const PH={P1:[],P2:[],P3:[]};
   const PS={};
-  const TRACK={P1:false,P2:false,P3:false};
-  let AUTO_LOCAL=true,LOCAL_NAME=null,LOCAL_SEAT=null,LOCAL_MODE='none';
+  const TRACK={P1:true,P2:true,P3:true};
+  let PLAYER_MODE='spectator',LOCAL_NAME=null,LOCAL_SEAT=null,LOCAL_MODE='none';
 
   function localPlayerNo(){
     try{const n=Number(_0x2f9e12);return n>=1&&n<=3?n:null;}catch(e){return null;}
@@ -98,7 +98,7 @@ function __WOF_START_V4(DB){
     return{name:null,seat,mode:seatName?'seat-object-missing':'seat-unknown',live};
   }
   function syncLocalPlayer(force=false){
-    if(!AUTO_LOCAL)return LOCAL_NAME;
+    if(PLAYER_MODE!=='local')return LOCAL_NAME;
     const r=resolveLocalActor(),name=r.name;
     if(!force&&name===LOCAL_NAME&&r.seat===LOCAL_SEAT&&r.mode===LOCAL_MODE)return LOCAL_NAME;
     const prev=LOCAL_NAME,prevMode=LOCAL_MODE;
@@ -497,7 +497,7 @@ function auditFamilies(){
 
   let timer=null,last=null;
   function tick(){
-  const now=performance.now();syncLocalPlayer();updatePlayers(now);const d=buildDanger(now);last={at:now,localPlayer:LOCAL_NAME,localPlayerNo:localPlayerNo(),localSeat:LOCAL_SEAT,localMode:LOCAL_MODE,players:{},enemyCount:d.enemies.size,dangerPoints:d.danger.length,exact:d.exact,coarse:d.coarse};
+  const now=performance.now();if(PLAYER_MODE==='local')syncLocalPlayer();updatePlayers(now);const d=buildDanger(now);last={at:now,playerMode:PLAYER_MODE,livePlayers:PLAYERS.filter(p=>!!readPlayer(p.base,p.name)).map(p=>p.name),players:{},enemyCount:d.enemies.size,dangerPoints:d.danger.length,exact:d.exact,coarse:d.coarse};
   for(const p of PLAYERS){
     const ps=PS[p.name];if(!ps)continue;
     const raw=decision(ps,d.danger),st=stable(p.name,raw);
@@ -510,31 +510,38 @@ function auditFamilies(){
 
   function setPlayerEnabled(name,on){
     if(!(name in TRACK))throw new Error('player must be P1/P2/P3');
-    AUTO_LOCAL=false;
+    PLAYER_MODE='manual';
     TRACK[name]=!!on;resetPlayerRuntime(name);
     console.log(TRACK[name]?'🔵':'⚫',name,TRACK[name]?'已手动加入预测/审计':'已手动移出预测/审计');
     return {...TRACK};
   }
-  function useLocalPlayer(){AUTO_LOCAL=true;syncLocalPlayer(true);return {localPlayer:LOCAL_NAME,localPlayerNo:localPlayerNo(),localSeat:LOCAL_SEAT,localMode:LOCAL_MODE,tracked:{...TRACK}};}
+  function useLocalPlayer(){PLAYER_MODE='local';syncLocalPlayer(true);return {mode:PLAYER_MODE,localPlayer:LOCAL_NAME,localPlayerNo:localPlayerNo(),localSeat:LOCAL_SEAT,localMode:LOCAL_MODE,tracked:{...TRACK}};}
+  function spectateAll(){
+    PLAYER_MODE='spectator';LOCAL_NAME=null;LOCAL_SEAT=null;LOCAL_MODE='spectator';
+    for(const p of PLAYERS){if(!TRACK[p.name]){TRACK[p.name]=true;resetPlayerRuntime(p.name);}}
+    console.log('👁️ 观战模式：同时预测/审计 RAM 中存在的 P1/P2/P3');
+    return {mode:PLAYER_MODE,tracked:{...TRACK}};
+  }
 
   self.WOFV4={
-    version:'offline-dynamic-local-p123-v4.3.6',config:CFG,last:null,
+    version:'offline-dynamic-spectator-p123-v4.3.7',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
-    status(){return{version:this.version,db:this.dbInfo,last:this.last,autoLocal:AUTO_LOCAL,localPlayer:LOCAL_NAME,localPlayerNo:localPlayerNo(),localSeat:LOCAL_SEAT,localMode:LOCAL_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
-    localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:LOCAL_MODE,live:r.live,auto:AUTO_LOCAL,tracked:{...TRACK}};},
+    status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
+    localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
     tracked(){return {...TRACK};},
     setPlayerEnabled,
     useLocalPlayer,
+    spectateAll,
     audit(){return auditSnapshot();},
     auditFamilies(){return auditFamilies();},
     stop(){if(timer){clearInterval(timer);timer=null;}console.log('⛔ WOF V4关闭');}
   };
-  syncLocalPlayer(true);
+  spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  console.log('✅ WOF V4.3.6 本机角色容错映射观战版启动');
+  console.log('✅ WOF V4.3.7 全玩家观战预测版启动');
   console.log('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   console.log('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
-  console.log('✅ 本机seat优先；若seat对应RAM对象不存在且仅1个玩家对象存活，则自动映射唯一存活角色 × 20怪 × Future Danger Map');
+  console.log('✅ 纯观战：不判断本机seat，同时预测 RAM 中存在的 P1/P2/P3 × 20怪 × Future Danger Map');
   console.log('⚠️ 只预测，不控制任何玩家');
 }
 
