@@ -394,11 +394,13 @@ function __WOF_START_V4(DB){
     return out;
   }
 
-  const SLOT=Array.from({length:NSLOTS},()=>({type:null,prevAttack:0,locked:null,started:0,origin:null,face:0,seq:0,variantBase:null,variantMotion:null,tail:null}));
+  const SLOT=Array.from({length:NSLOTS},()=>({type:null,prevAttack:0,locked:null,started:0,origin:null,face:0,seq:0,variantBase:null,variantMotion:null,tail:null,phaseFamily:null,phaseFrom:null,phaseAttack:0,phaseSwitches:0}));
   const UNIQUE_ACTIVE=new Map();
   const MULTI_ACTIVE=new Set();
   const ENEMY_HISTORY=[];
   const MISS_CASES=[];
+  let PHASE_RELOCKS=0;
+  const PHASE_RELOCK_BY=Object.create(null);
   for(const [id,f] of Object.entries(DB.f)){
     const k=f[0]+'|'+f[1];
     if(UNIQUE_ACTIVE.has(k)){UNIQUE_ACTIVE.delete(k);MULTI_ACTIVE.add(k);}
@@ -407,12 +409,26 @@ function __WOF_START_V4(DB){
 
   function updateLock(o,now){
     const s=SLOT[o.slot];
-    if(s.type!==o.type){s.type=o.type;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;s.seq=0;s.variantBase=null;s.variantMotion=null;s.tail=null;}
+    if(s.type!==o.type){s.type=o.type;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;s.seq=0;s.variantBase=null;s.variantMotion=null;s.tail=null;s.phaseFamily=null;s.phaseFrom=null;s.phaseAttack=0;s.phaseSwitches=0;}
     if(s.prevAttack===0&&o.attack!==0){
       s.seq=(s.seq||0)+1;
       s.locked=DB.a[keyActive(o)]||UNIQUE_ACTIVE.get(o.type+'|'+o.attack)||null;
       s.started=now;s.origin={x:o.x,y:o.y,z:o.z};s.face=o.face;
       s.variantBase='a'+o.anim+':'+o.s0+':'+o.s1+':'+o.s2+':'+o.s3;s.variantMotion=null;
+      s.phaseFamily=s.locked;s.phaseFrom=null;s.phaseAttack=o.attack;
+    }else if(s.prevAttack!==0&&o.attack!==0&&o.attack!==s.prevAttack){
+      const exactPhase=DB.a[keyActive(o)]||null;
+      if(exactPhase&&exactPhase!==s.locked){
+        const from=s.locked||null,attackFrom=s.prevAttack;
+        s.seq=(s.seq||0)+1;
+        s.locked=exactPhase;s.started=now;s.origin={x:o.x,y:o.y,z:o.z};s.face=o.face;
+        s.variantBase='a'+o.anim+':'+o.s0+':'+o.s1+':'+o.s2+':'+o.s3;s.variantMotion=null;
+        s.phaseFrom=from;s.phaseFamily=exactPhase;s.phaseAttack=o.attack;s.phaseSwitches=(s.phaseSwitches||0)+1;
+        PHASE_RELOCKS++;
+        const pk=(from||'?')+'→'+exactPhase+'|A'+attackFrom+'→'+o.attack;
+        PHASE_RELOCK_BY[pk]=(PHASE_RELOCK_BY[pk]||0)+1;
+        qlog('🔁 active phase relock','slot',o.slot,'type',o.type,pk,'state',o.s0+':'+o.s1+':'+o.s2+':'+o.s3);
+      }else s.phaseAttack=o.attack;
     }else if(s.prevAttack!==0&&o.attack===0){
       const family=s.locked||null,age=Math.max(0,now-(s.started||now)),sec=Math.max(.08,age/1000);
       let vx=0,vy=0,vz=0;
@@ -423,7 +439,7 @@ function __WOF_START_V4(DB){
         vz=Math.max(-CFG.activeGuardVelocityCapZ,Math.min(CFG.activeGuardVelocityCapZ,vz));
       }
       s.tail={at:now,until:now+CFG.attackTailGuardMs,family,x:o.x,y:o.y,z:o.z,vx,vy,vz};
-      s.locked=null;s.origin=null;s.started=0;s.variantBase=null;s.variantMotion=null;
+      s.locked=null;s.origin=null;s.started=0;s.variantBase=null;s.variantMotion=null;s.phaseFamily=null;s.phaseFrom=null;s.phaseAttack=0;
     }
     if(o.attack!==0&&s.origin&&s.variantMotion==null&&now-s.started>=80){
       const sg=faceSign(s.face),dx=sg*(o.x-s.origin.x),dy=o.y-s.origin.y,dz=o.z-s.origin.z;
@@ -438,8 +454,9 @@ function __WOF_START_V4(DB){
     for(let i=0;i<NSLOTS;i++){
       const o=readActor(POOL+i*STRIDE,i);if(!o)continue;
       const sl=SLOT[i]||{};
+      const phaseFamily=o.attack!==0?(DB.a[keyActive(o)]||null):null;
       actors.push({slot:i,type:o.type,x:+o.x.toFixed(1),y:+o.y.toFixed(1),z:+o.z.toFixed(1),face:o.face,
-        attack:o.attack,anim:o.anim,s0:o.s0,s1:o.s1,s2:o.s2,s3:o.s3,frame:o.frame,locked:sl.locked||null});
+        attack:o.attack,anim:o.anim,s0:o.s0,s1:o.s1,s2:o.s2,s3:o.s3,frame:o.frame,locked:sl.locked||null,phaseFamily});
     }
     ENEMY_HISTORY.push({t:now,actors});
     while(ENEMY_HISTORY.length&&now-ENEMY_HISTORY[0].t>CFG.missHistoryMs)ENEMY_HISTORY.shift();
@@ -461,7 +478,7 @@ function __WOF_START_V4(DB){
             if(h)startupTop=chooseFamilies(h.row).slice(0,2).map(x=>x.id);
           }
           best.set(o.slot,{score:+score.toFixed(1),ageMs:Math.round(age),slot:o.slot,type:o.type,attack:o.attack,
-            locked:o.locked||null,anim:o.anim,state:[o.s0,o.s1,o.s2,o.s3],frame:o.frame,
+            locked:o.locked||null,phaseFamily:o.phaseFamily||null,phaseMismatch:!!(o.phaseFamily&&o.locked&&o.phaseFamily!==o.locked),anim:o.anim,state:[o.s0,o.s1,o.s2,o.s3],frame:o.frame,
             dx:+dx.toFixed(1),dy:+dy.toFixed(1),dz:+dz.toFixed(1),startupTop});
         }
       }
@@ -599,7 +616,7 @@ function __WOF_START_V4(DB){
     const out={danger:[],enemies:new Set(),exact:0,coarse:0};
     for(let i=0;i<NSLOTS;i++){
       const o=readActor(POOL+i*STRIDE,i),s=SLOT[i];
-      if(!o){s.type=null;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;s.tail=null;continue;}
+      if(!o){s.type=null;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;s.tail=null;s.phaseFamily=null;s.phaseFrom=null;s.phaseAttack=0;continue;}
       updateLock(o,now);
       if(o.attack!==0){addActive(o,s,now,out);addActiveGuard(o,s,now,out);}
       else{addAttackTailGuard(o,s,now,out);const h=lookup(o);if(h){out[h.kind]++;addStartup(o,h,out);}}
@@ -1002,14 +1019,15 @@ function summarySnapshot(){
     bridgeDamageCoverage:damageEvents?+(total.bridgeCovered/damageEvents).toFixed(3):null,
     validated,damageEvents};
   const missTop=MISS_CASES.slice(-6).map(c=>({id:c.id,kind:c.kind,player:c.player,hp:c.hp,rawHit:c.rawHit,nearest:c.nearest,
-    candidates:(c.candidates||[]).slice(0,3).map(x=>({slot:x.slot,type:x.type,attack:x.attack,locked:x.locked,ageMs:x.ageMs,dx:x.dx,dy:x.dy,dz:x.dz,startupTop:x.startupTop}))}));
+    candidates:(c.candidates||[]).slice(0,3).map(x=>({slot:x.slot,type:x.type,attack:x.attack,locked:x.locked,phaseFamily:x.phaseFamily||null,phaseMismatch:!!x.phaseMismatch,ageMs:x.ageMs,dx:x.dx,dy:x.dy,dz:x.dz,startupTop:x.startupTop}))}));
   const ma=Object.create(null);
   for(const c of MISS_CASES)if(c.kind==='safeMiss')for(const x of (c.candidates||[]).slice(0,3)){
     const k='T'+x.type+'|A'+x.attack+'|'+(x.locked||'?'),r=ma[k]||(ma[k]={key:k,count:0,type:x.type,attack:x.attack,locked:x.locked||null,minDx:999,minDy:999,minDz:999});
     r.count++;r.minDx=Math.min(r.minDx,+x.dx||999);r.minDy=Math.min(r.minDy,+x.dy||999);r.minDz=Math.min(r.minDz,+x.dz||999);
   }
   const missAttackTop=Object.values(ma).sort((x,y)=>y.count-x.count||x.minDx-y.minDx).slice(0,10).map(r=>({...r,minDx:+r.minDx.toFixed(1),minDy:+r.minDy.toFixed(1),minDz:+r.minDz.toFixed(1)}));
-  return frozenCopy({at:Date.now(),total,metrics,missAttackTop,missTop,players:a,topFalse,demoted,precisionSuppressed,geoAdjusted,geoClasses});
+  const phaseRelockTop=Object.entries(PHASE_RELOCK_BY).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([key,count])=>({key,count}));
+  return frozenCopy({at:Date.now(),total,metrics,phaseRelocks:PHASE_RELOCKS,phaseRelockTop,missAttackTop,missTop,players:a,topFalse,demoted,precisionSuppressed,geoAdjusted,geoClasses});
 }
 function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
 function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
@@ -1043,7 +1061,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.9.9',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.10.0',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -1068,7 +1086,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.9.9 稳定桥/覆盖收敛版启动');
+  qlog('✅ WOF V4.10.0 active多阶段Family重锁版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
@@ -1084,6 +1102,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   qlog('📐 自适应几何: Family/Variant独立学习 + fallback几何类跨Family共享学习；完整危险外壳始终保留WATCH');
   qlog('🔬 漏判取证: unstable/safeMiss同时保存rawHit与nearest，并保留最近600ms敌人ATTACK/Family候选');
   qlog('⚡ 稳定器: WATCH连续性保持；UP/DOWN/AB未确认期间若raw危险<=350ms，先输出WATCH稳定桥，绝不提前动作/AB');
+  qlog('🔁 active多阶段: ATTACK非0内部切换时，仅当当前type+ATTACK+state精确命中另一Family才重锁并重置轨迹时钟；不使用模糊fallback');
   qlog('🟦 稳定桥审计: bridgeCovered=raw危险已出现但动作分支尚未稳定时，由WATCH桥成功覆盖真实掉血；不进入FP校准');
   qlog('🧱 共享几何类: 至少4次高可信误报且来自>=3个Family才开始收缩行动核心');
   qlog('🟧 审计: guardCovered=主动攻击护栏覆盖；tailCovered=ATTACK结束尾帧覆盖；watchCovered=稳定WATCH覆盖；safeMiss=完全未覆盖');
