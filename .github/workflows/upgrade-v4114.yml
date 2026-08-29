@@ -1,0 +1,30 @@
+name: Upgrade WOF V4.11.4
+
+on:
+  push:
+    paths:
+      - 'tools/patch_v4114.py'
+      - '.github/workflows/upgrade-v4114.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch runtime to V4.11.4
+        run: python tools/patch_v4114.py
+      - name: Commit runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wof_v4_install_once.js
+          if git diff --cached --quiet; then
+            echo "No runtime changes"
+          else
+            git commit -m "Upgrade runtime to V4.11.4 HUD shadow telemetry"
+            git push
+          fi
