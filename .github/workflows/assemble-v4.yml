@@ -1,4 +1,4 @@
-name: Assemble WOF V4.2.2
+name: Assemble WOF V4.3
 on:
   workflow_dispatch:
   push:
@@ -12,7 +12,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Assemble and patch V4.2.2
+      - name: Assemble and patch V4.3
         run: |
           cat wof_v4_parts/part01.txt \
               wof_v4_parts/part02.txt \
@@ -29,15 +29,23 @@ jobs:
           p=Path('wof_v4_install_once.js')
           s=p.read_text(encoding='utf-8')
 
-          # V4.2.x observer parameters.
-          s=s.replace("cumulativeProbability:0.95,", "cumulativeProbability:0.95,\n    routeCommitMs:250,\n    abRouteSlackMs:120,", 1)
+          # V4.3 observer parameters.
+          s=s.replace("cumulativeProbability:0.95,", "cumulativeProbability:0.95,\n    routeCommitMs:250,\n    abRouteSlackMs:120,\n    auditGraceMs:220,\n    auditTolX:14,\n    auditTolY:8,\n    auditTolZ:14,", 1)
+
+          # Read confirmed player HP at base+0x83 for observational validation.
+          old="return {name,flag,x:W(S32(base+4)),y:W(S32(base+8)),z:W(S32(base+12))};"
+          new="return {name,flag,x:W(S32(base+4)),y:W(S32(base+8)),z:W(S32(base+12)),hp:B(base+0x83)};"
+          if old not in s: raise SystemExit('readPlayer patch target missing')
+          s=s.replace(old,new,1)
+          old="PS[p.name]={name:p.name,x:cur.x,y:cur.y,z:cur.z,vx,vy,vz};"
+          new="PS[p.name]={name:p.name,x:cur.x,y:cur.y,z:cur.z,vx,vy,vz,hp:cur.hp};"
+          if old not in s: raise SystemExit('PS hp patch target missing')
+          s=s.replace(old,new,1)
 
           # Unknown active-family fallback is advisory only.
           s=s.replace("slot:o.slot,type:o.type,family:null,confidence:.35,source:'active-unknown'});","slot:o.slot,type:o.type,family:null,confidence:.20,source:'active-unknown'});",1)
 
-          # V4.2.2 decision: known-family actions only, plus a rolling route window.
-          # A route does NOT need to remain collision-free for the whole 1000ms horizon;
-          # it only needs to clear the imminent threat and remain safe for routeCommitMs.
+          # V4.2.2 decision core retained: known-family actions only + rolling escape window.
           a=s.index("  function decision(p,danger){")
           b=s.index("  const ST={P1:{k:'',n:0,v:null}",a)
           decision="""  function decision(p,danger){
@@ -45,14 +53,12 @@ jobs:
             const fullCur=evalPath(p,'CONTINUE',danger,0);
             const cur=evalPath(p,'CONTINUE',knownDanger,0);
 
-            // No known-family collision: unknown active fallback may warn only.
             if(cur.safe){
               if(!fullCur.safe&&fullCur.hit?.source==='active-unknown')
                 return{danger:true,watchOnly:true,best:'WATCH',hitMs:fullCur.collisionMs,hit:fullCur.hit,stay:fullCur};
               return{danger:false,best:'CONTINUE',stay:cur};
             }
 
-            // Rolling horizon: solve the imminent escape, then re-plan on the next 40ms tick.
             const routeUntil=Math.min(CFG.horizonMs,cur.collisionMs+CFG.routeCommitMs);
             const routeDanger=knownDanger.filter(d=>d.t<=routeUntil);
             const up0=evalPath(p,'UP',routeDanger,0),down0=evalPath(p,'DOWN',routeDanger,0);
@@ -62,7 +68,6 @@ jobs:
             if(up<0&&down<0){
               const known=h=>!!h&&h.family!=null&&h.source!=='active-unknown';
               const blockersKnown=known(cur.hit)&&known(up0.hit)&&known(down0.hit);
-              // AB is only credible if both escape routes are blocked almost as soon as CONTINUE.
               const upNear=up0.collisionMs!=null&&up0.collisionMs<=cur.collisionMs+CFG.abRouteSlackMs;
               const downNear=down0.collisionMs!=null&&down0.collisionMs<=cur.collisionMs+CFG.abRouteSlackMs;
               const abReady=blockersKnown&&cur.collisionMs<=250&&upNear&&downNear;
@@ -86,17 +91,18 @@ jobs:
           """
           s=s[:a]+decision+s[b:]
 
-          # Confirm all actions; clear stale stable state immediately when the candidate changes.
+          # Stable actions.
           a=s.index("  const ST={P1:{k:'',n:0,v:null}")
           b=s.index("  function print(name,r,enemyCount){",a)
           stable="""  const ST={P1:{k:'',n:0,v:null},P2:{k:'',n:0,v:null}},PRINT={P1:'',P2:''};
+          function actionOf(r){return !r?.danger?'SAFE':r.watchOnly?'WATCH':r.noRoute?(r.abReady?'AB':'WATCH'):r.best;}
           function stable(name,r){
             const s=ST[name],h=r.hit||{},uh=r.upHit||{},dh=r.downHit||{};
-            const action=!r.danger?'SAFE':r.watchOnly?'WATCH':r.noRoute?(r.abReady?'AB':'WATCH'):r.best;
+            const action=actionOf(r);
             let k=action+'|'+(h.slot??-1)+'|'+(h.family??'');
             if(action==='AB')k+='|'+(uh.slot??-1)+'|'+(uh.family??'')+'|'+(dh.slot??-1)+'|'+(dh.family??'');
             if(k===s.k)s.n++;else{s.k=k;s.n=1;s.v=null;}
-            const need=action==='SAFE'?2:action==='AB'?3:3;
+            const need=action==='SAFE'?2:3;
             if(s.n>=need)s.v=r;
             return s.v;
           }
@@ -104,13 +110,13 @@ jobs:
           """
           s=s[:a]+stable+s[b:]
 
-          # Print state transitions. For AB/WATCH-no-route include route blockers for diagnosis.
+          # Rich diagnostic printing.
           a=s.index("  function print(name,r,enemyCount){")
           b=s.index("  let timer=null,last=null;",a)
-          printer="""  function print(name,r,enemyCount){
+          printer_and_audit="""  function print(name,r,enemyCount){
             if(!r)return;
             const h=r.hit||{},uh=r.upHit||{},dh=r.downHit||{};
-            const action=!r.danger?'SAFE':r.watchOnly?'WATCH':r.noRoute?(r.abReady?'AB':'WATCH'):r.best;
+            const action=actionOf(r);
             const sig=name+'|'+action+'|'+(h.slot??-1)+'|'+(h.family??'')+'|'+(uh.family??'')+'|'+(dh.family??'');
             if(sig===PRINT[name])return;PRINT[name]=sig;
             if(!r.danger)console.log('🟢',name,'OFFLINE SAFE','预测怪',enemyCount);
@@ -118,22 +124,105 @@ jobs:
               'UP堵'+r.upHitMs+'ms',uh.family||'?','DOWN堵'+r.downHitMs+'ms',dh.family||'?','窗口'+r.routeUntil+'ms');
             else if(action==='WATCH')console.log('🟠',name,'WATCH','约'+r.hitMs+'ms','slot',h.slot,'type',h.type,'family',h.family||'?','source',h.source||'?');
             else if(action==='AB')console.log('🆘',name,'OFFLINE AB候选','当前'+r.hitMs+'ms',h.family,
-              'UP堵'+r.upHitMs+'ms',uh.family||'?','DOWN堵'+r.downHitMs+'ms',dh.family||'?');
-            else console.log(r.best==='UP'?'🟦 '+name+' ⬆ UP':'🟦 '+name+' ⬇ DOWN','约'+r.hitMs+'ms后危险','最晚'+r.latestMs+'ms后开始','UP',r.up,'DOWN',r.down,'窗口'+r.routeUntil+'ms','family',h.family||'?');
+              'src',h.source||'?','UP堵'+r.upHitMs+'ms',uh.family||'?','DOWN堵'+r.downHitMs+'ms',dh.family||'?');
+            else console.log(r.best==='UP'?'🟦 '+name+' ⬆ UP':'🟦 '+name+' ⬇ DOWN','约'+r.hitMs+'ms后危险','最晚'+r.latestMs+'ms后开始','UP',r.up,'DOWN',r.down,'窗口'+r.routeUntil+'ms','family',h.family||'?','src',h.source||'?');
+          }
+
+          // Self-audit samples one unresolved prediction per player.  It never sends input.
+          const AUD={
+            P1:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,falsePositive:0,safeMiss:0}},
+            P2:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,falsePositive:0,safeMiss:0}}
+          };
+
+          function auditResolve(name,kind,e,extra=''){
+            const A=AUD[name]; if(!e)return;
+            if(kind==='hit'){A.stats.hit++;console.log('🎯',name,'命中验证',e.action,e.family||'?',e.hitMs+'ms',extra);}
+            else if(kind==='changed'){A.stats.changed++;console.log('🟡',name,'路径改变/无法判误报',e.action,e.family||'?',e.hitMs+'ms',extra);}
+            else if(kind==='fp'){A.stats.falsePositive++;console.log('🔴',name,'疑似误报',e.action,e.family||'?',e.hitMs+'ms','原路线基本未变但未掉血',extra);}
+            A.pending=null;
+          }
+
+          function auditStep(name,ps,st,now){
+            const A=AUD[name],action=st?actionOf(st):null;
+            const hp=ps.hp;
+            const dropped=A.prevHp!=null&&hp<A.prevHp;
+
+            if(dropped){
+              if(A.pending&&now<=A.pending.deadline+200){
+                auditResolve(name,'hit',A.pending,'HP '+A.prevHp+'→'+hp);
+              }else if(now-A.lastWarnAt>350){
+                A.stats.safeMiss++;
+                console.log('❌',name,'SAFE漏判候选','HP '+A.prevHp+'→'+hp,'近350ms无稳定危险提示');
+              }
+            }
+            A.prevHp=hp;
+
+            const e=A.pending;
+            if(e){
+              if(!e.sampled&&now>=e.due){
+                const dt=e.hitMs/1000;
+                const ex=e.x+e.vx*dt,ey=e.y+e.vy*dt,ez=e.z+e.vz*dt;
+                e.dx=Math.abs(ps.x-ex);e.dy=Math.abs(ps.y-ey);e.dz=Math.abs(ps.z-ez);
+                e.changed=e.dx>CFG.auditTolX||e.dy>CFG.auditTolY||e.dz>CFG.auditTolZ;
+                e.sampled=true;
+              }
+              if(A.pending&&now>=e.deadline){
+                const info='偏移 x'+(e.dx??0).toFixed(1)+' y'+(e.dy??0).toFixed(1)+' z'+(e.dz??0).toFixed(1);
+                auditResolve(name,e.changed?'changed':'fp',e,info);
+              }
+            }
+
+            if(st&&action!=='SAFE')A.lastWarnAt=now;
+            if(!A.pending&&st&&action!=='SAFE'&&st.hitMs!=null){
+              const h=st.hit||{};
+              const hitMs=Math.max(CFG.reactFloorMs,+st.hitMs||0);
+              A.pending={action,family:h.family||null,source:h.source||null,slot:h.slot,
+                t0:now,due:now+hitMs,deadline:now+hitMs+CFG.auditGraceMs,hitMs,
+                x:ps.x,y:ps.y,z:ps.z,vx:ps.vx,vy:ps.vy,vz:ps.vz,hp:ps.hp,
+                sampled:false,changed:false,dx:null,dy:null,dz:null};
+              A.stats.tested++;
+            }
+          }
+
+          function auditSnapshot(){
+            const out={};
+            for(const n of ['P1','P2'])out[n]={...AUD[n].stats,pending:AUD[n].pending?{
+              action:AUD[n].pending.action,family:AUD[n].pending.family,hitMs:AUD[n].pending.hitMs,source:AUD[n].pending.source}:null};
+            return out;
           }
 
           """
-          s=s[:a]+printer+s[b:]
-          s=s.replace("version:'offline-dynamic-p1p2-v4'","version:'offline-dynamic-p1p2-v4.2.2'",1)
-          s=s.replace("console.log('✅ WOF V4 离线动态观战版启动');","console.log('✅ WOF V4.2.2 滚动逃生窗口观战版启动');",1)
+          s=s[:a]+printer_and_audit+s[b:]
+
+          # Replace tick so audit runs after stable decision creation.
+          a=s.index("  function tick(){")
+          b=s.index("  self.WOFV4={",a)
+          tick="""  function tick(){
+            const now=performance.now();updatePlayers(now);const d=buildDanger(now);last={at:now,players:{},enemyCount:d.enemies.size,dangerPoints:d.danger.length,exact:d.exact,coarse:d.coarse};
+            for(const p of PLAYERS){
+              const ps=PS[p.name];if(!ps)continue;
+              const raw=decision(ps,d.danger),st=stable(p.name,raw);
+              last.players[p.name]={raw,stable:st,state:{...ps}};
+              auditStep(p.name,ps,st,now);
+              print(p.name,st,d.enemies.size);
+            }
+            self.WOFV4.last=last;
+          }
+
+          """
+          s=s[:a]+tick+s[b:]
+
+          s=s.replace("version:'offline-dynamic-p1p2-v4'","version:'offline-dynamic-p1p2-v4.3'",1)
+          s=s.replace("status(){return{version:this.version,db:this.dbInfo,last:this.last,players:PS};},","status(){return{version:this.version,db:this.dbInfo,last:this.last,players:PS,audit:auditSnapshot()};},\n    audit(){return auditSnapshot();},",1)
+          s=s.replace("console.log('✅ WOF V4 离线动态观战版启动');","console.log('✅ WOF V4.3 自验证观战版启动');\n  console.log('🧪 自动验证: 🎯命中 / 🟡路径改变 / 🔴疑似误报 / ❌SAFE漏判候选');",1)
           p.write_text(s,encoding='utf-8')
           PY
           node --check wof_v4_install_once.js
-          grep -q "offline-dynamic-p1p2-v4.2.2" wof_v4_install_once.js
-          grep -q "WOF V4.2.2 滚动逃生窗口观战版启动" wof_v4_install_once.js
-          grep -q "routeCommitMs:250" wof_v4_install_once.js
-          grep -q "abRouteSlackMs:120" wof_v4_install_once.js
-          echo "V4.2.2 bytes: $(wc -c < wof_v4_install_once.js)"
+          grep -q "offline-dynamic-p1p2-v4.3" wof_v4_install_once.js
+          grep -q "WOF V4.3 自验证观战版启动" wof_v4_install_once.js
+          grep -q "audit(){return auditSnapshot();}" wof_v4_install_once.js
+          grep -q "hp:B(base+0x83)" wof_v4_install_once.js
+          echo "V4.3 bytes: $(wc -c < wof_v4_install_once.js)"
           sha256sum wof_v4_install_once.js
       - name: Commit complete script
         run: |
@@ -141,5 +230,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add wof_v4_install_once.js
           git diff --cached --quiet && exit 0
-          git commit -m "Upgrade WOF V4.2.2 rolling escape window"
+          git commit -m "Upgrade WOF V4.3 self-audit observer"
           git push
