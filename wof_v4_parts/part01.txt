@@ -1,0 +1,309 @@
+(async()=>{
+try{
+function __WOF_START_V4(DB){
+  try{ self.WOFV4?.stop?.(); }catch(e){}
+  try{ self.WOFV3?.stop?.(); }catch(e){}
+  try{ self.WOF2D?.stop?.(); }catch(e){}
+  try{ self.WOFSTABLE?.stop?.(); }catch(e){}
+  try{ self.WOFPLAYERS?.stop?.(); }catch(e){}
+
+  const CFG={
+    horizonMs:1000,
+    dangerStepMs:50,
+    tickMs:40,
+    playerHistoryMs:160,
+    playerYSpeed:38,
+    reactFloorMs:60,
+    hazardThreshold:0.50,
+    minConfidence:0.08,
+    maxFamilies:4,
+    cumulativeProbability:0.95,
+    padX:3,
+    padY:2,
+    padZ:2
+  };
+
+  const PLAYERS=[
+    {name:'P1',base:0xFFBE1C},
+    {name:'P2',base:0xFFBEFC}
+  ];
+  const POOL=0xFFC0BC, STRIDE=0xE0, NSLOTS=20;
+
+  const M=_0x515056.HEAPU8;
+  const R=_0x515056.HEAPU32[0x2e39e4>>>2]>>>0;
+  if(!R) throw new Error('CPS RAM pointer unavailable');
+
+  const B=a=>M[R+((((a-0xFF0000)&0xffff)^1))];
+  const U16=a=>((B(a)<<8)|B(a+1))>>>0;
+  const U32=a=>(B(a)*0x1000000+B(a+1)*0x10000+B(a+2)*0x100+B(a+3))>>>0;
+  const S32=a=>{let v=U32(a);return v>=0x80000000?v-0x100000000:v;};
+  const W=v=>v/65536;
+  const faceSign=f=>f===255?-1:1;
+
+  function readActor(base,slot){
+    const flag=B(base); if(!flag) return null;
+    return {
+      slot,flag,
+      type:U16(base+0x20),
+      x:W(S32(base+0x04)),y:W(S32(base+0x08)),z:W(S32(base+0x0C)),
+      face:B(base+0x16),
+      s0:B(base+0x28),s1:B(base+0x29),s2:B(base+0x2A),s3:B(base+0x2B),
+      frame:U32(base+0x12),anim:U32(base+0x2C),
+      attack:U16(base+0x70)
+    };
+  }
+
+  function readPlayer(base,name){
+    const flag=B(base); if(!flag) return null;
+    return {name,flag,x:W(S32(base+4)),y:W(S32(base+8)),z:W(S32(base+12))};
+  }
+
+  const keyState=o=>o.type+'|'+o.anim+'|'+o.s0+'|'+o.s1+'|'+o.s2+'|'+o.s3;
+  const keyExact=o=>keyState(o)+'|'+o.frame;
+  const keyActive=o=>o.type+'|'+o.attack+'|'+o.s0+'|'+o.s1+'|'+o.s2+'|'+o.s3;
+
+  const PH={P1:[],P2:[]};
+  const PS={};
+
+  function updatePlayers(now){
+    for(const p of PLAYERS){
+      const cur=readPlayer(p.base,p.name);
+      if(!cur){PH[p.name]=[];delete PS[p.name];continue;}
+      const h=PH[p.name]; h.push({t:now,x:cur.x,y:cur.y,z:cur.z});
+      while(h.length&&now-h[0].t>CFG.playerHistoryMs) h.shift();
+      let vx=0,vy=0,vz=0;
+      if(h.length>=3){
+        const a=h[0],b=h[h.length-1],dt=(b.t-a.t)/1000;
+        if(dt>0){vx=(b.x-a.x)/dt;vy=(b.y-a.y)/dt;vz=(b.z-a.z)/dt;}
+      }
+      if(Math.abs(vx)>400)vx=0;
+      if(Math.abs(vy)>200)vy=0;
+      if(Math.abs(vz)>400)vz=0;
+      PS[p.name]={name:p.name,x:cur.x,y:cur.y,z:cur.z,vx,vy,vz};
+    }
+  }
+
+  // Compact family row: [type,attack,dur90,rx,ry,rz,tr,sw]
+  // tr[t]=[x,y,z], sw[t]=[survival,x,y,z]
+  function unpack(a,kind){
+    if(!a)return null;
+    return kind==='tr'
+      ?{x:+a[0]||0,y:+a[1]||0,z:+a[2]||0,survival:1}
+      :{survival:a[0]==null?1:+a[0],x:+a[1]||0,y:+a[2]||0,z:+a[3]||0};
+  }
+
+  function interp(series,x,kind){
+    if(!series)return null;
+    const ks=Object.keys(series).map(Number).sort((a,b)=>a-b);
+    if(!ks.length)return null;
+    if(x<=ks[0])return unpack(series[String(ks[0])],kind);
+    if(x>=ks[ks.length-1])return unpack(series[String(ks[ks.length-1])],kind);
+    let lo=ks[0],hi=ks[ks.length-1];
+    for(let i=1;i<ks.length;i++){if(x<=ks[i]){lo=ks[i-1];hi=ks[i];break;}}
+    const a=unpack(series[String(lo)],kind),b=unpack(series[String(hi)],kind);
+    if(!a||!b)return a||b;
+    const k=(x-lo)/(hi-lo||1);
+    return {x:a.x+(b.x-a.x)*k,y:a.y+(b.y-a.y)*k,z:a.z+(b.z-a.z)*k,
+      survival:(a.survival??1)+((b.survival??1)-(a.survival??1))*k};
+  }
+
+  const getFamily=id=>DB.f[id]||null;
+  function radius(f){return {rx:(+f[3]||115)+CFG.padX,ry:(+f[4]||22)+CFG.padY,rz:(+f[5]||8)+CFG.padZ};}
+
+  function lookup(o){
+    let r=DB.e[keyExact(o)]; if(r)return {kind:'exact',row:r};
+    r=DB.c[keyState(o)]; return r?{kind:'coarse',row:r}:null;
+  }
+
+  function chooseFamilies(row){
+    const src=row[4]||[],out=[];let cum=0;
+    for(let i=0;i<src.length&&out.length<CFG.maxFamilies;i++){
+      const p=+src[i][1]||0;
+      if(p<0.01&&out.length)continue;
+      out.push({id:src[i][0],p});cum+=p;
+      if(cum>=CFG.cumulativeProbability)break;
+    }
+    return out;
+  }
+
+  function leads(row){
+    const raw=[{v:+row[1]||0,w:.25,q:'early'},{v:+row[2]||0,w:.5,q:'median'},{v:+row[3]||0,w:.25,q:'late'}];
+    const seen=new Set(),out=[];
+    for(const x of raw){const v=Math.max(0,Math.min(CFG.horizonMs,x.v));if(seen.has(v))continue;seen.add(v);out.push({...x,v});}
+    return out;
+  }
+
+  const SLOT=Array.from({length:NSLOTS},()=>({type:null,prevAttack:0,locked:null,started:0,origin:null,face:0}));
+  const UNIQUE_ACTIVE=new Map();
+  const MULTI_ACTIVE=new Set();
+  for(const [id,f] of Object.entries(DB.f)){
+    const k=f[0]+'|'+f[1];
+    if(UNIQUE_ACTIVE.has(k)){UNIQUE_ACTIVE.delete(k);MULTI_ACTIVE.add(k);}
+    else if(!MULTI_ACTIVE.has(k))UNIQUE_ACTIVE.set(k,id);
+  }
+
+  function updateLock(o,now){
+    const s=SLOT[o.slot];
+    if(s.type!==o.type){s.type=o.type;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;}
+    if(s.prevAttack===0&&o.attack!==0){
+      s.locked=DB.a[keyActive(o)]||UNIQUE_ACTIVE.get(o.type+'|'+o.attack)||null;
+      s.started=now;s.origin={x:o.x,y:o.y,z:o.z};s.face=o.face;
+    }else if(s.prevAttack!==0&&o.attack===0){s.locked=null;s.origin=null;s.started=0;}
+    s.prevAttack=o.attack;
+    return s;
+  }
+
+  function activeOrigin(o,f,lead){
+    const tr=interp(f[6],-Math.max(0,Math.min(1000,lead)),'tr');
+    if(!tr)return{x:o.x,y:o.y,z:o.z};
+    const sg=faceSign(o.face);
+    return{x:o.x-sg*tr.x,y:o.y-tr.y,z:o.z-tr.z};
+  }
+
+  function addStartup(o,hit,out){
+    const row=hit.row,hazard=+row[0]||0;
+    if(hazard<CFG.hazardThreshold)return;
+    const fs=chooseFamilies(row),ls=leads(row);
+    out.enemies.add(o.slot);
+    for(const fc of fs){
+      const f=getFamily(fc.id);if(!f)continue;
+      const rad=radius(f),sg=faceSign(o.face),dur90=+f[2]||1000;
+      for(const l of ls){
+        const org=activeOrigin(o,f,l.v);
+        for(let t=0;t<=CFG.horizonMs;t+=CFG.dangerStepMs){
+          if(t<l.v)continue;
+          const age=t-l.v;if(age>dur90)continue;
+          const sw=interp(f[7],age,'sw');if(!sw)continue;
+          const confidence=hazard*fc.p*l.w;
+          if(confidence<CFG.minConfidence)continue;
+          out.danger.push({t,x:org.x+sg*sw.x,y:org.y+sw.y,z:org.z+sw.z,
+            rx:rad.rx,ry:rad.ry,rz:rad.rz,slot:o.slot,type:o.type,family:fc.id,
+            confidence,source:'startup',lookup:hit.kind});
+        }
+      }
+    }
+  }
+
+  function addActive(o,s,now,out){
+    if(!s.locked){
+      const fd=(DB.fd&&DB.fd.melee_or_short_move)||[115,18,8];
+      out.enemies.add(o.slot);
+      for(let t=CFG.reactFloorMs;t<=300;t+=CFG.dangerStepMs){
+        out.danger.push({t,x:o.x,y:o.y,z:o.z,rx:fd[0]+CFG.padX,ry:fd[1]+CFG.padY,rz:fd[2]+CFG.padZ,
+          slot:o.slot,type:o.type,family:null,confidence:.35,source:'active-unknown'});
+      }
+      return;
+    }
+    const f=getFamily(s.locked);if(!f)return;
+    const rad=radius(f),age=Math.max(0,now-s.started),sg=faceSign(s.face),dur90=+f[2]||1000;
+    out.enemies.add(o.slot);
+    for(let t=0;t<=CFG.horizonMs;t+=CFG.dangerStepMs){
+      const a=age+t;if(a>dur90)continue;
+      const sw=interp(f[7],a,'sw');if(!sw)continue;
+      out.danger.push({t,x:s.origin.x+sg*sw.x,y:s.origin.y+sw.y,z:s.origin.z+sw.z,
+        rx:rad.rx,ry:rad.ry,rz:rad.rz,slot:o.slot,type:o.type,family:s.locked,
+        confidence:1,source:'active'});
+    }
+  }
+
+  function buildDanger(now){
+    const out={danger:[],enemies:new Set(),exact:0,coarse:0};
+    for(let i=0;i<NSLOTS;i++){
+      const o=readActor(POOL+i*STRIDE,i),s=SLOT[i];
+      if(!o){s.type=null;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;continue;}
+      updateLock(o,now);
+      if(o.attack!==0)addActive(o,s,now,out);
+      else{const h=lookup(o);if(h){out[h.kind]++;addStartup(o,h,out);}}
+    }
+    return out;
+  }
+
+  function playerAt(p,mode,t,delay=0){
+    const before=Math.min(t,delay)/1000,after=Math.max(0,t-delay)/1000;
+    const x=p.x+p.vx*(t/1000);
+    const z=p.z+p.vz*(t/1000);
+    if(mode==='CONTINUE')return{x,y:p.y+p.vy*(t/1000),z};
+    const y0=p.y+p.vy*before;
+    const dir=mode==='UP'?-1:1;
+    return{x,y:y0+dir*CFG.playerYSpeed*after,z};
+  }
+
+  function collides(p,d){return Math.abs(p.x-d.x)<=d.rx&&Math.abs(p.y-d.y)<=d.ry&&Math.abs(p.z-d.z)<=d.rz;}
+  function clearNorm(p,d){const dx=(p.x-d.x)/Math.max(1,d.rx),dy=(p.y-d.y)/Math.max(1,d.ry),dz=(p.z-d.z)/Math.max(1,d.rz);return Math.sqrt(dx*dx+dy*dy+dz*dz);}
+
+  function evalPath(p,mode,danger,delay=0){
+    let earliest=null,hit=null,min=Infinity;
+    for(const d of danger){
+      if(d.t<CFG.reactFloorMs||d.confidence<CFG.minConfidence)continue;
+      const pp=playerAt(p,mode,d.t,delay),c=clearNorm(pp,d);if(c<min)min=c;
+      if(collides(pp,d)&&(earliest===null||d.t<earliest)){earliest=d.t;hit=d;}
+    }
+    return{mode,safe:earliest===null,collisionMs:earliest,minClearance:isFinite(min)?min:null,hit};
+  }
+
+  function latestSafe(p,mode,danger,collisionMs){
+    let latest=-1;
+    const max=Math.max(0,Math.min(CFG.horizonMs,collisionMs??CFG.horizonMs));
+    for(let delay=0;delay<=max;delay+=20)if(evalPath(p,mode,danger,delay).safe)latest=delay;
+    return latest;
+  }
+
+  function decision(p,danger){
+    const cur=evalPath(p,'CONTINUE',danger,0);
+    if(cur.safe)return{danger:false,best:'CONTINUE',stay:cur};
+    const up0=evalPath(p,'UP',danger,0),down0=evalPath(p,'DOWN',danger,0);
+    const up=up0.safe?latestSafe(p,'UP',danger,cur.collisionMs):-1;
+    const down=down0.safe?latestSafe(p,'DOWN',danger,cur.collisionMs):-1;
+    if(up<0&&down<0)return{danger:true,noRoute:true,best:'AB',hitMs:cur.collisionMs,hit:cur.hit,up,down,stay:cur};
+    let best,latest;
+    if(up>=0&&down<0){best='UP';latest=up;}
+    else if(down>=0&&up<0){best='DOWN';latest=down;}
+    else{
+      const ue=evalPath(p,'UP',danger,Math.max(0,up-80));
+      const de=evalPath(p,'DOWN',danger,Math.max(0,down-80));
+      if((ue.minClearance??0)>(de.minClearance??0)){best='UP';latest=up;}else{best='DOWN';latest=down;}
+    }
+    return{danger:true,noRoute:false,best,latestMs:latest,hitMs:cur.collisionMs,hit:cur.hit,up,down,stay:cur};
+  }
+
+  const ST={P1:{k:'',n:0,v:null},P2:{k:'',n:0,v:null}},PRINT={P1:'',P2:''};
+  function stable(name,r){
+    const s=ST[name];
+    const k=!r.danger?'SAFE':r.noRoute?'AB|'+(r.hit?.slot??-1)+'|'+(r.hit?.family??''):(r.best+'|'+(r.hit?.slot??-1));
+    if(k===s.k)s.n++;else{s.k=k;s.n=1;}
+    const need=r.noRoute?(r.hitMs<=120?2:3):2;
+    if(s.n>=need)s.v=r;
+    return s.v;
+  }
+
+  function print(name,r,enemyCount){
+    if(!r)return;
+    const hit=r.hit||{};
+    const sig=!r.danger?name+'|SAFE':r.noRoute?name+'|AB|'+hit.slot+'|'+hit.family+'|'+r.hitMs:name+'|'+r.best+'|'+hit.slot+'|'+hit.family+'|'+r.hitMs+'|'+r.latestMs;
+    if(sig===PRINT[name])return;PRINT[name]=sig;
+    if(!r.danger)console.log('🟢',name,'OFFLINE SAFE','预测怪',enemyCount);
+    else if(r.noRoute)console.log('🆘',name,'OFFLINE AB候选','约'+r.hitMs+'ms后危险','slot',hit.slot,'type',hit.type,'family',hit.family||'?');
+    else console.log(r.best==='UP'?'🟦 '+name+' ⬆ UP':'🟦 '+name+' ⬇ DOWN','约'+r.hitMs+'ms后危险','最晚'+r.latestMs+'ms后开始','UP',r.up,'DOWN',r.down,'family',hit.family||'?');
+  }
+
+  let timer=null,last=null;
+  function tick(){
+    const now=performance.now();updatePlayers(now);const d=buildDanger(now);last={at:now,players:{},enemyCount:d.enemies.size,dangerPoints:d.danger.length,exact:d.exact,coarse:d.coarse};
+    for(const p of PLAYERS){const ps=PS[p.name];if(!ps)continue;const raw=decision(ps,d.danger),st=stable(p.name,raw);last.players[p.name]={raw,stable:st,state:{...ps}};print(p.name,st,d.enemies.size);}
+    self.WOFV4.last=last;
+  }
+
+  self.WOFV4={
+    version:'offline-dynamic-p1p2-v4',config:CFG,last:null,
+    dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
+    status(){return{version:this.version,db:this.dbInfo,last:this.last,players:PS};},
+    stop(){if(timer){clearInterval(timer);timer=null;}console.log('⛔ WOF V4关闭');}
+  };
+  timer=setInterval(tick,CFG.tickMs);tick();
+  console.log('✅ WOF V4 离线动态观战版启动');
+  console.log('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
+  console.log('✅ P1+P2动态轨迹 × 20怪 × 3D/斜向轨迹 × 每Family危险范围');
+  console.log('⚠️ 只预测，不控制任何玩家');
+}
+
+const __B64='H4sIAF1hkmoC/6S9W7ItOY4cOpf63tZGgm8NQCPQX1qZvjSKzsGL4AsOkLFPlqS6rb4VOntFBIPEw+Fw/Pe//s+//sd//8u7v1N2Mce/qf+n/98p9QshJPrX//jL/5f7yfQTnP/p/+jnr7/+9b+8+9//0/l//fT/p3//+98/
