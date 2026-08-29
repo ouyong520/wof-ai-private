@@ -195,6 +195,9 @@ function __WOF_START_V4(DB){
     familyRecoverConfirmed:16,familyRecoverHit:6,familyRecoverPrecision:.50,
     variantDemoteConfirmed:2,variantDemoteFp:2,variantDemotePrecision:.20,
     variantRecoverConfirmed:5,variantRecoverHit:2,variantRecoverPrecision:.50,
+    precisionVariantFp:1,precisionSourceConfirmed:3,precisionSourceMax:.20,
+    precisionFamilyConfirmed:5,precisionFamilyMax:.20,
+    trustUnseenActive:.78,trustUnseenStartup:.84,trustBadEvidence:.72,trustFamilyHit:.88,trustSourceHit:.93,
     activeFpMinConfidence:.50,startupFpMinConfidence:.25,fpMinSurvival:.50
   };
   function calBucket(map,key){return map[key]||(map[key]={hit:0,fp:0,ignoredFp:0,confirmed:0,precision:null,watchOnly:false,demotions:0,recoveries:0,hitPlayers:{},fpPlayers:{},fpFamilies:{},gx:1,gy:1,gz:1,geoFp:0,geoHit:0});}
@@ -218,7 +221,17 @@ function __WOF_START_V4(DB){
   function calPolicy(family,source,variant=null){
     const f=CAL_FAMILY[family],k=family+'|'+source,q=CAL_SOURCE[k],vk=variant?(k+'|'+variant):null,v=vk?CAL_VARIANT[vk]:null;
     const gx=Math.min(q?.gx??1,v?.gx??1),gy=Math.min(q?.gy??1,v?.gy??1),gz=Math.min(q?.gz??1,v?.gz??1);
-    return {watchOnly:!!(f?.watchOnly||q?.watchOnly||v?.watchOnly),
+    const variantBad=!!(v&&(v.fp||0)>=CAL_CFG.precisionVariantFp&&(v.hit||0)===0);
+    const sourceBad=!!(q&&(q.confirmed||0)>=CAL_CFG.precisionSourceConfirmed&&(q.precision??1)<=CAL_CFG.precisionSourceMax&&(q.hit||0)===0);
+    const familyBad=!!(f&&(f.confirmed||0)>=CAL_CFG.precisionFamilyConfirmed&&(f.precision??1)<=CAL_CFG.precisionFamilyMax&&(f.hit||0)<=1);
+    const precisionWatch=variantBad||sourceBad||familyBad;
+    let trustScale=source==='active'?CAL_CFG.trustUnseenActive:CAL_CFG.trustUnseenStartup;
+    let trustReason='unseen';
+    if(variantBad||sourceBad||familyBad){trustScale=CAL_CFG.trustBadEvidence;trustReason=variantBad?'variant-fp':sourceBad?'source-low-precision':'family-low-precision';}
+    else if((v?.hit||0)>0){trustScale=1;trustReason='variant-hit';}
+    else if((q?.hit||0)>0){trustScale=CAL_CFG.trustSourceHit;trustReason='source-hit';}
+    else if((f?.hit||0)>0){trustScale=CAL_CFG.trustFamilyHit;trustReason='family-hit';}
+    return {watchOnly:!!(f?.watchOnly||q?.watchOnly||v?.watchOnly||precisionWatch),precisionWatch,trustScale,trustReason,
       familyPrecision:f?.precision??null,familyConfirmed:f?.confirmed||0,
       sourcePrecision:q?.precision??null,sourceConfirmed:q?.confirmed||0,
       variantPrecision:v?.precision??null,variantConfirmed:v?.confirmed||0,variantWatchOnly:!!v?.watchOnly,
@@ -460,7 +473,8 @@ function __WOF_START_V4(DB){
             geometryFallback:rad.geometryFallback,geometryFallbackZ:rad.geometryFallbackZ,geoClass:rad.geoClass,
             slot:o.slot,type:o.type,family:fc.id,variant,
             confidence,survival,actionable:survival>=CFG.survivalActionThreshold&&confidence>=CFG.startupActionMinConfidence&&!cal.watchOnly,
-            calWatchOnly:cal.watchOnly,calPrecision:cal.sourcePrecision??cal.familyPrecision,
+            calWatchOnly:cal.watchOnly,precisionWatch:cal.precisionWatch,trustScale:cal.trustScale,trustReason:cal.trustReason,
+            calPrecision:cal.sourcePrecision??cal.familyPrecision,
             calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),geoScale:{x:cal.geoX,y:cal.geoY,z:cal.geoZ},
             instance:'S:'+o.slot+':'+o.type+':'+o.anim+':'+o.s0+':'+o.s1+':'+o.s2+':'+o.s3+':'+fc.id,
             source:'startup',lookup:hit.kind});
@@ -494,7 +508,8 @@ function __WOF_START_V4(DB){
         geometryFallback:rad.geometryFallback,geometryFallbackZ:rad.geometryFallbackZ,geoClass:rad.geoClass,
         slot:o.slot,type:o.type,family:s.locked,variant,
         confidence:survival,survival,actionable:survival>=CFG.survivalActionThreshold&&survival>=CFG.activeActionMinConfidence&&!cal.watchOnly,
-        calWatchOnly:cal.watchOnly,calPrecision:cal.sourcePrecision??cal.familyPrecision,
+        calWatchOnly:cal.watchOnly,precisionWatch:cal.precisionWatch,trustScale:cal.trustScale,trustReason:cal.trustReason,
+        calPrecision:cal.sourcePrecision??cal.familyPrecision,
         calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),geoScale:{x:cal.geoX,y:cal.geoY,z:cal.geoZ},
         instance:'A:'+o.slot+':'+o.type+':'+s.seq+':'+Math.round(s.started),source:'active'});
     }
@@ -546,10 +561,12 @@ function __WOF_START_V4(DB){
   function decision(p,danger){
   const actionDanger=danger.filter(d=>d.source!=='active-unknown'&&d.actionable!==false)
     .map(d=>d.geometryFallback?{...d,rx:d.actionRx,ry:d.actionRy,rz:d.actionRz,geometryCore:true}:d)
-    .map(d=>{const g=d.geoScale||{x:1,y:1,z:1};return {...d,
-      rx:Math.max(1,d.rx*(g.x??1)*(1-CFG.actionPenetrationMin)),
-      ry:Math.max(1,d.ry*(g.y??1)*(1-CFG.actionPenetrationMin)),
-      rz:Math.max(1,d.rz*(g.z??1)*(1-CFG.actionPenetrationMin)),
+    .map(d=>{const g=d.geoScale||{x:1,y:1,z:1};
+      const trust=d.t<=250?Math.max(.90,d.trustScale??1):(d.trustScale??1);
+      return {...d,effectiveTrust:trust,
+      rx:Math.max(1,d.rx*(g.x??1)*trust*(1-CFG.actionPenetrationMin)),
+      ry:Math.max(1,d.ry*(g.y??1)*trust*(1-CFG.actionPenetrationMin)),
+      rz:Math.max(1,d.rz*(g.z??1)*trust*(1-CFG.actionPenetrationMin)),
       learnedGeometry:true,actionPenetrationCore:true};});
   const fullCur=evalPath(p,'CONTINUE',danger,0);
   const cur=evalPath(p,'CONTINUE',actionDanger,0);
@@ -789,13 +806,18 @@ function summarySnapshot(){
     .sort((x,y)=>Math.min(...x.geo)-Math.min(...y.geo)).slice(0,20);
   const geoClasses=(c.geom||[]).filter(r=>Array.isArray(r.geo)&&((r.geoFp||0)>0||Math.min(...r.geo)<.995))
     .sort((x,y)=>(y.geoFp||0)-(x.geoFp||0)).slice(0,20);
+  const precisionSuppressed=[
+    ...(c.variant||[]).filter(r=>(r.fp||0)>=CAL_CFG.precisionVariantFp&&(r.hit||0)===0),
+    ...(c.source||[]).filter(r=>(r.confirmed||0)>=CAL_CFG.precisionSourceConfirmed&&(r.precision??1)<=CAL_CFG.precisionSourceMax&&(r.hit||0)===0),
+    ...(c.family||[]).filter(r=>(r.confirmed||0)>=CAL_CFG.precisionFamilyConfirmed&&(r.precision??1)<=CAL_CFG.precisionFamilyMax&&(r.hit||0)<=1)
+  ].slice(0,20);
   const validated=total.hit+total.falsePositive;
   const damageEvents=total.hit+total.ambiguousDamage+total.unstableCovered+total.safeMiss;
   const metrics={actionPrecision:validated?+(total.hit/validated).toFixed(3):null,
     rawDamageCoverage:damageEvents?+((total.hit+total.ambiguousDamage+total.unstableCovered)/damageEvents).toFixed(3):null,
     stableDamageCoverage:damageEvents?+((total.hit+total.ambiguousDamage)/damageEvents).toFixed(3):null,
     validated,damageEvents};
-  return frozenCopy({at:Date.now(),total,metrics,players:a,topFalse,demoted,geoAdjusted,geoClasses,missCases:MISS_CASES.slice(-8)});
+  return frozenCopy({at:Date.now(),total,metrics,players:a,topFalse,demoted,precisionSuppressed,geoAdjusted,geoClasses,missCases:MISS_CASES.slice(-8)});
 }
 function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
 function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
@@ -829,7 +851,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.9.1',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.9.2',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -854,16 +876,16 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.9.1 漏判取证/紧急稳定观战版启动');
+  qlog('✅ WOF V4.9.2 精度优先信任门控观战版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
   qlog('🧭 XYZ几何: class fallback 保留完整外壳用于WATCH；行动核心 X/Y 缩放 '+CFG.fallbackXYActionScale+'/'+CFG.fallbackYActionScale+'，高Z核心='+(CFG.fallbackZActionCore+CFG.padZ));
   qlog('🧯 在线校准: 只有深入行动核心的误报才快速降级；擦边碰撞只WATCH，不处罚Family');
-  qlog('🧬 Variant: 坏分支2次高可信误报即可WATCH；Family/source保持慢速安全兜底');
+  qlog('🎯 精度优先: Variant首次高可信误报即隔离为WATCH；低精度source/family会联动隔离，新分支使用更小行动核心');
   qlog('📐 自适应几何: Family/Variant独立学习 + fallback几何类跨Family共享学习；完整危险外壳始终保留WATCH');
   qlog('🔬 漏判取证: 真实SAFE漏判自动保存最近600ms敌人状态/ATTACK/Family候选；WOFV4.misses()可查看');
-  qlog('⚡ 稳定器: WATCH与<=300ms紧急UP/DOWN改为2帧确认；AB仍需3帧');
+  qlog('⚡ 稳定器: WATCH与<=300ms紧急UP/DOWN为2帧确认；AB仍需3帧；<=250ms危险保留较宽紧急核心');
   qlog('🧱 共享几何类: 至少4次高可信误报且来自>=3个Family才开始收缩行动核心');
   qlog('🟧 审计: unstableCovered=raw危险已覆盖但稳定器未确认；safeMiss=raw/stable都完全没看到危险');
   qlog('💾 热更新继承: Family/source/variant在线校准在同一Worker内升级版本时保留');
