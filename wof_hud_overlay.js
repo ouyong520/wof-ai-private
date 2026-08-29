@@ -8,6 +8,7 @@
   const style=document.createElement('style');style.id=STYLE_ID;style.textContent=`
 #${ROOT_ID}{position:fixed;z-index:2147483646;pointer-events:none;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#fff;box-sizing:border-box;transform:translateZ(0)}
 #${ROOT_ID} *{box-sizing:border-box}
+#${ROOT_ID}.wof-hidden{display:none!important}
 #${ROOT_ID} .wof-status{position:absolute;left:8px;top:7px;display:flex;align-items:center;gap:5px;font-size:10px;line-height:1;padding:4px 6px;border-radius:8px;background:rgba(0,0,0,.35);opacity:.8;backdrop-filter:blur(2px)}
 #${ROOT_ID} .wof-led{width:6px;height:6px;border-radius:50%;background:#5ee27d;box-shadow:0 0 6px rgba(94,226,125,.8)}
 #${ROOT_ID}.wof-stale .wof-led{background:#999;box-shadow:none}
@@ -23,7 +24,6 @@
 #${ROOT_ID} .wof-main{font-size:clamp(16px,3.2vw,27px);font-weight:900;line-height:1.05;letter-spacing:.2px;white-space:nowrap}
 #${ROOT_ID} .wof-sub{margin-top:3px;font-size:10px;opacity:.72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #${ROOT_ID} .wof-bar{position:absolute;left:0;bottom:0;height:2px;background:rgba(255,255,255,.75);transition:width .04s linear}
-#${ROOT_ID} .wof-hidden{display:none!important}
 `;
   document.head.appendChild(style);
 
@@ -35,7 +35,7 @@
   let visible=true,detail=false,focus=null,lastMsg=null,lastRx=0,destroyed=false;
   const bc=new BroadcastChannel(CHANNEL);
   const glyph=p=>p.action==='UP'?'⬆':p.action==='DOWN'?'⬇':p.action==='AB'?'AB!':p.level>=2?'⚠':'●';
-  const ms=v=>Number.isFinite(+v)?Math.max(0,Math.round(+v/10)*10):null;
+  const ms=v=>v==null?null:(Number.isFinite(+v)?Math.max(0,Math.round(+v/10)*10):null);
   const levelClass=l=>l>=3?'l3':l===2?'l2':l===1?'l1':'';
   function selected(name){return !focus||focus===name;}
   function render(msg){
