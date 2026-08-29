@@ -182,10 +182,10 @@ function __WOF_START_V4(DB){
   // Only confirmed hit/fp events enter this table. Demotion affects actionability only.
   const CAL_FAMILY=Object.create(null),CAL_SOURCE=Object.create(null);
   const CAL_CFG={
-    sourceDemoteConfirmed:6,sourceDemoteFp:5,sourceDemoteFpPlayers:2,sourceDemotePrecision:.25,
-    sourceRecoverConfirmed:10,sourceRecoverHit:4,sourceRecoverPrecision:.50,
-    familyDemoteConfirmed:10,familyDemoteFp:7,familyDemoteFpPlayers:2,familyDemotePrecision:.30,
-    familyRecoverConfirmed:16,familyRecoverHit:6,familyRecoverPrecision:.50,
+    sourceDemoteConfirmed:4,sourceDemoteFp:3,sourceDemoteFpPlayers:2,sourceDemotePrecision:.25,
+    sourceRecoverConfirmed:8,sourceRecoverHit:4,sourceRecoverPrecision:.50,
+    familyDemoteConfirmed:6,familyDemoteFp:4,familyDemoteFpPlayers:2,familyDemotePrecision:.30,
+    familyRecoverConfirmed:12,familyRecoverHit:6,familyRecoverPrecision:.50,
     activeFpMinConfidence:.50,startupFpMinConfidence:.25,fpMinSurvival:.50
   };
   function calBucket(map,key){return map[key]||(map[key]={hit:0,fp:0,ignoredFp:0,confirmed:0,precision:null,watchOnly:false,demotions:0,recoveries:0,hitPlayers:{},fpPlayers:{}});}
@@ -611,7 +611,19 @@ function frozenCopy(x){return JSON.parse(JSON.stringify(x));}
 function reportSnapshot(){
   return frozenCopy({at:Date.now(),audit:auditSnapshot(),auditFamilies:auditFamilies(),calibration:calibrationSnapshot()});
 }
+function summarySnapshot(){
+  const a=auditSnapshot(),af=auditFamilies(),c=calibrationSnapshot();
+  const total={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,safeMiss:0};
+  for(const n of ['P1','P2','P3'])for(const k of Object.keys(total))total[k]+=+a[n]?.[k]||0;
+  const fam=[];
+  for(const n of ['P1','P2','P3'])for(const r of af[n]||[])fam.push({player:n,...r});
+  const topFalse=fam.filter(r=>(r.falsePositive||0)+(r.weakFalsePositive||0)>0)
+    .sort((x,y)=>((y.falsePositive||0)-(x.falsePositive||0))||((y.weakFalsePositive||0)-(x.weakFalsePositive||0))||(y.tested-x.tested)).slice(0,12);
+  const demoted=[...(c.source||[]),...(c.family||[])].filter(r=>r.watchOnly).slice(0,20);
+  return frozenCopy({at:Date.now(),total,players:a,topFalse,demoted});
+}
 function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
+function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
 
   let timer=null,last=null;
   function tick(){
@@ -642,7 +654,7 @@ function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.6.1',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.6.2',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -654,7 +666,9 @@ function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
     auditFamilies(){return frozenCopy(auditFamilies());},
     calibration(){return frozenCopy(calibrationSnapshot());},
     snapshot(){return reportSnapshot();},
+    summary(){return summarySnapshot();},
     report(){const t=reportText();self.console.log(t);return t;},
+    reportShort(){const t=summaryText();self.console.log(t);return t;},
     quiet(on=true){QUIET=!!on;self.console.log(QUIET?'🔇 WOF实时日志已静音，统计继续':'🔊 WOF实时日志已恢复');return QUIET;},
     pause(){if(timer){clearInterval(timer);timer=null;}const r=reportSnapshot();self.console.log('⏸️ WOF观战统计已暂停');return r;},
     resume(){if(!timer){timer=setInterval(tick,CFG.tickMs);tick();}self.console.log('▶️ WOF观战统计已继续');return true;},
@@ -663,14 +677,14 @@ function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.6.1 置信度分层观战版启动');
+  qlog('✅ WOF V4.6.2 快速在线降级观战版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
   qlog('🧭 XYZ几何: class fallback 保留完整外壳用于WATCH；行动核心 X/Y 缩放 '+CFG.fallbackXYActionScale+'/'+CFG.fallbackYActionScale+'，高Z核心='+(CFG.fallbackZActionCore+CFG.padZ));
   qlog('🧯 在线校准: 红色=可进入校准的高可信误报；黄色=低置信误报，仅WATCH/统计，不处罚Family');
   qlog('🎚️ 行动门槛: startup conf>='+CFG.startupActionMinConfidence+'；active survival>='+CFG.activeActionMinConfidence);
-  qlog('📸 需要固定数据时用 WOFV4.report()；可先 WOFV4.quiet(true) 静音但继续统计');
+  qlog('📸 快照: WOFV4.reportShort() 看精简统计；WOFV4.report() 看完整数据');
   qlog('⚠️ 只预测，不控制任何玩家');
 }
 
