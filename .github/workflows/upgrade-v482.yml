@@ -1,0 +1,33 @@
+name: Upgrade WOF V4.8.2
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/patch_v482.py'
+      - '.github/workflows/upgrade-v482.yml'
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch runtime to V4.8.2
+        run: |
+          python3 tools/patch_v482.py
+          node --check wof_v4_install_once.js
+          grep -q "offline-dynamic-spectator-calibrated-v4.8.2" wof_v4_install_once.js
+          grep -q "WOF V4.8.2 自适应攻击几何观战版启动" wof_v4_install_once.js
+          grep -q "actionPenetrationMin:0.15" wof_v4_install_once.js
+          grep -q "geoAdjusted" wof_v4_install_once.js
+          grep -q "geoAdapt" wof_v4_install_once.js
+          echo "V4.8.2 bytes: $(wc -c < wof_v4_install_once.js)"
+          sha256sum wof_v4_install_once.js
+      - name: Commit runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wof_v4_install_once.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Upgrade WOF V4.8.2 adaptive attack geometry"
+          git push
