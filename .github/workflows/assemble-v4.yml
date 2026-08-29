@@ -1,4 +1,4 @@
-name: Assemble WOF V4.3
+name: Assemble WOF V4.3.1
 on:
   workflow_dispatch:
   push:
@@ -12,7 +12,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Assemble and patch V4.3
+      - name: Assemble and patch V4.3.1
         run: |
           cat wof_v4_parts/part01.txt \
               wof_v4_parts/part02.txt \
@@ -29,23 +29,23 @@ jobs:
           p=Path('wof_v4_install_once.js')
           s=p.read_text(encoding='utf-8')
 
-          # V4.3 observer parameters.
+          # Observer / rolling-planner / audit parameters.
           s=s.replace("cumulativeProbability:0.95,", "cumulativeProbability:0.95,\n    routeCommitMs:250,\n    abRouteSlackMs:120,\n    auditGraceMs:220,\n    auditTolX:14,\n    auditTolY:8,\n    auditTolZ:14,", 1)
 
-          # Read confirmed player HP at base+0x83 for observational validation.
+          # Read HP plus player combat-state fields for ground-truth audit quality.
           old="return {name,flag,x:W(S32(base+4)),y:W(S32(base+8)),z:W(S32(base+12))};"
-          new="return {name,flag,x:W(S32(base+4)),y:W(S32(base+8)),z:W(S32(base+12)),hp:B(base+0x83)};"
+          new="return {name,flag,x:W(S32(base+4)),y:W(S32(base+8)),z:W(S32(base+12)),hp:B(base+0x83),body:U16(base+0x6E),attack:U16(base+0x70)};"
           if old not in s: raise SystemExit('readPlayer patch target missing')
           s=s.replace(old,new,1)
           old="PS[p.name]={name:p.name,x:cur.x,y:cur.y,z:cur.z,vx,vy,vz};"
-          new="PS[p.name]={name:p.name,x:cur.x,y:cur.y,z:cur.z,vx,vy,vz,hp:cur.hp};"
-          if old not in s: raise SystemExit('PS hp patch target missing')
+          new="PS[p.name]={name:p.name,x:cur.x,y:cur.y,z:cur.z,vx,vy,vz,hp:cur.hp,body:cur.body,attack:cur.attack};"
+          if old not in s: raise SystemExit('PS patch target missing')
           s=s.replace(old,new,1)
 
-          # Unknown active-family fallback is advisory only.
+          # Unknown active-family fallback stays advisory only.
           s=s.replace("slot:o.slot,type:o.type,family:null,confidence:.35,source:'active-unknown'});","slot:o.slot,type:o.type,family:null,confidence:.20,source:'active-unknown'});",1)
 
-          # V4.2.2 decision core retained: known-family actions only + rolling escape window.
+          # Known-family actions only + rolling escape horizon.
           a=s.index("  function decision(p,danger){")
           b=s.index("  const ST={P1:{k:'',n:0,v:null}",a)
           decision="""  function decision(p,danger){
@@ -110,7 +110,7 @@ jobs:
           """
           s=s[:a]+stable+s[b:]
 
-          # Rich diagnostic printing.
+          # Diagnostic printing + state-aware self-audit.
           a=s.index("  function print(name,r,enemyCount){")
           b=s.index("  let timer=null,last=null;",a)
           printer_and_audit="""  function print(name,r,enemyCount){
@@ -128,17 +128,25 @@ jobs:
             else console.log(r.best==='UP'?'🟦 '+name+' ⬆ UP':'🟦 '+name+' ⬇ DOWN','约'+r.hitMs+'ms后危险','最晚'+r.latestMs+'ms后开始','UP',r.up,'DOWN',r.down,'窗口'+r.routeUntil+'ms','family',h.family||'?','src',h.source||'?');
           }
 
-          // Self-audit samples one unresolved prediction per player.  It never sends input.
           const AUD={
-            P1:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,falsePositive:0,safeMiss:0}},
-            P2:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,falsePositive:0,safeMiss:0}}
+            P1:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,stateChanged:0,falsePositive:0,safeMiss:0},byFamily:{}},
+            P2:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,stateChanged:0,falsePositive:0,safeMiss:0},byFamily:{}}
           };
+
+          function famStat(A,e){
+            const k=(e.family||'?')+'|'+(e.source||'?');
+            return A.byFamily[k]||(A.byFamily[k]={tested:0,hit:0,changed:0,stateChanged:0,falsePositive:0});
+          }
+          function fmt(n){return Number.isFinite(n)?n.toFixed(1):'?';}
+          function geoText(e){return 'inside x'+fmt(e.mx)+' y'+fmt(e.my)+' z'+fmt(e.mz)+' r '+fmt(e.rx)+'/'+fmt(e.ry)+'/'+fmt(e.rz)+' conf '+fmt(e.confidence);}
 
           function auditResolve(name,kind,e,extra=''){
             const A=AUD[name]; if(!e)return;
-            if(kind==='hit'){A.stats.hit++;console.log('🎯',name,'命中验证',e.action,e.family||'?',e.hitMs+'ms',extra);}
-            else if(kind==='changed'){A.stats.changed++;console.log('🟡',name,'路径改变/无法判误报',e.action,e.family||'?',e.hitMs+'ms',extra);}
-            else if(kind==='fp'){A.stats.falsePositive++;console.log('🔴',name,'疑似误报',e.action,e.family||'?',e.hitMs+'ms','原路线基本未变但未掉血',extra);}
+            const F=famStat(A,e);
+            if(kind==='hit'){A.stats.hit++;F.hit++;console.log('🎯',name,'命中验证',e.action,e.family||'?',e.hitMs+'ms',geoText(e),extra);}
+            else if(kind==='changed'){A.stats.changed++;F.changed++;console.log('🟡',name,'路径改变/无法判误报',e.action,e.family||'?',e.hitMs+'ms',extra);}
+            else if(kind==='state'){A.stats.stateChanged++;F.stateChanged++;console.log('🟣',name,'角色状态改变/不计误报',e.action,e.family||'?',e.hitMs+'ms','BODY '+e.body0+'→'+e.bodyNow,'ATTACK '+e.attack0+'→'+e.attackNow,extra);}
+            else if(kind==='fp'){A.stats.falsePositive++;F.falsePositive++;console.log('🔴',name,'疑似误报',e.action,e.family||'?',e.hitMs+'ms',geoText(e),'原路线和角色状态基本未变但未掉血',extra);}
             A.pending=null;
           }
 
@@ -159,6 +167,7 @@ jobs:
 
             const e=A.pending;
             if(e){
+              if(ps.attack!==e.attack0||ps.body!==e.body0){e.stateChanged=true;e.attackNow=ps.attack;e.bodyNow=ps.body;}
               if(!e.sampled&&now>=e.due){
                 const dt=e.hitMs/1000;
                 const ex=e.x+e.vx*dt,ey=e.y+e.vy*dt,ez=e.z+e.vz*dt;
@@ -167,20 +176,27 @@ jobs:
                 e.sampled=true;
               }
               if(A.pending&&now>=e.deadline){
-                const info='偏移 x'+(e.dx??0).toFixed(1)+' y'+(e.dy??0).toFixed(1)+' z'+(e.dz??0).toFixed(1);
-                auditResolve(name,e.changed?'changed':'fp',e,info);
+                const info='偏移 x'+fmt(e.dx)+' y'+fmt(e.dy)+' z'+fmt(e.dz);
+                auditResolve(name,e.stateChanged?'state':e.changed?'changed':'fp',e,info);
               }
             }
 
             if(st&&action!=='SAFE')A.lastWarnAt=now;
             if(!A.pending&&st&&action!=='SAFE'&&st.hitMs!=null){
               const h=st.hit||{};
+              // Only audit a clean neutral sample. Player attacks or missing BODY are not reliable ground truth.
+              if(ps.attack!==0||ps.body===0)return;
               const hitMs=Math.max(CFG.reactFloorMs,+st.hitMs||0);
+              const pp=playerAt(ps,'CONTINUE',hitMs,0);
+              const rx=+h.rx||0,ry=+h.ry||0,rz=+h.rz||0;
               A.pending={action,family:h.family||null,source:h.source||null,slot:h.slot,
                 t0:now,due:now+hitMs,deadline:now+hitMs+CFG.auditGraceMs,hitMs,
                 x:ps.x,y:ps.y,z:ps.z,vx:ps.vx,vy:ps.vy,vz:ps.vz,hp:ps.hp,
+                body0:ps.body,attack0:ps.attack,bodyNow:ps.body,attackNow:ps.attack,stateChanged:false,
+                rx,ry,rz,confidence:+h.confidence||0,
+                mx:rx-Math.abs(pp.x-(+h.x||0)),my:ry-Math.abs(pp.y-(+h.y||0)),mz:rz-Math.abs(pp.z-(+h.z||0)),
                 sampled:false,changed:false,dx:null,dy:null,dz:null};
-              A.stats.tested++;
+              A.stats.tested++;famStat(A,A.pending).tested++;
             }
           }
 
@@ -190,11 +206,16 @@ jobs:
               action:AUD[n].pending.action,family:AUD[n].pending.family,hitMs:AUD[n].pending.hitMs,source:AUD[n].pending.source}:null};
             return out;
           }
+          function auditFamilies(){
+            const out={};
+            for(const n of ['P1','P2'])out[n]=Object.entries(AUD[n].byFamily).map(([family,v])=>({family,...v,precision:(v.hit+v.falsePositive)?v.hit/(v.hit+v.falsePositive):null})).sort((a,b)=>(b.falsePositive-a.falsePositive)||(b.tested-a.tested));
+            return out;
+          }
 
           """
           s=s[:a]+printer_and_audit+s[b:]
 
-          # Replace tick so audit runs after stable decision creation.
+          # Audit after stable decision creation.
           a=s.index("  function tick(){")
           b=s.index("  self.WOFV4={",a)
           tick="""  function tick(){
@@ -212,17 +233,17 @@ jobs:
           """
           s=s[:a]+tick+s[b:]
 
-          s=s.replace("version:'offline-dynamic-p1p2-v4'","version:'offline-dynamic-p1p2-v4.3'",1)
-          s=s.replace("status(){return{version:this.version,db:this.dbInfo,last:this.last,players:PS};},","status(){return{version:this.version,db:this.dbInfo,last:this.last,players:PS,audit:auditSnapshot()};},\n    audit(){return auditSnapshot();},",1)
-          s=s.replace("console.log('✅ WOF V4 离线动态观战版启动');","console.log('✅ WOF V4.3 自验证观战版启动');\n  console.log('🧪 自动验证: 🎯命中 / 🟡路径改变 / 🔴疑似误报 / ❌SAFE漏判候选');",1)
+          s=s.replace("version:'offline-dynamic-p1p2-v4'","version:'offline-dynamic-p1p2-v4.3.1'",1)
+          s=s.replace("status(){return{version:this.version,db:this.dbInfo,last:this.last,players:PS};},","status(){return{version:this.version,db:this.dbInfo,last:this.last,players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},\n    audit(){return auditSnapshot();},\n    auditFamilies(){return auditFamilies();},",1)
+          s=s.replace("console.log('✅ WOF V4 离线动态观战版启动');","console.log('✅ WOF V4.3.1 状态感知自验证观战版启动');\n  console.log('🧪 验证: 🎯命中 / 🟡路径改变 / 🟣角色状态改变 / 🔴疑似误报 / ❌SAFE漏判');",1)
           p.write_text(s,encoding='utf-8')
           PY
           node --check wof_v4_install_once.js
-          grep -q "offline-dynamic-p1p2-v4.3" wof_v4_install_once.js
-          grep -q "WOF V4.3 自验证观战版启动" wof_v4_install_once.js
-          grep -q "audit(){return auditSnapshot();}" wof_v4_install_once.js
-          grep -q "hp:B(base+0x83)" wof_v4_install_once.js
-          echo "V4.3 bytes: $(wc -c < wof_v4_install_once.js)"
+          grep -q "offline-dynamic-p1p2-v4.3.1" wof_v4_install_once.js
+          grep -q "WOF V4.3.1 状态感知自验证观战版启动" wof_v4_install_once.js
+          grep -q "auditFamilies(){return auditFamilies();}" wof_v4_install_once.js
+          grep -q "body:U16(base+0x6E),attack:U16(base+0x70)" wof_v4_install_once.js
+          echo "V4.3.1 bytes: $(wc -c < wof_v4_install_once.js)"
           sha256sum wof_v4_install_once.js
       - name: Commit complete script
         run: |
@@ -230,5 +251,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add wof_v4_install_once.js
           git diff --cached --quiet && exit 0
-          git commit -m "Upgrade WOF V4.3 self-audit observer"
+          git commit -m "Upgrade WOF V4.3.1 state-aware audit"
           git push
