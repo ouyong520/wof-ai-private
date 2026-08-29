@@ -28,6 +28,8 @@ function __WOF_START_V4(DB){
     survivalActionThreshold:0.50,
     startupActionMinConfidence:0.15,
     activeActionMinConfidence:0.50,
+    actionPenetrationMin:0.10,
+    fpPenetrationMin:0.05,
     auditRevokeLeadMs:60,
     auditRepeatBlockMs:700,
     fallbackZThreshold:80,
@@ -182,10 +184,10 @@ function __WOF_START_V4(DB){
   // Only confirmed hit/fp events enter this table. Demotion affects actionability only.
   const CAL_FAMILY=Object.create(null),CAL_SOURCE=Object.create(null);
   const CAL_CFG={
-    sourceDemoteConfirmed:4,sourceDemoteFp:3,sourceDemoteFpPlayers:2,sourceDemotePrecision:.25,
-    sourceRecoverConfirmed:8,sourceRecoverHit:4,sourceRecoverPrecision:.50,
-    familyDemoteConfirmed:6,familyDemoteFp:4,familyDemoteFpPlayers:2,familyDemotePrecision:.30,
-    familyRecoverConfirmed:12,familyRecoverHit:6,familyRecoverPrecision:.50,
+    sourceDemoteConfirmed:2,sourceDemoteFp:2,sourceDemoteFpPlayers:1,sourceDemotePrecision:.25,
+    sourceRecoverConfirmed:5,sourceRecoverHit:2,sourceRecoverPrecision:.50,
+    familyDemoteConfirmed:3,familyDemoteFp:3,familyDemoteFpPlayers:1,familyDemotePrecision:.30,
+    familyRecoverConfirmed:7,familyRecoverHit:3,familyRecoverPrecision:.50,
     activeFpMinConfidence:.50,startupFpMinConfidence:.25,fpMinSurvival:.50
   };
   function calBucket(map,key){return map[key]||(map[key]={hit:0,fp:0,ignoredFp:0,confirmed:0,precision:null,watchOnly:false,demotions:0,recoveries:0,hitPlayers:{},fpPlayers:{}});}
@@ -213,7 +215,12 @@ function __WOF_START_V4(DB){
   function calFpEligible(e){
     if((+e.survival||0)<CAL_CFG.fpMinSurvival)return false;
     const c=+e.confidence||0;
-    return e.source==='active'?c>=CAL_CFG.activeFpMinConfidence:c>=CAL_CFG.startupFpMinConfidence;
+    const confOK=e.source==='active'?c>=CAL_CFG.activeFpMinConfidence:c>=CAL_CFG.startupFpMinConfidence;
+    if(!confOK)return false;
+    const px=(+e.rx||0)>0?(+e.mx||0)/(+e.rx||1):-1;
+    const py=(+e.ry||0)>0?(+e.my||0)/(+e.ry||1):-1;
+    const pz=(+e.rz||0)>0?(+e.mz||0)/(+e.rz||1):-1;
+    return Math.min(px,py,pz)>=CFG.fpPenetrationMin;
   }
   function calRecord(e,kind){
     if(!e?.family||(kind!=='hit'&&kind!=='fp'))return;
@@ -400,13 +407,22 @@ function __WOF_START_V4(DB){
 
   function decision(p,danger){
   const actionDanger=danger.filter(d=>d.source!=='active-unknown'&&d.actionable!==false)
-    .map(d=>d.geometryFallback?{...d,rx:d.actionRx,ry:d.actionRy,rz:d.actionRz,geometryCore:true}:d);
+    .map(d=>d.geometryFallback?{...d,rx:d.actionRx,ry:d.actionRy,rz:d.actionRz,geometryCore:true}:d)
+    .map(d=>({...d,
+      rx:Math.max(1,d.rx*(1-CFG.actionPenetrationMin)),
+      ry:Math.max(1,d.ry*(1-CFG.actionPenetrationMin)),
+      rz:Math.max(1,d.rz*(1-CFG.actionPenetrationMin)),
+      actionPenetrationCore:true}));
   const fullCur=evalPath(p,'CONTINUE',danger,0);
   const cur=evalPath(p,'CONTINUE',actionDanger,0);
 
   if(cur.safe){
-    if(!fullCur.safe&&(fullCur.hit?.source==='active-unknown'||fullCur.hit?.actionable===false||fullCur.hit?.geometryFallback))
-      return{danger:true,watchOnly:true,geometryWatchOnly:!!fullCur.hit?.geometryFallback,best:'WATCH',hitMs:fullCur.collisionMs,hit:fullCur.hit,stay:fullCur};
+    if(!fullCur.safe){
+      const gh=fullCur.hit||{};
+      const geometryWatch=!!gh.geometryFallback;
+      return{danger:true,watchOnly:true,geometryWatchOnly:geometryWatch,edgeWatchOnly:!geometryWatch,
+        best:'WATCH',hitMs:fullCur.collisionMs,hit:gh,stay:fullCur};
+    }
     return{danger:false,best:'CONTINUE',stay:cur};
   }
 
@@ -463,6 +479,8 @@ function stable(name,r){
     'UP堵'+r.upHitMs+'ms',uh.family||'?','DOWN堵'+r.downHitMs+'ms',dh.family||'?','窗口'+r.routeUntil+'ms');
   else if(action==='WATCH'&&r.geometryWatchOnly)qlog('🟣',name,'WATCH-壳','约'+r.hitMs+'ms','slot',h.slot,'family',h.family||'?',
     'full',fmt(h.rx)+'/'+fmt(h.ry)+'/'+fmt(h.rz),'core',fmt(h.actionRx)+'/'+fmt(h.actionRy)+'/'+fmt(h.actionRz),'source',h.source||'?');
+  else if(action==='WATCH'&&r.edgeWatchOnly)qlog('🟪',name,'WATCH-边缘','约'+r.hitMs+'ms','slot',h.slot,'family',h.family||'?',
+    'edge',Math.round(CFG.actionPenetrationMin*100)+'%','source',h.source||'?');
   else if(action==='WATCH')qlog('🟠',name,'WATCH','约'+r.hitMs+'ms','slot',h.slot,'type',h.type,'family',h.family||'?','source',h.source||'?');
   else if(action==='AB')qlog('🆘',name,'OFFLINE AB候选','当前'+r.hitMs+'ms',h.family,
     'src',h.source||'?','UP堵'+r.upHitMs+'ms',uh.family||'?','DOWN堵'+r.downHitMs+'ms',dh.family||'?');
@@ -572,7 +590,7 @@ function auditStep(name,ps,st,now){
   if(st&&action!=='SAFE')A.lastWarnAt=now;
   if(!A.pending&&st&&action!=='SAFE'&&st.hitMs!=null){
     const h=st.hit||{};
-    if(st.geometryWatchOnly)return;
+    if(st.geometryWatchOnly||st.edgeWatchOnly)return;
     if(h.family==null||h.source==='active-unknown'||(h.actionable===false&&!h.calWatchOnly))return;
     const hitMs=Math.max(CFG.reactFloorMs,+st.hitMs||0);
     const instance=h.instance||((h.source||'?')+':'+(h.slot??-1)+':'+(h.family||'?'));
@@ -654,7 +672,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.6.2',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.7',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -677,12 +695,13 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.6.2 快速在线降级观战版启动');
+  qlog('✅ WOF V4.7 边缘壳深度校准观战版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
   qlog('🧭 XYZ几何: class fallback 保留完整外壳用于WATCH；行动核心 X/Y 缩放 '+CFG.fallbackXYActionScale+'/'+CFG.fallbackYActionScale+'，高Z核心='+(CFG.fallbackZActionCore+CFG.padZ));
-  qlog('🧯 在线校准: 红色=可进入校准的高可信误报；黄色=低置信误报，仅WATCH/统计，不处罚Family');
+  qlog('🧯 在线校准: 只有深入行动核心的误报才快速降级；擦边碰撞只WATCH，不处罚Family');
+  qlog('🟪 边缘壳: 行动核心再内缩 '+Math.round(CFG.actionPenetrationMin*100)+'%，避免擦边UP/DOWN/AB');
   qlog('🎚️ 行动门槛: startup conf>='+CFG.startupActionMinConfidence+'；active survival>='+CFG.activeActionMinConfidence);
   qlog('📸 快照: WOFV4.reportShort() 看精简统计；WOFV4.report() 看完整数据');
   qlog('⚠️ 只预测，不控制任何玩家');
