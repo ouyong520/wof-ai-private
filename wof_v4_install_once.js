@@ -30,7 +30,7 @@ function __WOF_START_V4(DB){
     survivalActionThreshold:0.50,
     startupActionMinConfidence:0.15,
     activeActionMinConfidence:0.50,
-    actionPenetrationMin:0.10,
+    actionPenetrationMin:0.15,
     fpPenetrationMin:0.05,
     auditRevokeLeadMs:60,
     auditRepeatBlockMs:700,
@@ -194,7 +194,7 @@ function __WOF_START_V4(DB){
     variantRecoverConfirmed:5,variantRecoverHit:2,variantRecoverPrecision:.50,
     activeFpMinConfidence:.50,startupFpMinConfidence:.25,fpMinSurvival:.50
   };
-  function calBucket(map,key){return map[key]||(map[key]={hit:0,fp:0,ignoredFp:0,confirmed:0,precision:null,watchOnly:false,demotions:0,recoveries:0,hitPlayers:{},fpPlayers:{}});}
+  function calBucket(map,key){return map[key]||(map[key]={hit:0,fp:0,ignoredFp:0,confirmed:0,precision:null,watchOnly:false,demotions:0,recoveries:0,hitPlayers:{},fpPlayers:{},gx:1,gy:1,gz:1,geoFp:0,geoHit:0});}
   function calRefresh(b,scope){
     b.confirmed=b.hit+b.fp;b.precision=b.confirmed?b.hit/b.confirmed:null;
     const was=b.watchOnly;
@@ -214,10 +214,36 @@ function __WOF_START_V4(DB){
   }
   function calPolicy(family,source,variant=null){
     const f=CAL_FAMILY[family],k=family+'|'+source,q=CAL_SOURCE[k],vk=variant?(k+'|'+variant):null,v=vk?CAL_VARIANT[vk]:null;
+    const gx=Math.min(q?.gx??1,v?.gx??1),gy=Math.min(q?.gy??1,v?.gy??1),gz=Math.min(q?.gz??1,v?.gz??1);
     return {watchOnly:!!(f?.watchOnly||q?.watchOnly||v?.watchOnly),
       familyPrecision:f?.precision??null,familyConfirmed:f?.confirmed||0,
       sourcePrecision:q?.precision??null,sourceConfirmed:q?.confirmed||0,
-      variantPrecision:v?.precision??null,variantConfirmed:v?.confirmed||0,variantWatchOnly:!!v?.watchOnly};
+      variantPrecision:v?.precision??null,variantConfirmed:v?.confirmed||0,variantWatchOnly:!!v?.watchOnly,
+      geoX:gx,geoY:gy,geoZ:gz};
+  }
+  function geoAdapt(e,kind,sb,vb){
+    if(!e||(!sb&&!vb))return;
+    const buckets=[...(vb?[['variant',vb]]:[]),['source',sb]];
+    if(kind==='hit'){
+      for(const [scope,b] of buckets){
+        if(!b)continue;b.geoHit=(b.geoHit||0)+1;
+        const step=scope==='variant'?.05:.025;
+        b.gx=Math.min(1,(b.gx??1)+step);b.gy=Math.min(1,(b.gy??1)+step);b.gz=Math.min(1,(b.gz??1)+step);
+      }
+      return;
+    }
+    if(kind!=='fp'||!calFpEligible(e))return;
+    const vals=[['x',+e.rx||1,+e.mx||0],['y',+e.ry||1,+e.my||0],['z',+e.rz||1,+e.mz||0]]
+      .map(([axis,r,m])=>({axis,r,m,pen:r>0?m/r:1})).sort((a,b)=>a.pen-b.pen);
+    const edge=vals[0];if(!edge||edge.pen<0)return;
+    for(const [scope,b] of buckets){
+      if(!b)continue;b.geoFp=(b.geoFp||0)+1;
+      if(scope==='source'&&b.geoFp<2)continue;
+      const prop='g'+edge.axis,cur=b[prop]??1,floor=scope==='variant'?.68:.82;
+      const shrink=Math.max(.72,Math.min(.96,1-edge.pen-.025));
+      const target=Math.max(floor,cur*shrink);
+      if(target<cur)b[prop]=target;
+    }
   }
   function calFpEligible(e){
     if((+e.survival||0)<CAL_CFG.fpMinSurvival)return false;
@@ -239,6 +265,7 @@ function __WOF_START_V4(DB){
       if(kind==='hit'){b.hit++;b.hitPlayers[who]=1;}
       else{b.fp++;b.fpPlayers[who]=1;}
     }
+    geoAdapt(e,kind,sb,vb);
     const vf=vb?calRefresh(vb,'variant'):false,sf=calRefresh(sb,'source'),ff=calRefresh(fb,'family'),after=calPolicy(family,source,variant).watchOnly;
     if(!before&&after){
       qlog(vb?.watchOnly?'🧬 Variant降级WATCH':'🧯 Family降级WATCH',family,source,variant||'',
@@ -253,13 +280,14 @@ function __WOF_START_V4(DB){
   function calRows(map,scope){
     return Object.entries(map).map(([key,v])=>({scope,key,hit:v.hit,fp:v.fp,ignoredFp:v.ignoredFp,confirmed:v.confirmed,
       hitPlayers:Object.keys(v.hitPlayers||{}).length,fpPlayers:Object.keys(v.fpPlayers||{}).length,
-      precision:v.precision,watchOnly:v.watchOnly,demotions:v.demotions,recoveries:v.recoveries}))
+      precision:v.precision,watchOnly:v.watchOnly,demotions:v.demotions,recoveries:v.recoveries,
+      geo:[+(v.gx??1).toFixed(3),+(v.gy??1).toFixed(3),+(v.gz??1).toFixed(3)],geoFp:v.geoFp||0,geoHit:v.geoHit||0}))
       .sort((a,b)=>(Number(b.watchOnly)-Number(a.watchOnly))||(b.fp-a.fp)||(b.confirmed-a.confirmed));
   }
   function calibrationSnapshot(){return {config:{...CAL_CFG},family:calRows(CAL_FAMILY,'family'),source:calRows(CAL_SOURCE,'source'),variant:calRows(CAL_VARIANT,'variant')};}
   function importCalRows(dst,src){
     if(!src)return;
-    if(Array.isArray(src))for(const r of src){if(!r?.key)continue;const b=calBucket(dst,r.key);for(const k of ['hit','fp','ignoredFp','confirmed','precision','watchOnly','demotions','recoveries'])if(r[k]!=null)b[k]=r[k];for(let i=0;i<(+r.hitPlayers||0);i++)b.hitPlayers['legacy'+i]=1;for(let i=0;i<(+r.fpPlayers||0);i++)b.fpPlayers['legacy'+i]=1;}
+    if(Array.isArray(src))for(const r of src){if(!r?.key)continue;const b=calBucket(dst,r.key);for(const k of ['hit','fp','ignoredFp','confirmed','precision','watchOnly','demotions','recoveries','gx','gy','gz','geoFp','geoHit'])if(r[k]!=null)b[k]=r[k];if(Array.isArray(r.geo)){b.gx=+r.geo[0]||1;b.gy=+r.geo[1]||1;b.gz=+r.geo[2]||1;}for(let i=0;i<(+r.hitPlayers||0);i++)b.hitPlayers['legacy'+i]=1;for(let i=0;i<(+r.fpPlayers||0);i++)b.fpPlayers['legacy'+i]=1;}
     else for(const [k,r] of Object.entries(src)){const b=calBucket(dst,k);Object.assign(b,JSON.parse(JSON.stringify(r)));b.hitPlayers=b.hitPlayers||{};b.fpPlayers=b.fpPlayers||{};}
   }
   function importCalibration(x){if(!x)return false;importCalRows(CAL_FAMILY,x.family);importCalRows(CAL_SOURCE,x.source);importCalRows(CAL_VARIANT,x.variant);return true;}
@@ -354,7 +382,7 @@ function __WOF_START_V4(DB){
             slot:o.slot,type:o.type,family:fc.id,variant,
             confidence,survival,actionable:survival>=CFG.survivalActionThreshold&&confidence>=CFG.startupActionMinConfidence&&!cal.watchOnly,
             calWatchOnly:cal.watchOnly,calPrecision:cal.sourcePrecision??cal.familyPrecision,
-            calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),
+            calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),geoScale:{x:cal.geoX,y:cal.geoY,z:cal.geoZ},
             instance:'S:'+o.slot+':'+o.type+':'+o.anim+':'+o.s0+':'+o.s1+':'+o.s2+':'+o.s3+':'+fc.id,
             source:'startup',lookup:hit.kind});
         }
@@ -388,7 +416,7 @@ function __WOF_START_V4(DB){
         slot:o.slot,type:o.type,family:s.locked,variant,
         confidence:survival,survival,actionable:survival>=CFG.survivalActionThreshold&&survival>=CFG.activeActionMinConfidence&&!cal.watchOnly,
         calWatchOnly:cal.watchOnly,calPrecision:cal.sourcePrecision??cal.familyPrecision,
-        calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),
+        calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),geoScale:{x:cal.geoX,y:cal.geoY,z:cal.geoZ},
         instance:'A:'+o.slot+':'+o.type+':'+s.seq+':'+Math.round(s.started),source:'active'});
     }
   }
@@ -438,11 +466,11 @@ function __WOF_START_V4(DB){
   function decision(p,danger){
   const actionDanger=danger.filter(d=>d.source!=='active-unknown'&&d.actionable!==false)
     .map(d=>d.geometryFallback?{...d,rx:d.actionRx,ry:d.actionRy,rz:d.actionRz,geometryCore:true}:d)
-    .map(d=>({...d,
-      rx:Math.max(1,d.rx*(1-CFG.actionPenetrationMin)),
-      ry:Math.max(1,d.ry*(1-CFG.actionPenetrationMin)),
-      rz:Math.max(1,d.rz*(1-CFG.actionPenetrationMin)),
-      actionPenetrationCore:true}));
+    .map(d=>{const g=d.geoScale||{x:1,y:1,z:1};return {...d,
+      rx:Math.max(1,d.rx*(g.x??1)*(1-CFG.actionPenetrationMin)),
+      ry:Math.max(1,d.ry*(g.y??1)*(1-CFG.actionPenetrationMin)),
+      rz:Math.max(1,d.rz*(g.z??1)*(1-CFG.actionPenetrationMin)),
+      learnedGeometry:true,actionPenetrationCore:true};});
   const fullCur=evalPath(p,'CONTINUE',danger,0);
   const cur=evalPath(p,'CONTINUE',actionDanger,0);
 
@@ -638,7 +666,7 @@ function auditStep(name,ps,st,raw,now){
     A.pending={player:name,action,family:h.family,source:h.source||null,variant:h.variant||null,slot:h.slot,enemyType:h.type,instance,auditKey,
       t0:now,due:now+hitMs,deadline:now+hitMs+CFG.auditGraceMs,hitMs,
       x:ps.x,y:ps.y,z:ps.z,vx:ps.vx,vy:ps.vy,vz:ps.vz,hp:ps.hp,
-      rx,ry,rz,confidence:+h.confidence||0,survival:h.survival==null?1:+h.survival,
+      rx,ry,rz,geoScale:h.geoScale?{...h.geoScale}:null,confidence:+h.confidence||0,survival:h.survival==null?1:+h.survival,
       mx:rx-Math.abs(pp.x-(+h.x||0)),my:ry-Math.abs(pp.y-(+h.y||0)),mz:rz-Math.abs(pp.z-(+h.z||0)),
       sampled:false,changed:false,dx:null,dy:null,dz:null,
       familySeen:h.source==='active',familyLastSeenAt:h.source==='active'?now:null,attackEndedEarly:false,materializedCounted:false,enemyLost:false,otherFamily:null,enemyLastAttack:null};
@@ -674,7 +702,9 @@ function summarySnapshot(){
   const topFalse=fam.filter(r=>(r.falsePositive||0)+(r.weakFalsePositive||0)>0)
     .sort((x,y)=>((y.falsePositive||0)-(x.falsePositive||0))||((y.weakFalsePositive||0)-(x.weakFalsePositive||0))||(y.tested-x.tested)).slice(0,12);
   const demoted=[...(c.variant||[]),...(c.source||[]),...(c.family||[])].filter(r=>r.watchOnly).slice(0,20);
-  return frozenCopy({at:Date.now(),total,players:a,topFalse,demoted});
+  const geoAdjusted=[...(c.variant||[]),...(c.source||[])].filter(r=>Array.isArray(r.geo)&&Math.min(...r.geo)<.995)
+    .sort((x,y)=>Math.min(...x.geo)-Math.min(...y.geo)).slice(0,20);
+  return frozenCopy({at:Date.now(),total,players:a,topFalse,demoted,geoAdjusted});
 }
 function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
 function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
@@ -708,7 +738,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.8.1',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.8.2',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -732,13 +762,14 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.8.1 Variant稳定性/真实漏判审计版启动');
+  qlog('✅ WOF V4.8.2 自适应攻击几何观战版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
   qlog('🧭 XYZ几何: class fallback 保留完整外壳用于WATCH；行动核心 X/Y 缩放 '+CFG.fallbackXYActionScale+'/'+CFG.fallbackYActionScale+'，高Z核心='+(CFG.fallbackZActionCore+CFG.padZ));
   qlog('🧯 在线校准: 只有深入行动核心的误报才快速降级；擦边碰撞只WATCH，不处罚Family');
-  qlog('🧬 Variant: 坏分支2次高可信误报即可WATCH；Family/source恢复为慢速安全兜底');
+  qlog('🧬 Variant: 坏分支2次高可信误报即可WATCH；Family/source保持慢速安全兜底');
+  qlog('📐 自适应几何: 高可信误报只收缩最靠近边界的轴；真实命中会逐步放宽，完整危险外壳始终保留WATCH');
   qlog('🟧 审计: unstableCovered=raw危险已覆盖但稳定器未确认；safeMiss=raw/stable都完全没看到危险');
   qlog('💾 热更新继承: Family/source/variant在线校准在同一Worker内升级版本时保留');
   qlog('🟪 边缘壳: 行动核心再内缩 '+Math.round(CFG.actionPenetrationMin*100)+'%，避免擦边UP/DOWN/AB');
