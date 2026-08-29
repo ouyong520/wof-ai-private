@@ -26,11 +26,11 @@ rep(
 'variant calibration map')
 
 rep(
-"""    familyDemoteConfirmed:6,familyDemoteFp:4,familyDemoteFpPlayers:2,familyDemotePrecision:.30,
-    familyRecoverConfirmed:12,familyRecoverHit:6,familyRecoverPrecision:.50,
+"""    familyDemoteConfirmed:3,familyDemoteFp:3,familyDemoteFpPlayers:1,familyDemotePrecision:.30,
+    familyRecoverConfirmed:7,familyRecoverHit:3,familyRecoverPrecision:.50,
     activeFpMinConfidence:.50,startupFpMinConfidence:.25,fpMinSurvival:.50""",
-"""    familyDemoteConfirmed:6,familyDemoteFp:4,familyDemoteFpPlayers:2,familyDemotePrecision:.30,
-    familyRecoverConfirmed:12,familyRecoverHit:6,familyRecoverPrecision:.50,
+"""    familyDemoteConfirmed:3,familyDemoteFp:3,familyDemoteFpPlayers:1,familyDemotePrecision:.30,
+    familyRecoverConfirmed:7,familyRecoverHit:3,familyRecoverPrecision:.50,
     variantDemoteConfirmed:3,variantDemoteFp:3,variantDemotePrecision:.20,
     variantRecoverConfirmed:6,variantRecoverHit:3,variantRecoverPrecision:.50,
     activeFpMinConfidence:.50,startupFpMinConfidence:.25,fpMinSurvival:.50""",
