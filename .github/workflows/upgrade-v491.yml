@@ -1,0 +1,32 @@
+name: Upgrade WOF V4.9.1
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/patch_v491.py'
+      - '.github/workflows/upgrade-v491.yml'
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch runtime to V4.9.1
+        run: |
+          python3 tools/patch_v491.py
+          node --check wof_v4_install_once.js
+          grep -q "offline-dynamic-spectator-calibrated-v4.9.1" wof_v4_install_once.js
+          grep -q "WOF V4.9.1 漏判取证/紧急稳定观战版启动" wof_v4_install_once.js
+          grep -q "missCases:MISS_CASES.slice(-8)" wof_v4_install_once.js
+          grep -q "action==='WATCH'?2" wof_v4_install_once.js
+          echo "V4.9.1 bytes: $(wc -c < wof_v4_install_once.js)"
+          sha256sum wof_v4_install_once.js
+      - name: Commit runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wof_v4_install_once.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Upgrade WOF V4.9.1 miss forensics"
+          git push
