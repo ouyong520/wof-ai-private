@@ -190,7 +190,7 @@ function __WOF_START_V4(DB){
       out.enemies.add(o.slot);
       for(let t=CFG.reactFloorMs;t<=300;t+=CFG.dangerStepMs){
         out.danger.push({t,x:o.x,y:o.y,z:o.z,rx:fd[0]+CFG.padX,ry:fd[1]+CFG.padY,rz:fd[2]+CFG.padZ,
-          slot:o.slot,type:o.type,family:null,confidence:.35,source:'active-unknown'});
+          slot:o.slot,type:o.type,family:null,confidence:.20,source:'active-unknown'});
       }
       return;
     }
@@ -249,37 +249,53 @@ function __WOF_START_V4(DB){
   }
 
   function decision(p,danger){
-    const cur=evalPath(p,'CONTINUE',danger,0);
-    if(cur.safe)return{danger:false,best:'CONTINUE',stay:cur};
-    const up0=evalPath(p,'UP',danger,0),down0=evalPath(p,'DOWN',danger,0);
-    const up=up0.safe?latestSafe(p,'UP',danger,cur.collisionMs):-1;
-    const down=down0.safe?latestSafe(p,'DOWN',danger,cur.collisionMs):-1;
-    if(up<0&&down<0)return{danger:true,noRoute:true,abReady:cur.collisionMs<=350,best:cur.collisionMs<=350?'AB':'WATCH',hitMs:cur.collisionMs,hit:cur.hit,up,down,stay:cur};
-    let best,latest;
-    if(up>=0&&down<0){best='UP';latest=up;}
-    else if(down>=0&&up<0){best='DOWN';latest=down;}
-    else{
-      const ue=evalPath(p,'UP',danger,Math.max(0,up-80));
-      const de=evalPath(p,'DOWN',danger,Math.max(0,down-80));
-      if((ue.minClearance??0)>(de.minClearance??0)){best='UP';latest=up;}else{best='DOWN';latest=down;}
-    }
-    return{danger:true,noRoute:false,best,latestMs:latest,hitMs:cur.collisionMs,hit:cur.hit,up,down,stay:cur};
+  const cur=evalPath(p,'CONTINUE',danger,0);
+  if(cur.safe)return{danger:false,best:'CONTINUE',stay:cur};
+
+  // Unknown active-family fallback may warn, but it must never produce UP/DOWN or AB.
+  if(cur.hit?.source==='active-unknown')return{danger:true,watchOnly:true,best:'WATCH',hitMs:cur.collisionMs,hit:cur.hit,stay:cur};
+
+  const up0=evalPath(p,'UP',danger,0),down0=evalPath(p,'DOWN',danger,0);
+  const up=up0.safe?latestSafe(p,'UP',danger,cur.collisionMs):-1;
+  const down=down0.safe?latestSafe(p,'DOWN',danger,cur.collisionMs):-1;
+  if(up<0&&down<0){
+    const known=h=>!!h&&h.family!=null&&h.source!=='active-unknown';
+    const blockersKnown=known(cur.hit)&&known(up0.hit)&&known(down0.hit);
+    const abReady=blockersKnown&&cur.collisionMs<=250;
+    return{danger:true,noRoute:true,abReady,best:abReady?'AB':'WATCH',hitMs:cur.collisionMs,hit:cur.hit,
+      upHit:up0.hit,downHit:down0.hit,up,down,stay:cur};
   }
+  let best,latest;
+  if(up>=0&&down<0){best='UP';latest=up;}
+  else if(down>=0&&up<0){best='DOWN';latest=down;}
+  else{
+    const ue=evalPath(p,'UP',danger,Math.max(0,up-80));
+    const de=evalPath(p,'DOWN',danger,Math.max(0,down-80));
+    if((ue.minClearance??0)>(de.minClearance??0)){best='UP';latest=up;}else{best='DOWN';latest=down;}
+  }
+  return{danger:true,noRoute:false,best,latestMs:latest,hitMs:cur.collisionMs,hit:cur.hit,up,down,stay:cur};
+}
 
   const ST={P1:{k:'',n:0,v:null},P2:{k:'',n:0,v:null}},PRINT={P1:'',P2:''};
 function stable(name,r){
-  const s=ST[name],h=r.hit||{},a=!r.danger?'SAFE':r.noRoute?(r.abReady?'AB':'WATCH'):r.best,k=a+'|'+(h.slot??-1)+'|'+(h.family??'');
-  if(k===s.k)s.n++;else{s.k=k;s.n=1;if(s.v?.abReady)s.v=null;}
-  const need=!r.danger?2:r.noRoute?(r.abReady&&r.hitMs<=120?2:3):3;
-  if(s.n>=need)s.v=r;return s.v;
+  const s=ST[name],h=r.hit||{},uh=r.upHit||{},dh=r.downHit||{};
+  const action=!r.danger?'SAFE':r.watchOnly?'WATCH':r.noRoute?(r.abReady?'AB':'WATCH'):r.best;
+  let k=action+'|'+(h.slot??-1)+'|'+(h.family??'');
+  if(action==='AB')k+='|'+(uh.slot??-1)+'|'+(uh.family??'')+'|'+(dh.slot??-1)+'|'+(dh.family??'');
+  if(k===s.k)s.n++;else{s.k=k;s.n=1;s.v=null;}
+  const need=action==='SAFE'?2:action==='AB'?3:3;
+  if(s.n>=need)s.v=r;
+  return s.v;
 }
 
   function print(name,r,enemyCount){
-  if(!r)return;const h=r.hit||{},a=!r.danger?'SAFE':r.noRoute?(r.abReady?'AB':'WATCH'):r.best,sig=name+'|'+a+'|'+(h.slot??-1)+'|'+(h.family??'');
+  if(!r)return;
+  const h=r.hit||{},action=!r.danger?'SAFE':r.watchOnly?'WATCH':r.noRoute?(r.abReady?'AB':'WATCH'):r.best;
+  const sig=name+'|'+action+'|'+(h.slot??-1)+'|'+(h.family??'');
   if(sig===PRINT[name])return;PRINT[name]=sig;
   if(!r.danger)console.log('🟢',name,'OFFLINE SAFE','预测怪',enemyCount);
-  else if(r.noRoute&&!r.abReady)console.log('🟠',name,'WATCH','约'+r.hitMs+'ms','slot',h.slot,'family',h.family||'?');
-  else if(r.noRoute)console.log('🆘',name,'OFFLINE AB候选','约'+r.hitMs+'ms后危险','slot',h.slot,'type',h.type,'family',h.family||'?');
+  else if(action==='WATCH')console.log('🟠',name,'WATCH','约'+r.hitMs+'ms','slot',h.slot,'type',h.type,'family',h.family||'?','source',h.source||'?');
+  else if(action==='AB')console.log('🆘',name,'OFFLINE AB候选','约'+r.hitMs+'ms后危险','slot',h.slot,'type',h.type,'family',h.family);
   else console.log(r.best==='UP'?'🟦 '+name+' ⬆ UP':'🟦 '+name+' ⬇ DOWN','约'+r.hitMs+'ms后危险','最晚'+r.latestMs+'ms后开始','UP',r.up,'DOWN',r.down,'family',h.family||'?');
 }
 
@@ -291,13 +307,13 @@ function stable(name,r){
   }
 
   self.WOFV4={
-    version:'offline-dynamic-p1p2-v4.1',config:CFG,last:null,
+    version:'offline-dynamic-p1p2-v4.2',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,players:PS};},
     stop(){if(timer){clearInterval(timer);timer=null;}console.log('⛔ WOF V4关闭');}
   };
   timer=setInterval(tick,CFG.tickMs);tick();
-  console.log('✅ WOF V4.1 防抖观战版启动');
+  console.log('✅ WOF V4.2 严格防抖观战版启动');
   console.log('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   console.log('✅ P1+P2动态轨迹 × 20怪 × 3D/斜向轨迹 × 每Family危险范围');
   console.log('⚠️ 只预测，不控制任何玩家');
