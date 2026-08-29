@@ -30,6 +30,8 @@ function __WOF_START_V4(DB){
     auditRepeatBlockMs:700,
     fallbackZThreshold:80,
     fallbackZActionCore:16,
+    fallbackXYActionScale:.68,
+    fallbackYActionScale:.85,
     padX:3,
     padY:2,
     padZ:2
@@ -161,11 +163,17 @@ function __WOF_START_V4(DB){
   }
 
   const getFamily=id=>DB.f[id]||null;
+  const FALLBACK_GEOMETRY=new Set(Object.values(DB.fd||{}).map(a=>(+a[0]||0)+'|'+(+a[1]||0)+'|'+(+a[2]||0)));
   function radius(f){
-    const rawRz=(+f[5]||8),geometryFallbackZ=rawRz>=CFG.fallbackZThreshold;
+    const rawRx=(+f[3]||115),rawRy=(+f[4]||22),rawRz=(+f[5]||8);
+    const geometryFallback=FALLBACK_GEOMETRY.has(rawRx+'|'+rawRy+'|'+rawRz);
+    const geometryFallbackZ=rawRz>=CFG.fallbackZThreshold;
+    const actionRawRx=geometryFallback?rawRx*CFG.fallbackXYActionScale:rawRx;
+    const actionRawRy=geometryFallback?rawRy*CFG.fallbackYActionScale:rawRy;
     const actionRawRz=geometryFallbackZ?CFG.fallbackZActionCore:rawRz;
-    return {rx:(+f[3]||115)+CFG.padX,ry:(+f[4]||22)+CFG.padY,
-      rz:rawRz+CFG.padZ,actionRz:actionRawRz+CFG.padZ,rawRz,geometryFallbackZ};
+    return {rx:rawRx+CFG.padX,ry:rawRy+CFG.padY,rz:rawRz+CFG.padZ,
+      actionRx:actionRawRx+CFG.padX,actionRy:actionRawRy+CFG.padY,actionRz:actionRawRz+CFG.padZ,
+      rawRx,rawRy,rawRz,geometryFallback,geometryFallbackZ};
   }
 
   // Cross-player online reliability. P1/P2/P3 all contribute to the same Family evidence.
@@ -303,7 +311,8 @@ function __WOF_START_V4(DB){
           if(confidence<CFG.minConfidence)continue;
           const cal=calPolicy(fc.id,'startup');
           out.danger.push({t,x:org.x+sg*sw.x,y:org.y+sw.y,z:org.z+sw.z,
-            rx:rad.rx,ry:rad.ry,rz:rad.rz,actionRz:rad.actionRz,geometryFallbackZ:rad.geometryFallbackZ,
+            rx:rad.rx,ry:rad.ry,rz:rad.rz,actionRx:rad.actionRx,actionRy:rad.actionRy,actionRz:rad.actionRz,
+            geometryFallback:rad.geometryFallback,geometryFallbackZ:rad.geometryFallbackZ,
             slot:o.slot,type:o.type,family:fc.id,
             confidence,survival,actionable:survival>=CFG.survivalActionThreshold&&!cal.watchOnly,
             calWatchOnly:cal.watchOnly,calPrecision:cal.sourcePrecision??cal.familyPrecision,
@@ -335,7 +344,8 @@ function __WOF_START_V4(DB){
       if(survival<CFG.minConfidence)continue;
       const cal=calPolicy(s.locked,'active');
       out.danger.push({t,x:s.origin.x+sg*sw.x,y:s.origin.y+sw.y,z:s.origin.z+sw.z,
-        rx:rad.rx,ry:rad.ry,rz:rad.rz,actionRz:rad.actionRz,geometryFallbackZ:rad.geometryFallbackZ,
+        rx:rad.rx,ry:rad.ry,rz:rad.rz,actionRx:rad.actionRx,actionRy:rad.actionRy,actionRz:rad.actionRz,
+        geometryFallback:rad.geometryFallback,geometryFallbackZ:rad.geometryFallbackZ,
         slot:o.slot,type:o.type,family:s.locked,
         confidence:survival,survival,actionable:survival>=CFG.survivalActionThreshold&&!cal.watchOnly,
         calWatchOnly:cal.watchOnly,calPrecision:cal.sourcePrecision??cal.familyPrecision,
@@ -388,13 +398,13 @@ function __WOF_START_V4(DB){
 
   function decision(p,danger){
   const actionDanger=danger.filter(d=>d.source!=='active-unknown'&&d.actionable!==false)
-    .map(d=>d.geometryFallbackZ?{...d,rz:d.actionRz,geometryCore:true}:d);
+    .map(d=>d.geometryFallback?{...d,rx:d.actionRx,ry:d.actionRy,rz:d.actionRz,geometryCore:true}:d);
   const fullCur=evalPath(p,'CONTINUE',danger,0);
   const cur=evalPath(p,'CONTINUE',actionDanger,0);
 
   if(cur.safe){
-    if(!fullCur.safe&&(fullCur.hit?.source==='active-unknown'||fullCur.hit?.actionable===false||fullCur.hit?.geometryFallbackZ))
-      return{danger:true,watchOnly:true,geometryWatchOnly:!!fullCur.hit?.geometryFallbackZ,best:'WATCH',hitMs:fullCur.collisionMs,hit:fullCur.hit,stay:fullCur};
+    if(!fullCur.safe&&(fullCur.hit?.source==='active-unknown'||fullCur.hit?.actionable===false||fullCur.hit?.geometryFallback))
+      return{danger:true,watchOnly:true,geometryWatchOnly:!!fullCur.hit?.geometryFallback,best:'WATCH',hitMs:fullCur.collisionMs,hit:fullCur.hit,stay:fullCur};
     return{danger:false,best:'CONTINUE',stay:cur};
   }
 
@@ -449,8 +459,8 @@ function stable(name,r){
   if(!r.danger)qlog('🟢',name,'OFFLINE SAFE','预测怪',enemyCount);
   else if(action==='WATCH'&&r.noRoute)qlog('🟠',name,'WATCH无路','当前'+r.hitMs+'ms',h.family||'?',
     'UP堵'+r.upHitMs+'ms',uh.family||'?','DOWN堵'+r.downHitMs+'ms',dh.family||'?','窗口'+r.routeUntil+'ms');
-  else if(action==='WATCH'&&r.geometryWatchOnly)qlog('🟣',name,'WATCH-Z壳','约'+r.hitMs+'ms','slot',h.slot,'family',h.family||'?',
-    'fullZ',h.rz,'coreZ',h.actionRz,'source',h.source||'?');
+  else if(action==='WATCH'&&r.geometryWatchOnly)qlog('🟣',name,'WATCH-壳','约'+r.hitMs+'ms','slot',h.slot,'family',h.family||'?',
+    'full',fmt(h.rx)+'/'+fmt(h.ry)+'/'+fmt(h.rz),'core',fmt(h.actionRx)+'/'+fmt(h.actionRy)+'/'+fmt(h.actionRz),'source',h.source||'?');
   else if(action==='WATCH')qlog('🟠',name,'WATCH','约'+r.hitMs+'ms','slot',h.slot,'type',h.type,'family',h.family||'?','source',h.source||'?');
   else if(action==='AB')qlog('🆘',name,'OFFLINE AB候选','当前'+r.hitMs+'ms',h.family,
     'src',h.source||'?','UP堵'+r.upHitMs+'ms',uh.family||'?','DOWN堵'+r.downHitMs+'ms',dh.family||'?');
@@ -625,7 +635,7 @@ function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.5.1',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.6',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -646,11 +656,11 @@ function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.5.1 静态报告观战版启动');
+  qlog('✅ WOF V4.6 双层XYZ几何观战版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
-  qlog('🧭 Z几何: DB中rz>=80视为低信息外壳；外壳只WATCH，行动使用coreZ='+(CFG.fallbackZActionCore+CFG.padZ));
+  qlog('🧭 XYZ几何: class fallback 保留完整外壳用于WATCH；行动核心 X/Y 缩放 '+CFG.fallbackXYActionScale+'/'+CFG.fallbackYActionScale+'，高Z核心='+(CFG.fallbackZActionCore+CFG.padZ));
   qlog('🧯 在线校准: 同一攻击实例只记一次；全局降级需至少2名玩家共同提供误报证据');
   qlog('📸 需要固定数据时用 WOFV4.report()；可先 WOFV4.quiet(true) 静音但继续统计');
   qlog('⚠️ 只预测，不控制任何玩家');
