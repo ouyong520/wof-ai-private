@@ -740,6 +740,11 @@ function __WOF_START_V4(DB){
 }
 
   const ST={P1:{k:'',n:0,v:null},P2:{k:'',n:0,v:null},P3:{k:'',n:0,v:null}},PRINT={P1:'',P2:'',P3:''};
+  const DECISION_TICKS={
+    P1:{NONE:0,SAFE:0,WATCH:0,UP:0,DOWN:0,AB:0},
+    P2:{NONE:0,SAFE:0,WATCH:0,UP:0,DOWN:0,AB:0},
+    P3:{NONE:0,SAFE:0,WATCH:0,UP:0,DOWN:0,AB:0}
+  };
 function actionOf(r){return !r?.danger?'SAFE':r.watchOnly?'WATCH':r.noRoute?(r.abReady?'AB':'WATCH'):r.best;}
 function stable(name,r){
   const s=ST[name],h=r.hit||{},uh=r.upHit||{},dh=r.downHit||{};
@@ -1008,8 +1013,25 @@ function auditFamilies(){
   return out;
 }
 function frozenCopy(x){return JSON.parse(JSON.stringify(x));}
+function decisionLoadSnapshot(){
+  const players={},total={NONE:0,SAFE:0,WATCH:0,UP:0,DOWN:0,AB:0};
+  for(const n of ['P1','P2','P3']){
+    const r={...DECISION_TICKS[n]};
+    for(const k of Object.keys(total))total[k]+=+r[k]||0;
+    const ticks=Object.values(r).reduce((a,b)=>a+(+b||0),0),warn=(r.WATCH+r.UP+r.DOWN+r.AB),act=(r.UP+r.DOWN+r.AB);
+    players[n]={...r,ticks,warningTicks:warn,actionTicks:act,
+      warningRate:ticks?+(warn/ticks).toFixed(3):null,
+      actionRate:ticks?+(act/ticks).toFixed(3):null,
+      watchRate:ticks?+(r.WATCH/ticks).toFixed(3):null};
+  }
+  const ticks=Object.values(total).reduce((a,b)=>a+(+b||0),0),warn=(total.WATCH+total.UP+total.DOWN+total.AB),act=(total.UP+total.DOWN+total.AB);
+  return {players,total:{...total,ticks,warningTicks:warn,actionTicks:act,
+    warningRate:ticks?+(warn/ticks).toFixed(3):null,
+    actionRate:ticks?+(act/ticks).toFixed(3):null,
+    watchRate:ticks?+(total.WATCH/ticks).toFixed(3):null}};
+}
 function reportSnapshot(){
-  return frozenCopy({at:Date.now(),audit:auditSnapshot(),auditFamilies:auditFamilies(),calibration:calibrationSnapshot()});
+  return frozenCopy({at:Date.now(),audit:auditSnapshot(),auditFamilies:auditFamilies(),calibration:calibrationSnapshot(),decisionLoad:decisionLoadSnapshot()});
 }
 function summarySnapshot(){
   const a=auditSnapshot(),af=auditFamilies(),c=calibrationSnapshot();
@@ -1031,6 +1053,31 @@ function summarySnapshot(){
   ].slice(0,20);
   const validated=total.hit+total.falsePositive;
   const damageEvents=total.hit+total.ambiguousDamage+total.watchCovered+total.unstableCovered+total.safeMiss;
+  // Route-independent bookkeeping: `changed` is not treated as an FP. It means the
+  // predicted attack branch materialized, but this uninformed spectator player naturally
+  // deviated from the frozen continuation path before due time.
+  const routeIndependentCompleted=total.hit+total.changed+total.enemyChanged+total.revoked+total.falsePositive+total.weakFalsePositive;
+  const materializedPredictions=total.hit+total.changed+total.falsePositive+total.weakFalsePositive;
+  const unchangedValidated=total.hit+total.falsePositive;
+  const playerProfiles=['P1','P2','P3'].map(n=>{
+    const x=a[n]||{},materialized=(+x.hit||0)+(+x.changed||0)+(+x.falsePositive||0)+(+x.weakFalsePositive||0);
+    const completed=materialized+(+x.enemyChanged||0)+(+x.revoked||0);
+    const dmg=(+x.hit||0)+(+x.ambiguousDamage||0)+(+x.watchCovered||0)+(+x.unstableCovered||0)+(+x.safeMiss||0);
+    return {player:n,completed,materializedPredictions:materialized,
+      materializationRate:completed?+(materialized/completed).toFixed(3):null,
+      naturalPathChangeRate:materialized?+((+x.changed||0)/materialized).toFixed(3):null,
+      unchangedValidated:(+x.hit||0)+(+x.falsePositive||0),damageEvents:dmg,safeMiss:+x.safeMiss||0};
+  });
+  const evaluation={
+    mode:'blind-spectator-diagnostic',
+    routeIndependentCompleted,materializedPredictions,
+    materializationRate:routeIndependentCompleted?+(materializedPredictions/routeIndependentCompleted).toFixed(3):null,
+    naturalPathChangeRate:materializedPredictions?+(total.changed/materializedPredictions).toFixed(3):null,
+    unchangedValidated,
+    unchangedPrecision:unchangedValidated?+(total.hit/unchangedValidated).toFixed(3):null,
+    playerProfiles,
+    decisionLoad:decisionLoadSnapshot()
+  };
   const metrics={actionPrecision:validated?+(total.hit/validated).toFixed(3):null,
     rawDamageCoverage:damageEvents?+((total.hit+total.ambiguousDamage+total.watchCovered+total.unstableCovered)/damageEvents).toFixed(3):null,
     stableDamageCoverage:damageEvents?+((total.hit+total.ambiguousDamage+total.watchCovered)/damageEvents).toFixed(3):null,
@@ -1048,7 +1095,7 @@ function summarySnapshot(){
   }
   const missAttackTop=Object.values(ma).sort((x,y)=>y.count-x.count||x.minDx-y.minDx).slice(0,10).map(r=>({...r,minDx:+r.minDx.toFixed(1),minDy:+r.minDy.toFixed(1),minDz:+r.minDz.toFixed(1)}));
   const phaseRelockTop=Object.entries(PHASE_RELOCK_BY).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([key,count])=>({key,count}));
-  return frozenCopy({at:Date.now(),total,metrics,phaseRelocks:PHASE_RELOCKS,phaseRelockTop,missAttackTop,missTop,players:a,topFalse,demoted,precisionSuppressed,geoAdjusted,geoClasses});
+  return frozenCopy({at:Date.now(),total,metrics,evaluation,phaseRelocks:PHASE_RELOCKS,phaseRelockTop,missAttackTop,missTop,players:a,topFalse,demoted,precisionSuppressed,geoAdjusted,geoClasses});
 }
 function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
 function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
@@ -1059,6 +1106,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   for(const p of PLAYERS){
     const ps=PS[p.name];if(!ps){auditMarkAbsent(p.name,now);continue;}
     const raw=decision(ps,d.danger),st=stable(p.name,raw);
+    const da=st?actionOf(st):'NONE';if(DECISION_TICKS[p.name]&&DECISION_TICKS[p.name][da]!=null)DECISION_TICKS[p.name][da]++;
     last.players[p.name]={raw,stable:st,state:{...ps}};
     auditStep(p.name,ps,st,raw,now);
     print(p.name,st,d.enemies.size);
@@ -1082,7 +1130,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.10.1',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.11.0',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -1096,6 +1144,8 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
     exportCalibration(){return frozenCopy(calibrationRaw());},
     snapshot(){return reportSnapshot();},
     summary(){return summarySnapshot();},
+    evaluation(){return frozenCopy(summarySnapshot().evaluation);},
+    decisionLoad(){return frozenCopy(decisionLoadSnapshot());},
     misses(){return frozenCopy(MISS_CASES.slice());},
     report(){const t=reportText();self.console.log(t);return t;},
     reportShort(){const t=summaryText();self.console.log(t);return t;},
@@ -1107,8 +1157,11 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.10.1 非破坏式阶段叠加/覆盖回归修复版启动');
+  qlog('✅ WOF V4.11.0 盲测评估/玩家水平拆分版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
+  qlog('🧊 V4.11.0只增加盲测诊断，不修改Family/轨迹/范围/护栏/稳定器/行动门槛；V4.10.1已冻结为baseline-v4.10.1');
+  qlog('👤 玩家水平拆分: changed单列为自然路径改变；reportShort().evaluation同时报告攻击materialization与玩家路径改变率，不再把高手/普通玩家混成一个精度数字');
+  qlog('🖥️ 提示负担: reportShort().evaluation.decisionLoad统计SAFE/WATCH/UP/DOWN/AB时间占比，防止为了覆盖率把最终HUD调成满屏警告');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
   qlog('🧭 XYZ几何: class fallback 保留完整外壳用于WATCH；行动核心 X/Y 缩放 '+CFG.fallbackXYActionScale+'/'+CFG.fallbackYActionScale+'，高Z核心='+(CFG.fallbackZActionCore+CFG.padZ));
