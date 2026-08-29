@@ -116,14 +116,18 @@
 
   const db=await openDb();
   const now=Date.now(),cutoff=now-MAX_AGE_MS;
-  const sessions=(await getAll(db)).filter(r=>(r.startedAt||0)>=cutoff).sort((a,b)=>(a.startedAt||0)-(b.startedAt||0));
+  const allSessions=(await getAll(db)).filter(r=>(r.startedAt||0)>=cutoff).sort((a,b)=>(a.startedAt||0)-(b.startedAt||0));
   db.close();
-  if(!sessions.length){console.warn('没有找到最近12小时的多房间采集数据');return null;}
+  if(!allSessions.length){console.warn('没有找到最近12小时的多房间采集数据');return null;}
+  const latestVersion=allSessions[allSessions.length-1]?.runtimeVersion||null;
+  const sessions=latestVersion?allSessions.filter(r=>r.runtimeVersion===latestVersion):allSessions;
   const summaries=sessions.map(r=>summarize(r,now));
   const bundle={
     schema:'wof-multiroom-export-v1',
     exportedAt:now,
+    exportedVersion:latestVersion,
     sessionCount:sessions.length,
+    hiddenOlderSessionCount:allSessions.length-sessions.length,
     completeCount:summaries.filter(x=>x.status==='complete').length,
     interruptedCount:summaries.filter(x=>x.status==='interrupted').length,
     partialCount:summaries.filter(x=>x.partial).length,
@@ -131,11 +135,11 @@
     sessions
   };
   const text=JSON.stringify(bundle,null,2);
-  const name='wof_multiroom_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
+  const name='wof_multiroom_'+(latestVersion||'latest').replace(/[^a-zA-Z0-9._-]+/g,'_')+'_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
   const blob=new Blob([text],{type:'application/json'}),url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),30000);
-  console.table(summaries.map(x=>({room:x.id,status:x.status,min:(x.durationSec/60).toFixed(1),tested:x.total.tested||0,damage:x.evaluation.damageEvents,nonEnemy:x.evaluation.nonEnemyDamage,safeMiss:x.total.safeMiss||0,materialize:x.evaluation.materializationRate,warningRate:x.evaluation.decisionLoad.warningRate,damageWarn:x.evaluation.decisionLoad.damageWarningAttribution?.stableWarningCoverage??null,guardCases:x.evaluation.decisionLoad.damageWarningAttribution?.watchDiagnostics?.guard?.damageExclusiveLatest?Object.values(x.evaluation.decisionLoad.damageWarningAttribution.watchDiagnostics.guard.damageExclusiveLatest).reduce((a,b)=>a+b,0):0})));
-  console.log('✅ 已下载',name,'房间数',sessions.length,'完整',bundle.completeCount,'中断',bundle.interruptedCount,'部分样本',bundle.partialCount);
+  console.table(summaries.map(x=>({room:x.id,status:x.status,min:(x.durationSec/60).toFixed(1),tested:x.total.tested||0,damage:x.evaluation.damageEvents,nonEnemy:x.evaluation.nonEnemyDamage,safeMiss:x.total.safeMiss||0,materialize:x.evaluation.materializationRate,warningRate:x.evaluation.decisionLoad.warningRate,damageWarn:x.evaluation.decisionLoad.damageWarningAttribution?.stableWarningCoverage??null})));
+  console.log('✅ 已下载',name,'版本',latestVersion,'本批房间',sessions.length,'已隐藏旧版session',bundle.hiddenOlderSessionCount,'完整',bundle.completeCount,'中断',bundle.interruptedCount,'部分样本',bundle.partialCount);
   return bundle;
 })().catch(e=>console.error('❌ 多房间导出失败',e));
