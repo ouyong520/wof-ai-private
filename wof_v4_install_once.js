@@ -27,6 +27,7 @@ function __WOF_START_V4(DB){
     auditHitEarlyMs:180,
     survivalActionThreshold:0.35,
     auditRevokeLeadMs:60,
+    auditRepeatBlockMs:700,
     padX:3,
     padY:2,
     padZ:2
@@ -82,7 +83,7 @@ function __WOF_START_V4(DB){
   }
   function resetPlayerRuntime(name){
     PH[name]=[];delete PS[name];
-    const A=AUD?.[name];if(A){A.pending=null;A.prevHp=null;A.lastWarnAt=-1e9;}
+    const A=AUD?.[name];if(A){A.pending=null;A.prevHp=null;A.lastWarnAt=-1e9;A.recent={};}
     const S=ST?.[name];if(S){S.k='';S.n=0;S.v=null;}
     if(name in PRINT)PRINT[name]='';
   }
@@ -162,19 +163,20 @@ function __WOF_START_V4(DB){
   // Only confirmed hit/fp events enter this table. Demotion affects actionability only.
   const CAL_FAMILY=Object.create(null),CAL_SOURCE=Object.create(null);
   const CAL_CFG={
-    sourceDemoteConfirmed:6,sourceDemoteFp:5,sourceDemotePrecision:.25,
+    sourceDemoteConfirmed:6,sourceDemoteFp:5,sourceDemoteFpPlayers:2,sourceDemotePrecision:.25,
     sourceRecoverConfirmed:10,sourceRecoverHit:4,sourceRecoverPrecision:.50,
-    familyDemoteConfirmed:10,familyDemoteFp:7,familyDemotePrecision:.30,
+    familyDemoteConfirmed:10,familyDemoteFp:7,familyDemoteFpPlayers:2,familyDemotePrecision:.30,
     familyRecoverConfirmed:16,familyRecoverHit:6,familyRecoverPrecision:.50,
     activeFpMinConfidence:.50,startupFpMinConfidence:.25,fpMinSurvival:.50
   };
-  function calBucket(map,key){return map[key]||(map[key]={hit:0,fp:0,ignoredFp:0,confirmed:0,precision:null,watchOnly:false,demotions:0,recoveries:0});}
+  function calBucket(map,key){return map[key]||(map[key]={hit:0,fp:0,ignoredFp:0,confirmed:0,precision:null,watchOnly:false,demotions:0,recoveries:0,hitPlayers:{},fpPlayers:{}});}
   function calRefresh(b,scope){
     b.confirmed=b.hit+b.fp;b.precision=b.confirmed?b.hit/b.confirmed:null;
     const was=b.watchOnly;
     if(!was){
-      if(scope==='source')b.watchOnly=b.confirmed>=CAL_CFG.sourceDemoteConfirmed&&b.fp>=CAL_CFG.sourceDemoteFp&&b.precision<=CAL_CFG.sourceDemotePrecision;
-      else b.watchOnly=b.confirmed>=CAL_CFG.familyDemoteConfirmed&&b.fp>=CAL_CFG.familyDemoteFp&&b.precision<=CAL_CFG.familyDemotePrecision;
+      const fpPlayers=Object.keys(b.fpPlayers||{}).length;
+      if(scope==='source')b.watchOnly=b.confirmed>=CAL_CFG.sourceDemoteConfirmed&&b.fp>=CAL_CFG.sourceDemoteFp&&fpPlayers>=CAL_CFG.sourceDemoteFpPlayers&&b.precision<=CAL_CFG.sourceDemotePrecision;
+      else b.watchOnly=b.confirmed>=CAL_CFG.familyDemoteConfirmed&&b.fp>=CAL_CFG.familyDemoteFp&&fpPlayers>=CAL_CFG.familyDemoteFpPlayers&&b.precision<=CAL_CFG.familyDemotePrecision;
       if(b.watchOnly)b.demotions++;
     }else{
       if(scope==='source')b.watchOnly=!(b.confirmed>=CAL_CFG.sourceRecoverConfirmed&&b.hit>=CAL_CFG.sourceRecoverHit&&b.precision>=CAL_CFG.sourceRecoverPrecision);
@@ -199,7 +201,11 @@ function __WOF_START_V4(DB){
     const family=e.family,source=e.source||'?',fb=calBucket(CAL_FAMILY,family),sb=calBucket(CAL_SOURCE,family+'|'+source);
     if(kind==='fp'&&!calFpEligible(e)){fb.ignoredFp++;sb.ignoredFp++;return;}
     const before=calPolicy(family,source).watchOnly;
-    for(const b of [fb,sb]){if(kind==='hit')b.hit++;else b.fp++;}
+    const who=e.player||'?';
+    for(const b of [fb,sb]){
+      if(kind==='hit'){b.hit++;b.hitPlayers[who]=1;}
+      else{b.fp++;b.fpPlayers[who]=1;}
+    }
     const sf=calRefresh(sb,'source'),ff=calRefresh(fb,'family'),after=calPolicy(family,source).watchOnly;
     if(!before&&after){
       console.log('🧯 Family降级WATCH',family,source,'source',sb.hit+'/'+sb.confirmed,'p',sb.precision?.toFixed(2),'family',fb.hit+'/'+fb.confirmed,'p',fb.precision?.toFixed(2));
@@ -211,6 +217,7 @@ function __WOF_START_V4(DB){
   }
   function calRows(map,scope){
     return Object.entries(map).map(([key,v])=>({scope,key,hit:v.hit,fp:v.fp,ignoredFp:v.ignoredFp,confirmed:v.confirmed,
+      hitPlayers:Object.keys(v.hitPlayers||{}).length,fpPlayers:Object.keys(v.fpPlayers||{}).length,
       precision:v.precision,watchOnly:v.watchOnly,demotions:v.demotions,recoveries:v.recoveries}))
       .sort((a,b)=>(Number(b.watchOnly)-Number(a.watchOnly))||(b.fp-a.fp)||(b.confirmed-a.confirmed));
   }
@@ -240,7 +247,7 @@ function __WOF_START_V4(DB){
     return out;
   }
 
-  const SLOT=Array.from({length:NSLOTS},()=>({type:null,prevAttack:0,locked:null,started:0,origin:null,face:0}));
+  const SLOT=Array.from({length:NSLOTS},()=>({type:null,prevAttack:0,locked:null,started:0,origin:null,face:0,seq:0}));
   const UNIQUE_ACTIVE=new Map();
   const MULTI_ACTIVE=new Set();
   for(const [id,f] of Object.entries(DB.f)){
@@ -251,8 +258,9 @@ function __WOF_START_V4(DB){
 
   function updateLock(o,now){
     const s=SLOT[o.slot];
-    if(s.type!==o.type){s.type=o.type;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;}
+    if(s.type!==o.type){s.type=o.type;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;s.seq=0;}
     if(s.prevAttack===0&&o.attack!==0){
+      s.seq=(s.seq||0)+1;
       s.locked=DB.a[keyActive(o)]||UNIQUE_ACTIVE.get(o.type+'|'+o.attack)||null;
       s.started=now;s.origin={x:o.x,y:o.y,z:o.z};s.face=o.face;
     }else if(s.prevAttack!==0&&o.attack===0){s.locked=null;s.origin=null;s.started=0;}
@@ -289,7 +297,9 @@ function __WOF_START_V4(DB){
             rx:rad.rx,ry:rad.ry,rz:rad.rz,slot:o.slot,type:o.type,family:fc.id,
             confidence,survival,actionable:survival>=CFG.survivalActionThreshold&&!cal.watchOnly,
             calWatchOnly:cal.watchOnly,calPrecision:cal.sourcePrecision??cal.familyPrecision,
-            calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),source:'startup',lookup:hit.kind});
+            calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),
+            instance:'S:'+o.slot+':'+o.type+':'+o.anim+':'+o.s0+':'+o.s1+':'+o.s2+':'+o.s3+':'+fc.id,
+            source:'startup',lookup:hit.kind});
         }
       }
     }
@@ -318,7 +328,8 @@ function __WOF_START_V4(DB){
         rx:rad.rx,ry:rad.ry,rz:rad.rz,slot:o.slot,type:o.type,family:s.locked,
         confidence:survival,survival,actionable:survival>=CFG.survivalActionThreshold&&!cal.watchOnly,
         calWatchOnly:cal.watchOnly,calPrecision:cal.sourcePrecision??cal.familyPrecision,
-        calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),source:'active'});
+        calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),
+        instance:'A:'+o.slot+':'+o.type+':'+s.seq+':'+Math.round(s.started),source:'active'});
     }
   }
 
@@ -433,9 +444,9 @@ function stable(name,r){
 }
 
 const AUD={
-  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,safeMiss:0},byFamily:{}},
-  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,safeMiss:0},byFamily:{}},
-  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,safeMiss:0},byFamily:{}}
+  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,safeMiss:0},byFamily:{}},
+  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,safeMiss:0},byFamily:{}},
+  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,safeMiss:0},byFamily:{}}
 };
 
 function famStat(A,e){
@@ -488,6 +499,7 @@ function auditResolve(name,kind,e,extra=''){
     console.log('🔴',name,'高可信疑似误报',e.action,e.family||'?',e.source||'?',e.hitMs+'ms','slot',e.slot,geoText(e),
       '玩家路线未明显改变且目标攻击已成立但未掉血',extra);
   }
+  if(e.auditKey)A.recent[e.auditKey]=performance.now();
   A.pending=null;
 }
 
@@ -531,9 +543,13 @@ function auditStep(name,ps,st,now){
     const h=st.hit||{};
     if(h.family==null||h.source==='active-unknown'||(h.actionable===false&&!h.calWatchOnly))return;
     const hitMs=Math.max(CFG.reactFloorMs,+st.hitMs||0);
+    const instance=h.instance||((h.source||'?')+':'+(h.slot??-1)+':'+(h.family||'?'));
+    const auditKey=(h.slot??-1)+'|'+(h.family||'?')+'|'+(h.source||'?')+'|'+instance;
+    for(const [k,t] of Object.entries(A.recent))if(now-t>CFG.auditRepeatBlockMs*4)delete A.recent[k];
+    if(A.recent[auditKey]!=null&&now-A.recent[auditKey]<CFG.auditRepeatBlockMs)return;
     const pp=playerAt(ps,'CONTINUE',hitMs,0);
     const rx=+h.rx||0,ry=+h.ry||0,rz=+h.rz||0;
-    A.pending={action,family:h.family,source:h.source||null,slot:h.slot,enemyType:h.type,
+    A.pending={player:name,action,family:h.family,source:h.source||null,slot:h.slot,enemyType:h.type,instance,auditKey,
       t0:now,due:now+hitMs,deadline:now+hitMs+CFG.auditGraceMs,hitMs,
       x:ps.x,y:ps.y,z:ps.z,vx:ps.vx,vy:ps.vy,vz:ps.vz,hp:ps.hp,
       rx,ry,rz,confidence:+h.confidence||0,survival:h.survival==null?1:+h.survival,
@@ -549,7 +565,7 @@ function auditSnapshot(){
   const out={};
   for(const n of ['P1','P2','P3'])out[n]={...AUD[n].stats,pending:AUD[n].pending?{
     action:AUD[n].pending.action,family:AUD[n].pending.family,hitMs:AUD[n].pending.hitMs,source:AUD[n].pending.source,
-    slot:AUD[n].pending.slot,familySeen:AUD[n].pending.familySeen}:null};
+    slot:AUD[n].pending.slot,instance:AUD[n].pending.instance,familySeen:AUD[n].pending.familySeen}:null};
   return out;
 }
 function auditFamilies(){
@@ -589,7 +605,7 @@ function auditFamilies(){
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.4',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.4.1',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -605,11 +621,11 @@ function auditFamilies(){
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  console.log('✅ WOF V4.4 跨玩家Family在线校准观战版启动');
+  console.log('✅ WOF V4.4.1 攻击实例去重校准观战版启动');
   console.log('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   console.log('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   console.log('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
-  console.log('🧯 在线校准: 多次高可信误报→WATCH；后续真实命中足够→♻️恢复行动');
+  console.log('🧯 在线校准: 同一攻击实例只记一次；全局降级需至少2名玩家共同提供误报证据');
   console.log('⚠️ 只预测，不控制任何玩家');
 }
 
