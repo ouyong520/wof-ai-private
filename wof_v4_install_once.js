@@ -25,7 +25,9 @@ function __WOF_START_V4(DB){
     auditTolY:8,
     auditTolZ:14,
     auditHitEarlyMs:180,
-    survivalActionThreshold:0.35,
+    survivalActionThreshold:0.50,
+    startupActionMinConfidence:0.15,
+    activeActionMinConfidence:0.50,
     auditRevokeLeadMs:60,
     auditRepeatBlockMs:700,
     fallbackZThreshold:80,
@@ -314,7 +316,7 @@ function __WOF_START_V4(DB){
             rx:rad.rx,ry:rad.ry,rz:rad.rz,actionRx:rad.actionRx,actionRy:rad.actionRy,actionRz:rad.actionRz,
             geometryFallback:rad.geometryFallback,geometryFallbackZ:rad.geometryFallbackZ,
             slot:o.slot,type:o.type,family:fc.id,
-            confidence,survival,actionable:survival>=CFG.survivalActionThreshold&&!cal.watchOnly,
+            confidence,survival,actionable:survival>=CFG.survivalActionThreshold&&confidence>=CFG.startupActionMinConfidence&&!cal.watchOnly,
             calWatchOnly:cal.watchOnly,calPrecision:cal.sourcePrecision??cal.familyPrecision,
             calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),
             instance:'S:'+o.slot+':'+o.type+':'+o.anim+':'+o.s0+':'+o.s1+':'+o.s2+':'+o.s3+':'+fc.id,
@@ -347,7 +349,7 @@ function __WOF_START_V4(DB){
         rx:rad.rx,ry:rad.ry,rz:rad.rz,actionRx:rad.actionRx,actionRy:rad.actionRy,actionRz:rad.actionRz,
         geometryFallback:rad.geometryFallback,geometryFallbackZ:rad.geometryFallbackZ,
         slot:o.slot,type:o.type,family:s.locked,
-        confidence:survival,survival,actionable:survival>=CFG.survivalActionThreshold&&!cal.watchOnly,
+        confidence:survival,survival,actionable:survival>=CFG.survivalActionThreshold&&survival>=CFG.activeActionMinConfidence&&!cal.watchOnly,
         calWatchOnly:cal.watchOnly,calPrecision:cal.sourcePrecision??cal.familyPrecision,
         calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),
         instance:'A:'+o.slot+':'+o.type+':'+s.seq+':'+Math.round(s.started),source:'active'});
@@ -468,14 +470,14 @@ function stable(name,r){
 }
 
 const AUD={
-  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,safeMiss:0},byFamily:{}},
-  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,safeMiss:0},byFamily:{}},
-  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,safeMiss:0},byFamily:{}}
+  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,safeMiss:0},byFamily:{}},
+  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,safeMiss:0},byFamily:{}},
+  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,safeMiss:0},byFamily:{}}
 };
 
 function famStat(A,e){
   const k=(e.family||'?')+'|'+(e.source||'?');
-  return A.byFamily[k]||(A.byFamily[k]={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,materialized:0});
+  return A.byFamily[k]||(A.byFamily[k]={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,materialized:0});
 }
 function fmt(n){return Number.isFinite(n)?n.toFixed(1):'?';}
 function geoText(e){return 'inside x'+fmt(e.mx)+' y'+fmt(e.my)+' z'+fmt(e.mz)+' r '+fmt(e.rx)+'/'+fmt(e.ry)+'/'+fmt(e.rz)+' conf '+fmt(e.confidence)+' surv '+fmt(e.survival);}
@@ -519,9 +521,14 @@ function auditResolve(name,kind,e,extra=''){
     qlog('🔵',name,'预测已撤销/不计误报',e.action,e.family||'?',e.source||'?',e.hitMs+'ms','slot',e.slot,
       '目标攻击在预计碰撞前结束',extra);
   }else if(kind==='fp'){
-    A.stats.falsePositive++;F.falsePositive++;calRecord(e,'fp');
-    qlog('🔴',name,'高可信疑似误报',e.action,e.family||'?',e.source||'?',e.hitMs+'ms','slot',e.slot,geoText(e),
-      '玩家路线未明显改变且目标攻击已成立但未掉血',extra);
+    if(calFpEligible(e)){
+      A.stats.falsePositive++;F.falsePositive++;calRecord(e,'fp');
+      qlog('🔴',name,'高可信疑似误报',e.action,e.family||'?',e.source||'?',e.hitMs+'ms','slot',e.slot,geoText(e),
+        '玩家路线未明显改变且目标攻击已成立但未掉血',extra);
+    }else{
+      A.stats.weakFalsePositive++;F.weakFalsePositive++;
+      qlog('🟡',name,'低置信疑似误报/不计校准',e.action,e.family||'?',e.source||'?',e.hitMs+'ms','slot',e.slot,geoText(e),extra);
+    }
   }
   if(e.auditKey)A.recent[e.auditKey]=performance.now();
   A.pending=null;
@@ -597,7 +604,7 @@ function auditFamilies(){
   const out={};
   for(const n of ['P1','P2','P3'])out[n]=Object.entries(AUD[n].byFamily).map(([family,v])=>({family,...v,
     precision:(v.hit+v.falsePositive)?v.hit/(v.hit+v.falsePositive):null,
-    confirmed:v.hit+v.falsePositive})).sort((a,b)=>(b.falsePositive-a.falsePositive)||(b.confirmed-a.confirmed)||(b.tested-a.tested));
+    confirmed:v.hit+v.falsePositive})).sort((a,b)=>(b.falsePositive-a.falsePositive)||(b.weakFalsePositive-a.weakFalsePositive)||(b.confirmed-a.confirmed)||(b.tested-a.tested));
   return out;
 }
 function frozenCopy(x){return JSON.parse(JSON.stringify(x));}
@@ -635,7 +642,7 @@ function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.6',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.6.1',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -656,12 +663,13 @@ function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.6 双层XYZ几何观战版启动');
+  qlog('✅ WOF V4.6.1 置信度分层观战版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
   qlog('🧭 XYZ几何: class fallback 保留完整外壳用于WATCH；行动核心 X/Y 缩放 '+CFG.fallbackXYActionScale+'/'+CFG.fallbackYActionScale+'，高Z核心='+(CFG.fallbackZActionCore+CFG.padZ));
-  qlog('🧯 在线校准: 同一攻击实例只记一次；全局降级需至少2名玩家共同提供误报证据');
+  qlog('🧯 在线校准: 红色=可进入校准的高可信误报；黄色=低置信误报，仅WATCH/统计，不处罚Family');
+  qlog('🎚️ 行动门槛: startup conf>='+CFG.startupActionMinConfidence+'；active survival>='+CFG.activeActionMinConfidence);
   qlog('📸 需要固定数据时用 WOFV4.report()；可先 WOFV4.quiet(true) 静音但继续统计');
   qlog('⚠️ 只预测，不控制任何玩家');
 }
