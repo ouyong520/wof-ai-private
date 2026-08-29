@@ -20,13 +20,11 @@ rep(
     fallbackZThreshold:80,""",
 'cfg miss history')
 
-# Shared class geometry should wait for broader cross-Family evidence.
 rep(
 "if(b.geoFp<3||Object.keys(b.fpFamilies||{}).length<2)return;",
 "if(b.geoFp<4||Object.keys(b.fpFamilies||{}).length<3)return;",
 'geo class evidence')
 
-# Capture compact enemy history after locks have been updated.
 rep(
 """  const UNIQUE_ACTIVE=new Map();
   const MULTI_ACTIVE=new Set();""",
@@ -89,7 +87,6 @@ rep(
   function activeOrigin(o,f,lead){""",
 'miss forensic helpers')
 
-# evalPath remembers the closest non-colliding danger point, which is essential for true miss diagnosis.
 rep(
 """  function evalPath(p,mode,danger,delay=0){
     let earliest=null,hit=null,min=Infinity;
@@ -112,7 +109,6 @@ rep(
   }""",
 'evalPath nearest')
 
-# Two-frame confirmation for WATCH and urgent <=300ms directional warnings. AB remains strict.
 rep(
 """  const need=action==='SAFE'?2:3;
   if(s.n>=need)s.v=r;""",
@@ -120,7 +116,6 @@ rep(
   if(s.n>=need)s.v=r;""",
 'urgent stability')
 
-# Forensic capture on both unstable-covered damage and true SAFE misses.
 rep(
 """      if(now-A.lastRawWarnAt<=350){
         A.stats.unstableCovered++;
@@ -141,29 +136,30 @@ rep(
       }""",
 'miss capture')
 
-# Add quality metrics + miss cases to short report.
 rep(
 """  const geoAdjusted=[...(c.variant||[]),...(c.source||[])].filter(r=>Array.isArray(r.geo)&&Math.min(...r.geo)<.995)
     .sort((x,y)=>Math.min(...x.geo)-Math.min(...y.geo)).slice(0,20);
-  return frozenCopy({at:Date.now(),total,players:a,topFalse,demoted,geoAdjusted});""",
+  const geoClasses=(c.geom||[]).filter(r=>Array.isArray(r.geo)&&((r.geoFp||0)>0||Math.min(...r.geo)<.995))
+    .sort((x,y)=>(y.geoFp||0)-(x.geoFp||0)).slice(0,20);
+  return frozenCopy({at:Date.now(),total,players:a,topFalse,demoted,geoAdjusted,geoClasses});""",
 """  const geoAdjusted=[...(c.variant||[]),...(c.source||[])].filter(r=>Array.isArray(r.geo)&&Math.min(...r.geo)<.995)
     .sort((x,y)=>Math.min(...x.geo)-Math.min(...y.geo)).slice(0,20);
+  const geoClasses=(c.geom||[]).filter(r=>Array.isArray(r.geo)&&((r.geoFp||0)>0||Math.min(...r.geo)<.995))
+    .sort((x,y)=>(y.geoFp||0)-(x.geoFp||0)).slice(0,20);
   const validated=total.hit+total.falsePositive;
   const damageEvents=total.hit+total.ambiguousDamage+total.unstableCovered+total.safeMiss;
   const metrics={actionPrecision:validated?+(total.hit/validated).toFixed(3):null,
     rawDamageCoverage:damageEvents?+((total.hit+total.ambiguousDamage+total.unstableCovered)/damageEvents).toFixed(3):null,
     stableDamageCoverage:damageEvents?+((total.hit+total.ambiguousDamage)/damageEvents).toFixed(3):null,
     validated,damageEvents};
-  return frozenCopy({at:Date.now(),total,metrics,players:a,topFalse,demoted,geoAdjusted,missCases:MISS_CASES.slice(-8)});""",
+  return frozenCopy({at:Date.now(),total,metrics,players:a,topFalse,demoted,geoAdjusted,geoClasses,missCases:MISS_CASES.slice(-8)});""",
 'summary metrics')
 
-# Ensure history is captured after buildDanger updated every slot lock.
 rep(
 """  const now=performance.now();if(PLAYER_MODE==='local')syncLocalPlayer();updatePlayers(now);const d=buildDanger(now);last={at:now,""",
 """  const now=performance.now();if(PLAYER_MODE==='local')syncLocalPlayer();updatePlayers(now);const d=buildDanger(now);captureEnemyFrame(now);last={at:now,""",
 'tick history')
 
-# Expose miss cases for a focused report when needed.
 rep(
 """    summary(){return summarySnapshot();},
     report(){const t=reportText();self.console.log(t);return t;},""",
@@ -173,10 +169,10 @@ rep(
 'expose misses')
 
 rep("version:'offline-dynamic-spectator-calibrated-v4.9'","version:'offline-dynamic-spectator-calibrated-v4.9.1'",'version')
-rep("console.log('✅ WOF V4.9 共享几何类学习观战版启动');","console.log('✅ WOF V4.9.1 漏判取证/紧急稳定观战版启动');",'startup')
+rep("qlog('✅ WOF V4.9 共享几何类学习观战版启动');","qlog('✅ WOF V4.9.1 漏判取证/紧急稳定观战版启动');",'startup')
 rep(
-"console.log('🌐 共享几何: 同一fallback几何类在多个Family重复误报后共同收缩；完整外壳仍保留WATCH');",
-"console.log('🔬 漏判取证: 真实SAFE漏判自动保存最近600ms敌人状态/ATTACK/Family候选；WOFV4.misses()可查看');\n  console.log('⚡ 稳定器: WATCH与<=300ms紧急UP/DOWN改为2帧确认；AB仍需3帧');\n  console.log('🌐 共享几何: 至少4次误报且跨3个Family才共同收缩；完整外壳仍保留WATCH');",
+"qlog('🧱 共享几何类: 同一fallback半径至少3次高可信误报且来自>=2个Family才开始收缩行动核心');",
+"qlog('🔬 漏判取证: 真实SAFE漏判自动保存最近600ms敌人状态/ATTACK/Family候选；WOFV4.misses()可查看');\n  qlog('⚡ 稳定器: WATCH与<=300ms紧急UP/DOWN改为2帧确认；AB仍需3帧');\n  qlog('🧱 共享几何类: 至少4次高可信误报且来自>=3个Family才开始收缩行动核心');",
 'startup info')
 
 p.write_text(s,encoding='utf-8')
