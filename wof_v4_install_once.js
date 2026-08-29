@@ -249,15 +249,21 @@ function __WOF_START_V4(DB){
   }
 
   function decision(p,danger){
-  const cur=evalPath(p,'CONTINUE',danger,0);
-  if(cur.safe)return{danger:false,best:'CONTINUE',stay:cur};
+  const knownDanger=danger.filter(d=>d.source!=='active-unknown');
+  const fullCur=evalPath(p,'CONTINUE',danger,0);
+  const cur=evalPath(p,'CONTINUE',knownDanger,0);
 
-  // Unknown active-family fallback may warn, but it must never produce UP/DOWN or AB.
-  if(cur.hit?.source==='active-unknown')return{danger:true,watchOnly:true,best:'WATCH',hitMs:cur.collisionMs,hit:cur.hit,stay:cur};
+  // No known-family collision: unknown active fallback may warn only.
+  if(cur.safe){
+    if(!fullCur.safe&&fullCur.hit?.source==='active-unknown')
+      return{danger:true,watchOnly:true,best:'WATCH',hitMs:fullCur.collisionMs,hit:fullCur.hit,stay:fullCur};
+    return{danger:false,best:'CONTINUE',stay:cur};
+  }
 
-  const up0=evalPath(p,'UP',danger,0),down0=evalPath(p,'DOWN',danger,0);
-  const up=up0.safe?latestSafe(p,'UP',danger,cur.collisionMs):-1;
-  const down=down0.safe?latestSafe(p,'DOWN',danger,cur.collisionMs):-1;
+  // From here on, every actionable route decision is computed ONLY from known families.
+  const up0=evalPath(p,'UP',knownDanger,0),down0=evalPath(p,'DOWN',knownDanger,0);
+  const up=up0.safe?latestSafe(p,'UP',knownDanger,cur.collisionMs):-1;
+  const down=down0.safe?latestSafe(p,'DOWN',knownDanger,cur.collisionMs):-1;
   if(up<0&&down<0){
     const known=h=>!!h&&h.family!=null&&h.source!=='active-unknown';
     const blockersKnown=known(cur.hit)&&known(up0.hit)&&known(down0.hit);
@@ -269,8 +275,8 @@ function __WOF_START_V4(DB){
   if(up>=0&&down<0){best='UP';latest=up;}
   else if(down>=0&&up<0){best='DOWN';latest=down;}
   else{
-    const ue=evalPath(p,'UP',danger,Math.max(0,up-80));
-    const de=evalPath(p,'DOWN',danger,Math.max(0,down-80));
+    const ue=evalPath(p,'UP',knownDanger,Math.max(0,up-80));
+    const de=evalPath(p,'DOWN',knownDanger,Math.max(0,down-80));
     if((ue.minClearance??0)>(de.minClearance??0)){best='UP';latest=up;}else{best='DOWN';latest=down;}
   }
   return{danger:true,noRoute:false,best,latestMs:latest,hitMs:cur.collisionMs,hit:cur.hit,up,down,stay:cur};
@@ -307,13 +313,13 @@ function stable(name,r){
   }
 
   self.WOFV4={
-    version:'offline-dynamic-p1p2-v4.2',config:CFG,last:null,
+    version:'offline-dynamic-p1p2-v4.2.1',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,players:PS};},
     stop(){if(timer){clearInterval(timer);timer=null;}console.log('⛔ WOF V4关闭');}
   };
   timer=setInterval(tick,CFG.tickMs);tick();
-  console.log('✅ WOF V4.2 严格防抖观战版启动');
+  console.log('✅ WOF V4.2.1 unknown隔离观战版启动');
   console.log('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   console.log('✅ P1+P2动态轨迹 × 20怪 × 3D/斜向轨迹 × 每Family危险范围');
   console.log('⚠️ 只预测，不控制任何玩家');
