@@ -28,18 +28,38 @@
     }
     return out;
   }
+  function subCounterMap(a,b){
+    const out={};
+    for(const k of Object.keys(a||{}))if(typeof a[k]==='number'){
+      const v=a[k]-(typeof (b||{})[k]==='number'?b[k]:0);if(v)out[k]=v;
+    }
+    return out;
+  }
+  function watchDiagDelta(e,s){
+    const E=e?.watchDiagnostics||{},S=s?.watchDiagnostics||{};
+    if(!Object.keys(E).length)return null;
+    const layer=n=>({
+      ticks:subCounterMap(E[n]?.ticks||{},S[n]?.ticks||{}),
+      damageAny:subCounterMap(E[n]?.damageAny||{},S[n]?.damageAny||{}),
+      damageExclusiveLatest:subCounterMap(E[n]?.damageExclusiveLatest||{},S[n]?.damageExclusiveLatest||{})
+    });
+    const startSeq=+S.caseSeq||0,cases=(E.exclusiveCases||[]).filter(x=>(+x.seq||0)>startSeq);
+    return {guard:layer('guard'),geometry:layer('geometry'),caseSeqDelta:(+E.caseSeq||0)-startSeq,exclusiveCases:cases};
+  }
   function damageWarningDelta(ed,sd){
     const e=ed?.damageWarningAttribution||{},s=sd?.damageWarningAttribution||{};
     if(!Object.keys(e).length)return null;
     const hpDrops=(+e.hpDrops||0)-(+s.hpDrops||0),withStableWarning=(+e.withStableWarning||0)-(+s.withStableWarning||0),noStableWarning=(+e.noStableWarning||0)-(+s.noStableWarning||0);
+    const enemyDamageEvents=(+e.enemyDamageEvents||0)-(+s.enemyDamageEvents||0),nonEnemyDamage=(+e.nonEnemyDamage||0)-(+s.nonEnemyDamage||0),hpBaselineReset=(+e.hpBaselineReset||0)-(+s.hpBaselineReset||0);
     const latest=subObj(e.latest||{},s.latest||{}),any=subObj(e.any||{},s.any||{}),exclusive=subObj(e.exclusive||{},s.exclusive||{}),leadBuckets=subObj(e.leadBuckets||{},s.leadBuckets||{});
     const eN=+e.withStableWarning||0,sN=+s.withStableWarning||0;
     const eSum=(+e.avgFirstLeadMs||0)*eN,sSum=(+s.avgFirstLeadMs||0)*sN,dN=eN-sN;
     const players={};
     for(const n of ['P1','P2','P3'])players[n]=subObj(e.players?.[n]||{},s.players?.[n]||{});
-    return {hpDrops,withStableWarning,noStableWarning,
+    return {hpDrops,enemyDamageEvents,nonEnemyDamage,hpBaselineReset,withStableWarning,noStableWarning,
       stableWarningCoverage:hpDrops?+(withStableWarning/hpDrops).toFixed(4):null,
-      latest,any,exclusive,avgFirstLeadMs:dN?+((eSum-sSum)/dN).toFixed(1):null,leadBuckets,players};
+      latest,any,exclusive,avgFirstLeadMs:dN?+((eSum-sSum)/dN).toFixed(1):null,leadBuckets,players,
+      watchDiagnostics:watchDiagDelta(e,s)};
   }
   function decisionDelta(end,start){
     const ed=end?.evaluation?.decisionLoad||end?.decisionLoad||{},sd=start?.evaluation?.decisionLoad||start?.decisionLoad||{};
@@ -115,7 +135,7 @@
   const blob=new Blob([text],{type:'application/json'}),url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),30000);
-  console.table(summaries.map(x=>({room:x.id,status:x.status,min:(x.durationSec/60).toFixed(1),tested:x.total.tested||0,damage:x.evaluation.damageEvents,nonEnemy:x.evaluation.nonEnemyDamage,safeMiss:x.total.safeMiss||0,materialize:x.evaluation.materializationRate,warningRate:x.evaluation.decisionLoad.warningRate,damageWarn:x.evaluation.decisionLoad.damageWarningAttribution?.stableWarningCoverage??null})));
+  console.table(summaries.map(x=>({room:x.id,status:x.status,min:(x.durationSec/60).toFixed(1),tested:x.total.tested||0,damage:x.evaluation.damageEvents,nonEnemy:x.evaluation.nonEnemyDamage,safeMiss:x.total.safeMiss||0,materialize:x.evaluation.materializationRate,warningRate:x.evaluation.decisionLoad.warningRate,damageWarn:x.evaluation.decisionLoad.damageWarningAttribution?.stableWarningCoverage??null,guardCases:x.evaluation.decisionLoad.damageWarningAttribution?.watchDiagnostics?.guard?.damageExclusiveLatest?Object.values(x.evaluation.decisionLoad.damageWarningAttribution.watchDiagnostics.guard.damageExclusiveLatest).reduce((a,b)=>a+b,0):0})));
   console.log('✅ 已下载',name,'房间数',sessions.length,'完整',bundle.completeCount,'中断',bundle.interruptedCount,'部分样本',bundle.partialCount);
   return bundle;
 })().catch(e=>console.error('❌ 多房间导出失败',e));
