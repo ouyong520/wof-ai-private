@@ -24,6 +24,7 @@ function __WOF_START_V4(DB){
     auditTolX:14,
     auditTolY:8,
     auditTolZ:14,
+    auditHitEarlyMs:180,
     padX:3,
     padY:2,
     padZ:2
@@ -61,7 +62,7 @@ function __WOF_START_V4(DB){
 
   function readPlayer(base,name){
     const flag=B(base); if(!flag) return null;
-    return {name,flag,x:W(S32(base+4)),y:W(S32(base+8)),z:W(S32(base+12)),hp:B(base+0x83),body:U16(base+0x6E),attack:U16(base+0x70)};
+    return {name,flag,x:W(S32(base+4)),y:W(S32(base+8)),z:W(S32(base+12)),hp:B(base+0x83)};
   }
 
   const keyState=o=>o.type+'|'+o.anim+'|'+o.s0+'|'+o.s1+'|'+o.s2+'|'+o.s3;
@@ -85,7 +86,7 @@ function __WOF_START_V4(DB){
       if(Math.abs(vx)>400)vx=0;
       if(Math.abs(vy)>200)vy=0;
       if(Math.abs(vz)>400)vz=0;
-      PS[p.name]={name:p.name,x:cur.x,y:cur.y,z:cur.z,vx,vy,vz,hp:cur.hp,body:cur.body,attack:cur.attack};
+      PS[p.name]={name:p.name,x:cur.x,y:cur.y,z:cur.z,vx,vy,vz,hp:cur.hp};
     }
   }
 
@@ -323,35 +324,66 @@ function stable(name,r){
 }
 
 const AUD={
-  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,stateChanged:0,falsePositive:0,safeMiss:0},byFamily:{}},
-  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,stateChanged:0,falsePositive:0,safeMiss:0},byFamily:{}}
+  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,falsePositive:0,safeMiss:0},byFamily:{}},
+  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,falsePositive:0,safeMiss:0},byFamily:{}}
 };
 
 function famStat(A,e){
   const k=(e.family||'?')+'|'+(e.source||'?');
-  return A.byFamily[k]||(A.byFamily[k]={tested:0,hit:0,changed:0,stateChanged:0,falsePositive:0});
+  return A.byFamily[k]||(A.byFamily[k]={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,falsePositive:0,materialized:0});
 }
 function fmt(n){return Number.isFinite(n)?n.toFixed(1):'?';}
 function geoText(e){return 'inside x'+fmt(e.mx)+' y'+fmt(e.my)+' z'+fmt(e.mz)+' r '+fmt(e.rx)+'/'+fmt(e.ry)+'/'+fmt(e.rz)+' conf '+fmt(e.confidence);}
 
+function trackEnemy(e,now){
+  if(!e||e.slot==null||e.slot<0||e.slot>=NSLOTS)return;
+  const o=readActor(POOL+e.slot*STRIDE,e.slot);
+  if(!o||o.type!==e.enemyType){
+    if(now<=e.due+60)e.enemyLost=true;
+    return;
+  }
+  e.enemyLastAttack=o.attack;
+  const lk=SLOT[e.slot]?.locked||null;
+  if(lk===e.family)e.familySeen=true;
+  else if(lk&&lk!==e.family)e.otherFamily=lk;
+}
+
 function auditResolve(name,kind,e,extra=''){
   const A=AUD[name]; if(!e)return;
   const F=famStat(A,e);
-  if(kind==='hit'){A.stats.hit++;F.hit++;console.log('🎯',name,'命中验证',e.action,e.family||'?',e.hitMs+'ms',geoText(e),extra);}
-  else if(kind==='changed'){A.stats.changed++;F.changed++;console.log('🟡',name,'路径改变/无法判误报',e.action,e.family||'?',e.hitMs+'ms',extra);}
-  else if(kind==='state'){A.stats.stateChanged++;F.stateChanged++;console.log('🟣',name,'角色状态改变/不计误报',e.action,e.family||'?',e.hitMs+'ms','BODY '+e.body0+'→'+e.bodyNow,'ATTACK '+e.attack0+'→'+e.attackNow,extra);}
-  else if(kind==='fp'){A.stats.falsePositive++;F.falsePositive++;console.log('🔴',name,'疑似误报',e.action,e.family||'?',e.hitMs+'ms',geoText(e),'原路线和角色状态基本未变但未掉血',extra);}
+  if(e.familySeen&&!e.materializedCounted){F.materialized++;e.materializedCounted=true;}
+  if(kind==='hit'){
+    A.stats.hit++;F.hit++;
+    console.log('🎯',name,'命中验证',e.action,e.family||'?',e.source||'?',e.hitMs+'ms','slot',e.slot,geoText(e),extra);
+  }else if(kind==='changed'){
+    A.stats.changed++;F.changed++;
+    console.log('🟡',name,'路径改变/不计误报',e.action,e.family||'?',e.hitMs+'ms',extra);
+  }else if(kind==='enemy'){
+    A.stats.enemyChanged++;F.enemyChanged++;
+    console.log('🟤',name,'目标攻击未按预测完成/不计误报',e.action,e.family||'?',e.source||'?',e.hitMs+'ms','slot',e.slot,
+      e.enemyLost?'目标消失/换type':'预测Family未materialize',e.otherFamily?('实际/其它Family '+e.otherFamily):'',extra);
+  }else if(kind==='ambiguous'){
+    A.stats.ambiguousDamage++;F.ambiguousDamage++;
+    console.log('⚪',name,'发生掉血但目标Family未确认/不计命中',e.action,e.family||'?',e.hitMs+'ms',extra);
+  }else if(kind==='fp'){
+    A.stats.falsePositive++;F.falsePositive++;
+    console.log('🔴',name,'高可信疑似误报',e.action,e.family||'?',e.source||'?',e.hitMs+'ms','slot',e.slot,geoText(e),
+      '玩家路线未明显改变且目标攻击已成立但未掉血',extra);
+  }
   A.pending=null;
 }
 
 function auditStep(name,ps,st,now){
   const A=AUD[name],action=st?actionOf(st):null;
   const hp=ps.hp;
-  const dropped=A.prevHp!=null&&hp<A.prevHp;
+  const e=A.pending;
+  if(e)trackEnemy(e,now);
 
+  const dropped=A.prevHp!=null&&hp<A.prevHp;
   if(dropped){
-    if(A.pending&&now<=A.pending.deadline+200){
-      auditResolve(name,'hit',A.pending,'HP '+A.prevHp+'→'+hp);
+    if(e&&now>=e.due-CFG.auditHitEarlyMs&&now<=e.deadline+120){
+      if(e.source==='active'||e.familySeen)auditResolve(name,'hit',e,'HP '+A.prevHp+'→'+hp);
+      else auditResolve(name,'ambiguous',e,'HP '+A.prevHp+'→'+hp);
     }else if(now-A.lastWarnAt>350){
       A.stats.safeMiss++;
       console.log('❌',name,'SAFE漏判候选','HP '+A.prevHp+'→'+hp,'近350ms无稳定危险提示');
@@ -359,50 +391,53 @@ function auditStep(name,ps,st,now){
   }
   A.prevHp=hp;
 
-  const e=A.pending;
-  if(e){
-    if(ps.attack!==e.attack0||ps.body!==e.body0){e.stateChanged=true;e.attackNow=ps.attack;e.bodyNow=ps.body;}
-    if(!e.sampled&&now>=e.due){
-      const dt=e.hitMs/1000;
-      const ex=e.x+e.vx*dt,ey=e.y+e.vy*dt,ez=e.z+e.vz*dt;
-      e.dx=Math.abs(ps.x-ex);e.dy=Math.abs(ps.y-ey);e.dz=Math.abs(ps.z-ez);
-      e.changed=e.dx>CFG.auditTolX||e.dy>CFG.auditTolY||e.dz>CFG.auditTolZ;
-      e.sampled=true;
+  const q=A.pending;
+  if(q){
+    if(!q.sampled&&now>=q.due){
+      const dt=q.hitMs/1000;
+      const ex=q.x+q.vx*dt,ey=q.y+q.vy*dt,ez=q.z+q.vz*dt;
+      q.dx=Math.abs(ps.x-ex);q.dy=Math.abs(ps.y-ey);q.dz=Math.abs(ps.z-ez);
+      q.changed=q.dx>CFG.auditTolX||q.dy>CFG.auditTolY||q.dz>CFG.auditTolZ;
+      q.sampled=true;
     }
-    if(A.pending&&now>=e.deadline){
-      const info='偏移 x'+fmt(e.dx)+' y'+fmt(e.dy)+' z'+fmt(e.dz);
-      auditResolve(name,e.stateChanged?'state':e.changed?'changed':'fp',e,info);
+    if(A.pending&&now>=q.deadline){
+      const info='偏移 x'+fmt(q.dx)+' y'+fmt(q.dy)+' z'+fmt(q.dz);
+      const enemyInvalid=q.enemyLost||(q.source==='startup'&&!q.familySeen);
+      auditResolve(name,enemyInvalid?'enemy':q.changed?'changed':'fp',q,info);
     }
   }
 
   if(st&&action!=='SAFE')A.lastWarnAt=now;
   if(!A.pending&&st&&action!=='SAFE'&&st.hitMs!=null){
     const h=st.hit||{};
-    // Only audit a clean neutral sample. Player attacks or missing BODY are not reliable ground truth.
-    if(ps.attack!==0||ps.body===0)return;
+    if(h.family==null||h.source==='active-unknown')return;
     const hitMs=Math.max(CFG.reactFloorMs,+st.hitMs||0);
     const pp=playerAt(ps,'CONTINUE',hitMs,0);
     const rx=+h.rx||0,ry=+h.ry||0,rz=+h.rz||0;
-    A.pending={action,family:h.family||null,source:h.source||null,slot:h.slot,
+    A.pending={action,family:h.family,source:h.source||null,slot:h.slot,enemyType:h.type,
       t0:now,due:now+hitMs,deadline:now+hitMs+CFG.auditGraceMs,hitMs,
       x:ps.x,y:ps.y,z:ps.z,vx:ps.vx,vy:ps.vy,vz:ps.vz,hp:ps.hp,
-      body0:ps.body,attack0:ps.attack,bodyNow:ps.body,attackNow:ps.attack,stateChanged:false,
       rx,ry,rz,confidence:+h.confidence||0,
       mx:rx-Math.abs(pp.x-(+h.x||0)),my:ry-Math.abs(pp.y-(+h.y||0)),mz:rz-Math.abs(pp.z-(+h.z||0)),
-      sampled:false,changed:false,dx:null,dy:null,dz:null};
+      sampled:false,changed:false,dx:null,dy:null,dz:null,
+      familySeen:h.source==='active',materializedCounted:false,enemyLost:false,otherFamily:null,enemyLastAttack:null};
     A.stats.tested++;famStat(A,A.pending).tested++;
+    trackEnemy(A.pending,now);
   }
 }
 
 function auditSnapshot(){
   const out={};
   for(const n of ['P1','P2'])out[n]={...AUD[n].stats,pending:AUD[n].pending?{
-    action:AUD[n].pending.action,family:AUD[n].pending.family,hitMs:AUD[n].pending.hitMs,source:AUD[n].pending.source}:null};
+    action:AUD[n].pending.action,family:AUD[n].pending.family,hitMs:AUD[n].pending.hitMs,source:AUD[n].pending.source,
+    slot:AUD[n].pending.slot,familySeen:AUD[n].pending.familySeen}:null};
   return out;
 }
 function auditFamilies(){
   const out={};
-  for(const n of ['P1','P2'])out[n]=Object.entries(AUD[n].byFamily).map(([family,v])=>({family,...v,precision:(v.hit+v.falsePositive)?v.hit/(v.hit+v.falsePositive):null})).sort((a,b)=>(b.falsePositive-a.falsePositive)||(b.tested-a.tested));
+  for(const n of ['P1','P2'])out[n]=Object.entries(AUD[n].byFamily).map(([family,v])=>({family,...v,
+    precision:(v.hit+v.falsePositive)?v.hit/(v.hit+v.falsePositive):null,
+    confirmed:v.hit+v.falsePositive})).sort((a,b)=>(b.falsePositive-a.falsePositive)||(b.confirmed-a.confirmed)||(b.tested-a.tested));
   return out;
 }
 
@@ -420,7 +455,7 @@ function auditFamilies(){
 }
 
   self.WOFV4={
-    version:'offline-dynamic-p1p2-v4.3.1',config:CFG,last:null,
+    version:'offline-dynamic-p1p2-v4.3.2',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     audit(){return auditSnapshot();},
@@ -428,8 +463,8 @@ function auditFamilies(){
     stop(){if(timer){clearInterval(timer);timer=null;}console.log('⛔ WOF V4关闭');}
   };
   timer=setInterval(tick,CFG.tickMs);tick();
-  console.log('✅ WOF V4.3.1 状态感知自验证观战版启动');
-  console.log('🧪 验证: 🎯命中 / 🟡路径改变 / 🟣角色状态改变 / 🔴疑似误报 / ❌SAFE漏判');
+  console.log('✅ WOF V4.3.2 目标敌人连续性自验证版启动');
+  console.log('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤敌人攻击取消或分支改变 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   console.log('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   console.log('✅ P1+P2动态轨迹 × 20怪 × 3D/斜向轨迹 × 每Family危险范围');
   console.log('⚠️ 只预测，不控制任何玩家');
