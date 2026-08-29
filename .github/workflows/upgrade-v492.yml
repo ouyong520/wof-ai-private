@@ -1,0 +1,32 @@
+name: Upgrade WOF V4.9.2
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/patch_v492.py'
+      - '.github/workflows/upgrade-v492.yml'
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch runtime to V4.9.2
+        run: |
+          python3 tools/patch_v492.py
+          node --check wof_v4_install_once.js
+          grep -q "offline-dynamic-spectator-calibrated-v4.9.2" wof_v4_install_once.js
+          grep -q "WOF V4.9.2 精度优先信任门控观战版启动" wof_v4_install_once.js
+          grep -q "precisionVariantFp:1" wof_v4_install_once.js
+          grep -q "precisionSuppressed" wof_v4_install_once.js
+          echo "V4.9.2 bytes: $(wc -c < wof_v4_install_once.js)"
+          sha256sum wof_v4_install_once.js
+      - name: Commit runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wof_v4_install_once.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Upgrade WOF V4.9.2 precision-first trust gating"
+          git push
