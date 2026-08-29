@@ -28,6 +28,19 @@
     }
     return out;
   }
+  function damageWarningDelta(ed,sd){
+    const e=ed?.damageWarningAttribution||{},s=sd?.damageWarningAttribution||{};
+    if(!Object.keys(e).length)return null;
+    const hpDrops=(+e.hpDrops||0)-(+s.hpDrops||0),withStableWarning=(+e.withStableWarning||0)-(+s.withStableWarning||0),noStableWarning=(+e.noStableWarning||0)-(+s.noStableWarning||0);
+    const latest=subObj(e.latest||{},s.latest||{}),any=subObj(e.any||{},s.any||{}),exclusive=subObj(e.exclusive||{},s.exclusive||{}),leadBuckets=subObj(e.leadBuckets||{},s.leadBuckets||{});
+    const eN=+e.withStableWarning||0,sN=+s.withStableWarning||0;
+    const eSum=(+e.avgFirstLeadMs||0)*eN,sSum=(+s.avgFirstLeadMs||0)*sN,dN=eN-sN;
+    const players={};
+    for(const n of ['P1','P2','P3'])players[n]=subObj(e.players?.[n]||{},s.players?.[n]||{});
+    return {hpDrops,withStableWarning,noStableWarning,
+      stableWarningCoverage:hpDrops?+(withStableWarning/hpDrops).toFixed(4):null,
+      latest,any,exclusive,avgFirstLeadMs:dN?+((eSum-sSum)/dN).toFixed(1):null,leadBuckets,players};
+  }
   function decisionDelta(end,start){
     const ed=end?.evaluation?.decisionLoad||end?.decisionLoad||{},sd=start?.evaluation?.decisionLoad||start?.decisionLoad||{};
     const e=ed.total||{},s=sd.total||{};
@@ -41,7 +54,8 @@
       warningRate:ticks?+(warning/ticks).toFixed(4):null,
       actionRate:ticks?+(action/ticks).toFixed(4):null,
       watchRate:ticks?+((d.WATCH||0)/ticks).toFixed(4):null,
-      warningSources:ws,warningSourceRates:wsRate};
+      warningSources:ws,warningSourceRates:wsRate,
+      damageWarningAttribution:damageWarningDelta(ed,sd)};
   }
   function effectiveStatus(r,now){
     if(r.status!=='running')return r.status||'unknown';
@@ -101,7 +115,7 @@
   const blob=new Blob([text],{type:'application/json'}),url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),30000);
-  console.table(summaries.map(x=>({room:x.id,status:x.status,min:(x.durationSec/60).toFixed(1),tested:x.total.tested||0,damage:x.evaluation.damageEvents,nonEnemy:x.evaluation.nonEnemyDamage,safeMiss:x.total.safeMiss||0,materialize:x.evaluation.materializationRate,warningRate:x.evaluation.decisionLoad.warningRate})));
+  console.table(summaries.map(x=>({room:x.id,status:x.status,min:(x.durationSec/60).toFixed(1),tested:x.total.tested||0,damage:x.evaluation.damageEvents,nonEnemy:x.evaluation.nonEnemyDamage,safeMiss:x.total.safeMiss||0,materialize:x.evaluation.materializationRate,warningRate:x.evaluation.decisionLoad.warningRate,damageWarn:x.evaluation.decisionLoad.damageWarningAttribution?.stableWarningCoverage??null})));
   console.log('✅ 已下载',name,'房间数',sessions.length,'完整',bundle.completeCount,'中断',bundle.interruptedCount,'部分样本',bundle.partialCount);
   return bundle;
 })().catch(e=>console.error('❌ 多房间导出失败',e));
