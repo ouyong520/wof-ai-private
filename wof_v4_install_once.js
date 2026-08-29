@@ -36,6 +36,8 @@ function __WOF_START_V4(DB){
     auditRepeatBlockMs:700,
     missHistoryMs:600,
     missCandidateLimit:5,
+    shadowHorizonMs:350,
+    shadowRadiusScale:1.18,
     fallbackZThreshold:80,
     fallbackZActionCore:16,
     fallbackXYActionScale:.68,
@@ -97,7 +99,7 @@ function __WOF_START_V4(DB){
   }
   function resetPlayerRuntime(name){
     PH[name]=[];delete PS[name];
-    const A=AUD?.[name];if(A){A.pending=null;A.prevHp=null;A.lastWarnAt=-1e9;A.lastRawWarnAt=-1e9;A.recent={};}
+    const A=AUD?.[name];if(A){A.pending=null;A.prevHp=null;A.lastWarnAt=-1e9;A.lastRawWarnAt=-1e9;A.lastShadowWarnAt=-1e9;A.lastShadowRawAt=-1e9;A.recent={};}
     const S=ST?.[name];if(S){S.k='';S.n=0;S.v=null;}
     if(name in PRINT)PRINT[name]='';
   }
@@ -569,6 +571,11 @@ function __WOF_START_V4(DB){
       rz:Math.max(1,d.rz*(g.z??1)*trust*(1-CFG.actionPenetrationMin)),
       learnedGeometry:true,actionPenetrationCore:true};});
   const fullCur=evalPath(p,'CONTINUE',danger,0);
+  const shadowDanger=danger.filter(d=>d.t<=CFG.shadowHorizonMs).map(d=>({...d,
+    rx:Math.max(1,(+d.rx||1)*CFG.shadowRadiusScale),
+    ry:Math.max(1,(+d.ry||1)*CFG.shadowRadiusScale),
+    rz:Math.max(1,(+d.rz||1)*CFG.shadowRadiusScale),shadowOnly:true}));
+  const shadowCur=evalPath(p,'CONTINUE',shadowDanger,0);
   const cur=evalPath(p,'CONTINUE',actionDanger,0);
 
   if(cur.safe){
@@ -577,6 +584,10 @@ function __WOF_START_V4(DB){
       const geometryWatch=!!gh.geometryFallback;
       return{danger:true,watchOnly:true,geometryWatchOnly:geometryWatch,edgeWatchOnly:!geometryWatch,
         best:'WATCH',hitMs:fullCur.collisionMs,hit:gh,stay:fullCur};
+    }
+    if(!shadowCur.safe){
+      const gh=shadowCur.hit||{};
+      return{danger:true,watchOnly:true,shadowWatchOnly:true,best:'WATCH',hitMs:shadowCur.collisionMs,hit:gh,stay:shadowCur};
     }
     return{danger:false,best:'CONTINUE',stay:cur};
   }
@@ -618,7 +629,7 @@ function stable(name,r){
   let k=action+'|'+(h.slot??-1)+'|'+(h.family??'');
   if(action==='AB')k+='|'+(uh.slot??-1)+'|'+(uh.family??'')+'|'+(dh.slot??-1)+'|'+(dh.family??'');
   if(k===s.k)s.n++;else{s.k=k;s.n=1;s.v=null;}
-  const need=action==='SAFE'?2:action==='WATCH'?2:action==='AB'?3:((+r.hitMs||9999)<=300?2:3);
+  const need=r.shadowWatchOnly?1:action==='SAFE'?2:action==='WATCH'?2:action==='AB'?3:((+r.hitMs||9999)<=300?2:3);
   if(s.n>=need)s.v=r;
   return s.v;
 }
@@ -636,6 +647,8 @@ function stable(name,r){
     'full',fmt(h.rx)+'/'+fmt(h.ry)+'/'+fmt(h.rz),'core',fmt(h.actionRx)+'/'+fmt(h.actionRy)+'/'+fmt(h.actionRz),'source',h.source||'?');
   else if(action==='WATCH'&&r.edgeWatchOnly)qlog('🟪',name,'WATCH-边缘','约'+r.hitMs+'ms','slot',h.slot,'family',h.family||'?',
     'edge',Math.round(CFG.actionPenetrationMin*100)+'%','source',h.source||'?');
+  else if(action==='WATCH'&&r.shadowWatchOnly)qlog('🟨',name,'WATCH-安全影子','约'+r.hitMs+'ms','slot',h.slot,'family',h.family||'?',
+    'halo',Math.round((CFG.shadowRadiusScale-1)*100)+'%','source',h.source||'?');
   else if(action==='WATCH')qlog('🟠',name,'WATCH','约'+r.hitMs+'ms','slot',h.slot,'type',h.type,'family',h.family||'?','source',h.source||'?');
   else if(action==='AB')qlog('🆘',name,'OFFLINE AB候选','当前'+r.hitMs+'ms',h.family,
     'src',h.source||'?','UP堵'+r.upHitMs+'ms',uh.family||'?','DOWN堵'+r.downHitMs+'ms',dh.family||'?');
@@ -643,9 +656,9 @@ function stable(name,r){
 }
 
 const AUD={
-  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,unstableCovered:0,safeMiss:0},byFamily:{}},
-  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,unstableCovered:0,safeMiss:0},byFamily:{}},
-  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,unstableCovered:0,safeMiss:0},byFamily:{}}
+  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,unstableCovered:0,safeMiss:0},byFamily:{}},
+  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,unstableCovered:0,safeMiss:0},byFamily:{}},
+  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,unstableCovered:0,safeMiss:0},byFamily:{}}
 };
 
 function famStat(A,e){
@@ -710,6 +723,7 @@ function auditResolve(name,kind,e,extra=''){
 function auditStep(name,ps,st,raw,now){
   const A=AUD[name],action=st?actionOf(st):null,rawAction=raw?actionOf(raw):null;
   if(rawAction&&rawAction!=='SAFE')A.lastRawWarnAt=now;
+  if(raw?.shadowWatchOnly)A.lastShadowRawAt=now;
   const hp=ps.hp;
   const e=A.pending;
   if(e)trackEnemy(e,now);
@@ -720,17 +734,20 @@ function auditStep(name,ps,st,raw,now){
       if(e.attackEndedEarly)auditResolve(name,'ambiguous',e,'预测已撤销后发生 HP '+A.prevHp+'→'+hp);
       else if(e.source==='active'||e.familySeen)auditResolve(name,'hit',e,'HP '+A.prevHp+'→'+hp);
       else auditResolve(name,'ambiguous',e,'HP '+A.prevHp+'→'+hp);
-    }else if(now-A.lastWarnAt>350){
-      if(now-A.lastRawWarnAt<=350){
-        A.stats.unstableCovered++;
-        const mc=captureMissCase('unstableCovered',name,ps,raw,now,A.prevHp,hp);
-        qlog('🟧',name,'原始危险已覆盖/稳定器未确认','HP '+A.prevHp+'→'+hp,'case#'+mc.id);
-      }else{
-        A.stats.safeMiss++;
-        const mc=captureMissCase('safeMiss',name,ps,raw,now,A.prevHp,hp);
-        qlog('❌',name,'真实SAFE漏判','HP '+A.prevHp+'→'+hp,'case#'+mc.id,
-          '候选',mc.candidates.slice(0,3).map(x=>'s'+x.slot+'/T'+x.type+'/A'+x.attack+'/'+(x.locked||'?')).join(' '));
-      }
+    }else if(now-A.lastWarnAt<=350){
+      A.stats.watchCovered++;
+      const shadow=now-A.lastShadowWarnAt<=350;
+      if(shadow)A.stats.shadowCovered++;
+      qlog(shadow?'🟨':'🟩',name,shadow?'安全影子WATCH覆盖掉血':'稳定WATCH覆盖掉血','HP '+A.prevHp+'→'+hp);
+    }else if(now-A.lastRawWarnAt<=350){
+      A.stats.unstableCovered++;
+      const mc=captureMissCase('unstableCovered',name,ps,raw,now,A.prevHp,hp);
+      qlog('🟧',name,'原始危险已覆盖/稳定器未确认','HP '+A.prevHp+'→'+hp,'case#'+mc.id);
+    }else{
+      A.stats.safeMiss++;
+      const mc=captureMissCase('safeMiss',name,ps,raw,now,A.prevHp,hp);
+      qlog('❌',name,'真实SAFE漏判','HP '+A.prevHp+'→'+hp,'case#'+mc.id,
+        '候选',mc.candidates.slice(0,3).map(x=>'s'+x.slot+'/T'+x.type+'/A'+x.attack+'/'+(x.locked||'?')).join(' '));
     }
   }
   A.prevHp=hp;
@@ -752,9 +769,10 @@ function auditStep(name,ps,st,raw,now){
   }
 
   if(st&&action!=='SAFE')A.lastWarnAt=now;
+  if(st?.shadowWatchOnly)A.lastShadowWarnAt=now;
   if(!A.pending&&st&&action!=='SAFE'&&st.hitMs!=null){
     const h=st.hit||{};
-    if(st.geometryWatchOnly||st.edgeWatchOnly)return;
+    if(st.geometryWatchOnly||st.edgeWatchOnly||st.shadowWatchOnly)return;
     if(h.family==null||h.source==='active-unknown'||(h.actionable===false&&!h.calWatchOnly))return;
     const hitMs=Math.max(CFG.reactFloorMs,+st.hitMs||0);
     const instance=h.instance||((h.source||'?')+':'+(h.slot??-1)+':'+(h.family||'?'));
@@ -795,7 +813,7 @@ function reportSnapshot(){
 }
 function summarySnapshot(){
   const a=auditSnapshot(),af=auditFamilies(),c=calibrationSnapshot();
-  const total={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,unstableCovered:0,safeMiss:0};
+  const total={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,unstableCovered:0,safeMiss:0};
   for(const n of ['P1','P2','P3'])for(const k of Object.keys(total))total[k]+=+a[n]?.[k]||0;
   const fam=[];
   for(const n of ['P1','P2','P3'])for(const r of af[n]||[])fam.push({player:n,...r});
@@ -812,10 +830,11 @@ function summarySnapshot(){
     ...(c.family||[]).filter(r=>(r.confirmed||0)>=CAL_CFG.precisionFamilyConfirmed&&(r.precision??1)<=CAL_CFG.precisionFamilyMax&&(r.hit||0)<=1)
   ].slice(0,20);
   const validated=total.hit+total.falsePositive;
-  const damageEvents=total.hit+total.ambiguousDamage+total.unstableCovered+total.safeMiss;
+  const damageEvents=total.hit+total.ambiguousDamage+total.watchCovered+total.unstableCovered+total.safeMiss;
   const metrics={actionPrecision:validated?+(total.hit/validated).toFixed(3):null,
-    rawDamageCoverage:damageEvents?+((total.hit+total.ambiguousDamage+total.unstableCovered)/damageEvents).toFixed(3):null,
-    stableDamageCoverage:damageEvents?+((total.hit+total.ambiguousDamage)/damageEvents).toFixed(3):null,
+    rawDamageCoverage:damageEvents?+((total.hit+total.ambiguousDamage+total.watchCovered+total.unstableCovered)/damageEvents).toFixed(3):null,
+    stableDamageCoverage:damageEvents?+((total.hit+total.ambiguousDamage+total.watchCovered)/damageEvents).toFixed(3):null,
+    shadowDamageCoverage:damageEvents?+(total.shadowCovered/damageEvents).toFixed(3):null,
     validated,damageEvents};
   return frozenCopy({at:Date.now(),total,metrics,players:a,topFalse,demoted,precisionSuppressed,geoAdjusted,geoClasses,missCases:MISS_CASES.slice(-8)});
 }
@@ -851,7 +870,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.9.2',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.9.3',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -876,18 +895,19 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.9.2 精度优先信任门控观战版启动');
+  qlog('✅ WOF V4.9.3 安全影子恢复观战版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
   qlog('🧭 XYZ几何: class fallback 保留完整外壳用于WATCH；行动核心 X/Y 缩放 '+CFG.fallbackXYActionScale+'/'+CFG.fallbackYActionScale+'，高Z核心='+(CFG.fallbackZActionCore+CFG.padZ));
   qlog('🧯 在线校准: 只有深入行动核心的误报才快速降级；擦边碰撞只WATCH，不处罚Family');
-  qlog('🎯 精度优先: Variant首次高可信误报即隔离为WATCH；低精度source/family会联动隔离，新分支使用更小行动核心');
+  qlog('🎯 精度优先: 保留V4.9.2信任门控；坏分支继续WATCH，不重新扩大UP/DOWN/AB行动核心');
+  qlog('🟨 安全影子: 完整危险壳外再加18%短时WATCH halo，仅预警不参与UP/DOWN/AB，也不计误报校准');
   qlog('📐 自适应几何: Family/Variant独立学习 + fallback几何类跨Family共享学习；完整危险外壳始终保留WATCH');
   qlog('🔬 漏判取证: 真实SAFE漏判自动保存最近600ms敌人状态/ATTACK/Family候选；WOFV4.misses()可查看');
   qlog('⚡ 稳定器: WATCH与<=300ms紧急UP/DOWN为2帧确认；AB仍需3帧；<=250ms危险保留较宽紧急核心');
   qlog('🧱 共享几何类: 至少4次高可信误报且来自>=3个Family才开始收缩行动核心');
-  qlog('🟧 审计: unstableCovered=raw危险已覆盖但稳定器未确认；safeMiss=raw/stable都完全没看到危险');
+  qlog('🟧 审计: watchCovered=稳定WATCH覆盖掉血；shadowCovered=其中由安全影子覆盖；unstableCovered=仅raw覆盖；safeMiss=完全未覆盖');
   qlog('💾 热更新继承: Family/source/variant在线校准在同一Worker内升级版本时保留');
   qlog('🟪 边缘壳: 行动核心再内缩 '+Math.round(CFG.actionPenetrationMin*100)+'%，避免擦边UP/DOWN/AB');
   qlog('🎚️ 行动门槛: startup conf>='+CFG.startupActionMinConfidence+'；active survival>='+CFG.activeActionMinConfidence);
