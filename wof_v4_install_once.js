@@ -254,7 +254,7 @@ function __WOF_START_V4(DB){
     const up0=evalPath(p,'UP',danger,0),down0=evalPath(p,'DOWN',danger,0);
     const up=up0.safe?latestSafe(p,'UP',danger,cur.collisionMs):-1;
     const down=down0.safe?latestSafe(p,'DOWN',danger,cur.collisionMs):-1;
-    if(up<0&&down<0)return{danger:true,noRoute:true,best:'AB',hitMs:cur.collisionMs,hit:cur.hit,up,down,stay:cur};
+    if(up<0&&down<0)return{danger:true,noRoute:true,abReady:cur.collisionMs<=350,best:cur.collisionMs<=350?'AB':'WATCH',hitMs:cur.collisionMs,hit:cur.hit,up,down,stay:cur};
     let best,latest;
     if(up>=0&&down<0){best='UP';latest=up;}
     else if(down>=0&&up<0){best='DOWN';latest=down;}
@@ -267,24 +267,21 @@ function __WOF_START_V4(DB){
   }
 
   const ST={P1:{k:'',n:0,v:null},P2:{k:'',n:0,v:null}},PRINT={P1:'',P2:''};
-  function stable(name,r){
-    const s=ST[name];
-    const k=!r.danger?'SAFE':r.noRoute?'AB|'+(r.hit?.slot??-1)+'|'+(r.hit?.family??''):(r.best+'|'+(r.hit?.slot??-1));
-    if(k===s.k)s.n++;else{s.k=k;s.n=1;}
-    const need=r.noRoute?(r.hitMs<=120?2:3):2;
-    if(s.n>=need)s.v=r;
-    return s.v;
-  }
+function stable(name,r){
+  const s=ST[name],h=r.hit||{},a=!r.danger?'SAFE':r.noRoute?(r.abReady?'AB':'WATCH'):r.best,k=a+'|'+(h.slot??-1)+'|'+(h.family??'');
+  if(k===s.k)s.n++;else{s.k=k;s.n=1;if(s.v?.abReady)s.v=null;}
+  const need=!r.danger?2:r.noRoute?(r.abReady&&r.hitMs<=120?2:3):3;
+  if(s.n>=need)s.v=r;return s.v;
+}
 
   function print(name,r,enemyCount){
-    if(!r)return;
-    const hit=r.hit||{};
-    const sig=!r.danger?name+'|SAFE':r.noRoute?name+'|AB|'+hit.slot+'|'+hit.family+'|'+r.hitMs:name+'|'+r.best+'|'+hit.slot+'|'+hit.family+'|'+r.hitMs+'|'+r.latestMs;
-    if(sig===PRINT[name])return;PRINT[name]=sig;
-    if(!r.danger)console.log('🟢',name,'OFFLINE SAFE','预测怪',enemyCount);
-    else if(r.noRoute)console.log('🆘',name,'OFFLINE AB候选','约'+r.hitMs+'ms后危险','slot',hit.slot,'type',hit.type,'family',hit.family||'?');
-    else console.log(r.best==='UP'?'🟦 '+name+' ⬆ UP':'🟦 '+name+' ⬇ DOWN','约'+r.hitMs+'ms后危险','最晚'+r.latestMs+'ms后开始','UP',r.up,'DOWN',r.down,'family',hit.family||'?');
-  }
+  if(!r)return;const h=r.hit||{},a=!r.danger?'SAFE':r.noRoute?(r.abReady?'AB':'WATCH'):r.best,sig=name+'|'+a+'|'+(h.slot??-1)+'|'+(h.family??'');
+  if(sig===PRINT[name])return;PRINT[name]=sig;
+  if(!r.danger)console.log('🟢',name,'OFFLINE SAFE','预测怪',enemyCount);
+  else if(r.noRoute&&!r.abReady)console.log('🟠',name,'WATCH','约'+r.hitMs+'ms','slot',h.slot,'family',h.family||'?');
+  else if(r.noRoute)console.log('🆘',name,'OFFLINE AB候选','约'+r.hitMs+'ms后危险','slot',h.slot,'type',h.type,'family',h.family||'?');
+  else console.log(r.best==='UP'?'🟦 '+name+' ⬆ UP':'🟦 '+name+' ⬇ DOWN','约'+r.hitMs+'ms后危险','最晚'+r.latestMs+'ms后开始','UP',r.up,'DOWN',r.down,'family',h.family||'?');
+}
 
   let timer=null,last=null;
   function tick(){
@@ -294,13 +291,13 @@ function __WOF_START_V4(DB){
   }
 
   self.WOFV4={
-    version:'offline-dynamic-p1p2-v4',config:CFG,last:null,
+    version:'offline-dynamic-p1p2-v4.1',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,players:PS};},
     stop(){if(timer){clearInterval(timer);timer=null;}console.log('⛔ WOF V4关闭');}
   };
   timer=setInterval(tick,CFG.tickMs);tick();
-  console.log('✅ WOF V4 离线动态观战版启动');
+  console.log('✅ WOF V4.1 防抖观战版启动');
   console.log('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   console.log('✅ P1+P2动态轨迹 × 20怪 × 3D/斜向轨迹 × 每Family危险范围');
   console.log('⚠️ 只预测，不控制任何玩家');
