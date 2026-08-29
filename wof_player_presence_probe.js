@@ -9,17 +9,26 @@
   const hx=(n,w=2)=>'0x'+Number(n).toString(16).toUpperCase().padStart(w,'0');
   const safe=(fn,d=null)=>{try{return fn();}catch(e){return d;}};
   const val=a=>a==null?null:(typeof a==='object'&&'length'in a?Array.from(a):a);
+  const same=(a,b)=>String(a)===String(b);
 
   function workerState(){
     return {
       localPlayer:safe(()=>_0x2f9e12),
+      currentMask:safe(()=>_0x3047b3),
+      mergedMask:safe(()=>_0x37bccc),
+      sharedPlayerIndex:safe(()=>_0xc979ab),
       inputMasks:safe(()=>val(_0x510901)),
       inputHead:safe(()=>val(_0x56ebd7)),
       sharedInput:safe(()=>val(_0x806137)),
       sharedLink:safe(()=>val(_0x1b3181)),
       linkMode:safe(()=>_0x4a4e73),
       linkRunning:safe(()=>_0x4e7623),
-      wsOpen:safe(()=>!!_0xe02728&&_0xe02728.readyState),
+      wsState:safe(()=>_0xe02728?.readyState),
+      netP1:safe(()=>_0x296171),netP2:safe(()=>_0xa1833a),
+      netP3:safe(()=>_0x2690d2),netP4:safe(()=>_0x15e77b),
+      netMin:safe(()=>_0x32f831),netMax:safe(()=>_0x5cce8c),
+      sync0:safe(()=>_0x31a69e),sync123:safe(()=>val(_0x16c066)),sync3:safe(()=>_0x558b9c),
+      linkReset:safe(()=>_0x3c135e),
       P1_up:safe(()=>val(_0x383392)),P1_down:safe(()=>val(_0x2cfd38)),
       P1_left:safe(()=>val(_0x42c5ad)),P1_right:safe(()=>val(_0x332c33)),
       P1_b5:safe(()=>val(_0x4b36ba)),P1_b6:safe(()=>val(_0xedd11f)),
@@ -49,6 +58,16 @@
     return out;
   }
 
+  function byteStats(samples,len){
+    const cand=new Uint8Array(len),vote=new Int16Array(len);
+    for(const s of samples)for(let i=0;i<len;i++){
+      const v=s[i];if(vote[i]===0){cand[i]=v;vote[i]=1;}else if(cand[i]===v)vote[i]++;else vote[i]--;
+    }
+    const count=new Uint16Array(len),uniq=new Uint8Array(len),first=new Uint8Array(len);first.set(samples[0]);
+    for(const s of samples)for(let i=0;i<len;i++){if(s[i]===cand[i])count[i]++;if(s[i]!==first[i])uniq[i]=1;}
+    return Array.from({length:len},(_,i)=>({mode:cand[i],stability:count[i]/samples.length,changed:!!uniq[i]}));
+  }
+
   async function snapWorker(label='snap',durationMs=1200,stepMs=40){
     const samples=[],n=Math.max(5,Math.round(durationMs/stepMs));
     for(let i=0;i<n;i++){samples.push(flatten(workerState()));await sleep(stepMs);}
@@ -67,16 +86,6 @@
     return {player,label,samples:n,stable:stat.filter(x=>x.stability>=.95).length};
   }
 
-  function byteStats(samples,len){
-    const cand=new Uint8Array(len),vote=new Int16Array(len);
-    for(const s of samples)for(let i=0;i<len;i++){
-      const v=s[i];if(vote[i]===0){cand[i]=v;vote[i]=1;}else if(cand[i]===v)vote[i]++;else vote[i]--;
-    }
-    const count=new Uint16Array(len),uniq=new Uint8Array(len),first=new Uint8Array(len);first.set(samples[0]);
-    for(const s of samples)for(let i=0;i<len;i++){if(s[i]===cand[i])count[i]++;if(s[i]!==first[i])uniq[i]=1;}
-    return Array.from({length:len},(_,i)=>({mode:cand[i],stability:count[i]/samples.length,changed:!!uniq[i]}));
-  }
-
   async function snapRam(label='snap',durationMs=960,stepMs=80){
     const samples=[],n=Math.max(6,Math.round(durationMs/stepMs));
     for(let k=0;k<n;k++){
@@ -90,7 +99,7 @@
   function diffWorker(a='left',b='joined',min=.9){
     const A=WOFPRESENCE.workerSnaps[a],C=WOFPRESENCE.workerSnaps[b];if(!A||!C)throw new Error('missing worker snapshots');
     const rows=[];for(const k of new Set([...Object.keys(A.stat),...Object.keys(C.stat)])){
-      const x=A.stat[k],y=C.stat[k];if(x&&y&&x.stability>=min&&y.stability>=min&&String(x.mode)!==String(y.mode))rows.push({field:k,[a]:x.mode,[b]:y.mode,stableA:+x.stability.toFixed(2),stableB:+y.stability.toFixed(2)});
+      const x=A.stat[k],y=C.stat[k];if(x&&y&&x.stability>=min&&y.stability>=min&&!same(x.mode,y.mode))rows.push({field:k,[a]:x.mode,[b]:y.mode,stableA:+x.stability.toFixed(2),stableB:+y.stability.toFixed(2)});
     }
     console.table(rows);return rows;
   }
@@ -104,7 +113,29 @@
   function diffRam(a='left',b='joined',min=.95,limit=250){
     const A=WOFPRESENCE.ramSnaps[a],C=WOFPRESENCE.ramSnaps[b];if(!A||!C)throw new Error('missing RAM snapshots');
     const rows=[];for(let i=0;i<RAM_LEN;i++){const x=A.stat[i],y=C.stat[i];if(x.stability>=min&&y.stability>=min&&x.mode!==y.mode)rows.push({address:hx(0xFF0000+i,6),[a]:x.mode,[b]:y.mode,stableA:+x.stability.toFixed(2),stableB:+y.stability.toFixed(2)});}
-    const shown=rows.slice(0,limit);console.table(shown);if(rows.length>limit)console.log('... RAM candidates',rows.length,'showing',limit);return rows;
+    console.table(rows.slice(0,limit));if(rows.length>limit)console.log('... RAM candidates',rows.length,'showing',limit);return rows;
+  }
+
+  function triWorker(a='left',b='joined',c='left2',min=.9){
+    const A=WOFPRESENCE.workerSnaps[a],J=WOFPRESENCE.workerSnaps[b],C=WOFPRESENCE.workerSnaps[c];if(!A||!J||!C)throw new Error('missing worker snapshots for triangulation');
+    const rows=[];for(const k of new Set([...Object.keys(A.stat),...Object.keys(J.stat),...Object.keys(C.stat)])){
+      const x=A.stat[k],y=J.stat[k],z=C.stat[k];
+      if(x&&y&&z&&x.stability>=min&&y.stability>=min&&z.stability>=min&&same(x.mode,z.mode)&&!same(x.mode,y.mode))
+        rows.push({field:k,[a]:x.mode,[b]:y.mode,[c]:z.mode,stableA:+x.stability.toFixed(2),stableB:+y.stability.toFixed(2),stableC:+z.stability.toFixed(2)});
+    }
+    console.table(rows);return rows;
+  }
+
+  function triObject(player='P2',a='left',b='joined',c='left2',min=.95){
+    const A=WOFPRESENCE.objectSnaps[player+':'+a],J=WOFPRESENCE.objectSnaps[player+':'+b],C=WOFPRESENCE.objectSnaps[player+':'+c];if(!A||!J||!C)throw new Error('missing object snapshots for triangulation');
+    const rows=[];for(let i=0;i<OBJ_LEN;i++){const x=A.stat[i],y=J.stat[i],z=C.stat[i];if(x.stability>=min&&y.stability>=min&&z.stability>=min&&x.mode===z.mode&&x.mode!==y.mode)rows.push({offset:hx(i),address:hx(BASE[player]+i,6),[a]:x.mode,[b]:y.mode,[c]:z.mode,stableA:+x.stability.toFixed(2),stableB:+y.stability.toFixed(2),stableC:+z.stability.toFixed(2)});}
+    console.table(rows);return rows;
+  }
+
+  function triRam(a='left',b='joined',c='left2',min=.95,limit=250){
+    const A=WOFPRESENCE.ramSnaps[a],J=WOFPRESENCE.ramSnaps[b],C=WOFPRESENCE.ramSnaps[c];if(!A||!J||!C)throw new Error('missing RAM snapshots for triangulation');
+    const rows=[];for(let i=0;i<RAM_LEN;i++){const x=A.stat[i],y=J.stat[i],z=C.stat[i];if(x.stability>=min&&y.stability>=min&&z.stability>=min&&x.mode===z.mode&&x.mode!==y.mode)rows.push({address:hx(0xFF0000+i,6),[a]:x.mode,[b]:y.mode,[c]:z.mode,stableA:+x.stability.toFixed(2),stableB:+y.stability.toFixed(2),stableC:+z.stability.toFixed(2)});}
+    console.table(rows.slice(0,limit));if(rows.length>limit)console.log('... triangulated RAM candidates',rows.length,'showing',limit);return rows;
   }
 
   async function capture(label){
@@ -121,11 +152,19 @@
     const result={worker:w,object:o,ram:r};WOFPRESENCE.lastCompare=result;return result;
   }
 
+  function triangulate(a='left',b='joined',c='left2'){
+    console.log('=== 三态交叉：Worker（离开=离开2，且不同于加入） ===');const w=triWorker(a,b,c,.9);
+    console.log('=== 三态交叉：P2对象 ===');const o=triObject('P2',a,b,c,.95);
+    console.log('=== 三态交叉：全64KB CPS RAM ===');const r=triRam(a,b,c,.95,250);
+    const result={worker:w,object:o,ram:r};WOFPRESENCE.lastTriangulate=result;return result;
+  }
+
   function peek(player='P2'){
     const base=BASE[player];const known={flag:B(base),type:(B(base+0x20)<<8)|B(base+0x21),body:(B(base+0x6E)<<8)|B(base+0x6F),attack:(B(base+0x70)<<8)|B(base+0x71),status82:B(base+0x82),hp83:B(base+0x83),worker:workerState()};
     console.log('👤',player,known);return known;
   }
 
-  self.WOFPRESENCE={version:'presence-probe-v2',workerSnaps:{},objectSnaps:{},ramSnaps:{},lastCompare:null,workerState,snapWorker,snapObject,snapRam,diffWorker,diffObject,diffRam,capture,compare,peek};
-  console.log('✅ WOF 玩家加入/离开探针 v2 已加载（只读：Worker状态 + P2对象 + 全64KB CPS RAM）');
+  self.WOFPRESENCE={version:'presence-probe-v2.1',workerSnaps:{},objectSnaps:{},ramSnaps:{},lastCompare:null,lastTriangulate:null,
+    workerState,snapWorker,snapObject,snapRam,diffWorker,diffObject,diffRam,triWorker,triObject,triRam,capture,compare,triangulate,peek};
+  console.log('✅ WOF 玩家加入/离开探针 v2.1 已加载（只读：Worker + P2对象 + 全64KB CPS RAM + 三态交叉）');
 })();
