@@ -768,6 +768,49 @@ function __WOF_START_V4(DB){
     exclusiveCases:[],caseSeq:0
   };
   const incDiag=(m,k)=>{if(k)m[k]=(m[k]||0)+1;};
+  const HUD_STATE={
+    P1:{sig:null,lastSeen:-1e9,lastPulseAt:-1e9,pulseUntil:-1e9},
+    P2:{sig:null,lastSeen:-1e9,lastPulseAt:-1e9,pulseUntil:-1e9},
+    P3:{sig:null,lastSeen:-1e9,lastPulseAt:-1e9,pulseUntil:-1e9}
+  };
+  const HUD_SHADOW={
+    ticks:{L1:0,L2:0,L3:0},episodes:blankWarningSources(),pulses:0,pulseTicks:0,
+    damage:{hpDrops:0,actionCovered:0,specificOrActionCovered:0,anyCovered:0,broadOnly:0,pulseRecent:0,noWarning:0}
+  };
+  const warningLevel=src=>src==='ACTION'?3:(src==='GUARD'||src==='GEOMETRY'||src==='SHADOW'?1:2);
+  function hudTelemetry(name,src,meta,now){
+    const u=HUD_STATE[name];if(!u||!src)return;
+    const lv=warningLevel(src);HUD_SHADOW.ticks['L'+lv]++;
+    const sig=meta?.sig||src,gap=now-u.lastSeen;
+    if(sig!==u.sig||gap>CFG.tickMs*3){
+      if(HUD_SHADOW.episodes[src]!=null)HUD_SHADOW.episodes[src]++;
+      HUD_SHADOW.pulses++;u.lastPulseAt=now;u.pulseUntil=now+180;
+    }else if(now-u.lastPulseAt>=900){
+      HUD_SHADOW.pulses++;u.lastPulseAt=now;u.pulseUntil=now+180;
+    }
+    u.sig=sig;u.lastSeen=now;
+    if(now<=u.pulseUntil)HUD_SHADOW.pulseTicks++;
+  }
+  function hudDamageRecord(name,now,h){
+    const d=HUD_SHADOW.damage,u=HUD_STATE[name];d.hpDrops++;
+    if(!h.length){d.noWarning++;return;}
+    d.anyCovered++;
+    const levels=h.map(x=>warningLevel(x.src));
+    if(levels.some(x=>x===3))d.actionCovered++;
+    if(levels.some(x=>x>=2))d.specificOrActionCovered++;
+    if(levels.every(x=>x===1))d.broadOnly++;
+    if(u&&now-u.lastPulseAt<=350)d.pulseRecent++;
+  }
+  function hudShadowSnapshot(){
+    const d=HUD_SHADOW.damage;
+    return {ticks:{...HUD_SHADOW.ticks},episodes:{...HUD_SHADOW.episodes},pulses:HUD_SHADOW.pulses,pulseTicks:HUD_SHADOW.pulseTicks,
+      damage:{...d,
+        actionCoverage:d.hpDrops?+(d.actionCovered/d.hpDrops).toFixed(3):null,
+        specificOrActionCoverage:d.hpDrops?+(d.specificOrActionCovered/d.hpDrops).toFixed(3):null,
+        anyCoverage:d.hpDrops?+(d.anyCovered/d.hpDrops).toFixed(3):null,
+        broadOnlyRate:d.hpDrops?+(d.broadOnly/d.hpDrops).toFixed(3):null,
+        pulseRecentCoverage:d.hpDrops?+(d.pulseRecent/d.hpDrops).toFixed(3):null}};
+  }
   const leadBand=v=>!Number.isFinite(+v)?'lead:?':+v<=120?'lead:<=120':+v<=220?'lead:121-220':+v<=350?'lead:221-350':'lead:>350';
   const ageBand=v=>!Number.isFinite(+v)?'age:?':+v<=120?'age:<=120':+v<=300?'age:121-300':+v<=600?'age:301-600':'age:>600';
   const speedBand=v=>!Number.isFinite(+v)?'speed:?':+v<=30?'speed:<=30':+v<=100?'speed:31-100':'speed:>100';
@@ -805,7 +848,7 @@ function __WOF_START_V4(DB){
     while(h.length&&now-h[0].lastAt>1200)h.shift();
     const src=warningSourceOf(st,da);if(!src)return null;
     if(WARNING_SOURCE_TICKS[name]?.[src]!=null)WARNING_SOURCE_TICKS[name][src]++;
-    const meta=warningMeta(st,src);diagTick(src,meta);
+    const meta=warningMeta(st,src);diagTick(src,meta);hudTelemetry(name,src,meta,now);
     const last=h[h.length-1];
     if(last&&last.src===src&&last.sig===meta.sig&&now-last.lastAt<=CFG.tickMs*3){
       last.lastAt=now;last.hitMs=meta.hitMs;last.meta=meta;
@@ -814,7 +857,7 @@ function __WOF_START_V4(DB){
   }
   function damageWarningRecord(name,now){
     const h=(WARN_HISTORY[name]||[]).filter(x=>x.lastAt>=now-350);
-    const D=DAMAGE_WARNING,P=D.players[name];D.hpDrops++;if(P)P.hpDrops++;
+    const D=DAMAGE_WARNING,P=D.players[name];D.hpDrops++;if(P)P.hpDrops++;hudDamageRecord(name,now,h);
     if(!h.length){D.noStableWarning++;if(P)P.noStableWarning++;return;}
     D.withStableWarning++;if(P)P.withStableWarning++;
     const sources=[...new Set(h.map(x=>x.src))];for(const src of sources)if(D.any[src]!=null)D.any[src]++;
@@ -848,7 +891,8 @@ function __WOF_START_V4(DB){
       watchDiagnostics:{
         guard:{ticks:{...WATCH_DIAG.guard.ticks},damageAny:{...WATCH_DIAG.guard.damageAny},damageExclusiveLatest:{...WATCH_DIAG.guard.damageExclusiveLatest}},
         geometry:{ticks:{...WATCH_DIAG.geometry.ticks},damageAny:{...WATCH_DIAG.geometry.damageAny},damageExclusiveLatest:{...WATCH_DIAG.geometry.damageExclusiveLatest}},
-        caseSeq:WATCH_DIAG.caseSeq,exclusiveCases:WATCH_DIAG.exclusiveCases.map(x=>JSON.parse(JSON.stringify(x)))}
+        caseSeq:WATCH_DIAG.caseSeq,exclusiveCases:WATCH_DIAG.exclusiveCases.map(x=>JSON.parse(JSON.stringify(x)))},
+      hudShadow:hudShadowSnapshot()
     };
   }
 function actionOf(r){return !r?.danger?'SAFE':r.watchOnly?'WATCH':r.noRoute?(r.abReady?'AB':'WATCH'):r.best;}
@@ -1262,7 +1306,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.11.3',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.11.4',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -1289,7 +1333,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.11.3 GUARD/GEOMETRY必要性细分版启动');
+  qlog('✅ WOF V4.11.4 HUD分层/脉冲影子评估版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('🧊 V4.11.1仍不修改Family/轨迹/范围/护栏/稳定器/行动门槛；只修审计污染并拆分警告来源；V4.10.1仍为冻结基线');
   qlog('🧹 审计去污染: HP异常基线重建与最近600ms完全无敌方证据的掉血单独统计，不再自动算enemy SAFE漏判');
@@ -1297,6 +1341,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   qlog('📊 警告来源: decisionLoad.warningSources拆分ACTION/GUARD/TAIL/SHADOW/BRIDGE/PHASE/GEOMETRY/EDGE/WATCH');
   qlog('🧬 掉血归因: decisionLoad.damageWarningAttribution记录掉血前350ms内警告来源的any/exclusive/latest与提前量；仍不改变预测/HUD行为');
   qlog('🔬 V4.11.3细分: watchDiagnostics记录GUARD的attack-age/speed/radius/family/lead，以及GEOMETRY的source/Z壳/radius/family/lead，并保留独占掉血case；预测行为完全不变');
+  qlog('🖥️ V4.11.4 HUD影子: L3=ACTION，L2=TAIL/BRIDGE/PHASE/EDGE/WATCH，L1=GUARD/GEOMETRY/SHADOW；同时模拟180ms脉冲+900ms重复，仍不改变预测/决策');
   qlog('👤 玩家水平拆分: changed单列为自然路径改变；reportShort().evaluation同时报告攻击materialization与玩家路径改变率，不再把高手/普通玩家混成一个精度数字');
   qlog('🖥️ 提示负担: reportShort().evaluation.decisionLoad统计SAFE/WATCH/UP/DOWN/AB时间占比，防止为了覆盖率把最终HUD调成满屏警告');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
