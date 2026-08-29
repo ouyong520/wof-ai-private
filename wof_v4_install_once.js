@@ -95,7 +95,7 @@ function __WOF_START_V4(DB){
   }
   function resetPlayerRuntime(name){
     PH[name]=[];delete PS[name];
-    const A=AUD?.[name];if(A){A.pending=null;A.prevHp=null;A.lastWarnAt=-1e9;A.recent={};}
+    const A=AUD?.[name];if(A){A.pending=null;A.prevHp=null;A.lastWarnAt=-1e9;A.lastRawWarnAt=-1e9;A.recent={};}
     const S=ST?.[name];if(S){S.k='';S.n=0;S.v=null;}
     if(name in PRINT)PRINT[name]='';
   }
@@ -186,12 +186,12 @@ function __WOF_START_V4(DB){
   // Only confirmed hit/fp events enter this table. Demotion affects actionability only.
   const CAL_FAMILY=Object.create(null),CAL_SOURCE=Object.create(null),CAL_VARIANT=Object.create(null);
   const CAL_CFG={
-    sourceDemoteConfirmed:2,sourceDemoteFp:2,sourceDemoteFpPlayers:1,sourceDemotePrecision:.25,
-    sourceRecoverConfirmed:5,sourceRecoverHit:2,sourceRecoverPrecision:.50,
-    familyDemoteConfirmed:3,familyDemoteFp:3,familyDemoteFpPlayers:1,familyDemotePrecision:.30,
-    familyRecoverConfirmed:7,familyRecoverHit:3,familyRecoverPrecision:.50,
-    variantDemoteConfirmed:3,variantDemoteFp:3,variantDemotePrecision:.20,
-    variantRecoverConfirmed:6,variantRecoverHit:3,variantRecoverPrecision:.50,
+    sourceDemoteConfirmed:6,sourceDemoteFp:5,sourceDemoteFpPlayers:2,sourceDemotePrecision:.25,
+    sourceRecoverConfirmed:10,sourceRecoverHit:4,sourceRecoverPrecision:.50,
+    familyDemoteConfirmed:10,familyDemoteFp:7,familyDemoteFpPlayers:2,familyDemotePrecision:.30,
+    familyRecoverConfirmed:16,familyRecoverHit:6,familyRecoverPrecision:.50,
+    variantDemoteConfirmed:2,variantDemoteFp:2,variantDemotePrecision:.20,
+    variantRecoverConfirmed:5,variantRecoverHit:2,variantRecoverPrecision:.50,
     activeFpMinConfidence:.50,startupFpMinConfidence:.25,fpMinSurvival:.50
   };
   function calBucket(map,key){return map[key]||(map[key]={hit:0,fp:0,ignoredFp:0,confirmed:0,precision:null,watchOnly:false,demotions:0,recoveries:0,hitPlayers:{},fpPlayers:{}});}
@@ -264,6 +264,12 @@ function __WOF_START_V4(DB){
   }
   function importCalibration(x){if(!x)return false;importCalRows(CAL_FAMILY,x.family);importCalRows(CAL_SOURCE,x.source);importCalRows(CAL_VARIANT,x.variant);return true;}
   importCalibration(__WOF_PREV_CAL||self.__WOF_CAL_CACHE);
+  function recalibrateImported(){
+    for(const [map,scope] of [[CAL_VARIANT,'variant'],[CAL_SOURCE,'source'],[CAL_FAMILY,'family']]){
+      for(const b of Object.values(map)){b.watchOnly=false;calRefresh(b,scope);}
+    }
+  }
+  recalibrateImported();
   function calibrationRaw(){return {family:JSON.parse(JSON.stringify(CAL_FAMILY)),source:JSON.parse(JSON.stringify(CAL_SOURCE)),variant:JSON.parse(JSON.stringify(CAL_VARIANT))};}
   function calibrationReset(){for(const k of Object.keys(CAL_FAMILY))delete CAL_FAMILY[k];for(const k of Object.keys(CAL_SOURCE))delete CAL_SOURCE[k];for(const k of Object.keys(CAL_VARIANT))delete CAL_VARIANT[k];self.__WOF_CAL_CACHE=null;qlog('🧹 Family/Variant在线校准已清零');return calibrationSnapshot();}
 
@@ -484,7 +490,7 @@ function actionOf(r){return !r?.danger?'SAFE':r.watchOnly?'WATCH':r.noRoute?(r.a
 function stable(name,r){
   const s=ST[name],h=r.hit||{},uh=r.upHit||{},dh=r.downHit||{};
   const action=actionOf(r);
-  let k=action+'|'+(h.slot??-1)+'|'+(h.family??'')+'|'+(h.variant??'');
+  let k=action+'|'+(h.slot??-1)+'|'+(h.family??'');
   if(action==='AB')k+='|'+(uh.slot??-1)+'|'+(uh.family??'')+'|'+(dh.slot??-1)+'|'+(dh.family??'');
   if(k===s.k)s.n++;else{s.k=k;s.n=1;s.v=null;}
   const need=action==='SAFE'?2:3;
@@ -512,9 +518,9 @@ function stable(name,r){
 }
 
 const AUD={
-  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,safeMiss:0},byFamily:{}},
-  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,safeMiss:0},byFamily:{}},
-  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,safeMiss:0},byFamily:{}}
+  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,unstableCovered:0,safeMiss:0},byFamily:{}},
+  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,unstableCovered:0,safeMiss:0},byFamily:{}},
+  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,unstableCovered:0,safeMiss:0},byFamily:{}}
 };
 
 function famStat(A,e){
@@ -576,8 +582,9 @@ function auditResolve(name,kind,e,extra=''){
   A.pending=null;
 }
 
-function auditStep(name,ps,st,now){
-  const A=AUD[name],action=st?actionOf(st):null;
+function auditStep(name,ps,st,raw,now){
+  const A=AUD[name],action=st?actionOf(st):null,rawAction=raw?actionOf(raw):null;
+  if(rawAction&&rawAction!=='SAFE')A.lastRawWarnAt=now;
   const hp=ps.hp;
   const e=A.pending;
   if(e)trackEnemy(e,now);
@@ -589,8 +596,13 @@ function auditStep(name,ps,st,now){
       else if(e.source==='active'||e.familySeen)auditResolve(name,'hit',e,'HP '+A.prevHp+'→'+hp);
       else auditResolve(name,'ambiguous',e,'HP '+A.prevHp+'→'+hp);
     }else if(now-A.lastWarnAt>350){
-      A.stats.safeMiss++;
-      qlog('❌',name,'SAFE漏判候选','HP '+A.prevHp+'→'+hp,'近350ms无稳定危险提示');
+      if(now-A.lastRawWarnAt<=350){
+        A.stats.unstableCovered++;
+        qlog('🟧',name,'原始危险已覆盖/稳定器未确认','HP '+A.prevHp+'→'+hp,'近350ms有raw危险');
+      }else{
+        A.stats.safeMiss++;
+        qlog('❌',name,'真实SAFE漏判候选','HP '+A.prevHp+'→'+hp,'近350ms raw/stable 都无危险');
+      }
     }
   }
   A.prevHp=hp;
@@ -655,7 +667,7 @@ function reportSnapshot(){
 }
 function summarySnapshot(){
   const a=auditSnapshot(),af=auditFamilies(),c=calibrationSnapshot();
-  const total={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,safeMiss:0};
+  const total={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,unstableCovered:0,safeMiss:0};
   for(const n of ['P1','P2','P3'])for(const k of Object.keys(total))total[k]+=+a[n]?.[k]||0;
   const fam=[];
   for(const n of ['P1','P2','P3'])for(const r of af[n]||[])fam.push({player:n,...r});
@@ -674,7 +686,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
     const ps=PS[p.name];if(!ps)continue;
     const raw=decision(ps,d.danger),st=stable(p.name,raw);
     last.players[p.name]={raw,stable:st,state:{...ps}};
-    auditStep(p.name,ps,st,now);
+    auditStep(p.name,ps,st,raw,now);
     print(p.name,st,d.enemies.size);
   }
   self.WOFV4.last=last;
@@ -696,7 +708,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.8',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.8.1',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -720,13 +732,14 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.8 上下文Variant校准观战版启动');
+  qlog('✅ WOF V4.8.1 Variant稳定性/真实漏判审计版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
   qlog('🧭 XYZ几何: class fallback 保留完整外壳用于WATCH；行动核心 X/Y 缩放 '+CFG.fallbackXYActionScale+'/'+CFG.fallbackYActionScale+'，高Z核心='+(CFG.fallbackZActionCore+CFG.padZ));
   qlog('🧯 在线校准: 只有深入行动核心的误报才快速降级；擦边碰撞只WATCH，不处罚Family');
-  qlog('🧬 Variant: startup按anim/state分支；active按起手上下文+80ms运动分支独立降级，不再一刀切整个Family');
+  qlog('🧬 Variant: 坏分支2次高可信误报即可WATCH；Family/source恢复为慢速安全兜底');
+  qlog('🟧 审计: unstableCovered=raw危险已覆盖但稳定器未确认；safeMiss=raw/stable都完全没看到危险');
   qlog('💾 热更新继承: Family/source/variant在线校准在同一Worker内升级版本时保留');
   qlog('🟪 边缘壳: 行动核心再内缩 '+Math.round(CFG.actionPenetrationMin*100)+'%，避免擦边UP/DOWN/AB');
   qlog('🎚️ 行动门槛: startup conf>='+CFG.startupActionMinConfidence+'；active survival>='+CFG.activeActionMinConfidence);
