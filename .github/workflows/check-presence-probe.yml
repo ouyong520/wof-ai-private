@@ -1,0 +1,19 @@
+name: Check WOF Presence Probe
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'wof_player_presence_probe.js'
+      - '.github/workflows/check-presence-probe.yml'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check
+        run: |
+          node --check wof_player_presence_probe.js
+          grep -q "presence-probe-v2.1" wof_player_presence_probe.js
+          grep -q "triangulate" wof_player_presence_probe.js
+          grep -q "RAM_LEN=0x10000" wof_player_presence_probe.js
+          echo "presence probe OK"
