@@ -50,6 +50,14 @@ function __WOF_START_V4(DB){
     activeGuardMinRz:14,
     activeGuardMaxRz:26,
     watchPromoteMaxMs:280,
+    attackTailGuardMs:280,
+    attackTailHorizonMs:220,
+    attackTailMinRx:88,
+    attackTailMaxRx:150,
+    attackTailMinRy:20,
+    attackTailMaxRy:34,
+    attackTailMinRz:14,
+    attackTailMaxRz:24,
     activeGuardVelocityCapX:260,
     activeGuardVelocityCapY:120,
     activeGuardVelocityCapZ:220,
@@ -114,7 +122,7 @@ function __WOF_START_V4(DB){
   }
   function resetPlayerRuntime(name){
     PH[name]=[];delete PS[name];
-    const A=AUD?.[name];if(A){A.pending=null;A.prevHp=null;A.lastWarnAt=-1e9;A.lastRawWarnAt=-1e9;A.lastShadowWarnAt=-1e9;A.lastShadowRawAt=-1e9;A.lastGuardWarnAt=-1e9;A.lastGuardRawAt=-1e9;A.lastWatchEvidence=null;A.recent={};A.dead=false;A.absent=false;A.suppressUntil=-1e9;A.lastDamageAt=-1e9;}
+    const A=AUD?.[name];if(A){A.pending=null;A.prevHp=null;A.lastWarnAt=-1e9;A.lastRawWarnAt=-1e9;A.lastShadowWarnAt=-1e9;A.lastShadowRawAt=-1e9;A.lastGuardWarnAt=-1e9;A.lastGuardRawAt=-1e9;A.lastTailWarnAt=-1e9;A.lastWatchEvidence=null;A.recent={};A.dead=false;A.absent=false;A.suppressUntil=-1e9;A.lastDamageAt=-1e9;}
     const S=ST?.[name];if(S){S.k='';S.n=0;S.v=null;}
     if(name in PRINT)PRINT[name]='';
   }
@@ -385,7 +393,7 @@ function __WOF_START_V4(DB){
     return out;
   }
 
-  const SLOT=Array.from({length:NSLOTS},()=>({type:null,prevAttack:0,locked:null,started:0,origin:null,face:0,seq:0,variantBase:null,variantMotion:null}));
+  const SLOT=Array.from({length:NSLOTS},()=>({type:null,prevAttack:0,locked:null,started:0,origin:null,face:0,seq:0,variantBase:null,variantMotion:null,tail:null}));
   const UNIQUE_ACTIVE=new Map();
   const MULTI_ACTIVE=new Set();
   const ENEMY_HISTORY=[];
@@ -398,13 +406,24 @@ function __WOF_START_V4(DB){
 
   function updateLock(o,now){
     const s=SLOT[o.slot];
-    if(s.type!==o.type){s.type=o.type;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;s.seq=0;s.variantBase=null;s.variantMotion=null;}
+    if(s.type!==o.type){s.type=o.type;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;s.seq=0;s.variantBase=null;s.variantMotion=null;s.tail=null;}
     if(s.prevAttack===0&&o.attack!==0){
       s.seq=(s.seq||0)+1;
       s.locked=DB.a[keyActive(o)]||UNIQUE_ACTIVE.get(o.type+'|'+o.attack)||null;
       s.started=now;s.origin={x:o.x,y:o.y,z:o.z};s.face=o.face;
       s.variantBase='a'+o.anim+':'+o.s0+':'+o.s1+':'+o.s2+':'+o.s3;s.variantMotion=null;
-    }else if(s.prevAttack!==0&&o.attack===0){s.locked=null;s.origin=null;s.started=0;s.variantBase=null;s.variantMotion=null;}
+    }else if(s.prevAttack!==0&&o.attack===0){
+      const family=s.locked||null,age=Math.max(0,now-(s.started||now)),sec=Math.max(.08,age/1000);
+      let vx=0,vy=0,vz=0;
+      if(s.origin&&age>=80){
+        vx=(o.x-s.origin.x)/sec;vy=(o.y-s.origin.y)/sec;vz=(o.z-s.origin.z)/sec;
+        vx=Math.max(-CFG.activeGuardVelocityCapX,Math.min(CFG.activeGuardVelocityCapX,vx));
+        vy=Math.max(-CFG.activeGuardVelocityCapY,Math.min(CFG.activeGuardVelocityCapY,vy));
+        vz=Math.max(-CFG.activeGuardVelocityCapZ,Math.min(CFG.activeGuardVelocityCapZ,vz));
+      }
+      s.tail={at:now,until:now+CFG.attackTailGuardMs,family,x:o.x,y:o.y,z:o.z,vx,vy,vz};
+      s.locked=null;s.origin=null;s.started=0;s.variantBase=null;s.variantMotion=null;
+    }
     if(o.attack!==0&&s.origin&&s.variantMotion==null&&now-s.started>=80){
       const sg=faceSign(s.face),dx=sg*(o.x-s.origin.x),dy=o.y-s.origin.y,dz=o.z-s.origin.z;
       s.variantMotion='m'+Math.round(dx/16)+','+Math.round(dy/8)+','+Math.round(dz/8);
@@ -559,14 +578,30 @@ function __WOF_START_V4(DB){
     }
   }
 
+  function addAttackTailGuard(o,s,now,out){
+    const q=s.tail;if(!q||now>q.until)return;
+    const f=q.family?getFamily(q.family):null,rad=f?radius(f):null;
+    const baseRx=rad?(rad.actionRx||rad.rx):96,baseRy=rad?(rad.actionRy||rad.ry):22,baseRz=rad?(rad.actionRz||rad.rz):16;
+    const rx=Math.max(CFG.attackTailMinRx,Math.min(CFG.attackTailMaxRx,baseRx*1.15));
+    const ry=Math.max(CFG.attackTailMinRy,Math.min(CFG.attackTailMaxRy,baseRy*1.15));
+    const rz=Math.max(CFG.attackTailMinRz,Math.min(CFG.attackTailMaxRz,baseRz*1.15));
+    const remain=Math.max(CFG.reactFloorMs,Math.min(CFG.attackTailHorizonMs,q.until-now+80));
+    for(let t=CFG.reactFloorMs;t<=remain;t+=CFG.activeGuardStepMs){
+      const dt=t/1000;
+      out.danger.push({t,x:o.x+q.vx*dt,y:o.y+q.vy*dt,z:o.z+q.vz*dt,rx,ry,rz,
+        slot:o.slot,type:o.type,family:q.family||null,variant:null,confidence:.15,survival:1,
+        actionable:false,guardWatch:true,tailGuard:true,source:'attack-tail-guard'});
+    }
+  }
+
   function buildDanger(now){
     const out={danger:[],enemies:new Set(),exact:0,coarse:0};
     for(let i=0;i<NSLOTS;i++){
       const o=readActor(POOL+i*STRIDE,i),s=SLOT[i];
-      if(!o){s.type=null;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;continue;}
+      if(!o){s.type=null;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;s.tail=null;continue;}
       updateLock(o,now);
       if(o.attack!==0){addActive(o,s,now,out);addActiveGuard(o,s,now,out);}
-      else{const h=lookup(o);if(h){out[h.kind]++;addStartup(o,h,out);}}
+      else{addAttackTailGuard(o,s,now,out);const h=lookup(o);if(h){out[h.kind]++;addStartup(o,h,out);}}
     }
     return out;
   }
@@ -623,9 +658,10 @@ function __WOF_START_V4(DB){
   if(cur.safe){
     if(!fullCur.safe){
       const gh=fullCur.hit||{};
-      const guardWatch=gh.source==='active-guard'||!!gh.guardWatch;
+      const tailWatch=gh.source==='attack-tail-guard'||!!gh.tailGuard;
+      const guardWatch=tailWatch||gh.source==='active-guard'||!!gh.guardWatch;
       const geometryWatch=!guardWatch&&!!gh.geometryFallback;
-      return{danger:true,watchOnly:true,guardWatchOnly:guardWatch,geometryWatchOnly:geometryWatch,edgeWatchOnly:!guardWatch&&!geometryWatch,
+      return{danger:true,watchOnly:true,guardWatchOnly:guardWatch,tailWatchOnly:tailWatch,geometryWatchOnly:geometryWatch,edgeWatchOnly:!guardWatch&&!geometryWatch,
         best:'WATCH',hitMs:fullCur.collisionMs,hit:gh,stay:fullCur};
     }
     if(!shadowCur.safe){
@@ -693,6 +729,8 @@ function stable(name,r){
     'edge',Math.round(CFG.actionPenetrationMin*100)+'%','source',h.source||'?');
   else if(action==='WATCH'&&r.shadowWatchOnly)qlog('🟨',name,'WATCH-安全影子','约'+r.hitMs+'ms','slot',h.slot,'family',h.family||'?',
     'halo',Math.round((CFG.shadowRadiusScale-1)*100)+'%','source',h.source||'?');
+  else if(action==='WATCH'&&r.tailWatchOnly)qlog('🟧',name,'WATCH-攻击尾帧护栏','约'+r.hitMs+'ms','slot',h.slot,'type',h.type,'family',h.family||'?',
+    'r',fmt(h.rx)+'/'+fmt(h.ry)+'/'+fmt(h.rz));
   else if(action==='WATCH'&&r.guardWatchOnly)qlog('🟫',name,'WATCH-主动攻击护栏','约'+r.hitMs+'ms','slot',h.slot,'type',h.type,'family',h.family||'?',
     'r',fmt(h.rx)+'/'+fmt(h.ry)+'/'+fmt(h.rz));
   else if(action==='WATCH')qlog('🟠',name,'WATCH','约'+r.hitMs+'ms','slot',h.slot,'type',h.type,'family',h.family||'?', 'source',h.source||'?');
@@ -702,9 +740,9 @@ function stable(name,r){
 }
 
 const AUD={
-  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}},
-  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}},
-  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}}
+  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastTailWarnAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,tailCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}},
+  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastTailWarnAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,tailCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}},
+  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastTailWarnAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,tailCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}}
 };
 
 function famStat(A,e){
@@ -820,15 +858,16 @@ function auditStep(name,ps,st,raw,now){
       else auditResolve(name,'ambiguous',e,'HP '+hpBefore+'→'+hp);
     }else if(now-A.lastWarnAt<=350){
       A.stats.watchCovered++;
-      const shadow=now-A.lastShadowWarnAt<=350,guard=now-A.lastGuardWarnAt<=350;
+      const shadow=now-A.lastShadowWarnAt<=350,guard=now-A.lastGuardWarnAt<=350,tail=now-A.lastTailWarnAt<=350;
       if(shadow)A.stats.shadowCovered++;
       if(guard)A.stats.guardCovered++;
+      if(tail)A.stats.tailCovered++;
       const we=A.lastWatchEvidence;
       if(!guard&&!shadow&&we&&now-we.at<=350&&we.hitMs<=CFG.watchPromoteMaxMs&&we.e?.family&&we.e.source==='active'){
         calRecord({...we.e,player:name},'hit');A.stats.watchPromoted++;
         qlog('🧪',name,'WATCH真实掉血→提升active Family证据',we.e.family,'slot',we.e.slot,'hitMs',we.hitMs);
       }
-      qlog(guard?'🟫':shadow?'🟨':'🟩',name,guard?'主动攻击护栏覆盖掉血':shadow?'安全影子WATCH覆盖掉血':'稳定WATCH覆盖掉血','HP '+hpBefore+'→'+hp);
+      qlog(tail?'🟧':guard?'🟫':shadow?'🟨':'🟩',name,tail?'攻击尾帧护栏覆盖掉血':guard?'主动攻击护栏覆盖掉血':shadow?'安全影子WATCH覆盖掉血':'稳定WATCH覆盖掉血','HP '+hpBefore+'→'+hp);
     }else if(now-A.lastRawWarnAt<=350){
       A.stats.unstableCovered++;
       const mc=captureMissCase('unstableCovered',name,ps,raw,now,hpBefore,hp);
@@ -879,6 +918,7 @@ function auditStep(name,ps,st,raw,now){
   if(st&&action!=='SAFE')A.lastWarnAt=now;
   if(st?.shadowWatchOnly)A.lastShadowWarnAt=now;
   if(st?.guardWatchOnly)A.lastGuardWarnAt=now;
+  if(st?.tailWatchOnly)A.lastTailWarnAt=now;
   if(st&&action==='WATCH'&&!st.shadowWatchOnly&&!st.guardWatchOnly){
     const wh=st.hit||{};
     if(wh.family&&wh.source!=='active-unknown')A.lastWatchEvidence={at:now,hitMs:+st.hitMs||9999,e:{...wh,player:name}};
@@ -927,7 +967,7 @@ function reportSnapshot(){
 }
 function summarySnapshot(){
   const a=auditSnapshot(),af=auditFamilies(),c=calibrationSnapshot();
-  const total={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0};
+  const total={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,tailCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0};
   for(const n of ['P1','P2','P3'])for(const k of Object.keys(total))total[k]+=+a[n]?.[k]||0;
   const fam=[];
   for(const n of ['P1','P2','P3'])for(const r of af[n]||[])fam.push({player:n,...r});
@@ -950,10 +990,17 @@ function summarySnapshot(){
     stableDamageCoverage:damageEvents?+((total.hit+total.ambiguousDamage+total.watchCovered)/damageEvents).toFixed(3):null,
     shadowDamageCoverage:damageEvents?+(total.shadowCovered/damageEvents).toFixed(3):null,
     guardDamageCoverage:damageEvents?+(total.guardCovered/damageEvents).toFixed(3):null,
+    tailDamageCoverage:damageEvents?+(total.tailCovered/damageEvents).toFixed(3):null,
     validated,damageEvents};
   const missTop=MISS_CASES.slice(-6).map(c=>({id:c.id,kind:c.kind,player:c.player,hp:c.hp,rawHit:c.rawHit,nearest:c.nearest,
     candidates:(c.candidates||[]).slice(0,3).map(x=>({slot:x.slot,type:x.type,attack:x.attack,locked:x.locked,ageMs:x.ageMs,dx:x.dx,dy:x.dy,dz:x.dz,startupTop:x.startupTop}))}));
-  return frozenCopy({at:Date.now(),total,metrics,missTop,players:a,topFalse,demoted,precisionSuppressed,geoAdjusted,geoClasses});
+  const ma=Object.create(null);
+  for(const c of MISS_CASES)if(c.kind==='safeMiss')for(const x of (c.candidates||[]).slice(0,3)){
+    const k='T'+x.type+'|A'+x.attack+'|'+(x.locked||'?'),r=ma[k]||(ma[k]={key:k,count:0,type:x.type,attack:x.attack,locked:x.locked||null,minDx:999,minDy:999,minDz:999});
+    r.count++;r.minDx=Math.min(r.minDx,+x.dx||999);r.minDy=Math.min(r.minDy,+x.dy||999);r.minDz=Math.min(r.minDz,+x.dz||999);
+  }
+  const missAttackTop=Object.values(ma).sort((x,y)=>y.count-x.count||x.minDx-y.minDx).slice(0,10).map(r=>({...r,minDx:+r.minDx.toFixed(1),minDy:+r.minDy.toFixed(1),minDz:+r.minDz.toFixed(1)}));
+  return frozenCopy({at:Date.now(),total,metrics,missAttackTop,missTop,players:a,topFalse,demoted,precisionSuppressed,geoAdjusted,geoClasses});
 }
 function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
 function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
@@ -987,7 +1034,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.9.7',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.9.8',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -1012,7 +1059,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.9.7 WATCH连续性/紧急预警版启动');
+  qlog('✅ WOF V4.9.8 攻击尾帧护栏/漏判聚合版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
@@ -1022,13 +1069,14 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   qlog('🟨 安全影子: 完整危险壳外再加18%短时WATCH halo，仅预警不参与UP/DOWN/AB，也不计误报校准');
   qlog('🛡️ 审计保护: 掉血后'+CFG.postDamageGuardMs+'ms与真实HP=0死亡/复活保护；对象临时消失只重建基线，不再误算死亡/复活');
   qlog('🟫 主动攻击护栏: ATTACK!=0 扩为450ms WATCH-only运动护栏；不参与UP/DOWN/AB，也不进入FP校准');
+  qlog('🟧 攻击尾帧护栏: ATTACK从非0回到0后继续保留'+CFG.attackTailGuardMs+'ms WATCH-only预测，捕捉延迟掉血/尾帧命中');
   qlog('🧪 先观察后行动: active source需累计2次真实命中证据才允许驱动UP/DOWN/AB；此前只保留WATCH');
   qlog('📈 WATCH学习: 已知active Family在稳定WATCH下真实掉血会积累命中证据，不需要先冒险发动作建议');
   qlog('📐 自适应几何: Family/Variant独立学习 + fallback几何类跨Family共享学习；完整危险外壳始终保留WATCH');
   qlog('🔬 漏判取证: unstable/safeMiss同时保存rawHit与nearest，并保留最近600ms敌人ATTACK/Family候选');
   qlog('⚡ 稳定器: WATCH不再绑定具体slot/Family；任意连续WATCH可确认，<=150ms紧急WATCH单帧确认；UP/DOWN/AB规则不变');
   qlog('🧱 共享几何类: 至少4次高可信误报且来自>=3个Family才开始收缩行动核心');
-  qlog('🟧 审计: guardCovered=主动攻击护栏覆盖；watchCovered=稳定WATCH覆盖；unstableCovered=仅raw覆盖；safeMiss=完全未覆盖');
+  qlog('🟧 审计: guardCovered=主动攻击护栏覆盖；tailCovered=ATTACK结束尾帧覆盖；watchCovered=稳定WATCH覆盖；safeMiss=完全未覆盖');
   qlog('💾 热更新继承: Family/source/variant在线校准在同一Worker内升级版本时保留');
   qlog('🟪 边缘壳: 行动核心再内缩 '+Math.round(CFG.actionPenetrationMin*100)+'%，避免擦边UP/DOWN/AB');
   qlog('🎚️ 行动门槛: startup conf>='+CFG.startupActionMinConfidence+'；active survival>='+CFG.activeActionMinConfidence);
