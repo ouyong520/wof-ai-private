@@ -48,8 +48,8 @@
 
   if(self.__WOF_MULTIROOM_COLLECTOR?.running){
     const old=self.__WOF_MULTIROOM_COLLECTOR.status?.()||{};
-    if(String(old.version||'').includes('v4.11.3')){
-      console.log('🟦 V4.11.3多房间采集已在运行',old);
+    if(String(old.version||'').includes('v4.11.4')){
+      console.log('🟦 V4.11.4多房间采集已在运行',old);
       return old;
     }
     console.log('🟨 发现旧版采集仍在运行，先保存并结束旧session',old.version||'?');
@@ -57,7 +57,7 @@
     await sleep(150);
   }
 
-  if(!self.WOFV4||!String(self.WOFV4.version||'').includes('v4.11.3')){
+  if(!self.WOFV4||!String(self.WOFV4.version||'').includes('v4.11.4')){
     const code=await fetch(CFG.runtimeUrl+'?'+Date.now()).then(r=>{if(!r.ok)throw new Error('runtime fetch '+r.status);return r.text();});
     (0,eval)(code);
     for(let i=0;i<50&&!self.WOFV4;i++)await sleep(100);
@@ -138,7 +138,7 @@
     finish(){return finish('stopped');}
   };
 
-  console.log('🟢 多房间采集启动',sid,'| 10分钟 | 每10秒落盘 | V4.11.3 GUARD/GEOMETRY细分');
+  console.log('🟢 多房间采集启动',sid,'| 10分钟 | 每10秒落盘 | V4.11.4 HUD分层/脉冲影子');
   console.log('🟢 房间中途关闭也没关系：已落盘的片段仍会保留，导出时自动标记 interrupted');
   return self.__WOF_MULTIROOM_COLLECTOR.status();
 })().catch(e=>console.error('❌ 多房间采集启动失败',e));
