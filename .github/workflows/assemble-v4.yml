@@ -1,0 +1,35 @@
+name: Assemble WOF V4
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'wof_v4_parts/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble and verify
+        run: |
+          cat wof_v4_parts/part01.txt \
+              wof_v4_parts/part02.txt \
+              wof_v4_parts/part03.txt \
+              wof_v4_parts/part04.txt \
+              wof_v4_parts/part05.txt \
+              wof_v4_parts/part06.txt \
+              wof_v4_parts/part07.txt \
+              wof_v4_parts/part08.txt \
+              wof_v4_parts/part09.txt \
+              wof_v4_parts/part10.txt > wof_v4_install_once.js
+          test "$(wc -c < wof_v4_install_once.js | tr -d ' ')" = "125513"
+          echo "12d25d747b9b2050ff17381738329c023c32a4aa559a4952194dadd2b6c00c13  wof_v4_install_once.js" | sha256sum -c -
+      - name: Commit complete script
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wof_v4_install_once.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Assemble complete WOF V4 script"
+          git push
