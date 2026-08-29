@@ -46,6 +46,17 @@
     return Array.isArray(a)?clone(a.slice(-120)):[];
   }
 
+  if(self.__WOF_MULTIROOM_COLLECTOR?.running){
+    const old=self.__WOF_MULTIROOM_COLLECTOR.status?.()||{};
+    if(String(old.version||'').includes('v4.11.3')){
+      console.log('🟦 V4.11.3多房间采集已在运行',old);
+      return old;
+    }
+    console.log('🟨 发现旧版采集仍在运行，先保存并结束旧session',old.version||'?');
+    try{await self.__WOF_MULTIROOM_COLLECTOR.finish?.();}catch(e){console.warn('旧session结束失败，继续启用新版采集',e);}
+    await sleep(150);
+  }
+
   if(!self.WOFV4||!String(self.WOFV4.version||'').includes('v4.11.3')){
     const code=await fetch(CFG.runtimeUrl+'?'+Date.now()).then(r=>{if(!r.ok)throw new Error('runtime fetch '+r.status);return r.text();});
     (0,eval)(code);
@@ -54,11 +65,6 @@
   if(!self.WOFV4)throw new Error('WOFV4 runtime not available');
   self.WOFV4.spectateAll?.();
   self.WOFV4.quiet?.(true);
-
-  if(self.__WOF_MULTIROOM_COLLECTOR?.running){
-    console.log('🟦 多房间采集已在运行',self.__WOF_MULTIROOM_COLLECTOR.status());
-    return self.__WOF_MULTIROOM_COLLECTOR.status();
-  }
 
   const db=await openDb();
   const startedAt=Date.now(),sid='room-'+id();
