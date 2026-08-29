@@ -4,7 +4,7 @@
     dbName:'wof-multiroom-audit-v1',
     store:'sessions',
     durationMs:10*60*1000,
-    checkpointMs:30*1000,
+    checkpointMs:10*1000,
     runtimeUrl:'https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_v4_install_once.js'
   };
 
@@ -69,6 +69,7 @@
     startedAt,
     plannedEndAt:startedAt+CFG.durationMs,
     latestAt:startedAt,
+    lastHeartbeatAt:startedAt,
     completedAt:null,
     runtimeVersion:self.WOFV4.version,
     workerLocation:String(self.location?.href||''),
@@ -86,12 +87,12 @@
   async function checkpoint(final=false){
     if(finishing&&!final)return;
     const now=Date.now(),s=snap();
+    row.latestAt=now;row.lastHeartbeatAt=now;
     if(s){
-      row.latestAt=now;
       if(final)row.final=s;
       else{
         row.checkpoints.push({at:now,summary:s});
-        if(row.checkpoints.length>24)row.checkpoints.shift();
+        if(row.checkpoints.length>72)row.checkpoints.shift();
       }
     }
     if(final)row.misses=misses();
@@ -105,9 +106,9 @@
       row.status=reason==='complete'?'complete':'stopped';
       row.completedAt=Date.now();
       await checkpoint(true);
-      row.latestAt=row.completedAt;
+      row.latestAt=row.completedAt;row.lastHeartbeatAt=row.completedAt;
       await put(db,row);
-      console.log('✅ 多房间10分钟采集完成',sid,'现在可运行下载脚本');
+      console.log('✅ 多房间采集结束',sid,row.status,'现在可运行下载脚本');
     }catch(e){
       row.status='error';row.error=String(e?.stack||e);row.completedAt=Date.now();
       try{await put(db,row);}catch(_){}
@@ -127,10 +128,11 @@
     get running(){return running;},
     id:sid,
     status(){return {id:sid,running,status:row.status,startedAt:row.startedAt,plannedEndAt:row.plannedEndAt,latestAt:row.latestAt,checkpoints:row.checkpoints.length,version:row.runtimeVersion};},
+    checkpoint(){return checkpoint(false);},
     finish(){return finish('stopped');}
   };
 
-  console.log('🟢 多房间采集启动',sid,'| 10分钟 | 每30秒落盘 | V4.11.0盲测');
-  console.log('🟢 这个房间保持打开即可；其它房间运行同一段脚本');
+  console.log('🟢 多房间采集启动',sid,'| 10分钟 | 每10秒落盘 | V4.11.0盲测');
+  console.log('🟢 房间中途关闭也没关系：已落盘的片段仍会保留，导出时自动标记 interrupted');
   return self.__WOF_MULTIROOM_COLLECTOR.status();
 })().catch(e=>console.error('❌ 多房间采集启动失败',e));
