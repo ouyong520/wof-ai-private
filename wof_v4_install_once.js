@@ -450,9 +450,11 @@ function __WOF_START_V4(DB){
   }
 
   function captureMissCase(kind,name,ps,raw,now,hp0,hp1){
-    const n=raw?.stay?.nearest||null;
+    const n=raw?.stay?.nearest||null,rh=raw?.hit||raw?.stay?.hit||null;
     const c={id:MISS_CASES.length+1,kind,player:name,hp:hp0+'→'+hp1,
       at:+now.toFixed(1),pos:[+ps.x.toFixed(1),+ps.y.toFixed(1),+ps.z.toFixed(1)],
+      rawHit:rh?{family:rh.family||null,source:rh.source||null,variant:rh.variant||null,slot:rh.slot??null,type:rh.type??null,
+        t:rh.t,confidence:+(+rh.confidence||0).toFixed(3),survival:+(+rh.survival||0).toFixed(3),guardWatch:!!rh.guardWatch}:null,
       nearest:n?{family:n.family||null,source:n.source||null,variant:n.variant||null,slot:n.slot??null,type:n.type??null,
         t:n.t,confidence:+(+n.confidence||0).toFixed(3),survival:+(+n.survival||0).toFixed(3),
         clearance:raw?.stay?.minClearance==null?null:+raw.stay.minClearance.toFixed(3)}:null,
@@ -667,10 +669,11 @@ function actionOf(r){return !r?.danger?'SAFE':r.watchOnly?'WATCH':r.noRoute?(r.a
 function stable(name,r){
   const s=ST[name],h=r.hit||{},uh=r.upHit||{},dh=r.downHit||{};
   const action=actionOf(r);
-  let k=action+'|'+(h.slot??-1)+'|'+(h.family??'');
+  let k=action==='WATCH'?'WATCH':action+'|'+(h.slot??-1)+'|'+(h.family??'');
   if(action==='AB')k+='|'+(uh.slot??-1)+'|'+(uh.family??'')+'|'+(dh.slot??-1)+'|'+(dh.family??'');
   if(k===s.k)s.n++;else{s.k=k;s.n=1;s.v=null;}
-  const need=(r.shadowWatchOnly||r.guardWatchOnly)?1:action==='SAFE'?2:action==='WATCH'?2:action==='AB'?3:((+r.hitMs||9999)<=300?2:3);
+  const imminentWatch=action==='WATCH'&&(+r.hitMs||9999)<=150;
+  const need=(r.shadowWatchOnly||r.guardWatchOnly||imminentWatch)?1:action==='SAFE'?2:action==='WATCH'?2:action==='AB'?3:((+r.hitMs||9999)<=300?2:3);
   if(s.n>=need)s.v=r;
   return s.v;
 }
@@ -948,7 +951,7 @@ function summarySnapshot(){
     shadowDamageCoverage:damageEvents?+(total.shadowCovered/damageEvents).toFixed(3):null,
     guardDamageCoverage:damageEvents?+(total.guardCovered/damageEvents).toFixed(3):null,
     validated,damageEvents};
-  const missTop=MISS_CASES.slice(-6).map(c=>({id:c.id,kind:c.kind,player:c.player,hp:c.hp,nearest:c.nearest,
+  const missTop=MISS_CASES.slice(-6).map(c=>({id:c.id,kind:c.kind,player:c.player,hp:c.hp,rawHit:c.rawHit,nearest:c.nearest,
     candidates:(c.candidates||[]).slice(0,3).map(x=>({slot:x.slot,type:x.type,attack:x.attack,locked:x.locked,ageMs:x.ageMs,dx:x.dx,dy:x.dy,dz:x.dz,startupTop:x.startupTop}))}));
   return frozenCopy({at:Date.now(),total,metrics,missTop,players:a,topFalse,demoted,precisionSuppressed,geoAdjusted,geoClasses});
 }
@@ -984,7 +987,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.9.6',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.9.7',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -1009,7 +1012,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.9.6 先观察后行动/漏判护栏版启动');
+  qlog('✅ WOF V4.9.7 WATCH连续性/紧急预警版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
@@ -1022,8 +1025,8 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   qlog('🧪 先观察后行动: active source需累计2次真实命中证据才允许驱动UP/DOWN/AB；此前只保留WATCH');
   qlog('📈 WATCH学习: 已知active Family在稳定WATCH下真实掉血会积累命中证据，不需要先冒险发动作建议');
   qlog('📐 自适应几何: Family/Variant独立学习 + fallback几何类跨Family共享学习；完整危险外壳始终保留WATCH');
-  qlog('🔬 漏判取证: 真实SAFE漏判自动保存最近600ms敌人状态/ATTACK/Family候选；WOFV4.misses()可查看');
-  qlog('⚡ 稳定器: WATCH与<=300ms紧急UP/DOWN为2帧确认；AB仍需3帧；<=250ms危险保留较宽紧急核心');
+  qlog('🔬 漏判取证: unstable/safeMiss同时保存rawHit与nearest，并保留最近600ms敌人ATTACK/Family候选');
+  qlog('⚡ 稳定器: WATCH不再绑定具体slot/Family；任意连续WATCH可确认，<=150ms紧急WATCH单帧确认；UP/DOWN/AB规则不变');
   qlog('🧱 共享几何类: 至少4次高可信误报且来自>=3个Family才开始收缩行动核心');
   qlog('🟧 审计: guardCovered=主动攻击护栏覆盖；watchCovered=稳定WATCH覆盖；unstableCovered=仅raw覆盖；safeMiss=完全未覆盖');
   qlog('💾 热更新继承: Family/source/variant在线校准在同一Worker内升级版本时保留');
