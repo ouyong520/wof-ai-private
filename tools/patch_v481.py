@@ -100,7 +100,7 @@ rep(
 rep("version:'offline-dynamic-spectator-calibrated-v4.8'","version:'offline-dynamic-spectator-calibrated-v4.8.1'",'version')
 rep("qlog('✅ WOF V4.8 上下文Variant校准观战版启动');","qlog('✅ WOF V4.8.1 Variant稳定性/真实漏判审计版启动');",'startup')
 rep(
-"qlog('🧬 Variant: startup按anim/state分支；active按起手上下文+80ms运动分支独立降级');",
+"qlog('🧬 Variant: startup按anim/state分支；active按起手上下文+80ms运动分支独立降级，不再一刀切整个Family');",
 "qlog('🧬 Variant: 坏分支2次高可信误报即可WATCH；Family/source恢复为慢速安全兜底');\n  qlog('🟧 审计: unstableCovered=raw危险已覆盖但稳定器未确认；safeMiss=raw/stable都完全没看到危险');",
 'v481 startup info')
 
