@@ -51,6 +51,7 @@ function __WOF_START_V4(DB){
     activeGuardMaxRz:26,
     watchPromoteMaxMs:280,
     debounceBridgeMs:350,
+    phaseOverlayHorizonMs:500,
     attackTailGuardMs:280,
     attackTailHorizonMs:220,
     attackTailMinRx:88,
@@ -394,7 +395,7 @@ function __WOF_START_V4(DB){
     return out;
   }
 
-  const SLOT=Array.from({length:NSLOTS},()=>({type:null,prevAttack:0,locked:null,started:0,origin:null,face:0,seq:0,variantBase:null,variantMotion:null,tail:null,phaseFamily:null,phaseFrom:null,phaseAttack:0,phaseSwitches:0}));
+  const SLOT=Array.from({length:NSLOTS},()=>({type:null,prevAttack:0,locked:null,started:0,origin:null,face:0,seq:0,variantBase:null,variantMotion:null,tail:null,phaseFamily:null,phaseFrom:null,phaseAttack:0,phaseStarted:0,phaseOrigin:null,phaseFace:0,phaseSwitches:0}));
   const UNIQUE_ACTIVE=new Map();
   const MULTI_ACTIVE=new Set();
   const ENEMY_HISTORY=[];
@@ -409,26 +410,28 @@ function __WOF_START_V4(DB){
 
   function updateLock(o,now){
     const s=SLOT[o.slot];
-    if(s.type!==o.type){s.type=o.type;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;s.seq=0;s.variantBase=null;s.variantMotion=null;s.tail=null;s.phaseFamily=null;s.phaseFrom=null;s.phaseAttack=0;s.phaseSwitches=0;}
+    if(s.type!==o.type){s.type=o.type;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;s.seq=0;s.variantBase=null;s.variantMotion=null;s.tail=null;s.phaseFamily=null;s.phaseFrom=null;s.phaseAttack=0;s.phaseStarted=0;s.phaseOrigin=null;s.phaseFace=0;s.phaseSwitches=0;}
     if(s.prevAttack===0&&o.attack!==0){
       s.seq=(s.seq||0)+1;
       s.locked=DB.a[keyActive(o)]||UNIQUE_ACTIVE.get(o.type+'|'+o.attack)||null;
       s.started=now;s.origin={x:o.x,y:o.y,z:o.z};s.face=o.face;
       s.variantBase='a'+o.anim+':'+o.s0+':'+o.s1+':'+o.s2+':'+o.s3;s.variantMotion=null;
-      s.phaseFamily=s.locked;s.phaseFrom=null;s.phaseAttack=o.attack;
+      s.phaseFamily=null;s.phaseFrom=null;s.phaseAttack=o.attack;s.phaseStarted=0;s.phaseOrigin=null;s.phaseFace=0;
     }else if(s.prevAttack!==0&&o.attack!==0&&o.attack!==s.prevAttack){
       const exactPhase=DB.a[keyActive(o)]||null;
       if(exactPhase&&exactPhase!==s.locked){
-        const from=s.locked||null,attackFrom=s.prevAttack;
-        s.seq=(s.seq||0)+1;
-        s.locked=exactPhase;s.started=now;s.origin={x:o.x,y:o.y,z:o.z};s.face=o.face;
-        s.variantBase='a'+o.anim+':'+o.s0+':'+o.s1+':'+o.s2+':'+o.s3;s.variantMotion=null;
-        s.phaseFrom=from;s.phaseFamily=exactPhase;s.phaseAttack=o.attack;s.phaseSwitches=(s.phaseSwitches||0)+1;
+        const from=s.phaseFamily||s.locked||null,attackFrom=s.prevAttack;
+        s.phaseFrom=from;s.phaseFamily=exactPhase;s.phaseAttack=o.attack;
+        s.phaseStarted=now;s.phaseOrigin={x:o.x,y:o.y,z:o.z};s.phaseFace=o.face;
+        s.phaseSwitches=(s.phaseSwitches||0)+1;
         PHASE_RELOCKS++;
         const pk=(from||'?')+'→'+exactPhase+'|A'+attackFrom+'→'+o.attack;
         PHASE_RELOCK_BY[pk]=(PHASE_RELOCK_BY[pk]||0)+1;
-        qlog('🔁 active phase relock','slot',o.slot,'type',o.type,pk,'state',o.s0+':'+o.s1+':'+o.s2+':'+o.s3);
-      }else s.phaseAttack=o.attack;
+        qlog('🔁 active phase overlay','slot',o.slot,'type',o.type,pk,'state',o.s0+':'+o.s1+':'+o.s2+':'+o.s3);
+      }else{
+        s.phaseAttack=o.attack;
+        if(!exactPhase||exactPhase===s.locked){s.phaseFamily=null;s.phaseStarted=0;s.phaseOrigin=null;s.phaseFace=0;}
+      }
     }else if(s.prevAttack!==0&&o.attack===0){
       const family=s.locked||null,age=Math.max(0,now-(s.started||now)),sec=Math.max(.08,age/1000);
       let vx=0,vy=0,vz=0;
@@ -439,7 +442,7 @@ function __WOF_START_V4(DB){
         vz=Math.max(-CFG.activeGuardVelocityCapZ,Math.min(CFG.activeGuardVelocityCapZ,vz));
       }
       s.tail={at:now,until:now+CFG.attackTailGuardMs,family,x:o.x,y:o.y,z:o.z,vx,vy,vz};
-      s.locked=null;s.origin=null;s.started=0;s.variantBase=null;s.variantMotion=null;s.phaseFamily=null;s.phaseFrom=null;s.phaseAttack=0;
+      s.locked=null;s.origin=null;s.started=0;s.variantBase=null;s.variantMotion=null;s.phaseFamily=null;s.phaseFrom=null;s.phaseAttack=0;s.phaseStarted=0;s.phaseOrigin=null;s.phaseFace=0;
     }
     if(o.attack!==0&&s.origin&&s.variantMotion==null&&now-s.started>=80){
       const sg=faceSign(s.face),dx=sg*(o.x-s.origin.x),dy=o.y-s.origin.y,dz=o.z-s.origin.z;
@@ -573,6 +576,24 @@ function __WOF_START_V4(DB){
     }
   }
 
+  function addPhaseOverlay(o,s,now,out){
+    if(!s.phaseFamily||!s.phaseOrigin||s.phaseFamily===s.locked)return;
+    const f=getFamily(s.phaseFamily);if(!f)return;
+    const rad=radius(f),age=Math.max(0,now-s.phaseStarted),sg=faceSign(s.phaseFace),dur90=+f[2]||1000;
+    const maxT=Math.min(CFG.horizonMs,CFG.phaseOverlayHorizonMs);
+    out.enemies.add(o.slot);
+    for(let t=0;t<=maxT;t+=CFG.dangerStepMs){
+      const a=age+t;if(a>dur90)continue;
+      const sw=interp(f[7],a,'sw');if(!sw)continue;
+      const survival=Math.max(0,Math.min(1,sw.survival??1));
+      if(survival<CFG.minConfidence)continue;
+      out.danger.push({t,x:s.phaseOrigin.x+sg*sw.x,y:s.phaseOrigin.y+sw.y,z:s.phaseOrigin.z+sw.z,
+        rx:rad.rx,ry:rad.ry,rz:rad.rz,slot:o.slot,type:o.type,family:s.phaseFamily,
+        variant:'phase|'+o.attack,confidence:survival,survival,actionable:false,
+        phaseWatch:true,watchOnly:true,source:'active-phase-watch'});
+    }
+  }
+
   function addActiveGuard(o,s,now,out){
     const f=s.locked?getFamily(s.locked):null,rad=f?radius(f):null;
     const baseRx=rad?(rad.actionRx||rad.rx):100,baseRy=rad?(rad.actionRy||rad.ry):22,baseRz=rad?(rad.actionRz||rad.rz):16;
@@ -616,9 +637,9 @@ function __WOF_START_V4(DB){
     const out={danger:[],enemies:new Set(),exact:0,coarse:0};
     for(let i=0;i<NSLOTS;i++){
       const o=readActor(POOL+i*STRIDE,i),s=SLOT[i];
-      if(!o){s.type=null;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;s.tail=null;s.phaseFamily=null;s.phaseFrom=null;s.phaseAttack=0;continue;}
+      if(!o){s.type=null;s.prevAttack=0;s.locked=null;s.origin=null;s.started=0;s.tail=null;s.phaseFamily=null;s.phaseFrom=null;s.phaseAttack=0;s.phaseStarted=0;s.phaseOrigin=null;s.phaseFace=0;continue;}
       updateLock(o,now);
-      if(o.attack!==0){addActive(o,s,now,out);addActiveGuard(o,s,now,out);}
+      if(o.attack!==0){addActive(o,s,now,out);addPhaseOverlay(o,s,now,out);addActiveGuard(o,s,now,out);}
       else{addAttackTailGuard(o,s,now,out);const h=lookup(o);if(h){out[h.kind]++;addStartup(o,h,out);}}
     }
     return out;
@@ -950,7 +971,7 @@ function auditStep(name,ps,st,raw,now){
   }
   if(!A.pending&&st&&action!=='SAFE'&&st.hitMs!=null){
     const h=st.hit||{};
-    if(st.geometryWatchOnly||st.edgeWatchOnly||st.shadowWatchOnly||st.guardWatchOnly||st.debounceWatchOnly)return;
+    if(st.geometryWatchOnly||st.edgeWatchOnly||st.shadowWatchOnly||st.guardWatchOnly||st.debounceWatchOnly||st.phaseWatchOnly)return;
     if(h.family==null||h.source==='active-unknown'||(h.actionable===false&&!h.calWatchOnly))return;
     const hitMs=Math.max(CFG.reactFloorMs,+st.hitMs||0);
     const instance=h.instance||((h.source||'?')+':'+(h.slot??-1)+':'+(h.family||'?'));
@@ -1061,7 +1082,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.10.0',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.10.1',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -1086,7 +1107,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.10.0 active多阶段Family重锁版启动');
+  qlog('✅ WOF V4.10.1 非破坏式阶段叠加/覆盖回归修复版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
@@ -1102,7 +1123,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   qlog('📐 自适应几何: Family/Variant独立学习 + fallback几何类跨Family共享学习；完整危险外壳始终保留WATCH');
   qlog('🔬 漏判取证: unstable/safeMiss同时保存rawHit与nearest，并保留最近600ms敌人ATTACK/Family候选');
   qlog('⚡ 稳定器: WATCH连续性保持；UP/DOWN/AB未确认期间若raw危险<=350ms，先输出WATCH稳定桥，绝不提前动作/AB');
-  qlog('🔁 active多阶段: ATTACK非0内部切换时，仅当当前type+ATTACK+state精确命中另一Family才重锁并重置轨迹时钟；不使用模糊fallback');
+  qlog('🔁 active多阶段: 保留0→非0时的主Family轨迹；ATTACK内部精确阶段只作为WATCH叠加，绝不再重置主轨迹时钟/原点');
   qlog('🟦 稳定桥审计: bridgeCovered=raw危险已出现但动作分支尚未稳定时，由WATCH桥成功覆盖真实掉血；不进入FP校准');
   qlog('🧱 共享几何类: 至少4次高可信误报且来自>=3个Family才开始收缩行动核心');
   qlog('🟧 审计: guardCovered=主动攻击护栏覆盖；tailCovered=ATTACK结束尾帧覆盖；watchCovered=稳定WATCH覆盖；safeMiss=完全未覆盖');
