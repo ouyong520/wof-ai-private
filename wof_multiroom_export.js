@@ -29,16 +29,19 @@
     return out;
   }
   function decisionDelta(end,start){
-    const e=end?.evaluation?.decisionLoad?.total||end?.decisionLoad?.total||{};
-    const s=start?.evaluation?.decisionLoad?.total||start?.decisionLoad?.total||{};
+    const ed=end?.evaluation?.decisionLoad||end?.decisionLoad||{},sd=start?.evaluation?.decisionLoad||start?.decisionLoad||{};
+    const e=ed.total||{},s=sd.total||{};
     const d=subObj(e,s);
     const ticks=(d.NONE||0)+(d.SAFE||0)+(d.WATCH||0)+(d.UP||0)+(d.DOWN||0)+(d.AB||0);
     const warning=(d.WATCH||0)+(d.UP||0)+(d.DOWN||0)+(d.AB||0);
     const action=(d.UP||0)+(d.DOWN||0)+(d.AB||0);
+    const ws=subObj(ed.warningSources||{},sd.warningSources||{}),wsTotal=Object.values(ws).reduce((a,b)=>a+(+b||0),0),wsRate={};
+    for(const k of Object.keys(ws))wsRate[k]=wsTotal?+(ws[k]/wsTotal).toFixed(4):null;
     return {...d,ticks,warningTicks:warning,actionTicks:action,
       warningRate:ticks?+(warning/ticks).toFixed(4):null,
       actionRate:ticks?+(action/ticks).toFixed(4):null,
-      watchRate:ticks?+((d.WATCH||0)/ticks).toFixed(4):null};
+      watchRate:ticks?+((d.WATCH||0)/ticks).toFixed(4):null,
+      warningSources:ws,warningSourceRates:wsRate};
   }
   function effectiveStatus(r,now){
     if(r.status!=='running')return r.status||'unknown';
@@ -56,7 +59,7 @@
     const status=effectiveStatus(r,now);
     const endedAt=r.completedAt||r.lastHeartbeatAt||r.latestAt||r.startedAt;
     return {
-      id:r.id,status,storedStatus:r.status,partial:status==='interrupted'||status==='stopped'||status==='error',version:r.runtimeVersion,
+      id:r.id,status,storedStatus:r.status,partial:status!=='complete',version:r.runtimeVersion,
       startedAt:r.startedAt,endedAt,
       durationSec:Math.max(0,Math.round((endedAt-r.startedAt)/1000)),
       estimatedLossMaxSec:status==='interrupted'?Math.ceil((r.checkpointMs||10000)/1000):0,
@@ -68,6 +71,8 @@
         unchangedValidated:(total.hit||0)+(total.falsePositive||0),
         unchangedPrecision:((total.hit||0)+(total.falsePositive||0))?+((total.hit||0)/((total.hit||0)+(total.falsePositive||0))).toFixed(4):null,
         damageEvents:damage,
+        nonEnemyDamage:total.nonEnemyDamage||0,
+        hpBaselineReset:total.hpBaselineReset||0,
         rawDamageCoverage:damage?+(((total.hit||0)+(total.ambiguousDamage||0)+(total.watchCovered||0)+(total.unstableCovered||0))/damage).toFixed(4):null,
         stableDamageCoverage:damage?+(((total.hit||0)+(total.ambiguousDamage||0)+(total.watchCovered||0))/damage).toFixed(4):null,
         decisionLoad:decisionDelta(end,start)
@@ -96,7 +101,7 @@
   const blob=new Blob([text],{type:'application/json'}),url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),30000);
-  console.table(summaries.map(x=>({room:x.id,status:x.status,min:(x.durationSec/60).toFixed(1),tested:x.total.tested||0,damage:x.evaluation.damageEvents,safeMiss:x.total.safeMiss||0,materialize:x.evaluation.materializationRate,warningRate:x.evaluation.decisionLoad.warningRate})));
+  console.table(summaries.map(x=>({room:x.id,status:x.status,min:(x.durationSec/60).toFixed(1),tested:x.total.tested||0,damage:x.evaluation.damageEvents,nonEnemy:x.evaluation.nonEnemyDamage,safeMiss:x.total.safeMiss||0,materialize:x.evaluation.materializationRate,warningRate:x.evaluation.decisionLoad.warningRate})));
   console.log('✅ 已下载',name,'房间数',sessions.length,'完整',bundle.completeCount,'中断',bundle.interruptedCount,'部分样本',bundle.partialCount);
   return bundle;
 })().catch(e=>console.error('❌ 多房间导出失败',e));
