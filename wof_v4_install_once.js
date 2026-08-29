@@ -41,14 +41,15 @@ function __WOF_START_V4(DB){
     postDamageGuardMs:700,
     respawnGuardMs:1500,
     returnGuardMs:280,
-    activeGuardHorizonMs:350,
+    activeGuardHorizonMs:450,
     activeGuardStepMs:50,
-    activeGuardMinRx:82,
-    activeGuardMaxRx:150,
-    activeGuardMinRy:18,
-    activeGuardMaxRy:32,
-    activeGuardMinRz:12,
-    activeGuardMaxRz:24,
+    activeGuardMinRx:90,
+    activeGuardMaxRx:165,
+    activeGuardMinRy:20,
+    activeGuardMaxRy:36,
+    activeGuardMinRz:14,
+    activeGuardMaxRz:26,
+    watchPromoteMaxMs:280,
     activeGuardVelocityCapX:260,
     activeGuardVelocityCapY:120,
     activeGuardVelocityCapZ:220,
@@ -113,7 +114,7 @@ function __WOF_START_V4(DB){
   }
   function resetPlayerRuntime(name){
     PH[name]=[];delete PS[name];
-    const A=AUD?.[name];if(A){A.pending=null;A.prevHp=null;A.lastWarnAt=-1e9;A.lastRawWarnAt=-1e9;A.lastShadowWarnAt=-1e9;A.lastShadowRawAt=-1e9;A.lastGuardWarnAt=-1e9;A.lastGuardRawAt=-1e9;A.recent={};A.dead=false;A.absent=false;A.suppressUntil=-1e9;A.lastDamageAt=-1e9;}
+    const A=AUD?.[name];if(A){A.pending=null;A.prevHp=null;A.lastWarnAt=-1e9;A.lastRawWarnAt=-1e9;A.lastShadowWarnAt=-1e9;A.lastShadowRawAt=-1e9;A.lastGuardWarnAt=-1e9;A.lastGuardRawAt=-1e9;A.lastWatchEvidence=null;A.recent={};A.dead=false;A.absent=false;A.suppressUntil=-1e9;A.lastDamageAt=-1e9;}
     const S=ST?.[name];if(S){S.k='';S.n=0;S.v=null;}
     if(name in PRINT)PRINT[name]='';
   }
@@ -241,13 +242,15 @@ function __WOF_START_V4(DB){
     const sourceBad=!!(q&&(q.confirmed||0)>=CAL_CFG.precisionSourceConfirmed&&(q.precision??1)<=CAL_CFG.precisionSourceMax&&(q.hit||0)===0);
     const familyBad=!!(f&&(f.confirmed||0)>=CAL_CFG.precisionFamilyConfirmed&&(f.precision??1)<=CAL_CFG.precisionFamilyMax&&(f.hit||0)<=1);
     const precisionWatch=variantBad||sourceBad||familyBad;
+    const activeUnverified=source==='active'&&((q?.hit||0)<2);
     let trustScale=source==='active'?CAL_CFG.trustUnseenActive:CAL_CFG.trustUnseenStartup;
     let trustReason='unseen';
     if(variantBad||sourceBad||familyBad){trustScale=CAL_CFG.trustBadEvidence;trustReason=variantBad?'variant-fp':sourceBad?'source-low-precision':'family-low-precision';}
     else if((v?.hit||0)>0){trustScale=1;trustReason='variant-hit';}
     else if((q?.hit||0)>0){trustScale=CAL_CFG.trustSourceHit;trustReason='source-hit';}
     else if((f?.hit||0)>0){trustScale=CAL_CFG.trustFamilyHit;trustReason='family-hit';}
-    return {watchOnly:!!(f?.watchOnly||q?.watchOnly||v?.watchOnly||precisionWatch),precisionWatch,trustScale,trustReason,
+    if(activeUnverified)trustReason='active-needs-2-hits';
+    return {watchOnly:!!(f?.watchOnly||q?.watchOnly||v?.watchOnly||precisionWatch||activeUnverified),precisionWatch,activeUnverified,trustScale,trustReason,
       familyPrecision:f?.precision??null,familyConfirmed:f?.confirmed||0,
       sourcePrecision:q?.precision??null,sourceConfirmed:q?.confirmed||0,
       variantPrecision:v?.precision??null,variantConfirmed:v?.confirmed||0,variantWatchOnly:!!v?.watchOnly,
@@ -489,7 +492,7 @@ function __WOF_START_V4(DB){
             geometryFallback:rad.geometryFallback,geometryFallbackZ:rad.geometryFallbackZ,geoClass:rad.geoClass,
             slot:o.slot,type:o.type,family:fc.id,variant,
             confidence,survival,actionable:survival>=CFG.survivalActionThreshold&&confidence>=CFG.startupActionMinConfidence&&!cal.watchOnly,
-            calWatchOnly:cal.watchOnly,precisionWatch:cal.precisionWatch,trustScale:cal.trustScale,trustReason:cal.trustReason,
+            calWatchOnly:cal.watchOnly,precisionWatch:cal.precisionWatch,activeUnverified:cal.activeUnverified,trustScale:cal.trustScale,trustReason:cal.trustReason,
             calPrecision:cal.sourcePrecision??cal.familyPrecision,
             calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),geoScale:{x:cal.geoX,y:cal.geoY,z:cal.geoZ},
             instance:'S:'+o.slot+':'+o.type+':'+o.anim+':'+o.s0+':'+o.s1+':'+o.s2+':'+o.s3+':'+fc.id,
@@ -524,7 +527,7 @@ function __WOF_START_V4(DB){
         geometryFallback:rad.geometryFallback,geometryFallbackZ:rad.geometryFallbackZ,geoClass:rad.geoClass,
         slot:o.slot,type:o.type,family:s.locked,variant,
         confidence:survival,survival,actionable:survival>=CFG.survivalActionThreshold&&survival>=CFG.activeActionMinConfidence&&!cal.watchOnly,
-        calWatchOnly:cal.watchOnly,precisionWatch:cal.precisionWatch,trustScale:cal.trustScale,trustReason:cal.trustReason,
+        calWatchOnly:cal.watchOnly,precisionWatch:cal.precisionWatch,activeUnverified:cal.activeUnverified,trustScale:cal.trustScale,trustReason:cal.trustReason,
         calPrecision:cal.sourcePrecision??cal.familyPrecision,
         calConfirmed:Math.max(cal.sourceConfirmed,cal.familyConfirmed),geoScale:{x:cal.geoX,y:cal.geoY,z:cal.geoZ},
         instance:'A:'+o.slot+':'+o.type+':'+s.seq+':'+Math.round(s.started),source:'active'});
@@ -534,9 +537,9 @@ function __WOF_START_V4(DB){
   function addActiveGuard(o,s,now,out){
     const f=s.locked?getFamily(s.locked):null,rad=f?radius(f):null;
     const baseRx=rad?(rad.actionRx||rad.rx):100,baseRy=rad?(rad.actionRy||rad.ry):22,baseRz=rad?(rad.actionRz||rad.rz):16;
-    const rx=Math.max(CFG.activeGuardMinRx,Math.min(CFG.activeGuardMaxRx,baseRx*1.15));
-    const ry=Math.max(CFG.activeGuardMinRy,Math.min(CFG.activeGuardMaxRy,baseRy*1.15));
-    const rz=Math.max(CFG.activeGuardMinRz,Math.min(CFG.activeGuardMaxRz,baseRz*1.15));
+    const rx=Math.max(CFG.activeGuardMinRx,Math.min(CFG.activeGuardMaxRx,baseRx*1.22));
+    const ry=Math.max(CFG.activeGuardMinRy,Math.min(CFG.activeGuardMaxRy,baseRy*1.22));
+    const rz=Math.max(CFG.activeGuardMinRz,Math.min(CFG.activeGuardMaxRz,baseRz*1.22));
     const age=Math.max(0,now-(s.started||now));
     let vx=0,vy=0,vz=0;
     if(s.origin&&age>=80){
@@ -696,9 +699,9 @@ function stable(name,r){
 }
 
 const AUD={
-  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}},
-  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}},
-  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}}
+  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}},
+  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}},
+  P3:{pending:null,prevHp:null,lastWarnAt:-1e9,lastRawWarnAt:-1e9,lastShadowWarnAt:-1e9,lastShadowRawAt:-1e9,lastGuardWarnAt:-1e9,lastGuardRawAt:-1e9,lastWatchEvidence:null,dead:false,absent:false,suppressUntil:-1e9,lastDamageAt:-1e9,recent:{},stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0},byFamily:{}}
 };
 
 function famStat(A,e){
@@ -788,14 +791,14 @@ function auditStep(name,ps,st,raw,now){
   if(A.dead&&hp>0){
     if(A.pending)auditGuard(name,A.pending,'真实复活');
     A.dead=false;A.absent=false;A.prevHp=hp;A.suppressUntil=now+CFG.respawnGuardMs;A.stats.respawnEvents++;
-    A.lastWarnAt=A.lastRawWarnAt=A.lastShadowWarnAt=A.lastShadowRawAt=A.lastGuardWarnAt=A.lastGuardRawAt=-1e9;
+    A.lastWarnAt=A.lastRawWarnAt=A.lastShadowWarnAt=A.lastShadowRawAt=A.lastGuardWarnAt=A.lastGuardRawAt=-1e9;A.lastWatchEvidence=null;
     qlog('♻️',name,'HP=0后复活：'+CFG.respawnGuardMs+'ms内暂停FP审计');
     return;
   }
   if(A.absent&&hp>0){
     if(A.pending)auditGuard(name,A.pending,'对象重新出现');
     A.absent=false;A.prevHp=hp;A.suppressUntil=now+CFG.returnGuardMs;A.stats.returnEvents++;
-    A.lastWarnAt=A.lastRawWarnAt=A.lastShadowWarnAt=A.lastShadowRawAt=A.lastGuardWarnAt=A.lastGuardRawAt=-1e9;
+    A.lastWarnAt=A.lastRawWarnAt=A.lastShadowWarnAt=A.lastShadowRawAt=A.lastGuardWarnAt=A.lastGuardRawAt=-1e9;A.lastWatchEvidence=null;
     qlog('↩️',name,'对象重新出现：只重建HP基线，不算复活');
     return;
   }
@@ -817,6 +820,11 @@ function auditStep(name,ps,st,raw,now){
       const shadow=now-A.lastShadowWarnAt<=350,guard=now-A.lastGuardWarnAt<=350;
       if(shadow)A.stats.shadowCovered++;
       if(guard)A.stats.guardCovered++;
+      const we=A.lastWatchEvidence;
+      if(!guard&&!shadow&&we&&now-we.at<=350&&we.hitMs<=CFG.watchPromoteMaxMs&&we.e?.family&&we.e.source==='active'){
+        calRecord({...we.e,player:name},'hit');A.stats.watchPromoted++;
+        qlog('🧪',name,'WATCH真实掉血→提升active Family证据',we.e.family,'slot',we.e.slot,'hitMs',we.hitMs);
+      }
       qlog(guard?'🟫':shadow?'🟨':'🟩',name,guard?'主动攻击护栏覆盖掉血':shadow?'安全影子WATCH覆盖掉血':'稳定WATCH覆盖掉血','HP '+hpBefore+'→'+hp);
     }else if(now-A.lastRawWarnAt<=350){
       A.stats.unstableCovered++;
@@ -868,6 +876,10 @@ function auditStep(name,ps,st,raw,now){
   if(st&&action!=='SAFE')A.lastWarnAt=now;
   if(st?.shadowWatchOnly)A.lastShadowWarnAt=now;
   if(st?.guardWatchOnly)A.lastGuardWarnAt=now;
+  if(st&&action==='WATCH'&&!st.shadowWatchOnly&&!st.guardWatchOnly){
+    const wh=st.hit||{};
+    if(wh.family&&wh.source!=='active-unknown')A.lastWatchEvidence={at:now,hitMs:+st.hitMs||9999,e:{...wh,player:name}};
+  }
   if(!A.pending&&st&&action!=='SAFE'&&st.hitMs!=null){
     const h=st.hit||{};
     if(st.geometryWatchOnly||st.edgeWatchOnly||st.shadowWatchOnly||st.guardWatchOnly)return;
@@ -912,7 +924,7 @@ function reportSnapshot(){
 }
 function summarySnapshot(){
   const a=auditSnapshot(),af=auditFamilies(),c=calibrationSnapshot();
-  const total={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0};
+  const total={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,weakFalsePositive:0,watchCovered:0,shadowCovered:0,guardCovered:0,watchPromoted:0,unstableCovered:0,safeMiss:0,protectedIgnored:0,deathEvents:0,respawnEvents:0,absentEvents:0,returnEvents:0};
   for(const n of ['P1','P2','P3'])for(const k of Object.keys(total))total[k]+=+a[n]?.[k]||0;
   const fam=[];
   for(const n of ['P1','P2','P3'])for(const r of af[n]||[])fam.push({player:n,...r});
@@ -936,7 +948,9 @@ function summarySnapshot(){
     shadowDamageCoverage:damageEvents?+(total.shadowCovered/damageEvents).toFixed(3):null,
     guardDamageCoverage:damageEvents?+(total.guardCovered/damageEvents).toFixed(3):null,
     validated,damageEvents};
-  return frozenCopy({at:Date.now(),total,metrics,players:a,topFalse,demoted,precisionSuppressed,geoAdjusted,geoClasses,missCases:MISS_CASES.slice(-8)});
+  const missTop=MISS_CASES.slice(-6).map(c=>({id:c.id,kind:c.kind,player:c.player,hp:c.hp,nearest:c.nearest,
+    candidates:(c.candidates||[]).slice(0,3).map(x=>({slot:x.slot,type:x.type,attack:x.attack,locked:x.locked,ageMs:x.ageMs,dx:x.dx,dy:x.dy,dz:x.dz,startupTop:x.startupTop}))}));
+  return frozenCopy({at:Date.now(),total,metrics,missTop,players:a,topFalse,demoted,precisionSuppressed,geoAdjusted,geoClasses});
 }
 function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
 function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
@@ -970,7 +984,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.9.5',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.9.6',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -995,7 +1009,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.9.5 中性存在/主动攻击护栏观战版启动');
+  qlog('✅ WOF V4.9.6 先观察后行动/漏判护栏版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
@@ -1004,7 +1018,9 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   qlog('🎯 精度优先: 保留V4.9.2信任门控；坏分支继续WATCH，不重新扩大UP/DOWN/AB行动核心');
   qlog('🟨 安全影子: 完整危险壳外再加18%短时WATCH halo，仅预警不参与UP/DOWN/AB，也不计误报校准');
   qlog('🛡️ 审计保护: 掉血后'+CFG.postDamageGuardMs+'ms与真实HP=0死亡/复活保护；对象临时消失只重建基线，不再误算死亡/复活');
-  qlog('🟫 主动攻击护栏: ATTACK!=0 的敌人增加350ms WATCH-only运动护栏；不参与UP/DOWN/AB，也不进入FP校准');
+  qlog('🟫 主动攻击护栏: ATTACK!=0 扩为450ms WATCH-only运动护栏；不参与UP/DOWN/AB，也不进入FP校准');
+  qlog('🧪 先观察后行动: active source需累计2次真实命中证据才允许驱动UP/DOWN/AB；此前只保留WATCH');
+  qlog('📈 WATCH学习: 已知active Family在稳定WATCH下真实掉血会积累命中证据，不需要先冒险发动作建议');
   qlog('📐 自适应几何: Family/Variant独立学习 + fallback几何类跨Family共享学习；完整危险外壳始终保留WATCH');
   qlog('🔬 漏判取证: 真实SAFE漏判自动保存最近600ms敌人状态/ATTACK/Family候选；WOFV4.misses()可查看');
   qlog('⚡ 稳定器: WATCH与<=300ms紧急UP/DOWN为2帧确认；AB仍需3帧；<=250ms危险保留较宽紧急核心');
