@@ -1,6 +1,6 @@
 (async()=>{
   'use strict';
-  const DB='wof-multiroom-audit-v1',STORE='sessions',MAX_AGE_MS=12*60*60*1000;
+  const DB='wof-multiroom-audit-v1',STORE='sessions',MAX_AGE_MS=12*60*60*1000,STALE_MS=25*1000;
   function openDb(){
     return new Promise((resolve,reject)=>{
       const q=indexedDB.open(DB,1);
@@ -40,17 +40,26 @@
       actionRate:ticks?+(action/ticks).toFixed(4):null,
       watchRate:ticks?+((d.WATCH||0)/ticks).toFixed(4):null};
   }
-  function summarize(r){
+  function effectiveStatus(r,now){
+    if(r.status!=='running')return r.status||'unknown';
+    const last=r.lastHeartbeatAt||r.latestAt||r.startedAt||0;
+    if(now-last>STALE_MS)return 'interrupted';
+    return 'running';
+  }
+  function summarize(r,now){
     const end=r.final||r.checkpoints?.[r.checkpoints.length-1]?.summary||null;
     const start=r.start||null;
     const total=subObj(end?.total||{},start?.total||{});
     const completed=(total.hit||0)+(total.changed||0)+(total.enemyChanged||0)+(total.revoked||0)+(total.falsePositive||0)+(total.weakFalsePositive||0);
     const materialized=(total.hit||0)+(total.changed||0)+(total.falsePositive||0)+(total.weakFalsePositive||0);
     const damage=(total.hit||0)+(total.ambiguousDamage||0)+(total.watchCovered||0)+(total.unstableCovered||0)+(total.safeMiss||0);
+    const status=effectiveStatus(r,now);
+    const endedAt=r.completedAt||r.lastHeartbeatAt||r.latestAt||r.startedAt;
     return {
-      id:r.id,status:r.status,version:r.runtimeVersion,
-      startedAt:r.startedAt,endedAt:r.completedAt||r.latestAt,
-      durationSec:Math.max(0,Math.round(((r.completedAt||r.latestAt||r.startedAt)-r.startedAt)/1000)),
+      id:r.id,status,storedStatus:r.status,partial:status==='interrupted'||status==='stopped'||status==='error',version:r.runtimeVersion,
+      startedAt:r.startedAt,endedAt,
+      durationSec:Math.max(0,Math.round((endedAt-r.startedAt)/1000)),
+      estimatedLossMaxSec:status==='interrupted'?Math.ceil((r.checkpointMs||10000)/1000):0,
       checkpoints:r.checkpoints?.length||0,total,
       evaluation:{
         completed,materialized,
@@ -67,16 +76,18 @@
   }
 
   const db=await openDb();
-  const cutoff=Date.now()-MAX_AGE_MS;
+  const now=Date.now(),cutoff=now-MAX_AGE_MS;
   const sessions=(await getAll(db)).filter(r=>(r.startedAt||0)>=cutoff).sort((a,b)=>(a.startedAt||0)-(b.startedAt||0));
   db.close();
   if(!sessions.length){console.warn('没有找到最近12小时的多房间采集数据');return null;}
-  const summaries=sessions.map(summarize);
+  const summaries=sessions.map(r=>summarize(r,now));
   const bundle={
     schema:'wof-multiroom-export-v1',
-    exportedAt:Date.now(),
+    exportedAt:now,
     sessionCount:sessions.length,
-    completeCount:sessions.filter(x=>x.status==='complete').length,
+    completeCount:summaries.filter(x=>x.status==='complete').length,
+    interruptedCount:summaries.filter(x=>x.status==='interrupted').length,
+    partialCount:summaries.filter(x=>x.partial).length,
     summaries,
     sessions
   };
@@ -86,6 +97,6 @@
   const a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),30000);
   console.table(summaries.map(x=>({room:x.id,status:x.status,min:(x.durationSec/60).toFixed(1),tested:x.total.tested||0,damage:x.evaluation.damageEvents,safeMiss:x.total.safeMiss||0,materialize:x.evaluation.materializationRate,warningRate:x.evaluation.decisionLoad.warningRate})));
-  console.log('✅ 已下载',name,'房间数',sessions.length,'完成',bundle.completeCount);
+  console.log('✅ 已下载',name,'房间数',sessions.length,'完整',bundle.completeCount,'中断',bundle.interruptedCount,'部分样本',bundle.partialCount);
   return bundle;
 })().catch(e=>console.error('❌ 多房间导出失败',e));
