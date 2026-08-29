@@ -34,6 +34,8 @@ function __WOF_START_V4(DB){
     fpPenetrationMin:0.05,
     auditRevokeLeadMs:60,
     auditRepeatBlockMs:700,
+    missHistoryMs:600,
+    missCandidateLimit:5,
     fallbackZThreshold:80,
     fallbackZActionCore:16,
     fallbackXYActionScale:.68,
@@ -237,7 +239,7 @@ function __WOF_START_V4(DB){
     if(kind!=='fp'||!calFpEligible(e))return;
     b.geoFp=(b.geoFp||0)+1;b.fpFamilies[e.family||'?']=1;
     // Require several independent Families before changing a shared fallback geometry class.
-    if(b.geoFp<3||Object.keys(b.fpFamilies||{}).length<2)return;
+    if(b.geoFp<4||Object.keys(b.fpFamilies||{}).length<3)return;
     const vals=[['x',+e.rx||1,+e.mx||0],['y',+e.ry||1,+e.my||0],['z',+e.rz||1,+e.mz||0]]
       .map(([axis,r,m])=>({axis,r,m,pen:r>0?m/r:1})).sort((a,b)=>a.pen-b.pen);
     const edge=vals[0];if(!edge||edge.pen<0)return;
@@ -354,6 +356,8 @@ function __WOF_START_V4(DB){
   const SLOT=Array.from({length:NSLOTS},()=>({type:null,prevAttack:0,locked:null,started:0,origin:null,face:0,seq:0,variantBase:null,variantMotion:null}));
   const UNIQUE_ACTIVE=new Map();
   const MULTI_ACTIVE=new Set();
+  const ENEMY_HISTORY=[];
+  const MISS_CASES=[];
   for(const [id,f] of Object.entries(DB.f)){
     const k=f[0]+'|'+f[1];
     if(UNIQUE_ACTIVE.has(k)){UNIQUE_ACTIVE.delete(k);MULTI_ACTIVE.add(k);}
@@ -375,6 +379,54 @@ function __WOF_START_V4(DB){
     }
     s.prevAttack=o.attack;
     return s;
+  }
+
+  function captureEnemyFrame(now){
+    const actors=[];
+    for(let i=0;i<NSLOTS;i++){
+      const o=readActor(POOL+i*STRIDE,i);if(!o)continue;
+      const sl=SLOT[i]||{};
+      actors.push({slot:i,type:o.type,x:+o.x.toFixed(1),y:+o.y.toFixed(1),z:+o.z.toFixed(1),face:o.face,
+        attack:o.attack,anim:o.anim,s0:o.s0,s1:o.s1,s2:o.s2,s3:o.s3,frame:o.frame,locked:sl.locked||null});
+    }
+    ENEMY_HISTORY.push({t:now,actors});
+    while(ENEMY_HISTORY.length&&now-ENEMY_HISTORY[0].t>CFG.missHistoryMs)ENEMY_HISTORY.shift();
+  }
+
+  function missEnemyCandidates(ps,now){
+    const best=new Map();
+    for(const fr of ENEMY_HISTORY){
+      const age=Math.max(0,now-fr.t);
+      for(const o of fr.actors){
+        const dx=Math.abs(ps.x-o.x),dy=Math.abs(ps.y-o.y),dz=Math.abs(ps.z-o.z);
+        const active=o.attack!==0;
+        const score=dx+dy*4+dz*2+age*.04-(active?70:0)-(o.locked?20:0);
+        const prev=best.get(o.slot);
+        if(!prev||score<prev.score){
+          let startupTop=[];
+          if(!active){
+            const h=lookup(o);
+            if(h)startupTop=chooseFamilies(h.row).slice(0,2).map(x=>x.id);
+          }
+          best.set(o.slot,{score:+score.toFixed(1),ageMs:Math.round(age),slot:o.slot,type:o.type,attack:o.attack,
+            locked:o.locked||null,anim:o.anim,state:[o.s0,o.s1,o.s2,o.s3],frame:o.frame,
+            dx:+dx.toFixed(1),dy:+dy.toFixed(1),dz:+dz.toFixed(1),startupTop});
+        }
+      }
+    }
+    return [...best.values()].sort((a,b)=>a.score-b.score).slice(0,CFG.missCandidateLimit);
+  }
+
+  function captureMissCase(kind,name,ps,raw,now,hp0,hp1){
+    const n=raw?.stay?.nearest||null;
+    const c={id:MISS_CASES.length+1,kind,player:name,hp:hp0+'→'+hp1,
+      at:+now.toFixed(1),pos:[+ps.x.toFixed(1),+ps.y.toFixed(1),+ps.z.toFixed(1)],
+      nearest:n?{family:n.family||null,source:n.source||null,variant:n.variant||null,slot:n.slot??null,type:n.type??null,
+        t:n.t,confidence:+(+n.confidence||0).toFixed(3),survival:+(+n.survival||0).toFixed(3),
+        clearance:raw?.stay?.minClearance==null?null:+raw.stay.minClearance.toFixed(3)}:null,
+      candidates:missEnemyCandidates(ps,now)};
+    MISS_CASES.push(c);if(MISS_CASES.length>16)MISS_CASES.shift();
+    return c;
   }
 
   function activeOrigin(o,f,lead){
@@ -474,13 +526,14 @@ function __WOF_START_V4(DB){
   function clearNorm(p,d){const dx=(p.x-d.x)/Math.max(1,d.rx),dy=(p.y-d.y)/Math.max(1,d.ry),dz=(p.z-d.z)/Math.max(1,d.rz);return Math.sqrt(dx*dx+dy*dy+dz*dz);}
 
   function evalPath(p,mode,danger,delay=0){
-    let earliest=null,hit=null,min=Infinity;
+    let earliest=null,hit=null,min=Infinity,nearest=null;
     for(const d of danger){
       if(d.t<CFG.reactFloorMs||d.confidence<CFG.minConfidence)continue;
-      const pp=playerAt(p,mode,d.t,delay),c=clearNorm(pp,d);if(c<min)min=c;
+      const pp=playerAt(p,mode,d.t,delay),c=clearNorm(pp,d);
+      if(c<min){min=c;nearest=d;}
       if(collides(pp,d)&&(earliest===null||d.t<earliest)){earliest=d.t;hit=d;}
     }
-    return{mode,safe:earliest===null,collisionMs:earliest,minClearance:isFinite(min)?min:null,hit};
+    return{mode,safe:earliest===null,collisionMs:earliest,minClearance:isFinite(min)?min:null,hit,nearest};
   }
 
   function latestSafe(p,mode,danger,collisionMs){
@@ -548,7 +601,7 @@ function stable(name,r){
   let k=action+'|'+(h.slot??-1)+'|'+(h.family??'');
   if(action==='AB')k+='|'+(uh.slot??-1)+'|'+(uh.family??'')+'|'+(dh.slot??-1)+'|'+(dh.family??'');
   if(k===s.k)s.n++;else{s.k=k;s.n=1;s.v=null;}
-  const need=action==='SAFE'?2:3;
+  const need=action==='SAFE'?2:action==='WATCH'?2:action==='AB'?3:((+r.hitMs||9999)<=300?2:3);
   if(s.n>=need)s.v=r;
   return s.v;
 }
@@ -653,10 +706,13 @@ function auditStep(name,ps,st,raw,now){
     }else if(now-A.lastWarnAt>350){
       if(now-A.lastRawWarnAt<=350){
         A.stats.unstableCovered++;
-        qlog('🟧',name,'原始危险已覆盖/稳定器未确认','HP '+A.prevHp+'→'+hp,'近350ms有raw危险');
+        const mc=captureMissCase('unstableCovered',name,ps,raw,now,A.prevHp,hp);
+        qlog('🟧',name,'原始危险已覆盖/稳定器未确认','HP '+A.prevHp+'→'+hp,'case#'+mc.id);
       }else{
         A.stats.safeMiss++;
-        qlog('❌',name,'真实SAFE漏判候选','HP '+A.prevHp+'→'+hp,'近350ms raw/stable 都无危险');
+        const mc=captureMissCase('safeMiss',name,ps,raw,now,A.prevHp,hp);
+        qlog('❌',name,'真实SAFE漏判','HP '+A.prevHp+'→'+hp,'case#'+mc.id,
+          '候选',mc.candidates.slice(0,3).map(x=>'s'+x.slot+'/T'+x.type+'/A'+x.attack+'/'+(x.locked||'?')).join(' '));
       }
     }
   }
@@ -733,14 +789,20 @@ function summarySnapshot(){
     .sort((x,y)=>Math.min(...x.geo)-Math.min(...y.geo)).slice(0,20);
   const geoClasses=(c.geom||[]).filter(r=>Array.isArray(r.geo)&&((r.geoFp||0)>0||Math.min(...r.geo)<.995))
     .sort((x,y)=>(y.geoFp||0)-(x.geoFp||0)).slice(0,20);
-  return frozenCopy({at:Date.now(),total,players:a,topFalse,demoted,geoAdjusted,geoClasses});
+  const validated=total.hit+total.falsePositive;
+  const damageEvents=total.hit+total.ambiguousDamage+total.unstableCovered+total.safeMiss;
+  const metrics={actionPrecision:validated?+(total.hit/validated).toFixed(3):null,
+    rawDamageCoverage:damageEvents?+((total.hit+total.ambiguousDamage+total.unstableCovered)/damageEvents).toFixed(3):null,
+    stableDamageCoverage:damageEvents?+((total.hit+total.ambiguousDamage)/damageEvents).toFixed(3):null,
+    validated,damageEvents};
+  return frozenCopy({at:Date.now(),total,metrics,players:a,topFalse,demoted,geoAdjusted,geoClasses,missCases:MISS_CASES.slice(-8)});
 }
 function reportText(){return JSON.stringify(reportSnapshot(),null,2);}
 function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
 
   let timer=null,last=null;
   function tick(){
-  const now=performance.now();if(PLAYER_MODE==='local')syncLocalPlayer();updatePlayers(now);const d=buildDanger(now);last={at:now,playerMode:PLAYER_MODE,livePlayers:PLAYERS.filter(p=>!!readPlayer(p.base,p.name)).map(p=>p.name),players:{},enemyCount:d.enemies.size,dangerPoints:d.danger.length,exact:d.exact,coarse:d.coarse};
+  const now=performance.now();if(PLAYER_MODE==='local')syncLocalPlayer();updatePlayers(now);const d=buildDanger(now);captureEnemyFrame(now);last={at:now,playerMode:PLAYER_MODE,livePlayers:PLAYERS.filter(p=>!!readPlayer(p.base,p.name)).map(p=>p.name),players:{},enemyCount:d.enemies.size,dangerPoints:d.danger.length,exact:d.exact,coarse:d.coarse};
   for(const p of PLAYERS){
     const ps=PS[p.name];if(!ps)continue;
     const raw=decision(ps,d.danger),st=stable(p.name,raw);
@@ -767,7 +829,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   }
 
   self.WOFV4={
-    version:'offline-dynamic-spectator-calibrated-v4.9',config:CFG,last:null,
+    version:'offline-dynamic-spectator-calibrated-v4.9.1',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,playerMode:PLAYER_MODE,livePlayers:livePlayerNames(),tracked:{...TRACK},players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     localPlayer(){const r=resolveLocalActor();return {name:LOCAL_NAME,no:localPlayerNo(),seat:LOCAL_SEAT,mode:PLAYER_MODE,live:r.live,tracked:{...TRACK}};},
@@ -781,6 +843,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
     exportCalibration(){return frozenCopy(calibrationRaw());},
     snapshot(){return reportSnapshot();},
     summary(){return summarySnapshot();},
+    misses(){return frozenCopy(MISS_CASES.slice());},
     report(){const t=reportText();self.console.log(t);return t;},
     reportShort(){const t=summaryText();self.console.log(t);return t;},
     quiet(on=true){QUIET=!!on;self.console.log(QUIET?'🔇 WOF实时日志已静音，统计继续':'🔊 WOF实时日志已恢复');return QUIET;},
@@ -791,7 +854,7 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   };
   spectateAll();
   timer=setInterval(tick,CFG.tickMs);tick();
-  qlog('✅ WOF V4.9 共享几何类学习观战版启动');
+  qlog('✅ WOF V4.9.1 漏判取证/紧急稳定观战版启动');
   qlog('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   qlog('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   qlog('✅ 纯观战：P1/P2/P3共享Family可靠性；低精度Family自动降为WATCH，不删除危险点');
@@ -799,7 +862,9 @@ function summaryText(){return JSON.stringify(summarySnapshot(),null,2);}
   qlog('🧯 在线校准: 只有深入行动核心的误报才快速降级；擦边碰撞只WATCH，不处罚Family');
   qlog('🧬 Variant: 坏分支2次高可信误报即可WATCH；Family/source保持慢速安全兜底');
   qlog('📐 自适应几何: Family/Variant独立学习 + fallback几何类跨Family共享学习；完整危险外壳始终保留WATCH');
-  qlog('🧱 共享几何类: 同一fallback半径至少3次高可信误报且来自>=2个Family才开始收缩行动核心');
+  qlog('🔬 漏判取证: 真实SAFE漏判自动保存最近600ms敌人状态/ATTACK/Family候选；WOFV4.misses()可查看');
+  qlog('⚡ 稳定器: WATCH与<=300ms紧急UP/DOWN改为2帧确认；AB仍需3帧');
+  qlog('🧱 共享几何类: 至少4次高可信误报且来自>=3个Family才开始收缩行动核心');
   qlog('🟧 审计: unstableCovered=raw危险已覆盖但稳定器未确认；safeMiss=raw/stable都完全没看到危险');
   qlog('💾 热更新继承: Family/source/variant在线校准在同一Worker内升级版本时保留');
   qlog('🟪 边缘壳: 行动核心再内缩 '+Math.round(CFG.actionPenetrationMin*100)+'%，避免擦边UP/DOWN/AB');
