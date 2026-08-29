@@ -1,9 +1,10 @@
-name: Assemble WOF V4
+name: Assemble WOF V4.1
 on:
   workflow_dispatch:
   push:
     paths:
       - 'wof_v4_parts/**'
+      - '.github/workflows/assemble-v4.yml'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -11,7 +12,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Assemble and verify
+      - name: Assemble and patch V4.1
         run: |
           cat wof_v4_parts/part01.txt \
               wof_v4_parts/part02.txt \
@@ -23,13 +24,70 @@ jobs:
               wof_v4_parts/part08.txt \
               wof_v4_parts/part09.txt \
               wof_v4_parts/part10.txt > wof_v4_install_once.js
-          test "$(wc -c < wof_v4_install_once.js | tr -d ' ')" = "125513"
-          echo "12d25d747b9b2050ff17381738329c023c32a4aa559a4952194dadd2b6c00c13  wof_v4_install_once.js" | sha256sum -c -
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('wof_v4_install_once.js')
+          s=p.read_text(encoding='utf-8')
+
+          old="""    if(up<0&&down<0)return{danger:true,noRoute:true,best:'AB',hitMs:cur.collisionMs,hit:cur.hit,up,down,stay:cur};"""
+          new="""    if(up<0&&down<0)return{danger:true,noRoute:true,abReady:cur.collisionMs<=350,best:cur.collisionMs<=350?'AB':'WATCH',hitMs:cur.collisionMs,hit:cur.hit,up,down,stay:cur};"""
+          assert old in s
+          s=s.replace(old,new,1)
+
+          old="""  const ST={P1:{k:'',n:0,v:null},P2:{k:'',n:0,v:null}},PRINT={P1:'',P2:''};
+          function stable(name,r){
+            const s=ST[name];
+            const k=!r.danger?'SAFE':r.noRoute?'AB|'+(r.hit?.slot??-1)+'|'+(r.hit?.family??''):(r.best+'|'+(r.hit?.slot??-1));
+            if(k===s.k)s.n++;else{s.k=k;s.n=1;}
+            const need=r.noRoute?(r.hitMs<=120?2:3):2;
+            if(s.n>=need)s.v=r;
+            return s.v;
+          }
+          """
+          new="""  const ST={P1:{k:'',n:0,v:null},P2:{k:'',n:0,v:null}},PRINT={P1:'',P2:''};
+          function stable(name,r){
+            const s=ST[name],h=r.hit||{},a=!r.danger?'SAFE':r.noRoute?(r.abReady?'AB':'WATCH'):r.best,k=a+'|'+(h.slot??-1)+'|'+(h.family??'');
+            if(k===s.k)s.n++;else{s.k=k;s.n=1;if(s.v?.abReady)s.v=null;}
+            const need=!r.danger?2:r.noRoute?(r.abReady&&r.hitMs<=120?2:3):3;
+            if(s.n>=need)s.v=r;return s.v;
+          }
+          """
+          assert old in s
+          s=s.replace(old,new,1)
+
+          old="""  function print(name,r,enemyCount){
+            if(!r)return;
+            const hit=r.hit||{};
+            const sig=!r.danger?name+'|SAFE':r.noRoute?name+'|AB|'+hit.slot+'|'+hit.family+'|'+r.hitMs:name+'|'+r.best+'|'+hit.slot+'|'+hit.family+'|'+r.hitMs+'|'+r.latestMs;
+            if(sig===PRINT[name])return;PRINT[name]=sig;
+            if(!r.danger)console.log('🟢',name,'OFFLINE SAFE','预测怪',enemyCount);
+            else if(r.noRoute)console.log('🆘',name,'OFFLINE AB候选','约'+r.hitMs+'ms后危险','slot',hit.slot,'type',hit.type,'family',hit.family||'?');
+            else console.log(r.best==='UP'?'🟦 '+name+' ⬆ UP':'🟦 '+name+' ⬇ DOWN','约'+r.hitMs+'ms后危险','最晚'+r.latestMs+'ms后开始','UP',r.up,'DOWN',r.down,'family',hit.family||'?');
+          }
+          """
+          new="""  function print(name,r,enemyCount){
+            if(!r)return;const h=r.hit||{},a=!r.danger?'SAFE':r.noRoute?(r.abReady?'AB':'WATCH'):r.best,sig=name+'|'+a+'|'+(h.slot??-1)+'|'+(h.family??'');
+            if(sig===PRINT[name])return;PRINT[name]=sig;
+            if(!r.danger)console.log('🟢',name,'OFFLINE SAFE','预测怪',enemyCount);
+            else if(r.noRoute&&!r.abReady)console.log('🟠',name,'WATCH','约'+r.hitMs+'ms','slot',h.slot,'family',h.family||'?');
+            else if(r.noRoute)console.log('🆘',name,'OFFLINE AB候选','约'+r.hitMs+'ms后危险','slot',h.slot,'type',h.type,'family',h.family||'?');
+            else console.log(r.best==='UP'?'🟦 '+name+' ⬆ UP':'🟦 '+name+' ⬇ DOWN','约'+r.hitMs+'ms后危险','最晚'+r.latestMs+'ms后开始','UP',r.up,'DOWN',r.down,'family',h.family||'?');
+          }
+          """
+          assert old in s
+          s=s.replace(old,new,1)
+          s=s.replace("version:'offline-dynamic-p1p2-v4'","version:'offline-dynamic-p1p2-v4.1'",1)
+          s=s.replace("console.log('✅ WOF V4 离线动态观战版启动');","console.log('✅ WOF V4.1 防抖观战版启动');",1)
+          p.write_text(s,encoding='utf-8')
+          PY
+          node --check wof_v4_install_once.js
+          echo "V4.1 bytes: $(wc -c < wof_v4_install_once.js)"
+          sha256sum wof_v4_install_once.js
       - name: Commit complete script
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add wof_v4_install_once.js
           git diff --cached --quiet && exit 0
-          git commit -m "Assemble complete WOF V4 script"
+          git commit -m "Upgrade WOF V4.1 debounce observer"
           git push
