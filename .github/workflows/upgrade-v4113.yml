@@ -1,0 +1,37 @@
+name: Upgrade WOF V4.11.3
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/patch_v4113.py'
+      - '.github/workflows/upgrade-v4113.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch runtime to V4.11.3
+        run: |
+          python tools/patch_v4113.py
+          node --check wof_v4_install_once.js
+          grep -q "offline-dynamic-spectator-calibrated-v4.11.3" wof_v4_install_once.js
+          grep -q "watchDiagnostics" wof_v4_install_once.js
+          grep -q "guardAge" wof_v4_install_once.js
+      - name: Commit runtime
+        run: |
+          if git diff --quiet -- wof_v4_install_once.js; then
+            echo "No runtime diff"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wof_v4_install_once.js
+          git commit -m "Upgrade runtime to V4.11.3"
+          git push
