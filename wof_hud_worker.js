@@ -35,7 +35,7 @@
     if(!src)return 0;
     return (src==='GUARD'||src==='GEOMETRY'||src==='SHADOW')?1:2;
   };
-  const finite=v=>Number.isFinite(+v)?+v:null;
+  const finite=v=>v==null?null:(Number.isFinite(+v)?+v:null);
   function playerRow(name,p){
     const st=p?.stable||null,a=st?actionOf(st):'NONE',src=sourceOf(st,a),h=st?.hit||{};
     return {
