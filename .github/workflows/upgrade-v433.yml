@@ -1,0 +1,32 @@
+name: Upgrade WOF V4.3.3
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/patch_v433.py'
+      - '.github/workflows/upgrade-v433.yml'
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch current runtime to V4.3.3
+        run: |
+          python3 tools/patch_v433.py
+          node --check wof_v4_install_once.js
+          grep -q "offline-dynamic-p1p2-v4.3.3" wof_v4_install_once.js
+          grep -q "WOF V4.3.3 时间有效性自验证版启动" wof_v4_install_once.js
+          grep -q "survivalActionThreshold:0.35" wof_v4_install_once.js
+          grep -q "预测已撤销/不计误报" wof_v4_install_once.js
+          echo "V4.3.3 bytes: $(wc -c < wof_v4_install_once.js)"
+          sha256sum wof_v4_install_once.js
+      - name: Commit runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wof_v4_install_once.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Upgrade WOF V4.3.3 temporal validity"
+          git push
