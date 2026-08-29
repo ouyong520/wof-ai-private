@@ -25,6 +25,8 @@ function __WOF_START_V4(DB){
     auditTolY:8,
     auditTolZ:14,
     auditHitEarlyMs:180,
+    survivalActionThreshold:0.35,
+    auditRevokeLeadMs:60,
     padX:3,
     padY:2,
     padZ:2
@@ -181,11 +183,12 @@ function __WOF_START_V4(DB){
           if(t<l.v)continue;
           const age=t-l.v;if(age>dur90)continue;
           const sw=interp(f[7],age,'sw');if(!sw)continue;
-          const confidence=hazard*fc.p*l.w;
+          const survival=Math.max(0,Math.min(1,sw.survival??1));
+          const confidence=hazard*fc.p*l.w*survival;
           if(confidence<CFG.minConfidence)continue;
           out.danger.push({t,x:org.x+sg*sw.x,y:org.y+sw.y,z:org.z+sw.z,
             rx:rad.rx,ry:rad.ry,rz:rad.rz,slot:o.slot,type:o.type,family:fc.id,
-            confidence,source:'startup',lookup:hit.kind});
+            confidence,survival,actionable:survival>=CFG.survivalActionThreshold,source:'startup',lookup:hit.kind});
         }
       }
     }
@@ -207,9 +210,11 @@ function __WOF_START_V4(DB){
     for(let t=0;t<=CFG.horizonMs;t+=CFG.dangerStepMs){
       const a=age+t;if(a>dur90)continue;
       const sw=interp(f[7],a,'sw');if(!sw)continue;
+      const survival=Math.max(0,Math.min(1,sw.survival??1));
+      if(survival<CFG.minConfidence)continue;
       out.danger.push({t,x:s.origin.x+sg*sw.x,y:s.origin.y+sw.y,z:s.origin.z+sw.z,
         rx:rad.rx,ry:rad.ry,rz:rad.rz,slot:o.slot,type:o.type,family:s.locked,
-        confidence:1,source:'active'});
+        confidence:survival,survival,actionable:survival>=CFG.survivalActionThreshold,source:'active'});
     }
   }
 
@@ -256,24 +261,24 @@ function __WOF_START_V4(DB){
   }
 
   function decision(p,danger){
-  const knownDanger=danger.filter(d=>d.source!=='active-unknown');
+  const actionDanger=danger.filter(d=>d.source!=='active-unknown'&&d.actionable!==false);
   const fullCur=evalPath(p,'CONTINUE',danger,0);
-  const cur=evalPath(p,'CONTINUE',knownDanger,0);
+  const cur=evalPath(p,'CONTINUE',actionDanger,0);
 
   if(cur.safe){
-    if(!fullCur.safe&&fullCur.hit?.source==='active-unknown')
+    if(!fullCur.safe&&(fullCur.hit?.source==='active-unknown'||fullCur.hit?.actionable===false))
       return{danger:true,watchOnly:true,best:'WATCH',hitMs:fullCur.collisionMs,hit:fullCur.hit,stay:fullCur};
     return{danger:false,best:'CONTINUE',stay:cur};
   }
 
   const routeUntil=Math.min(CFG.horizonMs,cur.collisionMs+CFG.routeCommitMs);
-  const routeDanger=knownDanger.filter(d=>d.t<=routeUntil);
+  const routeDanger=actionDanger.filter(d=>d.t<=routeUntil);
   const up0=evalPath(p,'UP',routeDanger,0),down0=evalPath(p,'DOWN',routeDanger,0);
   const up=up0.safe?latestSafe(p,'UP',routeDanger,cur.collisionMs):-1;
   const down=down0.safe?latestSafe(p,'DOWN',routeDanger,cur.collisionMs):-1;
 
   if(up<0&&down<0){
-    const known=h=>!!h&&h.family!=null&&h.source!=='active-unknown';
+    const known=h=>!!h&&h.family!=null&&h.source!=='active-unknown'&&h.actionable!==false;
     const blockersKnown=known(cur.hit)&&known(up0.hit)&&known(down0.hit);
     const upNear=up0.collisionMs!=null&&up0.collisionMs<=cur.collisionMs+CFG.abRouteSlackMs;
     const downNear=down0.collisionMs!=null&&down0.collisionMs<=cur.collisionMs+CFG.abRouteSlackMs;
@@ -324,16 +329,16 @@ function stable(name,r){
 }
 
 const AUD={
-  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,falsePositive:0,safeMiss:0},byFamily:{}},
-  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,falsePositive:0,safeMiss:0},byFamily:{}}
+  P1:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,safeMiss:0},byFamily:{}},
+  P2:{pending:null,prevHp:null,lastWarnAt:-1e9,stats:{tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,safeMiss:0},byFamily:{}}
 };
 
 function famStat(A,e){
   const k=(e.family||'?')+'|'+(e.source||'?');
-  return A.byFamily[k]||(A.byFamily[k]={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,falsePositive:0,materialized:0});
+  return A.byFamily[k]||(A.byFamily[k]={tested:0,hit:0,changed:0,enemyChanged:0,ambiguousDamage:0,revoked:0,falsePositive:0,materialized:0});
 }
 function fmt(n){return Number.isFinite(n)?n.toFixed(1):'?';}
-function geoText(e){return 'inside x'+fmt(e.mx)+' y'+fmt(e.my)+' z'+fmt(e.mz)+' r '+fmt(e.rx)+'/'+fmt(e.ry)+'/'+fmt(e.rz)+' conf '+fmt(e.confidence);}
+function geoText(e){return 'inside x'+fmt(e.mx)+' y'+fmt(e.my)+' z'+fmt(e.mz)+' r '+fmt(e.rx)+'/'+fmt(e.ry)+'/'+fmt(e.rz)+' conf '+fmt(e.confidence)+' surv '+fmt(e.survival);}
 
 function trackEnemy(e,now){
   if(!e||e.slot==null||e.slot<0||e.slot>=NSLOTS)return;
@@ -344,8 +349,12 @@ function trackEnemy(e,now){
   }
   e.enemyLastAttack=o.attack;
   const lk=SLOT[e.slot]?.locked||null;
-  if(lk===e.family)e.familySeen=true;
-  else if(lk&&lk!==e.family)e.otherFamily=lk;
+  if(lk===e.family){
+    e.familySeen=true;e.familyLastSeenAt=now;
+  }else{
+    if(lk&&lk!==e.family)e.otherFamily=lk;
+    if(e.familySeen&&now<e.due-CFG.auditRevokeLeadMs)e.attackEndedEarly=true;
+  }
 }
 
 function auditResolve(name,kind,e,extra=''){
@@ -365,6 +374,10 @@ function auditResolve(name,kind,e,extra=''){
   }else if(kind==='ambiguous'){
     A.stats.ambiguousDamage++;F.ambiguousDamage++;
     console.log('⚪',name,'发生掉血但目标Family未确认/不计命中',e.action,e.family||'?',e.hitMs+'ms',extra);
+  }else if(kind==='revoked'){
+    A.stats.revoked++;F.revoked++;
+    console.log('🔵',name,'预测已撤销/不计误报',e.action,e.family||'?',e.source||'?',e.hitMs+'ms','slot',e.slot,
+      '目标攻击在预计碰撞前结束',extra);
   }else if(kind==='fp'){
     A.stats.falsePositive++;F.falsePositive++;
     console.log('🔴',name,'高可信疑似误报',e.action,e.family||'?',e.source||'?',e.hitMs+'ms','slot',e.slot,geoText(e),
@@ -382,7 +395,8 @@ function auditStep(name,ps,st,now){
   const dropped=A.prevHp!=null&&hp<A.prevHp;
   if(dropped){
     if(e&&now>=e.due-CFG.auditHitEarlyMs&&now<=e.deadline+120){
-      if(e.source==='active'||e.familySeen)auditResolve(name,'hit',e,'HP '+A.prevHp+'→'+hp);
+      if(e.attackEndedEarly)auditResolve(name,'ambiguous',e,'预测已撤销后发生 HP '+A.prevHp+'→'+hp);
+      else if(e.source==='active'||e.familySeen)auditResolve(name,'hit',e,'HP '+A.prevHp+'→'+hp);
       else auditResolve(name,'ambiguous',e,'HP '+A.prevHp+'→'+hp);
     }else if(now-A.lastWarnAt>350){
       A.stats.safeMiss++;
@@ -403,24 +417,24 @@ function auditStep(name,ps,st,now){
     if(A.pending&&now>=q.deadline){
       const info='偏移 x'+fmt(q.dx)+' y'+fmt(q.dy)+' z'+fmt(q.dz);
       const enemyInvalid=q.enemyLost||(q.source==='startup'&&!q.familySeen);
-      auditResolve(name,enemyInvalid?'enemy':q.changed?'changed':'fp',q,info);
+      auditResolve(name,q.attackEndedEarly?'revoked':enemyInvalid?'enemy':q.changed?'changed':'fp',q,info);
     }
   }
 
   if(st&&action!=='SAFE')A.lastWarnAt=now;
   if(!A.pending&&st&&action!=='SAFE'&&st.hitMs!=null){
     const h=st.hit||{};
-    if(h.family==null||h.source==='active-unknown')return;
+    if(h.family==null||h.source==='active-unknown'||h.actionable===false)return;
     const hitMs=Math.max(CFG.reactFloorMs,+st.hitMs||0);
     const pp=playerAt(ps,'CONTINUE',hitMs,0);
     const rx=+h.rx||0,ry=+h.ry||0,rz=+h.rz||0;
     A.pending={action,family:h.family,source:h.source||null,slot:h.slot,enemyType:h.type,
       t0:now,due:now+hitMs,deadline:now+hitMs+CFG.auditGraceMs,hitMs,
       x:ps.x,y:ps.y,z:ps.z,vx:ps.vx,vy:ps.vy,vz:ps.vz,hp:ps.hp,
-      rx,ry,rz,confidence:+h.confidence||0,
+      rx,ry,rz,confidence:+h.confidence||0,survival:h.survival==null?1:+h.survival,
       mx:rx-Math.abs(pp.x-(+h.x||0)),my:ry-Math.abs(pp.y-(+h.y||0)),mz:rz-Math.abs(pp.z-(+h.z||0)),
       sampled:false,changed:false,dx:null,dy:null,dz:null,
-      familySeen:h.source==='active',materializedCounted:false,enemyLost:false,otherFamily:null,enemyLastAttack:null};
+      familySeen:h.source==='active',familyLastSeenAt:h.source==='active'?now:null,attackEndedEarly:false,materializedCounted:false,enemyLost:false,otherFamily:null,enemyLastAttack:null};
     A.stats.tested++;famStat(A,A.pending).tested++;
     trackEnemy(A.pending,now);
   }
@@ -455,7 +469,7 @@ function auditFamilies(){
 }
 
   self.WOFV4={
-    version:'offline-dynamic-p1p2-v4.3.2',config:CFG,last:null,
+    version:'offline-dynamic-p1p2-v4.3.3',config:CFG,last:null,
     dbInfo:{exact:Object.keys(DB.e).length,coarse:Object.keys(DB.c).length,activeStart:Object.keys(DB.a).length,families:Object.keys(DB.f).length},
     status(){return{version:this.version,db:this.dbInfo,last:this.last,players:PS,audit:auditSnapshot(),auditFamilies:auditFamilies()};},
     audit(){return auditSnapshot();},
@@ -463,8 +477,8 @@ function auditFamilies(){
     stop(){if(timer){clearInterval(timer);timer=null;}console.log('⛔ WOF V4关闭');}
   };
   timer=setInterval(tick,CFG.tickMs);tick();
-  console.log('✅ WOF V4.3.2 目标敌人连续性自验证版启动');
-  console.log('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤敌人攻击取消或分支改变 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
+  console.log('✅ WOF V4.3.3 时间有效性自验证版启动');
+  console.log('🧪 验证: 🎯命中 / 🟡路径改变 / 🟤分支改变 / 🔵预测撤销 / ⚪歧义掉血 / 🔴高可信误报 / ❌SAFE漏判');
   console.log('✅ DB',self.WOFV4.dbInfo.families,'Family / exact',self.WOFV4.dbInfo.exact,'/ coarse',self.WOFV4.dbInfo.coarse);
   console.log('✅ P1+P2动态轨迹 × 20怪 × 3D/斜向轨迹 × 每Family危险范围');
   console.log('⚠️ 只预测，不控制任何玩家');
