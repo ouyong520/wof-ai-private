@@ -1,0 +1,37 @@
+(()=>{
+'use strict';
+try{self.WOFTARGETDYN?.stop?.();}catch(_){}
+const MOD=_0x515056,M=MOD?.HEAPU8,R=MOD?.HEAPU32?.[0x2e39e4>>>2]>>>0;
+if(!M||!R)throw new Error('CPS RAM unavailable');
+const PLAYERS=[{name:'P1',base:0xFFBE1C},{name:'P2',base:0xFFBEFC},{name:'P3',base:0xFFBFDC}],POOL=0xFFC0BC,STRIDE=0xE0,N=20,TICK=40,DURATION=35000;
+const B=a=>M[R+((((a-0xFF0000)&0xffff)^1))]>>>0;
+const U16=a=>((B(a)<<8)|B(a+1))>>>0,U32=a=>(B(a)*0x1000000+B(a+1)*0x10000+B(a+2)*0x100+B(a+3))>>>0;
+const S32=a=>{const v=U32(a);return v>=0x80000000?v-0x100000000:v;},W=v=>v/65536;
+const hx=(v,n=4)=>'0x'+(v>>>0).toString(16).toUpperCase().padStart(n,'0'),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const player=p=>B(p.base)?{name:p.name,base:p.base,x:W(S32(p.base+4)),y:W(S32(p.base+8)),z:W(S32(p.base+12))}:null;
+const actor=i=>{const b=POOL+i*STRIDE;if(!B(b))return null;return{slot:i,base:b,type:U16(b+0x20),x:W(S32(b+4)),y:W(S32(b+8)),z:W(S32(b+12))};};
+const H=Array.from({length:N},()=>({last:null,ema:{P1:0,P2:0,P3:0},label:null,lastLabel:null,switches:0}));
+const ptr16=Array.from({length:STRIDE/2},()=>({n:0,hit:0,wrong:0,by:{P1:[0,0],P2:[0,0],P3:[0,0]}}));
+const ptr32=Array.from({length:STRIDE-3},()=>({n:0,hit:0,wrong:0,by:{P1:[0,0],P2:[0,0],P3:[0,0]}}));
+const xy32=Array.from({length:STRIDE-7},()=>({n:0,hit:0,wrong:0,by:{P1:[0,0],P2:[0,0],P3:[0,0]}}));
+const id16=Array.from({length:STRIDE/2},()=>({n:0,by:{P1:new Map(),P2:new Map(),P3:new Map()}}));
+let running=true,timer=null,finishTimer=null,samples=0,labeled=0,switches=0,startedAt=Date.now();
+function infer(i,o,ps){const h=H[i],now={x:o.x,y:o.y,z:o.z};if(h.last&&ps.length>=2){const mx=o.x-h.last.x,my=o.y-h.last.y,mz=o.z-h.last.z,m=Math.hypot(mx,my,mz);if(m>.06){for(const p of ps){const dx=p.x-o.x,dy=p.y-o.y,dz=p.z-o.z,d=Math.hypot(dx,dy,dz)||1;const align=(mx*dx+my*dy+mz*dz)/(m*d);const pd=h.last.players?.[p.name],prevD=pd==null?d:pd,gain=(prevD-d)/Math.max(.06,m),q=.72*clamp(align,-1,1)+.28*clamp(gain,-1,1);h.ema[p.name]=h.ema[p.name]*.78+q*.22;}const ranked=ps.map(p=>({name:p.name,s:h.ema[p.name]})).sort((a,b)=>b.s-a.s),best=ranked[0],second=ranked[1];if(best&&best.s>.20&&(!second||best.s-second.s>.08)){h.label=best.name;if(h.lastLabel&&h.label!==h.lastLabel){h.switches++;switches++;}h.lastLabel=h.label;}}}
+ h.last={...now,players:Object.fromEntries(ps.map(p=>[p.name,Math.hypot(p.x-o.x,p.y-o.y,p.z-o.z)]))};return h.label;}
+function addBin(rec,label,ok,wrong){rec.n++;if(ok)rec.hit++;if(wrong)rec.wrong++;const a=rec.by[label];if(a){a[1]++;if(ok)a[0]++;}}
+function tick(){if(!running)return;const ps=PLAYERS.map(player).filter(Boolean);for(let i=0;i<N;i++){const o=actor(i);if(!o){H[i]={last:null,ema:{P1:0,P2:0,P3:0},label:null,lastLabel:null,switches:0};continue;}const label=infer(i,o,ps);if(!label||ps.length<2)continue;const target=ps.find(p=>p.name===label);if(!target)continue;labeled++;const others=ps.filter(p=>p.name!==label);
+  for(let off=0;off<=STRIDE-2;off+=2){const v=U16(o.base+off),ok=v===(target.base&0xffff),wrong=others.some(p=>v===(p.base&0xffff));addBin(ptr16[off>>1],label,ok,wrong);const m=id16[off>>1];m.n++;const mp=m.by[label];mp.set(v,(mp.get(v)||0)+1);}
+  for(let off=0;off<=STRIDE-4;off+=2){const v=U32(o.base+off),ok=v===(target.base>>>0),wrong=others.some(p=>v===(p.base>>>0));addBin(ptr32[off],label,ok,wrong);}
+  for(let off=0;off<=STRIDE-8;off+=2){const x=W(S32(o.base+off)),y=W(S32(o.base+off+4)),ok=Math.abs(x-target.x)<=4&&Math.abs(y-target.y)<=4,wrong=others.some(p=>Math.abs(x-p.x)<=4&&Math.abs(y-p.y)<=4);addBin(xy32[off],label,ok,wrong);}
+ }samples++;}
+const rate=(a,b)=>b?+(a/b).toFixed(3):0;
+function rankExact(arr,step,kind){const rows=[];for(let i=0;i<arr.length;i++){const r=arr[i];if(r.n<20||r.hit<2)continue;const per=Object.fromEntries(Object.entries(r.by).map(([k,v])=>[k,rate(v[0],v[1])]));const coverage=Object.values(r.by).filter(v=>v[1]>=5).length,score=rate(r.hit,r.n)*5-rate(r.wrong,r.n)*4+coverage*.35;rows.push({offset:hx(i*step),kind,samples:r.n,hit:r.hit,wrong:r.wrong,hitRate:rate(r.hit,r.n),wrongRate:rate(r.wrong,r.n),P1:per.P1,P2:per.P2,P3:per.P3,coverage,score:+score.toFixed(3)});}return rows.sort((a,b)=>b.score-a.score);}
+function rankId(){const rows=[];for(let i=0;i<id16.length;i++){const r=id16[i];if(r.n<30)continue;const dom={},rat={};let active=0;for(const p of PLAYERS.map(x=>x.name)){const m=r.by[p],tot=[...m.values()].reduce((a,b)=>a+b,0);if(tot<6)continue;active++;const s=[...m.entries()].sort((a,b)=>b[1]-a[1])[0];dom[p]=s?.[0];rat[p]=s?rate(s[1],tot):0;}const vals=Object.values(dom),distinct=new Set(vals).size;if(active<2||distinct<2)continue;const purity=Object.values(rat).reduce((a,b)=>a+b,0)/active;if(purity<.72)continue;rows.push({offset:hx(i*2),kind:'stable-id16',activePlayers:active,distinctValues:distinct,P1:dom.P1==null?'':hx(dom.P1),P2:dom.P2==null?'':hx(dom.P2),P3:dom.P3==null?'':hx(dom.P3),P1purity:rat.P1||0,P2purity:rat.P2||0,P3purity:rat.P3||0,score:+(purity+distinct*.15).toFixed(3)});}return rows.sort((a,b)=>b.score-a.score);}
+function finish(){if(!running)return;running=false;if(timer){clearInterval(timer);timer=null;}if(finishTimer){clearTimeout(finishTimer);finishTimer=null;}const live=PLAYERS.map(player).filter(Boolean).map(p=>p.name),r16=rankExact(ptr16,2,'ptr16'),r32=rankExact(ptr32,1,'ptr32'),rxy=rankExact(xy32,1,'xy32'),rid=rankId();
+ console.log('=== DYNAMIC TARGET PTR16 ===');console.table(r16.slice(0,20));console.log('=== DYNAMIC TARGET PTR32 ===');console.table(r32.slice(0,20));console.log('=== DYNAMIC TARGET XY32 ===');console.table(rxy.slice(0,20));console.log('=== DYNAMIC TARGET ID16 ===');console.table(rid.slice(0,20));
+ const best=[r16[0],r32[0],rxy[0],rid[0]].filter(Boolean).sort((a,b)=>(b.score||0)-(a.score||0))[0];const verdict={seconds:+((Date.now()-startedAt)/1000).toFixed(1),livePlayers:live.join(','),samples,labeledEnemySamples:labeled,inferredTargetSwitches:switches,ptr16Candidates:r16.length,ptr32Candidates:r32.length,xy32Candidates:rxy.length,id16Candidates:rid.length,topKind:best?.kind||'',topOffset:best?.offset||'',topScore:best?.score??'',topP1:best?.P1??'',topP2:best?.P2??'',topP3:best?.P3??''};console.log('=== DYNAMIC TARGET VERDICT ===');console.table([verdict]);
+ if(live.length<2)console.warn('⚠️ 只有 '+live.length+' 个 live player；无法验证多人 target selector。请在 2P/3P 实战重跑同一条命令。');else if(best&&best.score>=1.2)console.log('🎯 找到与推断目标玩家高度相关的 enemy-struct 字段；下一步对 topOffset 做 target-switch 专项验证并反查 ROM 写入点。');else console.warn('⚠️ 未出现高置信 target 字段；下一步扩大到 byte/id、target XY 16-bit 与写入变化时序。');
+ const out={version:'wof-target-dynamic-v1',verdict,ptr16:r16,ptr32:r32,xy32:rxy,id16:rid};self.__WOF_TARGET_DYNAMIC=out;return out;}
+timer=setInterval(tick,TICK);tick();finishTimer=setTimeout(finish,DURATION);self.WOFTARGETDYN={version:'wof-target-dynamic-v1',finish,stop(){if(!running)return;running=false;if(timer)clearInterval(timer);if(finishTimer)clearTimeout(finishTimer);console.log('⛔ dynamic target probe stopped');},status(){return{running,seconds:+((Date.now()-startedAt)/1000).toFixed(1),samples,labeled,switches}}};
+console.log('✅ WOF dynamic multiplayer target probe started · 35s auto-report');console.log('期间让怪在 2P/3P 之间发生追击目标变化；35 秒后自动输出 DYNAMIC TARGET VERDICT');
+})();
