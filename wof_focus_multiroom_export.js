@@ -1,0 +1,16 @@
+(async()=>{
+'use strict';
+const DB='wof-focus-multiroom-v1',STORE='sessions',MAX_AGE=12*60*60*1000;
+function openDb(){return new Promise((res,rej)=>{const q=indexedDB.open(DB,1);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+function getAll(db){return new Promise((res,rej)=>{const q=db.transaction(STORE,'readonly').objectStore(STORE).getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error);});}
+const db=await openDb(),now=Date.now(),sessions=(await getAll(db)).filter(r=>(r.startedAt||0)>=now-MAX_AGE);db.close();if(!sessions.length){console.warn('没有最近12小时 Focus multiroom 数据');return null;}
+const agg=Array.from({length:0xE0/2},(_,i)=>({offset:i*2,total:0,targets:[0,0,0],exact:0,wrongPlayer:0,values:new Map()}));
+let strongLabels=0,playerCountHist=[0,0,0,0],complete=0;
+for(const r of sessions){if(r.status==='complete')complete++;const f=r.final;if(!f)continue;strongLabels+=+f.strongLabels||0;for(let i=0;i<4;i++)playerCountHist[i]+=+(f.playerCountHist?.[i]||0);for(const w of f.words||[]){const a=agg[w.offset>>1];a.total+=+w.total||0;a.exact+=+w.exact||0;a.wrongPlayer+=+w.wrongPlayer||0;for(let i=0;i<3;i++)a.targets[i]+=+(w.targets?.[i]||0);for(const x of w.values||[]){let c=a.values.get(x.v);if(!c){c=[0,0,0];a.values.set(x.v,c);}for(let i=0;i<3;i++)c[i]+=+(x.c?.[i]||0);}}}
+function metric(a){if(!a.total)return null;let purityN=0,map=[];for(const [v,c] of a.values){const sum=c[0]+c[1]+c[2];if(!sum)continue;let bi=0;if(c[1]>c[bi])bi=1;if(c[2]>c[bi])bi=2;purityN+=c[bi];if(sum>=5)map.push({v:'0x'+(+v).toString(16).toUpperCase().padStart(4,'0'),target:['P1','P2','P3'][bi],share:+(c[bi]/sum).toFixed(3),n:sum,c});}map.sort((x,y)=>y.n-x.n);const purity=purityN/a.total,exact=a.exact/a.total,wrong=a.wrongPlayer/a.total,coverage=a.targets.filter(x=>x>=10).length,score=exact*6+purity*2+coverage*.35-wrong*5;return{offset:'0x'+a.offset.toString(16).toUpperCase(),total:a.total,targets:a.targets,exact:+exact.toFixed(4),wrongPlayer:+wrong.toFixed(4),purity:+purity.toFixed(4),coverage,score:+score.toFixed(3),map:map.slice(0,10)};}
+const candidates=agg.map(metric).filter(Boolean).sort((a,b)=>b.score-a.score||b.total-a.total);
+console.table(candidates.slice(0,30).map(x=>({offset:x.offset,total:x.total,P1:x.targets[0],P2:x.targets[1],P3:x.targets[2],exact:x.exact,wrong:x.wrongPlayer,purity:x.purity,coverage:x.coverage,score:x.score,map:x.map.slice(0,4).map(m=>m.v+'→'+m.target+' '+m.share).join(' | ')})));
+const bundle={schema:'wof-focus-multiroom-export-v1',exportedAt:now,sessionCount:sessions.length,completeCount:complete,strongLabels,playerCountHist,candidates,sessions};
+const text=JSON.stringify(bundle,null,2),name='wof_focus_multiroom_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json',blob=new Blob([text],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+console.log('✅ Focus multiroom 已下载',name,'rooms',sessions.length,'strongLabels',strongLabels,'multi-player samples',playerCountHist[2]+playerCountHist[3]);return bundle;
+})().catch(e=>console.error('❌ Focus multiroom export failed',e));
