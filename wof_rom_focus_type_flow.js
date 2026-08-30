@@ -20,86 +20,157 @@ function env(){
 }
 function eaWords(mode,reg,size){if(mode<=4)return 0;if(mode===5||mode===6)return 1;if(mode===7){if(reg===0||reg===2||reg===3)return 1;if(reg===1)return 2;if(reg===4)return size==='L'?2:1;}return 0;}
 function idx(E,p){const x=E.r16(p+2);return{ext:E.hw(x),kind:(x&0x8000)?'A':'D',reg:(x>>12)&7,size:(x&0x0800)?'L':'W',disp:E.s8(x&255),base:(p+2+E.s8(x&255))>>>0};}
+function eaInfo(E,p,mode,reg,size='L',extOff=2){
+  let len=0,text='',baseReg=null,indexReg=null,indexKind=null,staticAddr=null;
+  if(mode===0)text='D'+reg;
+  else if(mode===1)text='A'+reg;
+  else if(mode===2){text='(A'+reg+')';baseReg='A'+reg;}
+  else if(mode===3){text='(A'+reg+')+';baseReg='A'+reg;}
+  else if(mode===4){text='-(A'+reg+')';baseReg='A'+reg;}
+  else if(mode===5){const d=E.s16(E.r16(p+extOff));len=2;text=d+'(A'+reg+')';baseReg='A'+reg;}
+  else if(mode===6){const xw=E.r16(p+extOff),x={kind:(xw&0x8000)?'A':'D',reg:(xw>>12)&7,size:(xw&0x0800)?'L':'W',disp:E.s8(xw&255)};len=2;text=x.disp+'(A'+reg+','+x.kind+x.reg+'.'+x.size+')';baseReg='A'+reg;indexKind=x.kind;indexReg=x.kind+x.reg;}
+  else if(mode===7&&reg===0){staticAddr=E.s16(E.r16(p+extOff))>>>0;len=2;text=E.h(staticAddr)+'.W';}
+  else if(mode===7&&reg===1){staticAddr=E.r32(p+extOff);len=4;text=E.h(staticAddr)+'.L';}
+  else if(mode===7&&reg===2){staticAddr=(p+2+E.s16(E.r16(p+extOff)))>>>0;len=2;text=E.h(staticAddr)+'(PC)';}
+  else if(mode===7&&reg===3){const xw=E.r16(p+extOff),x={kind:(xw&0x8000)?'A':'D',reg:(xw>>12)&7,size:(xw&0x0800)?'L':'W',disp:E.s8(xw&255)};staticAddr=(p+2+x.disp)>>>0;len=2;text=x.disp+'(PC,'+x.kind+x.reg+'.'+x.size+')';indexKind=x.kind;indexReg=x.kind+x.reg;}
+  else if(mode===7&&reg===4){len=size==='L'?4:2;text='#imm';}
+  else text='EA('+mode+','+reg+')';
+  return{mode,reg,len,text,baseReg,indexReg,indexKind,staticAddr};
+}
 function moveInfo(E,p){
   const w=E.r16(p),g=w>>>12;if(g!==1&&g!==2&&g!==3)return null;const size=g===1?'B':g===2?'L':'W',sm=(w>>3)&7,sr=w&7,dm=(w>>6)&7,dr=(w>>9)&7;
-  const sw=eaWords(sm,sr,size),dw=eaWords(dm,dr,size),len=2+(sw+dw)*2;
-  let src='',dst='',ix=null,srcBase=null;
-  if(sm===0)src='D'+sr;else if(sm===1)src='A'+sr;else if(sm===2)src='(A'+sr+')';else if(sm===3)src='(A'+sr+')+';else if(sm===4)src='-(A'+sr+')';else if(sm===5)src=E.s16(E.r16(p+2))+'(A'+sr+')';else if(sm===6){ix=idx(E,p);src=ix.disp+'(A'+sr+','+ix.kind+ix.reg+'.'+ix.size+')';}else if(sm===7&&sr===0)src=E.h(E.s16(E.r16(p+2))>>>0)+'.W';else if(sm===7&&sr===1)src=E.h(E.r32(p+2))+'.L';else if(sm===7&&sr===2){srcBase=(p+2+E.s16(E.r16(p+2)))>>>0;src=E.h(srcBase)+'(PC)';}else if(sm===7&&sr===3){ix=idx(E,p);srcBase=ix.base;src=ix.disp+'(PC,'+ix.kind+ix.reg+'.'+ix.size+')';}else if(sm===7&&sr===4)src='#imm';else src='EA';
-  if(dm===0)dst='D'+dr;else if(dm===1)dst='A'+dr;else if(dm===2)dst='(A'+dr+')';else if(dm===3)dst='(A'+dr+')+';else if(dm===4)dst='-(A'+dr+')';else if(dm===5)dst='d16(A'+dr+')';else if(dm===6)dst='idx(A'+dr+')';else dst='EA';
+  const src=eaInfo(E,p,sm,sr,size,2),dstOff=2+src.len,dst=eaInfo(E,p,dm,dr,size,dstOff),len=2+src.len+dst.len;
   const kind=dm===1?'MOVEA.'+size:'MOVE.'+size;
-  return{w,size,sm,sr,dm,dr,sw,dw,len,src,dst,ix,srcBase,kind,text:kind+' '+src+','+dst};
+  return{w,size,sm,sr,dm,dr,src,dst,len,kind,text:kind+' '+src.text+','+dst.text};
 }
-function decode(E,p){
-  const w=E.r16(p),g=w>>>12,mode=(w>>3)&7,reg=w&7;let len=2,kind='OP',target=null,fall=true,terminal=false,text=E.hw(w),move=null;
-  if(w===0x4E75||w===0x4E73||w===0x4E77){kind=w===0x4E75?'RTS':w===0x4E73?'RTE':'RTR';fall=false;terminal=true;text=kind;}
-  else if((w&0xFFC0)===0x4E80){len=2+eaWords(mode,reg,'L')*2;kind=(mode===7&&reg<=2)?'JSR_DIRECT':'JSR_INDIRECT';if(mode===7&&reg===0)target=E.s16(E.r16(p+2))>>>0;else if(mode===7&&reg===1)target=E.r32(p+2);else if(mode===7&&reg===2)target=p+2+E.s16(E.r16(p+2));text=kind;}
-  else if((w&0xFFC0)===0x4EC0){len=2+eaWords(mode,reg,'L')*2;fall=false;kind=(mode===7&&reg<=2)?'JMP_DIRECT':'JMP_INDIRECT';if(mode===7&&reg===0)target=E.s16(E.r16(p+2))>>>0;else if(mode===7&&reg===1)target=E.r32(p+2);else if(mode===7&&reg===2)target=p+2+E.s16(E.r16(p+2));text=kind;}
-  else if(g===6){const cc=(w>>8)&15,d=w&255;len=d===0?4:2;target=d===0?p+2+E.s16(E.r16(p+2)):p+2+E.s8(d);kind=cc===0?'BRA':cc===1?'BSR':'BCC';if(cc===0)fall=false;text=kind;}
-  else if(g===1||g===2||g===3){move=moveInfo(E,p);len=move.len;kind=move.kind;text=move.text;}
-  else if(g===5){const sz=(w>>6)&3;if(sz===3&&mode===1){kind='DBCC';len=4;target=p+2+E.s16(E.r16(p+2));}else len=2+eaWords(mode,reg,sz===3?'B':sz===2?'L':sz===1?'W':'B')*2;}
-  else if(g===0){if([0x003C,0x007C,0x023C,0x027C,0x0A3C,0x0A7C].includes(w))len=4;else if((w&0xF138)===0x0108)len=4;else if((w&0xFF00)===0x0800)len=4+eaWords(mode,reg,'B')*2;else if((w&0xF100)===0x0100)len=2+eaWords(mode,reg,'B')*2;else{const op=(w>>8)&15,sz=(w>>6)&3;if([0,2,4,6,10,12].includes(op)){const s=sz===2?'L':sz===1?'W':'B';len=2+(s==='L'?4:2)+eaWords(mode,reg,s)*2;}}}
-  else if(g===4){if((w&0xFFF8)===0x4E50)len=4;else if((w&0xFB80)===0x4880&&mode>=2)len=4+eaWords(mode,reg,(w&0x40)?'L':'W')*2;else if((w&0xF1C0)===0x41C0)len=2+eaWords(mode,reg,'L')*2;else if((w&0xFFC0)===0x4840&&mode!==0)len=2+eaWords(mode,reg,'L')*2;else len=2+eaWords(mode,reg,((w>>6)&3)===2?'L':'W')*2;}
-  else if(g===8){if((w&0xF1F0)!==0x8100)len=2+eaWords(mode,reg,((w>>6)&3)===2?'L':'W')*2;}
-  else if(g===9||g===13){if((w&0xF130)!==0x9100&&(w&0xF130)!==0xD100)len=2+eaWords(mode,reg,((w>>6)&3)===2?'L':'W')*2;}
-  else if(g===11){if((w&0xF138)!==0xB108)len=2+eaWords(mode,reg,((w>>6)&3)===2?'L':'W')*2;}
-  else if(g===12){const exg=(w&0xF1F8)===0xC140||(w&0xF1F8)===0xC148||(w&0xF1F8)===0xC188,abcd=(w&0xF1F0)===0xC100;if(!exg&&!abcd)len=2+eaWords(mode,reg,((w>>6)&3)===2?'L':'W')*2;}
-  else if(g===14&&((w>>6)&3)===3)len=2+eaWords(mode,reg,'W')*2;
-  else if(g===10||g===15){terminal=true;fall=false;kind='LINE';}
-  const next=p+len;if(target!=null&&(target<0||target>=E.MAX))target=null;return{at:p,w,len,next,kind,target,fall,terminal,text,mode,reg,move};
-}
-function findStart(E,at){
-  for(let p=at&~1;p>=Math.max(0,at-0x300);p-=2){const w=E.r16(p);if((w&0xFFF8)===0x4E50||w===0x48E7)return p;if(w===0x4E75||w===0x4E73||w===0x4E77)return p+2;}
-  return Math.max(0,(at-0x100)&~1);
-}
-function cfg(E,start,cap=0x600){
-  const hi=Math.min(E.MAX,start+cap),q=[start&~1],seen=new Set(),rows=[];
-  while(q.length&&seen.size<3000){if(stopped)break;const p=q.shift();if(p<start||p>=hi||(p&1)||seen.has(p))continue;seen.add(p);const d=decode(E,p);rows.push(d);
-    if(d.kind==='BRA'){if(d.target!=null)q.push(d.target&~1);continue;}if(d.kind==='BCC'||d.kind==='DBCC'){if(d.fall)q.push(d.next);if(d.target!=null)q.push(d.target&~1);continue;}if(d.kind==='JMP_DIRECT'){if(d.target!=null&&d.target>=start&&d.target<hi)q.push(d.target&~1);continue;}if(d.kind==='JMP_INDIRECT'||d.terminal)continue;if(d.fall)q.push(d.next);
-  }
-  return{rows,seen};
-}
-function a4Use(E,d){
-  const w=d.w,mi=d.move;
-  if((w&0xFFC0)===0x4E80|| (w&0xFFC0)===0x4EC0){const mode=(w>>3)&7,reg=w&7;if(reg===4&&mode>=2&&mode<=6)return{kind:d.kind,text:(d.kind.startsWith('JSR')?'JSR ':'JMP ')+(mode===2?'(A4)':mode===5?'d16(A4)':mode===6?'idx(A4)':'A4-EA'),terminalTransfer:true};}
-  if(mi){
-    if(mi.sm===1&&mi.sr===4){const stack=mi.dr===7&&(mi.dm===2||mi.dm===4);return{kind:stack?'A4_TO_STACK':'A4_READ',text:mi.text,terminalTransfer:false,stack};}
-    if(mi.dm===1&&mi.dr===4)return{kind:'A4_WRITE',text:mi.text,write:true};
-  }
-  if((w&0xFFC0)===0x4840){const mode=(w>>3)&7,reg=w&7;if(mode===2&&reg===4)return{kind:'PEA_A4',text:'PEA (A4)',stack:true};}
+function directTarget(E,p,w){
+  const mode=(w>>3)&7,reg=w&7;
+  if(mode===7&&reg===0)return E.s16(E.r16(p+2))>>>0;
+  if(mode===7&&reg===1)return E.r32(p+2)>>>0;
+  if(mode===7&&reg===2)return (p+2+E.s16(E.r16(p+2)))>>>0;
   return null;
 }
-function linearAfter(E,from,maxBytes=0x100){const out=[];let p=from;for(let n=0;n<80&&p<E.MAX&&p<from+maxBytes;n++){const d=decode(E,p);out.push(d);if(d.terminal||d.kind==='JMP_DIRECT'||d.kind==='JMP_INDIRECT'||d.kind==='BRA')break;p=d.next;}return out;}
-function directCallAt(E,p){const w=E.r16(p);if(w===0x4EB8){const t=E.s16(E.r16(p+2))>>>0;if(t<E.MAX)return{at:p,target:t&~1,kind:'JSR.W',len:4};}if(w===0x4EB9){const t=E.r32(p+2);if(t<E.MAX)return{at:p,target:t&~1,kind:'JSR.L',len:6};}if(w===0x4EBA){const t=p+2+E.s16(E.r16(p+2));if(t>=0&&t<E.MAX)return{at:p,target:t&~1,kind:'JSR.PC',len:4};}if((w&0xFF00)===0x6100){const d=w&255,t=d===0?p+2+E.s16(E.r16(p+2)):p+2+E.s8(d);if(t>=0&&t<E.MAX)return{at:p,target:t&~1,kind:'BSR',len:d===0?4:2};}return null;}
-async function callersOf(E,start,end){const out=[];for(let b=0;b<E.MAX;b+=0x8000){const hi=Math.min(E.MAX,b+0x8000);for(let p=b;p+6<hi;p+=2){const c=directCallAt(E,p);if(c&&c.target>=start&&c.target<end)out.push(c);}if((b&0x1FFFF)===0x18000)await sleep(0);}return out;}
-function d1History(E,rows,refAt){const out=[];for(const d of rows){if(d.at>=refAt)continue;const m=d.move;if(m&&m.dm===0&&m.dr===1)out.push({at:d.at,text:m.text,kind:'D1_WRITE'});const w=d.w;if((w&7)===1&&(w>>>12)===14)out.push({at:d.at,text:'SHIFT/ROT D1 '+E.hw(w),kind:'D1_SHIFT'});if((w>>>12)===13&&((w>>9)&7)===1&&((w>>3)&7)===0&&(w&7)===1)out.push({at:d.at,text:'ADD D1,D1 '+E.hw(w),kind:'D1_DOUBLE'});}return out.sort((a,b)=>b.at-a.at).slice(0,16);}
+function decode(E,p){
+  const w=E.r16(p),g=w>>>12,mode=(w>>3)&7,reg=w&7;let len=2,kind='OP',target=null,fall=true,terminal=false,text=E.hw(w),move=null,call=false,jump=false;
+  if(w===0x4E75||w===0x4E73||w===0x4E77){kind=w===0x4E75?'RTS':w===0x4E73?'RTE':'RTR';fall=false;terminal=true;text=kind;}
+  else if(w===0x4E72){kind='STOP';len=4;fall=false;terminal=true;text='STOP';}
+  else if((w&0xFFC0)===0x4E80){len=2+eaWords(mode,reg,'L')*2;target=directTarget(E,p,w);kind=target==null?'JSR_INDIRECT':'JSR_DIRECT';call=true;text=kind+' '+eaInfo(E,p,mode,reg,'L').text;}
+  else if((w&0xFFC0)===0x4EC0){len=2+eaWords(mode,reg,'L')*2;target=directTarget(E,p,w);kind=target==null?'JMP_INDIRECT':'JMP_DIRECT';jump=true;fall=false;text=kind+' '+eaInfo(E,p,mode,reg,'L').text;}
+  else if(g===6){const cc=(w>>8)&15,d=w&255;len=d===0?4:2;target=d===0?p+2+E.s16(E.r16(p+2)):p+2+E.s8(d);kind=cc===0?'BRA':cc===1?'BSR':'BCC';if(cc===0)fall=false;if(cc===1)call=true;text=kind;}
+  else if(g===1||g===2||g===3){move=moveInfo(E,p);len=move.len;kind=move.kind;text=move.text;}
+  else if(g===5){const sz=(w>>6)&3;if(sz===3&&mode===1){kind='DBCC';len=4;target=p+2+E.s16(E.r16(p+2));}else{kind=sz===3?'SCC':'ADDQ/SUBQ';len=2+eaWords(mode,reg,sz===3?'B':sz===2?'L':sz===1?'W':'B')*2;}}
+  else if(g===7){kind='MOVEQ';text='MOVEQ';}
+  else if(g===0){
+    if([0x003C,0x007C,0x023C,0x027C,0x0A3C,0x0A7C].includes(w)){kind='IMM_SR';len=4;}
+    else if((w&0xF138)===0x0108){kind='MOVEP';len=4;}
+    else if((w&0xFF00)===0x0800){kind='BIT_IMM';len=4+eaWords(mode,reg,'B')*2;}
+    else if((w&0xF100)===0x0100){kind='BIT_DYN';len=2+eaWords(mode,reg,'B')*2;}
+    else{const op=(w>>8)&15,sz=(w>>6)&3;if([0,2,4,6,10,12].includes(op)){const s=sz===2?'L':sz===1?'W':'B';kind='IMM';len=2+(s==='L'?4:2)+eaWords(mode,reg,s)*2;}else kind='G0';}
+  }
+  else if(g===4){
+    if((w&0xFFF8)===0x4E50){kind='LINK';len=4;}
+    else if((w&0xFFF8)===0x4E58){kind='UNLK';}
+    else if((w&0xFB80)===0x4880&&mode>=2){kind='MOVEM';len=4+eaWords(mode,reg,(w&0x40)?'L':'W')*2;}
+    else if((w&0xF1C0)===0x41C0){kind='LEA';len=2+eaWords(mode,reg,'L')*2;text='LEA '+eaInfo(E,p,mode,reg,'L').text+',A'+((w>>9)&7);}
+    else if((w&0xFFC0)===0x4840&&mode!==0){kind='PEA';len=2+eaWords(mode,reg,'L')*2;text='PEA '+eaInfo(E,p,mode,reg,'L').text;}
+    else if((w&0xF1F8)===0xC140||(w&0xF1F8)===0xC148||(w&0xF1F8)===0xC188){kind='EXG';}
+    else{kind='G4';len=2+eaWords(mode,reg,((w>>6)&3)===2?'L':'W')*2;}
+  }
+  else if(g===8){kind=(w&0xF1F0)===0x8100?'SBCD':'OR';if(kind==='OR')len=2+eaWords(mode,reg,((w>>6)&3)===2?'L':'W')*2;}
+  else if(g===9){kind=(w&0xF130)===0x9100?'SUBX':(((w>>6)&7)===3||((w>>6)&7)===7?'SUBA':'SUB');if(kind==='SUB')len=2+eaWords(mode,reg,((w>>6)&3)===2?'L':'W')*2;else if(kind==='SUBA')len=2+eaWords(mode,reg,((w>>6)&1)?'L':'W')*2;}
+  else if(g===11){kind=(w&0xF138)===0xB108?'CMPM':(((w>>6)&7)===3||((w>>6)&7)===7?'CMPA':'CMP/EOR');if(kind==='CMP/EOR')len=2+eaWords(mode,reg,((w>>6)&3)===2?'L':'W')*2;else if(kind==='CMPA')len=2+eaWords(mode,reg,((w>>6)&1)?'L':'W')*2;}
+  else if(g===12){const exg=(w&0xF1F8)===0xC140||(w&0xF1F8)===0xC148||(w&0xF1F8)===0xC188,abcd=(w&0xF1F0)===0xC100;kind=exg?'EXG':abcd?'ABCD':'AND/MUL';if(!exg&&!abcd)len=2+eaWords(mode,reg,((w>>6)&3)===2?'L':'W')*2;}
+  else if(g===13){kind=(w&0xF130)===0xD100?'ADDX':(((w>>6)&7)===3||((w>>6)&7)===7?'ADDA':'ADD');if(kind==='ADD')len=2+eaWords(mode,reg,((w>>6)&3)===2?'L':'W')*2;else if(kind==='ADDA')len=2+eaWords(mode,reg,((w>>6)&1)?'L':'W')*2;}
+  else if(g===14){kind='SHIFT';if(((w>>6)&3)===3)len=2+eaWords(mode,reg,'W')*2;}
+  else if(g===10||g===15){kind='LINE';terminal=true;fall=false;}
+  const next=p+len;if(target!=null&&(target<0||target>=E.MAX))target=null;return{at:p,w,len,next,kind,target,fall,terminal,text,mode,reg,move,call,jump};
+}
+function findStart(E,at){for(let p=at&~1;p>=Math.max(0,at-0x380);p-=2){const w=E.r16(p);if((w&0xFFF8)===0x4E50||w===0x48E7)return p;if(w===0x4E75||w===0x4E73||w===0x4E77)return p+2;}return Math.max(0,(at-0x120)&~1);}
+function boundaryCFG(E,start,cap=0x1200){const hi=Math.min(E.MAX,start+cap),q=[start&~1],seen=new Set(),rows=[];while(q.length&&seen.size<7000){const p=q.shift();if(p<start||p>=hi||(p&1)||seen.has(p))continue;seen.add(p);const d=decode(E,p);rows.push(d);if(d.kind==='BRA'){if(d.target!=null)q.push(d.target&~1);continue;}if(d.kind==='BCC'||d.kind==='DBCC'){q.push(d.next);if(d.target!=null)q.push(d.target&~1);continue;}if(d.kind==='JMP_DIRECT'){if(d.target!=null&&d.target>=start&&d.target<hi)q.push(d.target&~1);continue;}if(d.kind==='JMP_INDIRECT'||d.terminal)continue;q.push(d.next);}return{seen,rows};}
+function regName(mode,reg){return mode===0?'D'+reg:mode===1?'A'+reg:null;}
+function eaTainted(ea,taint){return!!((ea.baseReg&&taint.has(ea.baseReg))||(ea.indexReg&&taint.has(ea.indexReg)));}
+function stateKey(s){return s.pc+'|'+[...s.taint].sort().join(',')+'|'+(s.retSlot?1:0)+'|'+s.depth;}
+function cloneState(s,patch={}){return{pc:patch.pc??s.pc,taint:new Set(patch.taint??s.taint),retSlot:patch.retSlot??s.retSlot,depth:patch.depth??s.depth,path:patch.path??s.path,origin:patch.origin??s.origin};}
+function pathText(E,path){return path.slice(-14).map(E.h).join(' → ');}
+function analyzeFrom(E,startPc,seedReg,origin,maxDepth=4){
+  const q=[{pc:startPc&~1,taint:new Set([seedReg]),retSlot:false,depth:0,path:[startPc&~1],origin}],seen=new Set();
+  const transfers=[],calls=[],stores=[],returns=[],aliases=[],kills=[],decoded=[];let states=0;
+  const push=s=>{if(s.pc>=0&&s.pc<E.MAX&&(s.pc&1)===0&&s.path.length<260)q.push(s);};
+  while(q.length&&states<18000){if(stopped)break;const s=q.shift(),key=stateKey(s);if(seen.has(key))continue;seen.add(key);states++;const d=decode(E,s.pc);decoded.push(d.at);const t=new Set(s.taint),path=[...s.path,d.at];
+    const record=(arr,obj)=>arr.push({origin:E.h(origin),at:E.h(d.at),offline:E.off(d.at),depth:s.depth,taint:[...t].sort().join(','),path:pathText(E,path),...obj});
+    // Control-transfer using tainted address/index register.
+    if(d.kind==='JSR_INDIRECT'||d.kind==='JMP_INDIRECT'){
+      const ea=eaInfo(E,d.at,d.mode,d.reg,'L'),hit=eaTainted(ea,t);
+      if(hit){record(transfers,{kind:d.kind,text:d.text,form:ea.text,terminal:d.kind==='JMP_INDIRECT'});if(d.kind==='JMP_INDIRECT')continue;}
+    }
+    // Direct calls are important: a fixed shared executor may consume A4 inside the callee.
+    if((d.kind==='JSR_DIRECT'||d.kind==='BSR')&&d.target!=null){
+      if(t.size){record(calls,{kind:d.kind,target:E.h(d.target),text:'tainted regs passed to direct callee'});if(s.depth<maxDepth)push({pc:d.target&~1,taint:new Set(t),retSlot:false,depth:s.depth+1,path:[...path,d.target&~1],origin});}
+      push({pc:d.next,taint:new Set(t),retSlot:s.retSlot,depth:s.depth,path,origin});continue;
+    }
+    if(d.kind==='JMP_DIRECT'&&d.target!=null){if(t.size&&s.depth<maxDepth){record(calls,{kind:'JMP_DIRECT_TAIL',target:E.h(d.target),text:'tainted regs passed to direct tail target'});push({pc:d.target&~1,taint:new Set(t),retSlot:s.retSlot,depth:s.depth+1,path:[...path,d.target&~1],origin});}continue;}
+    if(d.kind==='RTS'||d.kind==='RTE'||d.kind==='RTR'){
+      if(s.retSlot)record(transfers,{kind:'RTS_STACK_TRAMPOLINE',text:'tainted handler is on top of return stack',form:'A7 return slot',terminal:true});
+      if(t.size)record(returns,{kind:d.kind,text:'tainted handler register(s) survive to return'});continue;
+    }
+    if(d.kind==='BRA'){if(d.target!=null)push({pc:d.target&~1,taint:t,retSlot:s.retSlot,depth:s.depth,path,origin});continue;}
+    if(d.kind==='BCC'||d.kind==='DBCC'){push({pc:d.next,taint:new Set(t),retSlot:s.retSlot,depth:s.depth,path,origin});if(d.target!=null)push({pc:d.target&~1,taint:new Set(t),retSlot:s.retSlot,depth:s.depth,path,origin});continue;}
+    if(d.terminal)continue;
+    let retSlot=s.retSlot;
+    // MOVE / MOVEA dataflow.
+    if(d.move){const m=d.move,srcReg=regName(m.sm,m.sr),dstReg=regName(m.dm,m.dr),srcT=!!(srcReg&&t.has(srcReg));
+      if(dstReg){const was=t.has(dstReg);if(srcT){t.add(dstReg);if(dstReg!==srcReg)record(aliases,{kind:'REG_ALIAS',text:m.text,from:srcReg,to:dstReg});}else{t.delete(dstReg);if(was)record(kills,{kind:'REG_KILL',text:m.text,reg:dstReg});}}
+      else if(srcT){const stack=m.dr===7&&(m.dm===2||m.dm===4);record(stores,{kind:stack?'TAINT_TO_STACK':'TAINT_TO_MEMORY',text:m.text,source:srcReg,dest:m.dst.text});if(stack)retSlot=true;}
+      if(!srcT&&eaTainted(m.src,t)&&dstReg)record(stores,{kind:'LOAD_THROUGH_TAINTED_PTR',text:m.text,source:m.src.text,dest:dstReg});
+    }
+    // LEA based on a tainted address register propagates a derived handler pointer.
+    if(d.kind==='LEA'){const dst='A'+((d.w>>9)&7),ea=eaInfo(E,d.at,d.mode,d.reg,'L');const was=t.has(dst);if(eaTainted(ea,t)){t.add(dst);record(aliases,{kind:'LEA_ALIAS',text:d.text,from:ea.baseReg||ea.indexReg||'',to:dst});}else{t.delete(dst);if(was)record(kills,{kind:'REG_KILL',text:d.text,reg:dst});}}
+    // PEA (A-tainted) pushes the effective address itself and can feed RTS trampoline.
+    if(d.kind==='PEA'){const ea=eaInfo(E,d.at,d.mode,d.reg,'L');if(eaTainted(ea,t)){record(stores,{kind:'PEA_TAINT_TO_STACK',text:d.text,source:ea.text,dest:'-(A7)'});retSlot=true;}}
+    // EXG propagates/switches taint exactly between the two participating registers.
+    if(d.kind==='EXG'){
+      const w=d.w,rx=(w>>9)&7,ry=w&7;let a=null,b=null;if((w&0xF1F8)===0xC140){a='D'+rx;b='D'+ry;}else if((w&0xF1F8)===0xC148){a='A'+rx;b='A'+ry;}else if((w&0xF1F8)===0xC188){a='D'+rx;b='A'+ry;}
+      if(a&&b){const ta=t.has(a),tb=t.has(b);if(ta)t.add(b);else t.delete(b);if(tb)t.add(a);else t.delete(a);if(ta||tb)record(aliases,{kind:'EXG_TAINT',text:'EXG '+a+','+b,from:ta?a:b,to:ta?b:a});}
+    }
+    // MOVEM restore can kill a tainted register; MOVEM save reveals preserved function pointer state.
+    if(d.kind==='MOVEM'){const w=d.w,mask=E.r16(d.at+2),memToRegs=!!(w&0x0400),regs=[];for(let i=0;i<16;i++)if(mask&(1<<i))regs.push(i<8?'D'+i:'A'+(i-8));if(memToRegs){for(const r of regs)if(t.has(r)){t.delete(r);record(kills,{kind:'MOVEM_RESTORE_KILL',text:'MOVEM restores '+r,reg:r});}}else{const hit=regs.filter(r=>t.has(r));if(hit.length)record(stores,{kind:'MOVEM_TAINT_SAVE',text:'MOVEM saves '+hit.join(','),source:hit.join(','),dest:eaInfo(E,d.at,d.mode,d.reg,(w&0x40)?'L':'W',4).text});}}
+    // ADDA/SUBA keep a tainted address value derived; do not kill it.
+    if(d.kind==='ADDA'||d.kind==='SUBA'){const dst='A'+((d.w>>9)&7),srcMode=(d.w>>3)&7,srcReg=d.w&7,srcName=regName(srcMode,srcReg);if(srcName&&t.has(srcName)&&!t.has(dst)){t.add(dst);record(aliases,{kind:d.kind+'_ALIAS',text:d.kind+' '+srcName+','+dst,from:srcName,to:dst});}}
+    // MOVEQ fully replaces Dn.
+    if(d.kind==='MOVEQ'){const dst='D'+((d.w>>9)&7);if(t.delete(dst))record(kills,{kind:'MOVEQ_KILL',text:'MOVEQ -> '+dst,reg:dst});}
+    push({pc:d.next,taint:t,retSlot,depth:s.depth,path,origin});
+  }
+  const uniq=a=>[...new Map(a.map(x=>[(x.at||'')+'|'+(x.kind||'')+'|'+(x.target||'')+'|'+(x.text||''),x])).values()];
+  return{states,transfers:uniq(transfers),calls:uniq(calls),stores:uniq(stores),returns:uniq(returns),aliases:uniq(aliases),kills:uniq(kills),decodedN:new Set(decoded).size};
+}
 async function run(){
   stopped=false;await ensure();const E=env(),TD=self.__WOF_ROM_FOCUS_TYPE_DISPATCH;
   const refs=[...new Map((TD.refs||[]).filter(x=>(x.dstMode===1&&x.dstReg===4)||x.dst==='A4').map(x=>[x.at,x])).values()];
-  console.log('🧬 WOF type handler flow v1 · 0x25DC[D1] → A4 → caller/transfer');
-  console.log('=== A4 TYPE-TABLE LOAD REFS ===');console.table(refs.map(x=>({at:E.h(x.at),offline:E.off(x.at),kind:x.kind,index:x.index||'',dstMode:x.dstMode,dstReg:x.dstReg,score:x.score})));
+  console.log('🧬 WOF type handler flow v2 · full CFG + direct-callee A4 taint');
   const reports=[];
-  for(const r of refs){
-    const at=r.at,start=findStart(E,at),C=cfg(E,start),onBoundary=C.seen.has(at),d=decode(E,at),m=d.move,ix=m?.ix||null;
-    const base=ix&&m?.sm===7&&m?.sr===3?ix.base:null;
-    const d1=d1History(E,C.rows,at);
-    const after=linearAfter(E,d.next,0x140),uses=[];let firstOverwrite=null,returnsWithA4=false;
-    for(const z of after){const u=a4Use(E,z);if(u){uses.push({at:E.h(z.at),offline:E.off(z.at),...u});if(u.write&&!firstOverwrite)firstOverwrite=z.at;}if(z.kind==='RTS'&&!firstOverwrite)returnsWithA4=true;}
-    let callers=[];if(returnsWithA4){const cs=await callersOf(E,start,Math.min(E.MAX,start+2));for(const c of cs.slice(0,80)){const seq=linearAfter(E,c.at+c.len,0x80),cu=[];for(const z of seq){const u=a4Use(E,z);if(u)cu.push({at:E.h(z.at),offline:E.off(z.at),...u});if(u?.terminalTransfer||u?.write||z.kind==='RTS')break;}callers.push({callAt:E.h(c.at),offlineCall:E.off(c.at),kind:c.kind,callerStart:E.h(findStart(E,c.at)),a4Uses:cu});}}
-    reports.push({ref:E.h(at),start:E.h(start),onBoundary,decoded:d.text,tableBase:base==null?'':E.h(base),index:ix?(ix.kind+ix.reg+'.'+ix.size):'',d1,uses,returnsWithA4,callers});
-    console.log('\n=== REF '+E.h(at)+' BOUNDARY / DECODE ===');console.table([{ref:E.h(at),funcStart:E.h(start),onInstructionBoundary:onBoundary,decoded:d.text,tableBase:base==null?'':E.h(base),index:ix?(ix.kind+ix.reg+'.'+ix.size):'',returnsWithA4,localA4Uses:uses.length,callers:callers.length}]);
-    console.log('=== D1 FLOW BEFORE TABLE LOAD ===');console.table(d1.map(x=>({at:E.h(x.at),offline:E.off(x.at),kind:x.kind,text:x.text})));
-    console.log('=== A4 USES AFTER TABLE LOAD ===');console.table(uses);
-    if(returnsWithA4){console.log('=== CALLERS CONSUMING RETURNED A4 ===');console.table(callers.flatMap(c=>c.a4Uses.map(u=>({callAt:c.callAt,caller:c.callerStart,callKind:c.kind,useAt:u.at,useKind:u.kind,text:u.text}))));}
+  for(const r of refs){const at=Number(r.at),start=findStart(E,at),bcfg=boundaryCFG(E,start),onBoundary=bcfg.seen.has(at),d=decode(E,at),m=d.move;let tableLoad=false,index='',tableBase='';
+    if(m&&m.dm===1&&m.dr===4&&m.sm===7&&m.sr===3&&m.src.staticAddr!=null){tableLoad=true;index=m.src.indexReg?m.src.indexReg+'.'+(idx(E,at).size):'';tableBase=E.h(m.src.staticAddr);}
+    const flow=onBoundary&&m?analyzeFrom(E,d.next,'A4',at,4):{states:0,transfers:[],calls:[],stores:[],returns:[],aliases:[],kills:[],decodedN:0};
+    const z={ref:E.h(at),offline:E.off(at),funcStart:E.h(start),onBoundary,decoded:d.text,tableLoad,tableBase,index,flow};reports.push(z);
+    console.log('\n=== A4 TABLE LOAD '+E.h(at)+' ===');console.table([{ref:z.ref,offline:z.offline,funcStart:z.funcStart,onBoundary,decoded:z.decoded,tableBase,index,states:flow.states,decodedInstructions:flow.decodedN}]);
+    console.log('=== TAINTED DIRECT CALLS / TAIL TARGETS ===');console.table(flow.calls.slice(0,120));
+    console.log('=== A4/ALIAS CONTROL TRANSFERS ===');console.table(flow.transfers.slice(0,120));
+    console.log('=== A4/ALIAS MEMORY OR STACK STORES ===');console.table(flow.stores.slice(0,120));
+    console.log('=== A4/ALIAS REGISTER PROPAGATION ===');console.table(flow.aliases.slice(0,120));
+    console.log('=== RETURNS WITH LIVE HANDLER ===');console.table(flow.returns.slice(0,80));
   }
-  const valid=reports.filter(x=>x.onBoundary),ret=valid.filter(x=>x.returnsWithA4),localTransfers=valid.reduce((n,x)=>n+x.uses.filter(u=>u.terminalTransfer||u.stack).length,0),callerTransfers=valid.reduce((n,x)=>n+x.callers.reduce((a,c)=>a+c.a4Uses.filter(u=>u.terminalTransfer||u.stack).length,0),0);
-  const verdict={dispatchTable:E.h(E.dispatch),a4Refs:refs.length,validBoundaryRefs:valid.length,falseRefs:refs.length-valid.length,refsReturningA4:ret.length,localA4Transfers:localTransfers,callerA4Transfers:callerTransfers,topRef:valid[0]?.ref||'',topDecoded:valid[0]?.decoded||'',topTableBase:valid[0]?.tableBase||'',topIndex:valid[0]?.index||''};
-  console.log('=== TYPE HANDLER FLOW VERDICT ===');console.table([verdict]);
-  if(!valid.length)console.warn('❌ 0x25DC raw refs 也是非指令边界假阳性；下一步必须重新按上游真实 CFG 找 table user。');
-  else if(localTransfers||callerTransfers)console.log('🎯 已找到 A4 handler 的真实控制转移消费点；下一步从该 transfer 向前追 enemy/type/state/target selection。');
-  else if(ret.length)console.warn('⚠️ handler 确实通过 A4 返回，但当前 direct callers 未看到消费；下一步扩大 caller-of-caller / 保存 A4 数据流。');
-  else console.warn('⚠️ A4 table load 是真实指令，但未在当前线性路径发现 transfer/return；下一步做完整分支数据流而不是继续猜 trampoline。');
-  const out={version:'rom-focus-type-flow-v1',verdict,reports};self.__WOF_ROM_FOCUS_TYPE_FLOW=out;return out;
+  const valid=reports.filter(x=>x.onBoundary),transfers=valid.flatMap(x=>x.flow.transfers),calls=valid.flatMap(x=>x.flow.calls),stores=valid.flatMap(x=>x.flow.stores),returns=valid.flatMap(x=>x.flow.returns),aliases=valid.flatMap(x=>x.flow.aliases);
+  const tramp=transfers.filter(x=>x.kind==='RTS_STACK_TRAMPOLINE'),indirect=transfers.filter(x=>x.kind==='JSR_INDIRECT'||x.kind==='JMP_INDIRECT');
+  const verdict={dispatchTable:E.h(E.dispatch),a4Refs:refs.length,validBoundaryRefs:valid.length,falseRefs:refs.length-valid.length,taintedDirectCalls:calls.length,indirectHandlerTransfers:indirect.length,rtsStackTrampolines:tramp.length,handlerStores:stores.length,returnsLive:returns.length,aliasOps:aliases.length,topTransferAt:transfers[0]?.at||'',topTransferKind:transfers[0]?.kind||'',topTransferText:transfers[0]?.text||'',topCallTarget:calls[0]?.target||'',topStoreAt:stores[0]?.at||'',topStoreKind:stores[0]?.kind||''};
+  console.log('=== TYPE HANDLER FLOW VERDICT V2 ===');console.table([verdict]);
+  if(indirect.length||tramp.length)console.log('🎯 已找到 0x25DC handler 的真实控制转移：下一步固定 transfer path，并向前追 type/state/target selector。');
+  else if(calls.length)console.warn('🧭 A4 handler 被带入固定 direct callees，但当前 4 层内未消费为 transfer；下一步只围绕 topCallTarget 扩大共享 executor 数据流。');
+  else if(stores.length)console.warn('🧭 A4 handler 被写入 stack/RAM 而不是立即执行；下一步追 topStoreAt 的目标位置及后续读取/执行。');
+  else if(returns.length)console.warn('🧭 A4 handler 沿完整 CFG 返回；下一步追 caller-of-caller 的 A4 live range。');
+  else console.warn('⚠️ 两个真实 A4 load 在完整 CFG/4层 direct callee 内仍无消费；下一步重新判断 0x25DC 表是否是执行 handler 表，检查其 47 entries 的实际用途和引用语义。');
+  const out={version:'rom-focus-type-flow-v2-cfg-callee-taint',verdict,reports};self.__WOF_ROM_FOCUS_TYPE_FLOW=out;return out;
 }
-self.WOFFOCUSTYPEFLOW={version:'rom-focus-type-flow-v1',run,stop(){stopped=true;}};
-console.log('✅ WOF ROM focus type-flow v1 loaded');console.log('执行 await WOFFOCUSTYPEFLOW.run()');
+self.WOFFOCUSTYPEFLOW={version:'rom-focus-type-flow-v2-cfg-callee-taint',run,stop(){stopped=true;}};
+console.log('✅ WOF ROM focus type-flow v2 loaded · full CFG + direct-callee A4 taint');
+console.log('执行 await WOFFOCUSTYPEFLOW.run()');
 })();
