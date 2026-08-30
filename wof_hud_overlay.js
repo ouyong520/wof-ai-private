@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
   const CHANNEL='wof-ai-hud-v1',ROOT_ID='wof-ai-hud-root',STYLE_ID='wof-ai-hud-style';
-  const HOLD_MS={1:900,2:1200,3:1600},RELEASE_GRACE_MS=360;
+  const HOLD_MS={1:1000,2:1200,3:1700},RELEASE_GRACE_MS=380;
   const LOGICAL_W=384,LEFT_BAND=.16,RIGHT_BAND=.84;
   let FIXED_Y=.28;
 
@@ -14,28 +14,19 @@
 #${ROOT_ID} *{box-sizing:border-box}
 #${ROOT_ID}.wof-hidden{display:none!important}
 #${ROOT_ID} .wof-anchor{position:absolute;left:50%;top:28%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:7px;will-change:left}
-#${ROOT_ID} .wof-point{min-width:118px;padding:9px 15px;border-radius:24px;background:rgba(0,0,0,.58);border:3px solid rgba(255,255,255,.32);box-shadow:0 4px 18px rgba(0,0,0,.58);text-align:center;font-weight:950;font-size:20px;line-height:1;white-space:nowrap}
-#${ROOT_ID} .wof-point .bigdot{display:inline-block;font-size:34px;line-height:15px;vertical-align:-4px;margin-right:7px;color:#8ff0a4;text-shadow:0 0 13px currentColor}
-#${ROOT_ID} .wof-point.l1{color:#ffe17a;border-color:rgba(255,225,122,.9);background:rgba(56,42,0,.72)}
-#${ROOT_ID} .wof-point.l1 .bigdot{color:#ffe17a}
-#${ROOT_ID} .wof-point.l2{color:#ffb15b;border-color:rgba(255,177,91,.95);background:rgba(70,30,0,.76)}
-#${ROOT_ID} .wof-point.l2 .bigdot{color:#ffb15b}
-#${ROOT_ID} .wof-point.l3{color:#ff7777;border-color:rgba(255,92,92,1);background:rgba(78,0,0,.80);box-shadow:0 4px 22px rgba(0,0,0,.60),0 0 20px rgba(255,70,70,.34)}
-#${ROOT_ID} .wof-point.l3 .bigdot{color:#ff6666}
-#${ROOT_ID} .wof-alert{position:relative;min-width:142px;text-align:center;border-radius:14px;padding:9px 14px 11px;backdrop-filter:blur(2px);box-shadow:0 4px 20px rgba(0,0,0,.48);overflow:hidden;white-space:nowrap}
-#${ROOT_ID} .wof-alert.l1{border:2px solid rgba(255,225,122,.92);background:rgba(48,38,0,.78)}
-#${ROOT_ID} .wof-alert.l2{border:2px solid rgba(255,177,91,.96);background:rgba(55,28,0,.80)}
-#${ROOT_ID} .wof-alert.l3{min-width:175px;border:3px solid rgba(255,92,92,1);background:rgba(65,0,0,.84)}
-#${ROOT_ID} .wof-main{font-weight:1000;line-height:1}
-#${ROOT_ID} .wof-alert.l1 .wof-main{font-size:22px;color:#ffe17a}
-#${ROOT_ID} .wof-alert.l2 .wof-main{font-size:25px;color:#ffb15b}
-#${ROOT_ID} .wof-alert.l3 .wof-main{font-size:38px;color:#fff}
-#${ROOT_ID} .wof-time{margin-top:6px;font-size:15px;font-weight:900;opacity:.98}
-#${ROOT_ID} .wof-sub{margin-top:5px;font-size:10px;opacity:.72;max-width:250px;overflow:hidden;text-overflow:ellipsis}
-#${ROOT_ID} .wof-bar{position:absolute;left:0;bottom:0;height:4px;background:rgba(255,255,255,.88)}
-#${ROOT_ID} .wof-status{position:absolute;left:8px;bottom:8px;padding:5px 8px;border-radius:9px;background:rgba(0,0,0,.34);font-size:10px;opacity:.68}
+#${ROOT_ID} .wof-point{min-width:118px;padding:9px 15px;border-radius:24px;background:rgba(0,0,0,.68);border:3px solid rgba(255,255,255,.78);box-shadow:0 4px 18px rgba(0,0,0,.60);text-align:center;font-weight:950;font-size:20px;line-height:1;white-space:nowrap;color:#fff}
+#${ROOT_ID} .wof-point .bigdot{display:inline-block;font-size:36px;line-height:15px;vertical-align:-5px;margin-right:7px;color:#fff;text-shadow:0 0 10px rgba(255,255,255,.75)}
+#${ROOT_ID} .wof-alert{position:relative;min-width:150px;text-align:center;border-radius:14px;padding:10px 15px 12px;backdrop-filter:blur(2px);box-shadow:0 4px 20px rgba(0,0,0,.52);overflow:hidden;white-space:nowrap;background:rgba(0,0,0,.78);border:2px solid rgba(255,255,255,.90);color:#fff}
+#${ROOT_ID} .wof-alert.l3{min-width:190px;padding:12px 18px 14px;border-width:3px}
+#${ROOT_ID} .wof-main{font-weight:1000;line-height:1;color:#fff}
+#${ROOT_ID} .wof-alert.l1 .wof-main,#${ROOT_ID} .wof-alert.l2 .wof-main{font-size:27px}
+#${ROOT_ID} .wof-alert.l3 .wof-main{font-size:44px}
+#${ROOT_ID} .wof-time{margin-top:7px;font-size:16px;font-weight:900;opacity:.98;color:#fff}
+#${ROOT_ID} .wof-sub{margin-top:5px;font-size:10px;opacity:.72;max-width:250px;overflow:hidden;text-overflow:ellipsis;color:#fff}
+#${ROOT_ID} .wof-bar{position:absolute;left:0;bottom:0;height:4px;background:rgba(255,255,255,.90)}
+#${ROOT_ID} .wof-status{position:absolute;left:8px;bottom:8px;padding:5px 8px;border-radius:9px;background:rgba(0,0,0,.44);font-size:10px;opacity:.72;color:#fff}
 #${ROOT_ID}.wof-calibrating{pointer-events:auto;cursor:crosshair;background:rgba(0,0,0,.05)}
-#${ROOT_ID} .wof-cal-tip{display:none;position:absolute;left:50%;top:9%;transform:translateX(-50%);padding:10px 15px;border-radius:11px;background:rgba(0,0,0,.82);font-size:15px;font-weight:900;white-space:nowrap}
+#${ROOT_ID} .wof-cal-tip{display:none;position:absolute;left:50%;top:9%;transform:translateX(-50%);padding:10px 15px;border-radius:11px;background:rgba(0,0,0,.88);font-size:15px;font-weight:900;white-space:nowrap;color:#fff;border:1px solid rgba(255,255,255,.65)}
 #${ROOT_ID}.wof-calibrating .wof-cal-tip{display:block}
 `;
   document.head.appendChild(style);
@@ -52,11 +43,14 @@
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const finite=v=>Number.isFinite(+v)?+v:null;
   const roundMs=v=>v==null?null:(Number.isFinite(+v)?Math.max(0,Math.round(+v/50)*50):null);
-  const levelClass=l=>l>=3?'l3':l===2?'l2':l===1?'l1':'';
-  const glyph=a=>a==='UP'?'⬆':a==='DOWN'?'⬇':a==='AB'?'AB!':'⚠';
-  const text=a=>a==='UP'?'上躲':a==='DOWN'?'下躲':a==='AB'?'AB':'注意';
   const ratioKey=n=>'wof-hud-xratio-'+n;
 
+  function glyph(a){
+    return a==='UP'?'⬆':a==='DOWN'?'⬇':a==='LEFT'?'⬅':a==='RIGHT'?'➡':a==='AB'?'AB!':'⚠';
+  }
+  function actionText(a){
+    return a==='UP'?'上':a==='DOWN'?'下':a==='LEFT'?'左':a==='RIGHT'?'右':a==='AB'?'AB':'注意';
+  }
   function savedRatio(name){
     try{const v=+localStorage.getItem(ratioKey(name));return Number.isFinite(v)&&v>.05&&v<.95?v:null;}catch(_){return null;}
   }
@@ -70,8 +64,8 @@
     let h=HOLD[name];
     if(p&&(+p.level||0)>=1){
       const level=+p.level||1,k=holdKey(p),changed=!h||h.key!==k;
-      if(changed)h=HOLD[name]={key:k,p:{...p},level,startedAt:now,lastSeen:now,minUntil:now+(HOLD_MS[level]||900)};
-      else{h.p={...p};h.level=level;h.lastSeen=now;h.minUntil=Math.max(h.minUntil,now+220);}
+      if(changed)h=HOLD[name]={key:k,p:{...p},level,startedAt:now,lastSeen:now,minUntil:now+(HOLD_MS[level]||1000)};
+      else{h.p={...p};h.level=level;h.lastSeen=now;h.minUntil=Math.max(h.minUntil,now+240);}
       return h;
     }
     if(!h)return null;
@@ -87,43 +81,56 @@
     const wx=finite(p?.x),W=innerWidth;if(wx==null)return null;
     let s=XSTATE[name];
     if(!s){
-      const ratio=savedRatio(name)??.50;
-      s=XSTATE[name]={screenX:ratio*W,lastWorldX:wx,calibrated:savedRatio(name)!=null,ratio};
+      const saved=savedRatio(name),ratio=saved??.50;
+      s=XSTATE[name]={screenX:ratio*W,lastWorldX:wx,calibrated:saved!=null,ratio};
     }
     return s;
   }
   function updateX(name,p){
     const wx=finite(p?.x),W=innerWidth,s=ensureX(name,p);if(!s||wx==null)return W*.5;
     let dw=wx-s.lastWorldX;s.lastWorldX=wx;
-    if(Math.abs(dw)>70)dw=0; // room transition / object reset
+    if(Math.abs(dw)>70)dw=0;
     const scale=W/LOGICAL_W;
     let next=s.screenX+dw*scale;
     const lo=W*LEFT_BAND,hi=W*RIGHT_BAND;
-    // CPS beat-em-up camera absorbs movement once the actor reaches a side band.
     next=clamp(next,lo,hi);
     s.screenX=s.screenX+(next-s.screenX)*.88;
     s.ratio=s.screenX/W;
     return s.screenX;
   }
   function positionAnchor(p){
-    const x=updateX(focus,p);anchor.style.left=clamp(x,70,innerWidth-70)+'px';anchor.style.top=(FIXED_Y*innerHeight)+'px';
+    const x=updateX(focus,p);anchor.style.left=clamp(x,75,innerWidth-75)+'px';anchor.style.top=(FIXED_Y*innerHeight)+'px';
   }
 
   function render(msg){
     if(!msg?.players)return;lastMsg=msg;lastRx=Date.now();
     const now=Date.now(),p=msg.players[focus]||{},h=updateHold(focus,p,now),display=h?.p||null;
-    positionAnchor(p);label.textContent=focus;
-    const level=Math.max(+p.level||0,+h?.level||0);point.className='wof-point '+levelClass(level);
+    positionAnchor(p);label.textContent=focus;point.className='wof-point';
     alerts.textContent='';
     const xs=XSTATE[focus];status.textContent=focus+' · 固定Y '+Math.round(FIXED_Y*100)+'% · '+(xs?.calibrated?'X已校准':'F7校准X');
     if(!display||!h||h.level<1)return;
 
-    const box=document.createElement('div');box.className='wof-alert '+levelClass(h.level);
+    const box=document.createElement('div');box.className='wof-alert '+(h.level>=3?'l3':h.level===2?'l2':'l1');
     const main=document.createElement('div');main.className='wof-main';
-    main.textContent=h.level>=3?(glyph(display.action)+' '+text(display.action)):h.level===2?'⚠ 注意':'⚠ 危险';box.appendChild(main);
+    if(h.level>=3){
+      main.textContent=glyph(display.action)+' '+actionText(display.action);
+    }else{
+      main.textContent='⚠ 注意';
+    }
+    box.appendChild(main);
+
     const t=heldTime(h,now),time=document.createElement('div');time.className='wof-time';
-    time.textContent=t!=null?(t>=1000?'约 '+(t/1000).toFixed(1)+' 秒':'约 '+t+' ms'):(h.level===1?'预警':'保持注意');box.appendChild(time);
-    if(detail){const sub=document.createElement('div');sub.className='wof-sub';sub.textContent=[focus,display.source,display.family,display.type!=null?'T'+display.type:null].filter(Boolean).join(' · ');box.appendChild(sub);}
+    if(h.level>=3){
+      time.textContent=t!=null?(t>=1000?'约 '+(t/1000).toFixed(1)+' 秒':'约 '+t+' ms'):'立即';
+    }else{
+      time.textContent=t!=null?(t>=1000?'约 '+(t/1000).toFixed(1)+' 秒':'约 '+t+' ms'):'保持注意';
+    }
+    box.appendChild(time);
+
+    if(detail){
+      const sub=document.createElement('div');sub.className='wof-sub';
+      sub.textContent=[focus,display.source,display.family,display.type!=null?'T'+display.type:null].filter(Boolean).join(' · ');box.appendChild(sub);
+    }
     const bar=document.createElement('div');bar.className='wof-bar';bar.style.width=(t==null?100:Math.max(6,Math.min(100,100*(1-t/1200))))+'%';box.appendChild(bar);
     alerts.appendChild(box);
   }
@@ -133,7 +140,7 @@
   function cancelCal(){calibrating=false;root.classList.remove('wof-calibrating');root.style.pointerEvents='none';return true;}
   function calibrateAt(clientX){
     const p=lastMsg?.players?.[focus],wx=finite(p?.x);if(wx==null)return false;
-    const W=innerWidth,x=clamp(clientX,70,W-70),ratio=x/W;
+    const W=innerWidth,x=clamp(clientX,75,W-75),ratio=x/W;
     XSTATE[focus]={screenX:x,lastWorldX:wx,calibrated:true,ratio};saveRatio(focus,ratio);cancelCal();
     if(lastMsg)render(lastMsg);console.log('🎯 '+focus+' X轴已校准',Math.round(ratio*100)+'%');return true;
   }
@@ -164,7 +171,7 @@
   requestAnimationFrame(layout);
 
   window.WOFHUD={
-    version:'hud-overlay-v8-fixed-y-ram-x-all-warnings',
+    version:'hud-overlay-v9-monochrome-text-directions',
     show(){visible=true;return true;},hide(){visible=false;return true;},toggle(){visible=!visible;return visible;},
     detail(on=!detail){detail=!!on;if(lastMsg)render(lastMsg);return detail;},
     focus:setFocus,p1(){return setFocus('P1');},p2(){return setFocus('P2');},p3(){return setFocus('P3');},cycle,
@@ -175,7 +182,8 @@
     destroy(){destroyed=true;removeEventListener('keydown',key,true);root.removeEventListener('click',click,true);try{bc.close();}catch(_){};root.remove();style.remove();delete window.WOFHUD;}
   };
   root.style.pointerEvents='none';
-  console.log('✅ WOF HUD overlay v8 fixed-Y / RAM-X / all-warning started');
-  console.log('🟡 L1弱危险现在也会显示“⚠ 危险”，不再只有变色点。');
-  console.log('🎯 F7点一下人物即可校准X；Y固定，不受原地跳/前跳/后跳影响。F6切P1/P2/P3。');
+  console.log('✅ WOF HUD overlay v9 monochrome text directions started');
+  console.log('⚠ 不再用颜色表达危险等级：普通风险统一显示“注意”，动作只看箭头/文字。');
+  console.log('↕↔ 支持 ↑上 / ↓下 / ←左 / →右 / AB 显示；当前预测核心若只输出上下，则绝不乱猜左右。');
+  console.log('🎯 F7点人物校准X；Y固定。F6切P1/P2/P3。');
 })();
