@@ -1,662 +1,508 @@
 # WOF AI 项目交接 / 新对话接手说明
 
-更新时间：2026-08-30
+更新时间：2026-08-30 20:18（UTC+8）
 
-> 这份文件是给下一条 ChatGPT / Codex 对话直接接手用的。不要从头重新讨论项目方向，先读完这里，再检查仓库当前文件。
+> 给下一条 ChatGPT / Codex 对话直接接手。不要从头重做项目方向，也不要重新让用户解释。先读本文件，再检查仓库 `main` 当前代码。
 
-## 1. 项目目标
+## 1. 项目最终目标
 
-游戏：**吞食天地II / Warriors of Fate / WOF / 三国志II**
+游戏：**吞食天地II / Warriors of Fate / WOF / 三国志II**，已确认版本为 **WOF World 921002 / MAME `wofr1`**。
 
-已确认版本：**WOF World 921002 / MAME `wofr1`**。
-
-目标不是 Hitbox Viewer，而是类似斯诺克辅助线的 **未来攻击轨迹预测 AI**：
+目标不是 hitbox viewer，而是 Future Danger AI：
 
 ```text
-ROM = 固定招式剧本
-RAM = 当前现场
-
-怪物 type
-+ 当前动作 / 动画
-+ 当前 X/Y/Z
-+ Facing
-+ 招式起手
-+ 固定运动轨迹
-+ ATTACK 生效时间
-+ 投射物生成
-→ 模拟未来 0~1000ms
-→ 判断未来攻击轨迹是否会碰到玩家
-→ 打不到就不理
-→ 会打到则提前提示安全移动方向
-→ 最终 Future Danger Map + Safe Path
+ROM 固定招式/AI逻辑
++ 当前 CPS RAM
++ enemy type/state/anim/action/X/Y/Z/facing
++ 未来攻击起手 / active / projectile
+→ 预测未来约 0~1000ms
+→ 判断攻击未来是否真的会碰到玩家
+→ 只有真正需要躲时才给方向提示
+→ 后续 Future Danger Map + Safe Path
 ```
 
-当前阶段只做 **预测 / 提示**，不做自动控制，不自动按键，不自动 AB。
+当前正式范围：**观察 / 预测 / HUD 提示**。不要自动控制 P1/P2/P3，不自动按键，不自动 AB。
 
-用户既会旁观别人，也会自己下场测试；最终产品应面向真人玩家使用 HUD。
+用户最在意的不是“能不能报警”，而是 **减少无意义误报**：普通小兵只是靠近不应该一直提示；怪物若实际上锁定 P2，即使离 P1 很近也不应该一直提示 P1。
 
 ---
 
-## 2. 浏览器 / Worker 架构
-
-链路：
+## 2. 浏览器运行架构和关键 RAM
 
 ```text
 网页
-→ cycgo.js
-→ Worker gstyphoon.js
-→ gstyphoon.wasm
-→ CPS RAM
+↓
+cycgo.js
+↓
+Web Worker: gstyphoon.js
+↓
+gstyphoon.wasm
+↓
+CPS RAM / live 68000 ROM
 ```
 
-运行预测代码必须在 Chrome DevTools 的 **`gstyphoon.js` Worker Console**。
+Worker 侧测试代码必须在 DevTools 的 **`gstyphoon.js` Console** 执行。
 
-页面刷新 / Worker 重建后粘贴代码会消失；目前使用 GitHub raw + `fetch(...).then(eval)` 方式安装。
-
-运行时 RAM 读取方式：
+RAM 读取：
 
 ```js
-B(a)=HEAPU8[R+((((a-FF0000)&FFFF)^1))]
+B(a)=HEAPU8[R+((((a-0xFF0000)&0xFFFF)^1))]
 R=_0x515056.HEAPU32[0x2e39e4>>>2]
 ```
 
-关键 RAM：
+关键地址：
 
 ```text
-P1 = FFBE1C
-P2 = FFBEFC
-P3 = FFBFDC
-player stride = E0
+P1 base = 0xFFBE1C
+P2 base = 0xFFBEFC
+P3 base = 0xFFBFDC
+player stride = 0xE0
 
-敌人对象池 base = FFC0BC
+enemy pool = 0xFFC0BC
 20 slots
-stride = E0
+enemy stride = 0xE0
 
-玩家 HP = base + 0x83
-Facing: 255 => -X，否则 +X
-ATTACK: 0 -> 非0 是起手
+HP = playerBase + 0x83
+facing: 255 => -X，否则 +X
 ```
 
-玩家 Y 方向移动速度经验值约 38。
+敌人已知字段至少包括：
+
+```text
++0x04 X
++0x08 Y
++0x20 type
++0x28/+0x2A state相关
++0x70 attack
++0x82附近 HP/flags
+```
+
+不要再把这些位置相关字段当成 target 候选。
 
 ---
 
-## 3. 当前预测核心状态
+## 3. 预测核心 / HUD 已完成到什么程度
 
-### 冻结基线
+### 预测基线
 
-**V4.10.1** 是冻结行为基线。
-
-基线分支：
+冻结基线：
 
 ```text
-baseline-v4.10.1
+branch: baseline-v4.10.1
+commit: 7e945b2469cae6f726fbddbd80c390136c521960
 ```
 
-基线 commit：
+当前 runtime 大约 `offline-dynamic-spectator-calibrated-v4.11.4`。已有 startup predictor、attack families、damage attribution、watch/action 等体系。不要随便大改已有几何基线。
+
+历史统计中真实掉血前 warning attribution 覆盖曾约 93%+、首次 warning lead 约 300ms 级，但这不是“真人必然可躲准确率”。当前主要问题仍是 warning 太吵、普通小兵接近误报、特殊投射物和真实 target 未解决。
+
+### Canvas/WebGL HUD
+
+旧 DOM HUD 已判失败，不要继续修 `wof_hud_overlay.js`。
+
+真实游戏画面已经确认是 WebGL：
 
 ```text
-7e945b2469cae6f726fbddbd80c390136c521960
+I_GF1TC = 实际 game canvas (#whathis)
+I_fdC8Q = WebGL/WebGL2 context
+I_b1EdF / I_FHW46 = 真正 frame/render path
 ```
 
-从 V4.11.0 到 V4.11.4 主要是 **盲测 / 审计 / HUD 负担诊断**，原则上没有改变 V4.10.1 的预测几何与动作决策核心。
+`wof_canvas_probe.js` 已经在真实游戏画面里成功显示过 `WOF HUD OK`。
 
-### V4.11.0
-
-加入 blind evaluation：
-
-- decisionLoad：NONE / SAFE / WATCH / UP / DOWN / AB 时间占比
-- materializationRate
-- naturalPathChangeRate
-- unchangedPrecision
-- playerProfiles
-
-重要解释：
-
-- `changed` 不是自动等于 false positive；它代表玩家自然路线变化。
-- `materializationRate` 不是独立几何准确率。
-- 高手房有明显行为偏差，不能用低掉血简单证明模型 100% 准。
-
-### V4.11.1
-
-解决 HP 标签污染：
-
-- `maxPlausibleHp = 128`
-- `hpBaselineReset`
-- `nonEnemyDamage`
-- `safeMiss` 只保留真正有敌人证据的情况
-- miss retention 扩到 120
-- warning source 分类：
-  - ACTION
-  - GUARD
-  - TAIL
-  - SHADOW
-  - BRIDGE
-  - PHASE
-  - GEOMETRY
-  - EDGE
-  - WATCH
-
-### V4.11.2
-
-加入真实掉血前 350ms 的 warning attribution：
-
-- any
-- latest
-- exclusive
-- lead time buckets
-- avg first warning lead
-
-关键观察：
-
-- 实际伤害前稳定预警覆盖很高，部分批次约 93%~98%。
-- GUARD / GEOMETRY 很吵，但不能整体删除，因为有真实伤害是它们独占覆盖。
-- 平均首次预警 lead 接近 300ms+。
-
-### V4.11.3
-
-进一步拆 GUARD / GEOMETRY 的诊断子类，继续保持核心不动。
-
-一批约 28.8 分钟数据中，两段完整 session 的稳定掉血预警覆盖约 95.5% / 98.3%，但 warning 占屏时间仍约 40%~44%。
-
-### V4.11.4
-
-加入 HUD shadow simulation：
-
-- L1: GUARD / GEOMETRY / SHADOW
-- L2: TAIL / BRIDGE / PHASE / EDGE
-- L3: ACTION
-
-模拟 180ms pulse / 900ms repeat 等 HUD 方案。
-
-结论：即使脉冲化，L1 仍然太吵；不能单纯靠颜色或频繁 WATCH 做最终 UI。
-
----
-
-## 4. 多房间盲测采集
-
-文件：
+`wof_canvas_hud.js` 当前 v6 已成功在游戏内部显示：
 
 ```text
-wof_multiroom_collect.js
-wof_multiroom_export.js
+HUD 已加载 · xx s
 ```
 
-每个房间的 Worker Console：
+60 秒 load-confirm 已工作。不要回退 DOM overlay。
 
-```js
-fetch("https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_multiroom_collect.js?"+Date.now()).then(r=>r.text()).then(s=>(0,eval)(s))
-```
-
-采集器行为：
-
-- 默认 10 分钟
-- 每 10 秒 checkpoint
-- IndexedDB: `wof-multiroom-audit-v1`
-- store: `sessions`
-- 保存 start summary / checkpoints / final / misses / metadata
-- 房间关闭时最多损失最后约 10 秒尾部
-
-导出在任意普通页面 `top` Console：
-
-```js
-fetch("https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_multiroom_export.js?"+Date.now()).then(r=>r.text()).then(s=>(0,eval)(s))
-```
-
-### 当前“自动上传记录”状态
-
-**现在没有自动上传到 GitHub / ChatGPT / 服务器。**
-
-当前做的是：
+HUD 用户偏好必须保留：
 
 ```text
-Worker 自动采集
-→ 自动每10秒保存到浏览器 IndexedDB
-→ 用户手动运行 exporter
-→ 浏览器生成 / 下载 JSON
-→ 用户手动把 JSON 发给 ChatGPT
-```
-
-也就是说：**自动保存本地有，自动网络上传没有。**
-
-不要为了“自动上传”把 GitHub token 直接写进网页 JS；这是不安全的。如果以后要自动上传，应该走用户自己的后端 / 临时上传接口，或继续保持手动导出。
-
----
-
-## 5. 历史数据与 Family DB
-
-离线 Campaign 大致规模：
-
-```text
-~6 rooms
-79.4 room-min
-238,033 frames
-38 enemy types
-25,382 ATTACK changes
-2,439 spawn/identity
-~275 player damage
-7,584 full active windows
-35 attack types
-403 attack Families
-```
-
-Runtime DB：
-
-```text
-403 Families
-1367 exact startup contexts
-1083 coarse contexts
-403 activeStart
-```
-
-Family damage-hit 分布很稀疏：
-
-```text
->=1 hit: 85 families
->=2: 39
->=3: 21
->=4: 9
->=5: 4
->=10: 1
-318 families 没有直接 linked damage hit
-```
-
-holdout 曾观察：
-
-```text
-hazard >= 0.5：约 81.47% unseen-room attack coverage，median advance ~259ms
-hazard >= 0.8：约 71.16%，median advance ~179ms
-```
-
-不要把这些数字当作最终真人准确率。
-
----
-
-## 6. Runtime 重要 API
-
-当前 `WOFV4` 主要 API：
-
-```js
-WOFV4.status()
-WOFV4.tracked()
-WOFV4.spectateAll()
-WOFV4.audit()
-WOFV4.auditFamilies()
-WOFV4.calibration()
-WOFV4.exportCalibration()
-WOFV4.snapshot()
-WOFV4.summary()
-WOFV4.evaluation()
-WOFV4.decisionLoad()
-WOFV4.misses()
-WOFV4.report()
-WOFV4.reportShort()
-WOFV4.quiet(true/false)
-WOFV4.pause()
-WOFV4.resume()
-WOFV4.resetCalibration()
-WOFV4.stop()
-```
-
-运行预测核心：
-
-```js
-fetch("https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_v4_install_once.js?"+Date.now()).then(r=>r.text()).then(s=>(0,eval)(s))
-```
-
----
-
-## 7. HUD 尝试历史：V1~V11 已整体判失败
-
-已经试过：
-
-- 顶部大条 HUD
-- sticky 1.6s
-- 单选 P1/P2/P3
-- RAM X/Y/Z 头顶定位
-- 视觉识别原生 1P/2P/3P 标签
-- 跳跃安全视觉跟踪
-- 固定 Y + X 跟随
-- RAM X 校准
-- 固定位置 HUD
-- 前方怪 / 后方怪 / 左右侧提示
-- 绑定 Canvas DOM rect
-
-用户最终评价：**“整体无法用”**。
-
-主要失败原因：
-
-1. DOM Overlay 和游戏内部坐标不是同一坐标系。
-2. RAM 世界坐标受镜头滚动影响，不能直接映射为浏览器屏幕坐标。
-3. 视觉跟踪原生 P 标签会被跳跃 / 前跳 / 后跳 / 遮挡 / 同色 sprite 干扰。
-4. 页面右侧功能栏、全屏、缩放进一步增加偏移。
-5. 颜色式提示用户不接受；用户要直接文字 / 方向，不想靠颜色理解状态。
-6. HUD 提示太快、太远、太吵时真人根本看不清。
-
-**不要继续在 V1~V11 DOM HUD 上打补丁。**
-
----
-
-## 8. 新 HUD 路线：直接进入游戏 Canvas 绘制
-
-重新检查 `cycgo.js` 后确认真实绘制链：
-
-```text
-I_n3jTY()      = 页面游戏绘制函数
-I_KkacD        = 游戏 Canvas 2D context
-I_QKG4Q.Pad    = 游戏画面在页面 Canvas 内的绘制偏移
-I_Aj3M8        = 游戏源画面 / source canvas
-```
-
-`I_n3jTY()` 会通过 `I_KkacD.drawImage(...)` 把游戏画面画出来。
-
-因此正确路线应是：
-
-```text
-Worker WOFV4 预测
-→ BroadcastChannel
-→ top 页面收到预测
-→ hook I_n3jTY()
-→ 在原游戏 render 结束后
-→ 直接用 I_KkacD.fillText / stroke / path 绘制 HUD
-```
-
-这样至少 HUD 本身和游戏画面共享 Canvas 坐标，不再被网页右栏 / CSS DOM overlay 坐标体系拖走。
-
-### 当前 probe
-
-文件：
-
-```text
-wof_canvas_probe.js
-```
-
-当前 probe 会 hook `I_n3jTY()`，在：
-
-```js
-x = I_QKG4Q.Pad.X + 12
-y = I_QKG4Q.Pad.Y + 24
-```
-
-画：
-
-```text
-WOF HUD OK
-```
-
-运行：
-
-```js
-fetch("https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_canvas_probe.js?"+Date.now()).then(r=>r.text()).then(s=>(0,eval)(s))
-```
-
-停止：
-
-```js
-WOFCANVAS?.stop?.()
-```
-
-### 注意：probe 目前还没有被最终确认成功
-
-用户最近一张截图仍然能看到旧 DOM HUD 的“注意 / 后方怪 / P1”组件，截图中没有明确确认 `WOF HUD OK`。
-
-因此新对话的 **第一件事** 不是继续开发完整 Canvas HUD，而是先保证旧 HUD 全部卸载，再验证 probe：
-
-```js
-WOFHUD?.destroy?.()
-WOFCANVAS?.stop?.()
-```
-
-然后重新加载 probe。
-
-如果 Canvas 内部稳定出现 `WOF HUD OK`，才正式废弃 DOM overlay 路线。
-
----
-
-## 9. 当前 HUD 文件状态
-
-仓库目前可能仍有这些文件：
-
-```text
-wof_hud_worker.js
-wof_hud_overlay.js
-wof_canvas_probe.js
-```
-
-`wof_hud_overlay.js` 当前属于已失败的 DOM HUD 实验，不要作为正式方案继续优化。
-
-`wof_hud_worker.js` 最近版本还加入过：
-
-- threatSide: LEFT / RIGHT / CENTER
-- threatFacing: 前方怪 / 后方怪
-- enemyX
-- playerFace
-
-关系判断基于敌人 slot 的 X 与玩家 Facing。
-
-这个“前方 / 后方怪”信息后续可以复用到 Canvas HUD，但先验证方向判断是否符合真人观察。
-
----
-
-## 10. 最终 HUD 用户偏好（必须保留）
-
-用户已经明确反馈：
-
-- 不要靠颜色告诉他“危险等级”。
-- 想看到直接文字：`注意`。
-- 真正要动时显示明确方向：
-  - `↑ 上躲`
-  - `↓ 下躲`
-  - 以后如果核心真的支持左右，再显示 `← / →`
-  - `AB`
-- 希望能知道危险来自：
-  - 前方怪
-  - 后方怪
-  - 左侧 / 右侧
-- 提示不能瞬间闪，要能被真人看清。
-- 最好贴近战斗视线，但不要再用不可靠的 DOM 人物跟随。
-- 一次只看自己选中的 P1/P2/P3。
-
-不要为了凑功能乱猜 LEFT / RIGHT；当前核心主要决策仍是 CONTINUE / UP / DOWN / AB。
-
----
-
-## 11. 当前对预测核心的判断
-
-底层不是“已经证明完美”，但已经有足够证据进入真人 UI 阶段：
-
-- 多批盲测显示伤害前稳定 warning coverage 很高。
-- WATCH 广泛导致 HUD 负担过大。
-- GUARD / GEOMETRY 不能一刀切删除。
-- 真人 HUD 会改变玩家行为，因此继续无限用旁观玩家调指标会过拟合。
-
-所以不要再做几十轮相同 blind tuning。
-
-当前策略：
-
-```text
-冻结底层预测核心
-→ 先把真正可用的 Canvas HUD 做出来
-→ 真人下场 3~5 轮
-→ 记录“看得见 / 来得及 / 方向对不对 / 是否帮助躲避”
-→ 只针对明确新盲点再回到底层
-```
-
-如果出现新投射物 / 新攻击类，再追加 1~2 个针对性 batch，而不是无休止调参。
-
----
-
-## 12. 下一对话最优先 TODO
-
-### TODO 1：彻底清理旧 DOM HUD，验证 Canvas probe
-
-在 top Console：
-
-```js
-WOFHUD?.destroy?.()
-WOFCANVAS?.stop?.()
-```
-
-再加载：
-
-```js
-fetch("https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_canvas_probe.js?"+Date.now()).then(r=>r.text()).then(s=>(0,eval)(s))
-```
-
-要求：
-
-- `WOF HUD OK` 必须画在游戏内部。
-- 窗口变化 / 右侧栏 / 游戏运行时不漂。
-- 不要再出现旧 DOM “注意 / P1”组件。
-
-### TODO 2：如果 probe 成功，做 `wof_canvas_hud.js`
-
-不要复用旧 overlay DOM。
-
-最低版本只画一个选中玩家：
-
-```text
-P1
 注意
-后方怪 · 右侧
+↑ 上
+↓ 下
+← 左
+→ 右
+AB
+前方怪 / 后方怪
+左侧 / 右侧
+P1/P2/P3 一次只显示一个
 ```
 
-或：
-
-```text
-P1
-↑ 上躲
-前方怪 · 左侧
-250ms
-```
-
-先固定在游戏内部一个清晰位置，确保读得懂；暂时不要追人物头顶。
-
-### TODO 3：把 Worker warning 数据接入 Canvas HUD
-
-继续用 BroadcastChannel：
-
-```text
-wof-ai-hud-v1
-```
-
-建议重新写一个干净的 `wof_canvas_hud.js`，而不是继续修改 `wof_hud_overlay.js`。
-
-### TODO 4：找到真正 camera / screen transform 后，再做人物跟随
-
-不要再猜。
-
-优先从 `cycgo.js` / 渲染链中找：
-
-- 游戏内部 scroll X / scroll Y
-- source rectangle / destination rectangle
-- sprite HUD / 原生 1P/2P/3P 的真正绘制逻辑
-
-如果能拿到游戏自己的 camera transform：
-
-```text
-screenX = worldX - cameraX
-screenY = worldY - cameraY - z / sprite offset
-```
-
-然后再做真正的人物头顶 HUD。
+不要主要依赖颜色表达危险等级。
 
 ---
 
-## 13. 不要做的事
+## 4. 当前实战逻辑缺口
 
-- 不要恢复 local-player-only 逻辑；旁观模式仍应支持 RAM 中存在的 P1/P2/P3。
-- 不要把 P2 离开当死亡。
-- 不要要求玩家故意死亡。
-- 不要猜 A/B 按键。
-- 不要启用自动控制。
-- 不要把高手房低掉血当 100% 准确率证明。
-- 不要把 materializationRate 当独立 counterfactual 准确率。
-- 不要用模型自己预测的东西再反过来证明模型准确。
-- 不要继续在同一批数据上反复调到指标好看。
-- 不要继续修 V1~V11 的 DOM 坐标跟随。
-- 不要用颜色作为最终主要信息通道。
+用户明确指出：
+
+1. 夏侯惇丢炸弹：起手、头顶落点、爆炸命中提示不够好。
+2. 弓箭 / 流星锤 / 炸弹应走 projectile/trajectory 逻辑。
+3. 普通近战小兵只是接近，不应不断报警。
+4. 不同敌人攻击距离不同：普通近战 < 长兵器 < 弓手/远程。
+5. 最关键：**怪物有“要打谁”的 focus/target**。如果目标是 P2，P1 不应因为距离近就一直报警。
+6. 压墙/绕后场景证明“当前移动方向 ≠ 攻击焦点”。
+
+目标状态机应逐步做成：
+
+```text
+TARGET P1/P2/P3
+↓
+APPROACH / 绕路
+↓
+进入该敌人自己的攻击距离
+↓
+STARTUP
+↓
+ACTIVE
+↓
+RECOVERY / reselect
+```
+
+特殊 projectile 一旦生成，实际轨迹能伤到谁就警告谁，不受最初 target 限制。
 
 ---
 
-## 14. 输入链历史（当前不要启用）
+## 5. Focus Multiroom 统计路线：已基本完成使命，不再作为主攻
 
-已找到部分输入链：
-
-```text
-I_H3DNk.X_
-→ I_Y088A
-→ I_cdWPk
-→ I_s10h9
-→ I_iXPHN(mask)
-```
-
-方向 mask：
+文件：
 
 ```text
-UP    = 0x10
-DOWN  = 0x20
-LEFT  = 0x04
-RIGHT = 0x08
+wof_focus_multiroom_collect.js   # 当前 focus-multiroom-v4
+wof_focus_multiroom_export.js    # 当前 export-v4
 ```
 
-另有：
+v1 问题：running session 详细数据没有被 exporter 使用。
+v2 修复可恢复 snapshot，但 100ms 运动方向容易假 switch。
+v3 要求连续 700ms 每帧高置信，过严，几乎 stableCommits=0。
+v4 改为约 1.3 秒窗口累计追击证据，已正常产生 stableCommits / strongLabels / switches。
+
+一批较好的 v4 数据得到过：
 
 ```text
-_0x11a3f7(mask,timestamp)
-_0x423e73.Pe(mask, playerNo)
+10 个可用 v4 sessions
+strongLabels ≈ 1462
+stableCommits ≈ 257
+有效追击证据 ≈ 3421
+稳定 target switch ≈ 24
 ```
 
-但当前项目交付是预测 / HUD，不是自动按键。
+关键结论：
+
+- `0x3A` 不是可靠 target。
+- `0x6A` 不是可靠 target。
+- `0x68` 最多只是间接关联，没有证实。
+- `0x9C` 虽然 switch 统计很好，但与 X/位置变化同步，是假候选。
+- 其他高 purity offset 也大多是 enemy type/state/position 的混杂。
+
+因此目前**没有证据证明 enemy E0 结构内存在一个简单的 `enemy+?? = P1/P2/P3` 固定 target 字段**。
+
+结论：不要继续为了这个目标铺更多房间或不停调 focus-v4 阈值。统计路线已经告诉我们应该转 **ROM AI 逆向**。
 
 ---
 
-## 15. 用户工作方式
+## 6. ROM live image 已成功定位
 
-用户希望助手直接推进工程，不要每一步长篇解释。
+这是当前主线。
 
-常用模式：
-
-```text
-助手检查 / 改代码 / 提交 GitHub
-→ 到需要真人测试时
-→ 只告诉用户运行哪条命令、看什么现象
-→ 用户截图 / 发 JSON
-→ 助手继续修改
-```
-
-用户曾明确表示：
+文件：
 
 ```text
-你不用说直接做就行
-做到要测试的时候跟我说
+wof_rom_focus_probe.js
+wof_rom_focus_bootstrap.js
+wof_rom_focus_deep.js
+wof_rom_focus_inspect.js
+wof_rom_focus_trace.js
 ```
 
-所以新对话请保持简洁、连续，不要重复问已经确定的项目目标。
+### 已确认 ROM 事实
+
+live ROM 在当前 Worker HEAP 中成功找到过，例如：
+
+```text
+heap base ≈ 0xC08748
+layout = swap16
+SP = 0x00FF62EE
+PC = 0x0000754A
+```
+
+`type dispatch table` 仍在：
+
+```text
+ROM offset 0x25DC
+47 entries
+47/47 valid
+```
+
+非常关键的新发现：网页 live ROM 的 type entry 相对离线 `future_attack_db_v3.json` **统一 +0x34**。
+
+例：
+
+```text
+type 0  live 0x06F518  -> offline 0x06F4E4
+type 1  live 0x074980  -> offline 0x07494C
+type 9  live 0x085D0E  -> offline 0x085CDA
+```
+
+即：
+
+```text
+liveAddress = offlineAddress + 0x34
+```
+
+`wof_rom_focus_probe.js` v5 已接受这一映射，字段是：
+
+```text
+offlineDelta = +0x34
+```
+
+后续逆当前网页 AI **必须用 live 地址**；只有和旧 DB 对照时再减 `0x34`。
+
+### 性能注意
+
+早期 probe 同步扫描 256MB HEAP 导致游戏卡住几秒 / GC 压力。现版本采用安全分片扫描，并缓存：
+
+```text
+self.__WOF_ROM_LOC_CACHE
+```
+
+不要重新引入一次性同步扫描全 HEAP。
 
 ---
 
-## 16. Repo
+## 7. P1/P2/P3 ROM 引用扫描结果
+
+`wof_rom_focus_probe.js` 成功扫描出：
 
 ```text
-ouyong520/wof-ai-private
+direct 32-bit P1/P2/P3 refs = 12
 ```
 
-主线运行文件：
+明显形成 **4 组 P1/P2/P3 三连引用**。
+
+另外有 low-16 refs，但当前最有价值的是 12 个 direct32 refs。
+
+原本从 type entry 前约 0x700 字节寻找 common helper，结果：
 
 ```text
-wof_v4_install_once.js
-wof_multiroom_collect.js
-wof_multiroom_export.js
-wof_hud_worker.js
-wof_hud_overlay.js          # 已失败 DOM HUD，保留仅作历史
-wof_canvas_probe.js          # 当前新路线 probe
+commonHelpers = 0
 ```
 
-这份交接文件：
+这不代表失败，只表示“从 type entry 直接调用公共 helper”的假设太浅。因此 deep v2 改为：
 
 ```text
-WOF_AI_HANDOFF.md
+P1/P2/P3 direct refs
+→ 聚类成函数
+→ 建 1MB ROM reverse call graph
+→ 反向追 enemy AI
 ```
 
-新对话开始时，优先读取本文件和上述当前 JS，再继续工作。
+---
+
+## 8. 当前最重要的新候选：live 0x0080F2
+
+`wof_rom_focus_deep.js` v2 + inspect 得到 4 个 player-ref clusters。
+
+当前唯一 `STRONG TARGET SELECTOR CANDIDATE`：
+
+```text
+cluster = 1
+live func = 0x0080F2
+offline func = 0x0080BE
+depth = 0
+function size ≈ 342 bytes
+P1 refs = 1
+P2 refs = 1
+P3 refs = 1
+CMP-family count = 8
+E0 evidence = 0
+DBcc = 0
+count2 ≈ 2
+count3 = 0
+```
+
+inspect 汇总还观察到大约：
+
+```text
+direct callers / callers ≈ 24
+pointer refs ≈ 2
+external branch entrants ≈ 24
+```
+
+意义：`0x0080F2` **确实像一个被很多地方复用、会同时比较 P1/P2/P3 的多人逻辑 helper**。
+
+但非常重要：**还不能宣布它就是 enemy target selector**。
+
+原因：
+
+- 它没有 E0 stride 循环证据。
+- 它离 enemy type entries 很远。
+- 目前还没有拿到“47 个 enemy type 是否能沿真实 direct JSR/BSR 调用链到达它”的最终 verdict。
+
+所以目前状态是：
+
+```text
+0x0080F2 = 高价值候选
+≠ 已证明 target selector
+```
+
+---
+
+## 9. 当前正在做但尚未拿到最终结果：type → 0x0080F2 reachability trace
+
+最新文件：
+
+```text
+wof_rom_focus_trace.js
+```
+
+最新创建该 trace 的 commit：
+
+```text
+bdfb6c6a4e2c6f81c1c16191cb571cf24852d139
+```
+
+它会自动：
+
+```text
+恢复 inspect/deep 状态（Worker 重建也可恢复）
+↓
+确定 candidate 0x0080F2
+↓
+打印 P1/P2/P3 引用 opcode context
+↓
+列 CMP/branch map
+↓
+找 direct callers
+↓
+从 47 个 enemy type entry 出发
+最多追 6 层 direct JSR/BSR/JMP.L
+↓
+输出 ENEMY TYPE → CANDIDATE PATHS
+↓
+输出 TRACE VERDICT INPUT
+```
+
+当前对话最后一次运行时只截图到了 bootstrap 的 `live type table`，**没有拿到最终 `__WOF_ROM_FOCUS_TRACE` verdict**。
+
+因此新对话的第一优先事项不是重做扫描，而是**把这个 trace 跑完并读取最终结果**。
+
+如果当前 Worker 中 trace 已完成，可直接：
+
+```js
+(()=>{
+  const x=self.__WOF_ROM_FOCUS_TRACE;
+  if(!x)return console.log('trace state missing');
+  console.table([x.candidate]);
+  console.table(x.paths);
+})()
+```
+
+如果状态不存在（Worker 重建），在 `gstyphoon.js` Console 重新加载 `main/wof_rom_focus_trace.js`：
+
+```js
+await fetch('https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_rom_focus_trace.js?x='+Math.random())
+  .then(r=>r.text()).then(s=>(0,eval)(s));
+await WOFFOCUSTRACE.run();
+```
+
+然后看：
+
+```text
+=== TRACE VERDICT INPUT ===
+directTypePaths
+typeIds
+directCallers
+playerRefs
+cmpBranchOps
+
+=== ENEMY TYPE → CANDIDATE PATHS ===
+```
+
+### 分支 A：directTypePaths > 0
+
+如果至少一个 enemy type 能 direct-call 到 `0x0080F2`：
+
+1. 把具体 type → call path 固定下来。
+2. 对 `0x0080F2` 做真正 68000 指令级反汇编，不再只统计 CMP-family。
+3. 识别三处 P1/P2/P3 地址是 LEA/MOVEA/PEA 到哪个 A 寄存器。
+4. 解码 8 个 CMP 比较的实际 operands，判断是在比较距离、状态、HP、存活还是别的。
+5. 找比较完成后“胜出玩家”最终保留在哪个 A/D 寄存器或 RAM 临时位置。
+6. 再做 live 动态验证：让多人房间里敌人目标从 P1 切到 P2，看该寄存器/临时值是否同步改变。
+7. 验证成功后把 target 接入 `wof_hud_worker.js`，实现：`target != 当前玩家 && 非ACTIVE轨迹` 时 suppress 普通近战接近 warning。
+
+### 分支 B：directTypePaths == 0
+
+如果 47 个 enemy type 在 6 层 direct JSR/BSR 都到不了 `0x0080F2`：
+
+1. 不再把 `0x0080F2` 当主 target selector。
+2. 转查 **间接调用 / JMP(Ax) / 地址表 / state dispatch / function pointer**。
+3. 从 4 个 P1/P2/P3 cluster 的 pointerRefs 和 external branch entrants 反向追。
+4. 尤其检查 enemy AI 是否通过 state table / type subtable 间接跳到这些 player comparison helpers。
+5. 必要时扫描 68000 `JMP (An)`、`JSR (An)`、indexed jump-table 形式，而不是只支持 direct long/BSR。
+6. 如果最终证明 target 只存在执行时 A0/A1 等寄存器，不需要强求 RAM 字段；直接在选目标 routine 的调用点/出口做动态采样即可。
+
+---
+
+## 10. ROM 逆向当前相关 commits
+
+重要阶段 commit：
+
+```text
+4e6f32865302d2ed390f129b5c66123fdf5f04d0  wof_rom_focus_probe v5，live/offline +0x34
+6d386d549f96dcb6d48e632b50fa80b30ffec4ae  bootstrap v2
+E1b334f... / e1b334fcf0a556d7c1b5d986d50137e5a2585caa  deep v2 reverse callgraph
+2b6956fbcfe5df7f21bcd1a70f69ce72ee4d6b06  inspect v2 self-recover
+bdfb6c6a4e2c6f81c1c16191cb571cf24852d139  trace v1 type reachability
+```
+
+以仓库 `main` 当前文件为准；上面的 commit 主要用于理解演进。
+
+---
+
+## 11. 后续真正产品化顺序
+
+当前主线优先级：
+
+```text
+1. 证明/排除 0x0080F2 是否 enemy target selector
+2. 若不是，追间接 AI 调用链，抓真实 target selection
+3. target 成功后接入普通近战 warning suppress
+4. 建 enemy class 攻击距离模型：MELEE / POLEARM / RANGED / PROJECTILE / BOSS
+5. 弓箭、流星锤、夏侯惇炸弹：startup + projectile trajectory/landing/explosion
+6. 再做 camera/player-follow 精确映射
+7. 最后 Future Danger Map / Safe Path
+```
+
+不要把 facing 问题作为当前第一优先，用户已允许暂缓。
+
+整体粗略进度曾估计约 55%~65%；如果真实 target/selector 突破，整体可接近 70%。
+
+---
+
+## 12. 新对话工作方式
+
+用户偏好：
+
+- 中文。
+- 直接、短、按步骤。
+- 最好“一条精确命令 + 预期结果”。
+- 能直接改 GitHub 就直接改，不要让用户手工编辑 JS。
+- 用户负责在浏览器 DevTools 跑测试并截图。
+- 不要重新解释整个项目，不要回退已判失败路线。
+- Worker 经常重建，所以工具脚本应尽量 self-recover，避免依赖上一条 Console 对象永远存在。
+- 大扫描必须分片 yield，不能再次同步扫 256MB HEAP 把游戏卡住。
+
+---
+
+# 新对话第一句话应该怎么接
+
+直接说：
+
+> 我先读 `WOF_AI_HANDOFF.md` 和当前 `wof_rom_focus_trace.js`，然后继续完成 `0x0080F2` 的 enemy-type reachability 验证。先不要重做 focus multiroom，也不要继续调 HUD。我要先拿到 `directTypePaths`；如果 >0 就反汇编 0x0080F2 找最终 target 寄存器，如果 =0 就转间接 JMP / 地址表 AI 调用链。
+
+这就是当前唯一正确的继续点。
