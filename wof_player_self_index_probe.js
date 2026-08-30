@@ -1,0 +1,26 @@
+(async()=>{
+'use strict';
+const M=_0x515056?.HEAPU8,R=_0x515056?.HEAPU32?.[0x2e39e4>>>2]>>>0;
+if(!M||!R)throw new Error('CPS RAM base unavailable');
+const P=[0xFFBE1C,0xFFBEFC,0xFFBFDC];
+const names=['P1','P2','P3'];
+const B=a=>M[R+((((a-0xFF0000)&0xffff)^1))]>>>0;
+const U16=a=>((B(a)<<8)|B(a+1))>>>0;
+const U32=a=>(B(a)*0x1000000+B(a+1)*0x10000+B(a+2)*0x100+B(a+3))>>>0;
+const S32=a=>{const v=U32(a);return v>=0x80000000?v-0x100000000:v;};
+const H=(v,n=4)=>'0x'+(v>>>0).toString(16).toUpperCase().padStart(n,'0');
+const stats=P.map((a,i)=>({name:names[i],base:a,n:0,v7c:new Map(),v7e:new Map(),xMin:Infinity,xMax:-Infinity,yMin:Infinity,yMax:-Infinity}));
+const bump=(m,k)=>m.set(k,(m.get(k)||0)+1);
+const top=m=>[...m.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6).map(([v,c])=>({v:H(v&0xffff),c}));
+const snap=()=>{for(const s of stats){const a=s.base,v7c=U16(a+0x7C),v7e=U16(a+0x7E),x=S32(a+4)/65536,y=S32(a+8)/65536;s.n++;bump(s.v7c,v7c);bump(s.v7e,v7e);if(x<s.xMin)s.xMin=x;if(x>s.xMax)s.xMax=x;if(y<s.yMin)s.yMin=y;if(y>s.yMax)s.yMax=y;}};
+const t0=performance.now(); const timer=setInterval(snap,20); snap(); await new Promise(r=>setTimeout(r,2000)); clearInterval(timer);
+const rows=stats.map((s,i)=>({player:s.name,base:H(s.base,6),expectedSelfOffset:H(i*4),samples:s.n,v7cTop:top(s.v7c),v7eTop:top(s.v7e),v7cMatchesExpected:[...s.v7c.entries()].reduce((n,[v,c])=>n+(v===i*4?c:0),0),v7cMatchPct:+([...s.v7c.entries()].reduce((n,[v,c])=>n+(v===i*4?c:0),0)/s.n).toFixed(3),xRange:+(s.xMax-s.xMin).toFixed(3),yRange:+(s.yMax-s.yMin).toFixed(3)}));
+const exact=rows.every((r,i)=>r.v7cTop[0]?.v===H(i*4)&&r.v7cMatchPct>=0.99);
+const verdict={durationMs:Math.round(performance.now()-t0),players:rows.length,p1v7c:rows[0].v7cTop[0]?.v||'',p2v7c:rows[1].v7cTop[0]?.v||'',p3v7c:rows[2].v7cTop[0]?.v||'',selfIndex048Exact:exact};
+const out={version:'wof-player-self-index-probe-v1',verdict,rows};
+self.__WOF_PLAYER_SELF_INDEX_PROBE=out;
+console.log('=== PLAYER SELF INDEX PROBE VERDICT ===');console.table([verdict]);
+console.log('=== PLAYER SELF INDEX PROBE ROWS ===');console.table(rows.map(r=>({player:r.player,base:r.base,expected:r.expectedSelfOffset,v7c:r.v7cTop.map(x=>x.v+':'+x.c).join(' '),v7e:r.v7eTop.map(x=>x.v+':'+x.c).join(' '),matchPct:r.v7cMatchPct})));
+console.log('=== PLAYER SELF INDEX PROBE JSON ===');console.log(JSON.stringify(out,null,2));
+return out;
+})().catch(e=>{console.error('WOF_PLAYER_SELF_INDEX_PROBE_ERROR',e);throw e;});
