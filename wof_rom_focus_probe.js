@@ -2,13 +2,27 @@
 'use strict';
 try{self.WOFFOCUSROM?.stop?.();}catch(_){}
 const M=_0x515056?.HEAPU8;if(!M)throw new Error('HEAPU8 unavailable');
+const TBL=0x25DC,NT=47,ROM_LIMIT=0x100000;
 const SIG1_OFF=0x100,SIG1=[0x23,0xFC,0x00,0x00,0x03,0x86,0x00,0xFF,0x00,0x08,0x60,0x00,0x00,0x82];
 const SIG2_OFF=0x426,SIG2=[0x4B,0xF8,0x80,0x00,0x20,0x7C,0x00,0xFF,0x00,0x00,0x30,0x3C,0x3F,0xFF];
+const VEC=[0x00,0xFF,0x62,0xEE,0x00,0x00,0x75,0x4A];
+const VEC_SWAP=[0xFF,0x00,0xEE,0x62,0x00,0x00,0x4A,0x75];
+const DISP=[0x00,0x06,0xF4,0xE4,0x00,0x07,0x49,0x4C,0x00,0x07,0x1A,0xDA];
+const DISP_SWAP=[0x06,0x00,0xE4,0xF4,0x07,0x00,0x4C,0x49,0x07,0x00,0xDA,0x1A];
 const matchAt=(p,s)=>{if(p<0||p+s.length>M.length)return false;for(let i=0;i<s.length;i++)if(M[p+i]!==s[i])return false;return true;};
-function findRom(){let p=0;while((p=M.indexOf(SIG1[0],p))>=0){const b=p-SIG1_OFF;if(b>=0&&matchAt(p,SIG1)&&matchAt(b+SIG2_OFF,SIG2))return b;p++;}return-1;}
-const base=findRom();if(base<0)throw new Error('WOF 68000 ROM signature not found');
-const MAX=Math.min(0x100000,M.length-base),TBL=0x25DC,NT=47;
-const r8=o=>M[base+o]>>>0,r16=o=>((r8(o)<<8)|r8(o+1))>>>0,r32=o=>(r8(o)*0x1000000+r8(o+1)*0x10000+r8(o+2)*0x100+r8(o+3))>>>0;
+const mem8=(b,sw,o)=>M[b+(sw?(o^1):o)]>>>0;
+const mem32=(b,sw,o)=>(mem8(b,sw,o)*0x1000000+mem8(b,sw,o+1)*0x10000+mem8(b,sw,o+2)*0x100+mem8(b,sw,o+3))>>>0;
+function validate(b,sw){if(b<0||b+TBL+NT*4>=M.length)return null;let valid=0,even=0,inCode=0;for(let i=0;i<NT;i++){const e=mem32(b,sw,TBL+i*4);if((e&1)===0)even++;if(e>=0x1000&&e<ROM_LIMIT){valid++;if(e>=0x60000)inCode++;}}const sp=mem32(b,sw,0),pc=mem32(b,sw,4);const vec=(sp===0x00FF62EE&&pc===0x0000754A);const score=valid*3+inCode+even*.2+(vec?100:0);return{base:b,swap16:sw,validDispatch:valid,codeDispatch:inCode,evenDispatch:even,sp,pc,vec,score};}
+function scanPattern(pat,baseAdjust,sw,label,maxHits=2000){let p=0,hits=0,best=null;while((p=M.indexOf(pat[0],p))>=0&&hits<maxHits){if(matchAt(p,pat)){hits++;const v=validate(p-baseAdjust,sw);if(v&&(!best||v.score>best.score))best={...v,label};}p++;}return best;}
+function findRom(){let best=null;let p=0;while((p=M.indexOf(SIG1[0],p))>=0){if(matchAt(p,SIG1)){const b=p-SIG1_OFF;if(b>=0&&matchAt(b+SIG2_OFF,SIG2)){const v=validate(b,false);if(v)return{...v,label:'legacy-signatures'};}}p++;}
+  const cand=[scanPattern(VEC,0,false,'vectors-direct'),scanPattern(VEC_SWAP,0,true,'vectors-swap16'),scanPattern(DISP,TBL,false,'dispatch-direct'),scanPattern(DISP_SWAP,TBL,true,'dispatch-swap16')].filter(Boolean);
+  for(const v of cand)if(!best||v.score>best.score)best=v;
+  return best&&best.validDispatch>=40?best:null;
+}
+const LOC=findRom();
+if(!LOC){self.WOFFOCUSROM={version:'rom-focus-probe-v2-robust-locator',found:false,diagnose(){return{heapBytes:M.length,hasModule:!!_0x515056,ramBase:_0x515056?.HEAPU32?.[0x2e39e4>>>2]>>>0||0};},stop(){}};console.error('❌ WOF ROM locator v2: no validated ROM image found',WOFFOCUSROM.diagnose());return;}
+const base=LOC.base,SWAP=LOC.swap16,MAX=Math.min(ROM_LIMIT,M.length-base);
+const r8=o=>mem8(base,SWAP,o),r16=o=>((r8(o)<<8)|r8(o+1))>>>0,r32=o=>(r8(o)*0x1000000+r8(o+1)*0x10000+r8(o+2)*0x100+r8(o+3))>>>0;
 const sx8=v=>v&0x80?v-0x100:v,sx16=v=>v&0x8000?v-0x10000:v;
 const h=x=>'0x'+(x>>>0).toString(16).toUpperCase().padStart(6,'0');
 const hw=x=>'0x'+(x&0xffff).toString(16).toUpperCase().padStart(4,'0');
@@ -29,7 +43,7 @@ function commonHelpers(refs){const m=new Map();for(const u of unique){const seen
 function typeRows(){return TYPES.map(x=>({type:x.type,entry:h(x.entry),valid:x.entry<MAX,sharedWith:TYPES.filter(y=>y.entry===x.entry&&y.type!==x.type).map(y=>y.type).join(',')}));}
 function routine(type,span=0x700){const x=TYPES[type];if(!x)return null;const cs=callsIn(x.entry,span).map(c=>({at:h(c.at),target:h(c.target),kind:c.kind}));console.log('type',type,'entry',h(x.entry));console.table(cs);return{type,entry:h(x.entry),calls:cs,hex:hex(x.entry,96)};}
 function dump(off,n=128){off=typeof off==='string'?parseInt(off,16):off;const row={off:h(off),hex:hex(off,n)};console.log(row.off,row.hex);return row;}
-function result(){const vectors={sp:h(r32(0)),pc:h(r32(4)),romBaseHeap:'0x'+base.toString(16).toUpperCase(),romBytes:MAX,dispatchTable:h(TBL)};const refs=playerRefs(),helpers=commonHelpers(refs),types=typeRows();console.log('=== ROM vectors / type table ===');console.log(vectors);console.table(types);console.log('=== direct 32-bit P1/P2/P3 refs ===');console.table(refs.longRefs.slice(0,80));console.log('=== low-16 P1/P2/P3 refs ===');console.table(refs.wordRefs.slice(0,120));console.log('=== common helper candidates ===');console.table(helpers.slice(0,50));const out={version:'rom-focus-probe-v1',vectors,types,longRefs:refs.longRefs,wordRefs:refs.wordRefs,helpers:helpers.slice(0,100)};self.__WOF_ROM_FOCUS_LAST=out;return out;}
-self.WOFFOCUSROM={version:'rom-focus-probe-v1',base,MAX,result,routine,dump,calls(type,span){return routine(type,span)},stop(){console.log('⛔ ROM focus probe stopped (static probe, nothing to detach)');}};
-console.log('✅ WOF ROM focus probe v1 loaded');console.log('ROM heap base=0x'+base.toString(16).toUpperCase(),'SP='+h(r32(0)),'PC='+h(r32(4)),'dispatch='+h(TBL));console.log('运行 WOFFOCUSROM.result()');
+function result(){const vectors={sp:h(r32(0)),pc:h(r32(4)),romBaseHeap:'0x'+base.toString(16).toUpperCase(),romBytes:MAX,dispatchTable:h(TBL),locator:LOC.label,swap16:SWAP,validDispatch:LOC.validDispatch};const refs=playerRefs(),helpers=commonHelpers(refs),types=typeRows();console.log('=== ROM vectors / type table ===');console.log(vectors);console.table(types);console.log('=== direct 32-bit P1/P2/P3 refs ===');console.table(refs.longRefs.slice(0,80));console.log('=== low-16 P1/P2/P3 refs ===');console.table(refs.wordRefs.slice(0,120));console.log('=== common helper candidates ===');console.table(helpers.slice(0,50));const out={version:'rom-focus-probe-v2-robust-locator',vectors,types,longRefs:refs.longRefs,wordRefs:refs.wordRefs,helpers:helpers.slice(0,100)};self.__WOF_ROM_FOCUS_LAST=out;return out;}
+self.WOFFOCUSROM={version:'rom-focus-probe-v2-robust-locator',found:true,base,MAX,swap16:SWAP,locator:LOC,result,routine,dump,calls(type,span){return routine(type,span)},stop(){console.log('⛔ ROM focus probe stopped (static probe, nothing to detach)');}};
+console.log('✅ WOF ROM focus probe v2 loaded');console.log('ROM heap base=0x'+base.toString(16).toUpperCase(),'layout='+(SWAP?'swap16':'direct'),'via='+LOC.label,'SP='+h(r32(0)),'PC='+h(r32(4)),'dispatch='+h(TBL),'valid='+LOC.validDispatch+'/47');console.log('运行 WOFFOCUSROM.result()');
 })();
