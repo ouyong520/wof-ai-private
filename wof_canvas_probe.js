@@ -1,47 +1,115 @@
 (()=>{
   'use strict';
+
   try{window.WOFCANVAS?.stop?.();}catch(_){}
 
-  const target=window.I_n3jTY;
-  const ctx=window.I_KkacD;
-  const pad=window.I_QKG4Q?.Pad;
-  const src=window.I_Aj3M8;
-  if(typeof target!=='function')throw new Error('I_n3jTY render function not found');
-  if(!ctx||typeof ctx.fillText!=='function')throw new Error('I_KkacD canvas context not found');
-  if(!pad||!src)throw new Error('game pad/source canvas not found');
+  const canvas=window.I_GF1TC||document.getElementById('whathis');
+  const gl=window.I_fdC8Q;
+  const frameTarget=window.I_b1EdF;
+  const rafTarget=window.I_FHW46;
 
-  const original=target;
-  let running=true;
+  if(!canvas||String(canvas.tagName).toLowerCase()!=='canvas')throw new Error('game WebGL canvas I_GF1TC/#whathis not found');
+  if(!gl||typeof gl.drawArrays!=='function')throw new Error('game WebGL context I_fdC8Q not found');
+  if(typeof frameTarget!=='function')throw new Error('game frame renderer I_b1EdF not found');
+  if(typeof rafTarget!=='function')throw new Error('queued frame renderer I_FHW46 not found');
+
+  const isGL2=typeof WebGL2RenderingContext!=='undefined'&&gl instanceof WebGL2RenderingContext;
+  const VERT=`${isGL2?'#version 300 es\n':''}${isGL2?'in':'attribute'} vec4 a_data;\n${isGL2?'out':'varying'} vec2 v_uv;\nvoid main(){gl_Position=vec4(a_data.xy,0.0,1.0);v_uv=a_data.zw;}`;
+  const FRAG=`${isGL2?'#version 300 es\n':''}precision mediump float;\n${isGL2?'in':'varying'} vec2 v_uv;\nuniform sampler2D u_tex;\n${isGL2?'out vec4 outColor;\n':''}void main(){vec4 c=${isGL2?'texture(u_tex,v_uv)':'texture2D(u_tex,v_uv)'};${isGL2?'outColor':'gl_FragColor'}=c;}`;
+
+  const compile=(type,src)=>{
+    const sh=gl.createShader(type);gl.shaderSource(sh,src);gl.compileShader(sh);
+    if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){const msg=gl.getShaderInfoLog(sh)||'shader compile failed';gl.deleteShader(sh);throw new Error(msg);}
+    return sh;
+  };
+  const vs=compile(gl.VERTEX_SHADER,VERT),fs=compile(gl.FRAGMENT_SHADER,FRAG);
+  const program=gl.createProgram();
+  gl.attachShader(program,vs);gl.attachShader(program,fs);gl.bindAttribLocation(program,0,'a_data');gl.linkProgram(program);
+  gl.deleteShader(vs);gl.deleteShader(fs);
+  if(!gl.getProgramParameter(program,gl.LINK_STATUS)){const msg=gl.getProgramInfoLog(program)||'program link failed';gl.deleteProgram(program);throw new Error(msg);}
+  const uTex=gl.getUniformLocation(program,'u_tex');
+  const buffer=gl.createBuffer();
+  const texture=gl.createTexture();
+  const hud=document.createElement('canvas');hud.width=160;hud.height=40;
+  const hctx=hud.getContext('2d');
+  hctx.clearRect(0,0,hud.width,hud.height);
+  hctx.fillStyle='rgba(0,0,0,.72)';hctx.fillRect(1,1,158,38);
+  hctx.strokeStyle='rgba(255,255,255,.98)';hctx.lineWidth=2;hctx.strokeRect(1,1,158,38);
+  hctx.fillStyle='#fff';hctx.font='bold 18px sans-serif';hctx.textBaseline='middle';hctx.fillText('WOF HUD OK',12,20);
+
+  function saveAttrib0(){
+    const enabled=!!gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_ENABLED);
+    const buf=gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING);
+    return {enabled,buf,size:gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_SIZE),type:gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_TYPE),norm:!!gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_NORMALIZED),stride:gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_STRIDE),offset:gl.getVertexAttribOffset(0,gl.VERTEX_ATTRIB_ARRAY_POINTER)};
+  }
+  function restoreAttrib0(a){
+    if(a.buf){gl.bindBuffer(gl.ARRAY_BUFFER,a.buf);gl.vertexAttribPointer(0,a.size,a.type,a.norm,a.stride,a.offset);}
+    a.enabled?gl.enableVertexAttribArray(0):gl.disableVertexAttribArray(0);
+  }
+  function snapshot(){
+    const active=gl.getParameter(gl.ACTIVE_TEXTURE),activeTex=gl.getParameter(gl.TEXTURE_BINDING_2D);
+    gl.activeTexture(gl.TEXTURE0);const tex0=gl.getParameter(gl.TEXTURE_BINDING_2D);gl.activeTexture(active);
+    return {
+      program:gl.getParameter(gl.CURRENT_PROGRAM),arrayBuffer:gl.getParameter(gl.ARRAY_BUFFER_BINDING),active,activeTex,tex0,
+      viewport:Array.from(gl.getParameter(gl.VIEWPORT)),blend:gl.isEnabled(gl.BLEND),depth:gl.isEnabled(gl.DEPTH_TEST),cull:gl.isEnabled(gl.CULL_FACE),scissor:gl.isEnabled(gl.SCISSOR_TEST),
+      srcRGB:gl.getParameter(gl.BLEND_SRC_RGB),dstRGB:gl.getParameter(gl.BLEND_DST_RGB),srcA:gl.getParameter(gl.BLEND_SRC_ALPHA),dstA:gl.getParameter(gl.BLEND_DST_ALPHA),eqRGB:gl.getParameter(gl.BLEND_EQUATION_RGB),eqA:gl.getParameter(gl.BLEND_EQUATION_ALPHA),
+      colorMask:Array.from(gl.getParameter(gl.COLOR_WRITEMASK)),flip:gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL),premul:gl.getParameter(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL),attrib0:saveAttrib0()
+    };
+  }
+  function restore(s){
+    s.blend?gl.enable(gl.BLEND):gl.disable(gl.BLEND);s.depth?gl.enable(gl.DEPTH_TEST):gl.disable(gl.DEPTH_TEST);s.cull?gl.enable(gl.CULL_FACE):gl.disable(gl.CULL_FACE);s.scissor?gl.enable(gl.SCISSOR_TEST):gl.disable(gl.SCISSOR_TEST);
+    gl.blendFuncSeparate(s.srcRGB,s.dstRGB,s.srcA,s.dstA);gl.blendEquationSeparate(s.eqRGB,s.eqA);gl.colorMask(...s.colorMask);gl.viewport(...s.viewport);
+    restoreAttrib0(s.attrib0);
+    gl.useProgram(s.program);
+    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,s.tex0);
+    gl.activeTexture(s.active);if(s.active!==gl.TEXTURE0)gl.bindTexture(gl.TEXTURE_2D,s.activeTex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,s.flip);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,s.premul);
+    gl.bindBuffer(gl.ARRAY_BUFFER,s.arrayBuffer);
+  }
+  function uploadTexture(){
+    const s=snapshot();
+    try{
+      gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,hud);
+    }finally{restore(s);}
+  }
+  uploadTexture();
+
+  let running=true,drawing=false,drawCount=0,lastDrawAt=0;
   function draw(){
-    if(!running)return;
-    const x=(+pad.X||0)+12;
-    const y=(+pad.Y||0)+24;
-    ctx.save();
-    ctx.globalAlpha=1;
-    ctx.fillStyle='rgba(0,0,0,.72)';
-    ctx.fillRect(x-6,y-17,92,23);
-    ctx.strokeStyle='rgba(255,255,255,.95)';
-    ctx.lineWidth=2;
-    ctx.strokeRect(x-6,y-17,92,23);
-    ctx.fillStyle='#fff';
-    ctx.font='bold 14px sans-serif';
-    ctx.textBaseline='alphabetic';
-    ctx.fillText('WOF HUD OK',x,y);
-    ctx.restore();
+    if(!running||drawing)return;
+    drawing=true;const s=snapshot();
+    try{
+      const W=gl.drawingBufferWidth||canvas.width,H=gl.drawingBufferHeight||canvas.height;
+      if(!(W>0&&H>0))return;
+      const x=8,y=8,w=Math.min(160,Math.max(80,W-16)),h=Math.min(40,Math.max(24,H-16));
+      const l=x/W*2-1,r=(x+w)/W*2-1,t=1-y/H*2,b=1-(y+h)/H*2;
+      const v=new Float32Array([l,t,0,1,l,b,0,0,r,b,1,0,l,t,0,1,r,b,1,0,r,t,1,1]);
+      gl.viewport(0,0,W,H);gl.disable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.disable(gl.SCISSOR_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.colorMask(true,true,true,true);
+      gl.useProgram(program);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,v,gl.STREAM_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,4,gl.FLOAT,false,0,0);
+      gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.uniform1i(uTex,0);gl.drawArrays(gl.TRIANGLES,0,6);
+      drawCount++;lastDrawAt=performance.now();
+    }finally{restore(s);drawing=false;}
   }
 
-  const wrapped=function(){
-    const r=original.apply(this,arguments);
-    try{draw();}catch(_){}
-    return r;
-  };
-  window.I_n3jTY=wrapped;
+  const originalFrame=frameTarget,originalRaf=rafTarget;
+  const wrappedFrame=function(){const r=originalFrame.apply(this,arguments);try{draw();}catch(_){}return r;};
+  const wrappedRaf=function(){const r=originalRaf.apply(this,arguments);try{draw();}catch(_){}return r;};
+  window.I_b1EdF=wrappedFrame;window.I_FHW46=wrappedRaf;
+  try{draw();}catch(_){}
 
   window.WOFCANVAS={
-    version:'canvas-probe-v1',
-    status(){return {running,renderWrapped:window.I_n3jTY===wrapped,pad:{x:pad.X,y:pad.Y},source:{w:src.width,h:src.height}};},
+    version:'webgl-game-probe-v2',
+    status(){return {running,canvasId:canvas.id||null,size:{w:canvas.width,h:canvas.height},drawingBuffer:{w:gl.drawingBufferWidth,h:gl.drawingBufferHeight},webgl:isGL2?'webgl2':'webgl',frameWrapped:window.I_b1EdF===wrappedFrame,rafWrapped:window.I_FHW46===wrappedRaf,drawCount,lastDrawAt};},
     draw,
-    stop(){running=false;if(window.I_n3jTY===wrapped)window.I_n3jTY=original;delete window.WOFCANVAS;console.log('⛔ WOF canvas probe stopped');}
+    stop(){
+      running=false;if(window.I_b1EdF===wrappedFrame)window.I_b1EdF=originalFrame;if(window.I_FHW46===wrappedRaf)window.I_FHW46=originalRaf;
+      try{gl.deleteTexture(texture);gl.deleteBuffer(buffer);gl.deleteProgram(program);}catch(_){}
+      delete window.WOFCANVAS;console.log('⛔ WOF WebGL game-canvas probe stopped');
+    }
   };
-  console.log('✅ WOF canvas probe v1 installed',window.WOFCANVAS.status());
+  console.log('✅ WOF WebGL game-canvas probe v2 installed',window.WOFCANVAS.status());
 })();
