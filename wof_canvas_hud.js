@@ -11,8 +11,12 @@
 
   const canvas=window.I_GF1TC||document.getElementById('whathis');
   const gl=window.I_fdC8Q;
+  const gameFrame=window.I_b1EdF;
+  const queuedFrame=window.I_FHW46;
   if(!canvas||String(canvas.tagName).toLowerCase()!=='canvas')throw new Error('game WebGL canvas I_GF1TC/#whathis not found');
   if(!gl||typeof gl.drawArrays!=='function')throw new Error('game WebGL context I_fdC8Q not found');
+  if(typeof gameFrame!=='function')throw new Error('game frame function I_b1EdF not found');
+  if(typeof queuedFrame!=='function')throw new Error('queued frame function I_FHW46 not found');
 
   const isGL2=typeof WebGL2RenderingContext!=='undefined'&&gl instanceof WebGL2RenderingContext;
   const VERT=`${isGL2?'#version 300 es\n':''}${isGL2?'in':'attribute'} vec4 a_data;\n${isGL2?'out':'varying'} vec2 v_uv;\nvoid main(){gl_Position=vec4(a_data.xy,0.0,1.0);v_uv=a_data.zw;}`;
@@ -32,7 +36,7 @@
   const uTex=gl.getUniformLocation(program,'u_tex');
   const buffer=gl.createBuffer();
   const texture=gl.createTexture();
-  const hud=document.createElement('canvas');hud.width=320;hud.height=116;
+  const hud=document.createElement('canvas');hud.width=270;hud.height=92;
   const hctx=hud.getContext('2d');
 
   function saveAttrib0(){
@@ -73,7 +77,7 @@
     }finally{restore(s);}
   }
 
-  let focus='P1',visible=true,detail=false,destroyed=false,lastMsg=null,lastRx=0,lastPaintKey='',rafId=0,drawCount=0,lastDrawAt=0;
+  let focus='P1',visible=true,detail=false,destroyed=false,lastMsg=null,lastRx=0,lastPaintKey='',drawCount=0,lastDrawAt=0,renderActive=false;
   const HOLD={P1:null,P2:null,P3:null};
   const bc=new BroadcastChannel(CHANNEL);
   const roundMs=v=>v==null?null:(Number.isFinite(+v)?Math.max(0,Math.round(+v/50)*50):null);
@@ -94,6 +98,10 @@
     if(now>=h.minUntil&&now-h.lastSeen>RELEASE_GRACE_MS){HOLD[name]=null;return null;}
     return h;
   }
+  function expireHold(name,now){
+    const h=HOLD[name];
+    if(h&&now>=h.minUntil&&now-h.lastSeen>RELEASE_GRACE_MS)HOLD[name]=null;
+  }
   function heldTime(h,now){const base=roundMs(h?.p?.hitMs);if(base==null)return null;return Math.max(0,base-Math.max(0,now-h.lastSeen));}
   function sideText(p){
     const fb=p?.threatFacing||null,side=p?.threatSide||null;
@@ -113,50 +121,45 @@
     }
     return '注意';
   }
-  function statusText(now){
-    if(!lastRx||now-lastRx>STALE_MS)return focus+' · 等待预测';
-    const p=lastMsg?.players?.[focus];
-    if(!p)return focus+' · 无数据';
-    return focus+' · '+((+p.level||0)>=1?'危险':'安全');
-  }
 
   function paint(now){
+    expireHold(focus,now);
     const fresh=lastRx&&now-lastRx<=STALE_MS;
     const h=fresh?HOLD[focus]:null;
-    const main=mainText(h),t=heldTime(h,now),status=statusText(now);
+    const main=mainText(h),t=heldTime(h,now);
+    renderActive=!!(visible&&main);
     const threat=main?sideText(h.p):'';
     const timeText=main?(t!=null?(t>=1000?'约 '+(t/1000).toFixed(1)+' 秒':'约 '+t+' ms'):(h.level>=3?'立即':'保持注意')):'';
     const debug=detail&&h?[focus,h.p?.source,h.p?.family,h.p?.type!=null?'T'+h.p.type:null,h.p?.slot!=null?'slot '+h.p.slot:null].filter(Boolean).join(' · '):'';
     const bucket=t==null?'':Math.round(t/50);
-    const key=[visible,status,main,threat,timeText,debug,bucket].join('|');
+    const key=[renderActive,focus,main,threat,timeText,debug,bucket].join('|');
     if(key===lastPaintKey)return;
     lastPaintKey=key;
 
     hctx.clearRect(0,0,hud.width,hud.height);
-    if(!visible){uploadTexture();return;}
+    if(!renderActive){uploadTexture();return;}
 
     hctx.textBaseline='middle';hctx.textAlign='center';
-    hctx.fillStyle='rgba(0,0,0,.78)';hctx.fillRect(84,2,152,26);
-    hctx.strokeStyle='rgba(255,255,255,.90)';hctx.lineWidth=1.5;hctx.strokeRect(84.5,2.5,151,25);
-    hctx.fillStyle='#fff';hctx.font='bold 13px sans-serif';hctx.fillText(status,160,15);
-
-    if(main){
-      hctx.fillStyle='rgba(0,0,0,.88)';hctx.fillRect(6,34,308,78);
-      hctx.strokeStyle='rgba(255,255,255,.98)';hctx.lineWidth=2;hctx.strokeRect(7,35,306,76);
-      hctx.fillStyle='#fff';hctx.font=h.level>=3?'bold 29px sans-serif':'bold 25px sans-serif';hctx.fillText(main,160,56);
-      hctx.font='bold 17px sans-serif';hctx.fillText(threat,160,81);
-      hctx.font='bold 13px sans-serif';hctx.fillText(timeText,160,101);
-      if(debug){hctx.textAlign='left';hctx.font='10px sans-serif';hctx.fillText(debug,12,107);}
-    }
+    hctx.fillStyle='rgba(0,0,0,.88)';hctx.fillRect(3,3,264,86);
+    hctx.strokeStyle='rgba(255,255,255,.98)';hctx.lineWidth=2;hctx.strokeRect(4,4,262,84);
+    hctx.fillStyle='#fff';hctx.font=h.level>=3?'bold 29px sans-serif':'bold 25px sans-serif';hctx.fillText(main,135,27);
+    hctx.font='bold 17px sans-serif';hctx.fillText(threat,135,53);
+    hctx.font='bold 13px sans-serif';hctx.fillText(timeText,135,75);
+    if(debug){hctx.textAlign='left';hctx.font='10px sans-serif';hctx.fillText(debug,10,86);}
     uploadTexture();
   }
 
-  function draw(){
-    if(destroyed||!visible)return;
+  function drawHudAfterGame(){
+    if(destroyed)return;
+    const now=Date.now();
+    if(lastRx&&now-lastRx>STALE_MS)HOLD.P1=HOLD.P2=HOLD.P3=null;
+    paint(now);
+    if(!renderActive)return;
+
     const W=gl.drawingBufferWidth||canvas.width,H=gl.drawingBufferHeight||canvas.height;
     if(!(W>0&&H>0))return;
-    const w=Math.min(hud.width,Math.max(180,W-8)),h=Math.min(hud.height,Math.max(72,H-8));
-    const x=(W-w)/2,y=Math.max(4,H-h-4);
+    const w=Math.min(hud.width,Math.max(170,W-8)),h=Math.min(hud.height,Math.max(64,H-8));
+    const x=(W-w)/2,y=Math.max(4,H-h-6);
     const l=x/W*2-1,r=(x+w)/W*2-1,t=1-y/H*2,b=1-(y+h)/H*2;
     const v=new Float32Array([l,t,0,1,l,b,0,0,r,b,1,0,l,t,0,1,r,b,1,0,r,t,1,1]);
     const s=snapshot();
@@ -172,7 +175,23 @@
     const m=e.data;if(m?.schema!=='wof-hud-v1'||m.kind!=='state')return;
     lastMsg=m;lastRx=Date.now();const now=lastRx;
     for(const n of ['P1','P2','P3'])updateHold(n,m.players?.[n],now);
+    lastPaintKey='';
   };
+
+  const originalGameFrame=gameFrame;
+  const originalQueuedFrame=queuedFrame;
+  const wrappedGameFrame=function(){
+    const r=originalGameFrame.apply(this,arguments);
+    try{if(!window.I_B9MF0)drawHudAfterGame();}catch(_){}
+    return r;
+  };
+  const wrappedQueuedFrame=function(){
+    const r=originalQueuedFrame.apply(this,arguments);
+    try{drawHudAfterGame();}catch(_){}
+    return r;
+  };
+  window.I_b1EdF=wrappedGameFrame;
+  window.I_FHW46=wrappedQueuedFrame;
 
   function setFocus(name){
     if(!['P1','P2','P3'].includes(name))return focus;
@@ -185,29 +204,23 @@
     else if(e.code==='F9'){e.preventDefault();detail=!detail;lastPaintKey='';}
   }
   addEventListener('keydown',key,true);
-
-  function loop(){
-    if(destroyed)return;
-    const now=Date.now();
-    if(lastRx&&now-lastRx>STALE_MS){HOLD.P1=HOLD.P2=HOLD.P3=null;}
-    try{paint(now);draw();}catch(_){}
-    rafId=requestAnimationFrame(loop);
-  }
-  uploadTexture();rafId=requestAnimationFrame(loop);
+  uploadTexture();
 
   window.WOFHUD={
-    version:'canvas-hud-v1-direct-webgl',
+    version:'canvas-hud-v2-frame-synced',
     show(){visible=true;lastPaintKey='';return true;},hide(){visible=false;lastPaintKey='';return true;},toggle(){visible=!visible;lastPaintKey='';return visible;},
     detail(on=!detail){detail=!!on;lastPaintKey='';return detail;},focus:setFocus,p1(){return setFocus('P1');},p2(){return setFocus('P2');},p3(){return setFocus('P3');},cycle,
-    status(){return{visible,detail,focus,lastRx,ageMs:lastRx?Date.now()-lastRx:null,workerConnected:!!lastRx&&Date.now()-lastRx<=STALE_MS,lastMsg,hold:HOLD[focus],drawCount,lastDrawAt,canvasId:canvas.id||null};},
+    status(){return{visible,detail,focus,lastRx,ageMs:lastRx?Date.now()-lastRx:null,workerConnected:!!lastRx&&Date.now()-lastRx<=STALE_MS,lastMsg,hold:HOLD[focus],drawCount,lastDrawAt,canvasId:canvas.id||null,buffered:!!window.I_B9MF0,frameWrapped:window.I_b1EdF===wrappedGameFrame,queuedWrapped:window.I_FHW46===wrappedQueuedFrame};},
     destroy(){
-      if(destroyed)return;destroyed=true;if(rafId)cancelAnimationFrame(rafId);removeEventListener('keydown',key,true);try{bc.close();}catch(_){}
+      if(destroyed)return;destroyed=true;removeEventListener('keydown',key,true);try{bc.close();}catch(_){}
+      if(window.I_b1EdF===wrappedGameFrame)window.I_b1EdF=originalGameFrame;
+      if(window.I_FHW46===wrappedQueuedFrame)window.I_FHW46=originalQueuedFrame;
       try{gl.deleteTexture(texture);gl.deleteBuffer(buffer);gl.deleteProgram(program);}catch(_){}
       delete window.WOFHUD;console.log('⛔ WOF direct canvas HUD stopped');
     }
   };
 
-  console.log('✅ WOF direct WebGL HUD v1 started | display only, no player control');
+  console.log('✅ WOF direct WebGL HUD v2 started | frame-synced, no flashing');
+  console.log('⚠ 安全时不显示；只有危险时显示 注意 / ↑上躲 / ↓下躲 / AB');
   console.log('🎮 P1/P2/P3: WOFHUD.p1() / p2() / p3() | F6 cycle | F8 show/hide | F9 detail');
-  console.log('📡 Worker Console must load wof_hud_worker.js to provide prediction data');
 })();
