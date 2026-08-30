@@ -2,36 +2,32 @@
 'use strict';
 const RAW='https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/';
 const load=async f=>{const r=await fetch(RAW+f+'?x='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('fetch failed '+r.status+' '+f);return(0,eval)(await r.text());};
-console.log('♻️ WOF resume: selected-player -> action causal bridge frontier');
+console.log('♻️ WOF resume: full-ROM selected-player -> action -> handler frontier');
 if(!self.__WOF_DISPATCH_INCOMING){await load('wof_dispatch_incoming_edges.js');await WOFDISPIN.run();}
 if(!self.__WOF_ROM_LOC_CACHE)throw new Error('ROM cache missing after resume');
 const current={
-  version:'wof-resume-dispatch-selector-v6',
+  version:'wof-resume-dispatch-selector-v7',
   selectorSolved:true,
   selectorField:'enemy+0x7E',
-  playerSelfIndexField:'player+0x7C',
   playerIndexValues:'P1=0 / P2=4 / P3=8',
   playerPointerTable:'0x010CF8',
-  selectedPointerScratch:'506(A5)',
   selectedPointerCache:'enemy+0x6A low16 = BE1C/BEFC/BFDC',
-  selectedPointerCacheRuntimeProof:'latest +0x6A probe: active valid slot matchPct=1.0; live transitions mapped BFDC<->BEFC with target changes',
+  selectedPointerCacheRuntimeProof:'runtime matchPct=1.0 on latest valid live slot; live transitions mapped BFDC<->BEFC with target changes',
   state99Field:'enemy+0x99',
   action2AField:'enemy+0x2A',
-  provenDispatchRoute:'state99=0 + action2A=2 -> 0x010EC6 -> MOVEQ #24,D0 -> 0x010F48 -> 0x0025C8',
   endToEndStructuralProofConfirmed:true,
-  staticSelectorSearchClosed:true,
-  liveTransitionPattern:'clean live transitions changed action2A on target-transition frame; state99 need not change',
-  selectedPlayerReaderProof:'ROM has MOVEA.W 106(A0),A1 at 0x0112AA,0x0065E2,0x006834',
-  strongestBridge:'0x006834 MOVEA.W 106(A0),A1 -> CMPI.B #4,41(A1) -> BEQ 0x006850 -> read enemy+0x2A action dispatch',
-  secondaryBridge:'0x0065E2 MOVEA.W 106(A0),A1 -> CMPI.B #4,41(A1) -> conditional branch',
-  actionTargetContext:'0x0112C2 is one of known state99/action2A targets and immediately performs enemy+0x2B subdispatch; 0x0112AA selected-player reader is adjacent helper code',
-  causalFrontier:'exact CFG/table proof for +0x6A -> selectedPlayer+0x29 compare -> action dispatch; map 0x65E2/0x6834 into 25B6/25C8 type-specific handler tables',
-  nextScript:'wof_selector_6a_action_causal_proof.js',
-  nextMarker:'=== SELECTOR 6A ACTION CAUSAL PROOF JSON ===',
-  note:'Do not restart selector search, 44-edge scan, Focus Multiroom, HUD, 0x0080F2, 0x11C26 bridge, broad +7C/+7E scans, or raw full-ROM sweeps. +0x6A is a selected-player pointer cache, not the 0/4/8 selector index.'
+  selectedPlayerActionBridgeConfirmed:true,
+  strongestBridge:'0x006834 MOVEA.W 106(A0),A1 -> CMPI.B #4,41(A1) -> BEQ 0x006850 -> read enemy+0x2A -> indexed action JMP',
+  secondaryBridge:'0x0065E2 MOVEA.W 106(A0),A1 -> CMPI.B #4,41(A1) -> BEQ 0x006630 -> enemy+0x2A action dispatch',
+  priorHandlerMapBug:'v1 capped ROM at 0x30000, but type35 level2 table base is 0x081774; handlerTableHits=0 was not a negative result',
+  sub112Correction:'0x0112D6 relative table must stop at first target; first word 0x0006 implies 3 word entries, not 16',
+  causalFrontier:'full-ROM map 0x65E2/0x6834 action bridge into 47 type-specific level2 tables; resolve type35 D0 offset and action target -> dispatcher/handler',
+  nextScript:'wof_selector_6a_action_handler_map_v2.js',
+  nextMarker:'=== SELECTOR 6A ACTION HANDLER MAP V2 JSON ===',
+  note:'Do not restart selector search, Focus Multiroom, 44-edge scan, 0x0080F2, 0x11C26 bridge, or broad raw opcode sweeps. The current work is only the narrow full-ROM table mapping exposed by the proven +0x6A bridge.'
 };
 self.__WOF_RESUME_FRONTIER=current;
 console.log('=== CURRENT SELECTOR FRONTIER ===');console.table([current]);
-console.log('NEXT: exact structural proof of selected-player pointer consumption into action decision.');
+console.log('NEXT: full-ROM type/D0 mapping for the proven selected-player action bridge.');
 return current;
 })().catch(e=>{console.error('WOF_RESUME_ERROR',e);throw e;});
