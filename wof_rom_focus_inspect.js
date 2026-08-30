@@ -1,7 +1,18 @@
-(()=>{
+(async()=>{
 'use strict';
+const RAW='https://raw.githubusercontent.com/ouyong520/wof-ai-private/';
+const BOOT='6d386d549f96dcb6d48e632b50fa80b30ffec4ae/wof_rom_focus_bootstrap.js';
+const load=async path=>{const r=await fetch(RAW+path+'?x='+Math.random());if(!r.ok)throw new Error('fetch failed '+r.status+' '+path);const s=await r.text();return await (0,eval)(s);};
+async function ensure(){
+  const ok=()=>!!(_0x515056?.HEAPU8&&self.__WOF_ROM_LOC_CACHE&&self.__WOF_ROM_FOCUS_LAST?.longRefs&&self.__WOF_ROM_FOCUS_DEEP?.clusters);
+  if(ok()){console.log('♻️ inspect reuse existing deep v2 state');return;}
+  console.log('🔄 inspect 前置状态缺失 · 自动恢复 bootstrap/deep v2');
+  await load(BOOT);
+  if(!ok())throw new Error('bootstrap/deep v2 自动恢复后状态仍不完整');
+  console.log('✅ bootstrap/deep v2 自动恢复完成');
+}
+await ensure();
 const MOD=_0x515056,C=self.__WOF_ROM_LOC_CACHE,L=self.__WOF_ROM_FOCUS_LAST,D=self.__WOF_ROM_FOCUS_DEEP;
-if(!MOD?.HEAPU8||!C||!L?.longRefs||!D?.clusters)throw new Error('需要先完成 ROM focus bootstrap/deep v2');
 const M=MOD.HEAPU8,base=C.base,SW=!!C.swap16,MAX=Math.min(0x100000,M.length-base),DELTA=C.offlineDelta|0;
 const P={P1:0x00FFBE1C,P2:0x00FFBEFC,P3:0x00FFBFDC};
 const r8=o=>M[base+(SW?(o^1):o)]>>>0,r16=o=>((r8(o)<<8)|r8(o+1))>>>0,r32=o=>(r8(o)*0x1000000+r8(o+1)*0x10000+r8(o+2)*0x100+r8(o+3))>>>0;
@@ -17,7 +28,10 @@ function hexLines(start,end,maxBytes=0x280){const stop=Math.min(end,start+maxByt
 function nearestTypes(addr){const types=(L.types||[]).map(x=>({type:x.type,entry:Number(x.entry??x.liveEntry??0)})).filter(x=>Number.isFinite(x.entry));return types.map(x=>({...x,d:Math.abs(x.entry-addr)})).sort((a,b)=>a.d-b.d).slice(0,6).map(x=>({type:x.type,entry:h(x.entry),distance:x.d}));}
 function run(){const strong=D.strong?.[0]||D.top?.[0]||null;console.log('=== FULL STRONG CANDIDATE ===');console.log(JSON.stringify(strong,null,2));const reports=[];for(const c0 of D.clusters){const start=parseInt(c0.func,16),end=parseInt(c0.end,16),refs=refsIn(start,end),cs=callers(start,end),prs=pointerRefs(start,end),bes=branchEntrants(start,end);const z={id:c0.id,start:h(start),offlineStart:off(start),end:h(end),size:end-start,features:c0.features,refs,callers:cs,pointerRefs:prs,branchEntrants:bes,nearestTypes:nearestTypes(start)};reports.push(z);console.log('\n=== CLUSTER '+c0.id+' '+h(start)+'..'+h(end)+' ===');console.log(JSON.stringify(z,null,2));console.log('--- ROM HEX ---');console.table(hexLines(start,end));}
 console.log('\n=== VERDICT INPUT ===');console.table(reports.map(z=>({id:z.id,start:z.start,size:z.size,p1:z.features?.p1,p2:z.features?.p2,p3:z.features?.p3,cmp:z.features?.cmp,E0:z.features?.e0,DBcc:z.features?.dbcc,count2:z.features?.c2,count3:z.features?.c3,callers:z.callers.length,pointers:z.pointerRefs.length,externalBranches:z.branchEntrants.length,nearestType:z.nearestTypes[0]?.type,nearestDistance:z.nearestTypes[0]?.distance})));
-const out={version:'rom-focus-inspect-v1',strong,reports};self.__WOF_ROM_FOCUS_INSPECT=out;return out;}
-self.WOFFOCUSINSPECT={version:'rom-focus-inspect-v1',run};
-console.log('✅ WOF ROM focus inspect v1 loaded');console.log('执行 WOFFOCUSINSPECT.run()');
+const out={version:'rom-focus-inspect-v2-self-recover',strong,reports};self.__WOF_ROM_FOCUS_INSPECT=out;return out;}
+self.WOFFOCUSINSPECT={version:'rom-focus-inspect-v2-self-recover',run};
+console.log('✅ WOF ROM focus inspect v2 loaded · 已自动恢复前置状态');
+const out=run();
+console.log('✅ inspect 自动分析完成');
+return out;
 })();
