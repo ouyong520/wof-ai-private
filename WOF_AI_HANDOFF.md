@@ -21,6 +21,22 @@
 ## WinKawaks Collector v1 — 已交付 / AI 调用入口
 本地采集平台与 Browser Future Danger 项目分离。需要本地 WinKawaks 高速 RAM 证据时先读 `COLLECTOR_ROUTING.md`。本地证据必须回到 Browser/Web 生产语境验证后才能升级正式规则。
 
+## 当前并行研究拓扑 — 必须先读
+本项目现在明确允许主线与多条 WinKawaks discovery 研究线并发推进。完整协议见 `PARALLEL_RESEARCH.md`。
+
+```text
+MAINLINE  = 当前 Browser/Web Future Danger 主线（以本文件 Current next 为准）
+GEO-*     = WinKawaks 人物几何/坐标研究
+EFIELD-*  = WinKawaks enemy 0xE0 字段地图研究
+RAWMINE-* = WinKawaks raw diff/transition/offset-ranking 研究
+```
+
+四条线可同时推进，但必须隔离：GEO/EFIELD/RAWMINE 不得修改、推进或重写当前 WOF 主线 coordinator/validator，不得改变 production-shadow 规则，不得把 WinKawaks 本地 offset 直接升级成 Browser/WASM production 结论。
+
+多个 AI 可以同时向 Collector 提交任务；Collector 只拥有一个 WinKawaks runtime，并严格串行执行采集，因此是“AI producer 并发、模拟器 capture 串行”。各并行线使用独立 taskId 前缀，按 `taskId + taskBlobSha` 接受自己的结果。
+
+并行 AI 收到操作员只发 `继续` 时，应检查自己 lane 的 GitHub 任务/结果、继续分析并决定下一轮采集；除非确实需要 operatorGate 场景，不要让操作员搬运 JSON/log/hash/raw。主线生产结论仍以 Browser/Web prospective validation 为最终权威。
+
 ## WOF-045 — completed
 Batch `b-c45e8d2d-d9d`：
 - 5 joined / 5 complete / 0 error / 0 interrupted
