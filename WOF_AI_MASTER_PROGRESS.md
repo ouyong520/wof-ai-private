@@ -1,36 +1,82 @@
-# WOF Future Danger AI — 完整逻辑、逆向过程与当前进度
+# WOF Future Danger AI — 项目总览 / 完整逻辑 / 当前进度
 
-更新时间：2026-08-31
-仓库：`ouyong520/wof-ai-private`
+更新时间：2026-08-31  
+仓库：`ouyong520/wof-ai-private`  
 游戏：WOF / Warriors of Fate / 吞食天地II / 三国志II，World 921002 / MAME `wofr1`
 
-> 这份文件是当前项目的“完整总览”。新对话如果要快速接手，先读 `WOF_AI_HANDOFF.md`；需要理解为什么走到现在、哪些方向已经排除、selector / dispatcher 到底怎样连接，再读本文件。
+> 这是项目的长期“项目总结 / MASTER PROGRESS”。  
+> 新对话快速接手：先读 `WOF_AI_HANDOFF.md`；查看最新实验边界：读 `WOF_AI_CURRENT_FRONTIER.md`；理解历史逆向细节：读 `WOF_AI_REVERSE_PROCESS.md`；需要全局项目逻辑、方法演化、production 规则与当前进度：读本文件。
 
 ---
 
 ## 1. 项目最终目标
 
-目标不是自动操作，而是做 **Future Danger AI**：
+目标不是自动操作，而是做 **Future Danger AI / 未来危险预测层**。
+
+核心任务：在敌人的攻击真正进入 ACTIVE 之前，读取 Browser/MAME 的 live RAM 与 ROM AI 状态，提前判断：
 
 ```text
-ROM 固定 AI / 招式逻辑
-+ 当前 CPS RAM
-+ enemy type/state/action/position
-+ 当前锁定的 P1/P2/P3 target
-+ 未来攻击起手 / movement / projectile / active window
-→ 预测未来约 0~1000ms
-→ 判断真正会威胁 P1 / P2 / P3 中谁
-→ 只有真正需要躲时才提示
-→ Future Danger Map / Safe Path
+哪个 enemy 即将产生危险
+→ 可能是哪种 attack
+→ 当前 target 是 P1 / P2 / P3 中谁
+→ 左 / 右侧方向是否稳定
+→ 距离 ACTIVE-start 大约还有多久
+→ 最终供 Future Danger Map / Safe Path 使用
 ```
 
-核心要求是减少误报：怪真正准备打 P2 时，不能仅因为 P1 更近就一直给 P1 报警。
+重点是降低误报。不能因为 P1 离敌人近，就在敌人实际上锁定 P2 时一直给 P1 报警。
+
+当前研究已经从“攻击发生后解释过去”转成：
+
+```text
+enemy+0x70 仍为 0
+→ 识别当前 zero-attack cycle 的真实前驱状态
+→ 提前 arm warning
+→ 同一个 enemy 未来真正发生 +0x70 0->nonzero
+→ 正向验证 attack / target / side / lead / miss
+```
+
+这套 prospective forward validation 是当前 production 规则的权威验证方法。
 
 ---
 
-## 2. 浏览器运行环境与固定地址
+## 2. 强制工作协议
 
-运行链：
+主线协作规则：
+
+1. GitHub 是项目权威状态。
+2. 用户每轮只负责运行一条 Browser Console 命令，并上传 JSON / Console 输出。
+3. Assistant 负责分析、GitHub 更新、版本推进、下一轮实验设计。
+4. 每次回传首先严格校验：
+
+```text
+copyId
+project
+version
+marker / expectedMarker
+readOnly
+ramWrites
+```
+
+要求：
+
+```text
+project = WOF-AI-PRIVATE
+readOnly = true
+ramWrites = 0
+```
+
+身份不匹配时，不能把数据算进当前证据。
+
+5. 每轮只给用户 ONE Console command。
+6. 每条命令必须有唯一 `// WOF-xxx` 标记。
+7. 不要求用户手工编辑 JS；需要修改时直接改 GitHub。
+8. 多房间结果必须保留 per-room 边界。
+9. WinKawaks discovery 与 Browser production 主线隔离；本地 offset 不能直接升级 Browser production 结论。
+
+---
+
+## 3. Browser / WASM 运行环境
 
 ```text
 网页
@@ -40,28 +86,7 @@ ROM 固定 AI / 招式逻辑
 → CPS RAM + live 68000 ROM
 ```
 
-DevTools Console 必须切到 `gstyphoon.js` Worker。
-
-### 玩家对象
-
-```text
-P1 = 0xFFBE1C
-P2 = 0xFFBEFC
-P3 = 0xFFBFDC
-player stride = 0xE0
-```
-
-### 敌人池
-
-```text
-enemy pool = 0xFFC0BC
-enemy stride = 0xE0
-slots = 20
-```
-
-### ROM
-
-live ROM 已能从 Worker 恢复，通常 `swap16`，缓存：
+live ROM 已能从 Worker 恢复并缓存：
 
 ```js
 self.__WOF_ROM_LOC_CACHE
@@ -73,30 +98,97 @@ self.__WOF_ROM_LOC_CACHE
 live = offline + 0x34
 ```
 
-不要再做一次性 256MB HEAP 全扫；优先复用缓存 / 恢复脚本。
+不再做一次性 256MB HEAP 全扫；优先复用 ROM cache / resume 脚本。
 
 ---
 
-## 3. 已经解开的 dispatcher 架构
+## 4. 已锁死的 RAM 基础地址
 
-早期最大误区是把 47 个 type entry 当成函数入口。真实结构是两级 dispatch：
-
-```text
-enemy type
-→ 一级 type table
-→ 每个 type 对应的二级 state/handler table
-→ D0 作为已乘 4 的 byte offset
-→ final handler
-```
-
-已解析规模：
+### 玩家对象
 
 ```text
-47 types
-625 level2 pointers
-348 unique real handlers
-约 356 个可达 routine（不同 decoder/root policy 下略有浮动）
+P1 = 0xFFBE1C
+P2 = 0xFFBEFC
+P3 = 0xFFBFDC
+stride = 0xE0
 ```
+
+玩家自身 index：
+
+```text
+P1 +0x7C = 0
+P2 +0x7C = 4
+P3 +0x7C = 8
+```
+
+### Enemy pool
+
+```text
+base   = 0xFFC0BC
+stride = 0xE0
+slots  = 20
+```
+
+### Enemy 当前目标 selector
+
+权威字段：
+
+```text
+enemy +0x7E
+```
+
+值：
+
+```text
+0 -> P1
+4 -> P2
+8 -> P3
+```
+
+**最终输出时必须实时重读 +0x7E。**
+
+历史已经抓到 warning 后、ACTIVE 前约几十毫秒发生 retarget 的真实样本，所以 warning entry target 不能冻结成最终锁定目标。
+
+`enemy+0x6A` 只可作为 supporting pointer-cache 证据；只有精确 BE1C / BEFC / BFDC 时有辅助价值，不能替代 `+0x7E`。
+
+---
+
+## 5. P1/P2/P3 selector 已严格解决
+
+ROM 玩家指针表：
+
+```text
+0x010CF8 = P1
+0x010CFC = P2
+0x010D00 = P3
+```
+
+关键 selector：
+
+```text
+0x010E66 MOVE.W 126(A0),D1
+0x010E6A LEA 0x010CF8,A1
+0x010E6E MOVE.L 0(A1,D1.W),A1
+```
+
+因此：
+
+```text
+enemy+0x7E
+→ 0 / 4 / 8
+→ P1/P2/P3 pointer table
+→ A1 = selected player object
+```
+
+至少还有 `0x010C82 / 0x010D2C / 0x010DDA` 等同类 selector 访问点。
+
+`0x010E72 MOVE.W A1,506(A5)` 保存 selected-player 地址低 16 bit。多个 reader 会通过 `MOVEA.W` 符号扩展重新形成 `FFFFBE1C / FFFFBEFC / FFFFBFDC`，说明 506(A5) 是 selected-player scratch/cache；但它不是当前 dispatcher 的直接本地桥。
+
+---
+
+## 6. Dispatcher 架构已经解决
+
+早期误区是把 47 个 type entry 当作直接函数入口。真实结构是两级 dispatch。
 
 ### dispatcher 0x25B6
 
@@ -123,18 +215,11 @@ enemy type
 语义：
 
 ```text
-32(A0) = enemy type
-D1 = type * 4
-A4 = type-specific level2 table
-D0 = 上游已经准备好的 state byte offset
-0(A4,D0.W) = final handler
+enemy type
+→ type-specific level2 table
+→ 上游已准备好的 D0 byte offset
+→ descriptor / handler
 ```
-
-**D0 不是在 dispatcher 内生成，而是上游 AI 状态机选择出来的。**
-
----
-
-## 4. 44 条 dispatcher incoming edges
 
 `wof_dispatch_incoming_edges.js` 已确认：
 
@@ -142,683 +227,860 @@ D0 = 上游已经准备好的 state byte offset
 directIncomingEdges = 44
 edges25B6 = 4
 edges25C8 = 40
-pointer32Refs = 17
 fallthrough = 0
 ```
 
-大量入口前直接是：
+大量入口直接 `MOVEQ #0/#4/#8/#12... ,D0` 后进入 dispatcher，证明真正 state offset 由上游 AI 状态机选择。
 
-```text
-MOVEQ #0,D0
-MOVEQ #4,D0
-MOVEQ #8,D0
-MOVEQ #12,D0
-MOVEQ #16,D0
-MOVEQ #20,D0
-...
-→ 0x25B6 / 0x25C8
-```
-
-说明上游状态机直接决定下一个 state offset，然后进入共享 dispatcher。
-
-早期 edge-local selector scan：
-
-```text
-edges = 44
-player refs = 0
-CMP edges = 1
-strong player/CMP = 0
-nonImmediateD0 = 1
-```
-
-这一步说明真正 P1/P2/P3 selector 不在 dispatcher 入口几条指令附近，而在更上游。
+这些 44 条 incoming edge 已经解决，不要重新扫描。
 
 ---
 
-## 5. 已排除 / 降级的方向
+## 7. State / action → dispatcher 链已接通
 
-### 5.1 Focus Multiroom
-
-已经做过多轮多房间 RAM correlation。早期候选：
+Selector 后存在两层状态分派：
 
 ```text
-+0x3A
-+0x6A
-+0x68
-+0x9C
-```
-
-都不能证明是“持续 P1/P2/P3 target selector”。不要继续把 Focus Multiroom 当主线。
-
-### 5.2 movement / action 字段
-
-`enemy +0x3E / +0x42` 对未来运动方向很强，但语义更像 movement/action，而不是 target player。
-
-### 5.3 0x0080F2
-
-已正式排除：
-
-```text
-625 level2 pointers
-348 unique real handlers
-扩展 real handler CFG
-→ 0x0080F2 handlerPaths = 0
-```
-
-不要复活这条线。
-
-### 5.4 A0+0x40 / +0x44 target XY writer 假设
-
-全 real handler graph / alias / overlap writer 扫描都没找到可信 writer，已降级，不要再重复。
-
-### 5.5 0x11C26 helper
-
-曾怀疑 selector 选出 A1 后调用 `0x11C26`，可能是 target→dispatcher bridge。
-
-最终否定：helper 内会自己覆盖 A1：
-
-```text
-0x11C5C MOVE.L D1,A1
-0x11C68 LEA ...,A1
-```
-
-所以传入的 selected-player A1 不会作为这条 helper 的主数据继续流向 dispatcher。
-
----
-
-## 6. 真实 P1/P2/P3 selector 的发现
-
-这是项目目前最重要的突破。
-
-### 6.1 ROM 中存在完整 P1/P2/P3 pointer table
-
-ROM 里有多份完整连续的：
-
-```text
-FFBE1C  FFB EFC  FFBFDC
-```
-
-当前主线使用：
-
-```text
-0x010CF8 = 0xFFBE1C  (P1)
-0x010CFC = 0xFFBEFC  (P2)
-0x010D00 = 0xFFBFDC  (P3)
-```
-
-### 6.2 selector 访问点
-
-至少 4 个真实点读取 `A0+0x7E`：
-
-```text
-0x010C82 MOVE.W 126(A0),D1
-0x010C86 MOVE.L table(D1.W),A1
-
-0x010D2C MOVE.W 126(A0),D1
-0x010D30 MOVE.L table(D1.W),A1
-
-0x010DDA MOVE.W 126(A0),D1
-0x010DDE ... player table ...
-
-0x010E66 MOVE.W 126(A0),D1
-0x010E6A LEA 0x010CF8,A1
-0x010E6E MOVE.L 0(A1,D1.W),A1
-```
-
-因此：
-
-```text
-enemy + 0x7E
-→ D1.W
-→ P1/P2/P3 pointer table
-→ A1 = selected player object
-```
-
-### 6.3 玩家自身 +0x7C 是固定 self-index
-
-动态 probe 2 秒、101 samples / player：
-
-```text
-P1+0x7C = 0x0000   101/101
-P2+0x7C = 0x0004   101/101
-P3+0x7C = 0x0008   101/101
-selfIndex048Exact = true
-```
-
-所以 `player+0x7C` 的语义已经锁死：
-
-```text
-P1 = 0
-P2 = 4
-P3 = 8
-```
-
-这是恰好能直接作为 long-pointer table byte offset 的 0/4/8。
-
-### 6.4 敌人 +0x7E 是运行时当前 target selector
-
-动态 6 秒 / 301 samples，当前房间 3 个 active-like enemy slots：
-
-```text
-slot 14: +0x7E = 8   301/301
-slot 11: +0x7E = 0   301/301
-slot 15: +0x7E = 0   301/301
-```
-
-3 个活跃 slot：
-
-```text
-valid048Pct = 1.0
-allLiveMostly048 = true
-```
-
-与最近玩家匹配率约：
-
-```text
-1.000 / 0.797 / 0.767
-```
-
-这说明 `enemy+0x7E` 不是普通状态值，而是实际运行时 P1/P2/P3 target index。
-
-### 6.5 +0x7C → +0x7E 的关系
-
-静态 writer scan 一度看到：
-
-```text
-0x01AA14 MOVE.W 124(A0),126(A0)
-```
-
-但动态结果证明敌人 `+0x7C` 与 `+0x7E` 可以长期不同，例如：
-
-```text
-slot14 +0x7C = 0
-slot14 +0x7E = 8
-持续 6 秒
-```
-
-因此 `+0x7C→+0x7E` 只是部分复制 / 初始化 / 对象传播路径，不是当前 target 更新的全部机制。
-
-### 6.6 对象复制模式
-
-扫描到多处：
-
-```text
-MOVE.W 124(A0),D0
-MOVE.W D0,126(A1)
-```
-
-以及：
-
-```text
-MOVE.W 124(A0),124(A1)
-```
-
-这和“玩家自身 +0x7C = 0/4/8，被复制到敌人 / 新对象的 +0x7E”非常一致。
-
----
-
-## 7. 选中玩家指针 scratch：506(A5)
-
-`0x010E6E` 选出 A1 后：
-
-```text
-0x010E72 MOVE.W A1,506(A5)
-```
-
-这里保存的是 player address 的低 16 bit。
-
-已找到 4 个 reader：
-
-```text
-0x016D3E
-0x016FC6
-0x017662
-0x0176B2
-```
-
-至少 3 条真实路径会重新变成地址寄存器：
-
-```text
-0x016FCC MOVEA.W D0,A0
-0x01766E MOVEA.W D1,A0
-0x0176BE MOVEA.W D1,A0
-```
-
-因为 player 地址都是 `0xFFFFxxxx`，68000 `MOVEA.W` 会符号扩展，所以低 16-bit：
-
-```text
-BE1C / BEFC / BFDC
-```
-
-能还原成：
-
-```text
-FFFFBE1C / FFFFBEFC / FFFFBFDC
-```
-
-结论：`506(A5)` 是 selected-player pointer scratch / cache。
-
-但这些 reader 附近没有 `0x25B6/0x25C8`，所以它不是目前 dispatcher 的直接本地桥，更多是 selected-player 在其它系统里的共享缓存。
-
----
-
-## 8. selector 附近的状态机
-
-### 8.1 0x10E66 选出玩家
-
-严格结构：
-
-```text
-0x10E66 MOVE.W 126(A0),D1
-0x10E6A LEA 0x10CF8,A1
-0x10E6E MOVE.L 0(A1,D1.W),A1
-0x10E72 MOVE.W A1,506(A5)
-```
-
-### 8.2 A0+0x99 第一层状态分派
-
-后续在：
-
-```text
-0x10EA8 MOVE.B 0x99(A0),D0
-0x10EAC MOVE.W 6(PC,D0.W),D1
-0x10EB0 JMP 2(PC,D1.W)
-```
-
-表基址：`0x10EB4`，9 项：
-
-```text
-index 0  -> 0x10BBC
-index 2  -> 0x10BD0
-index 4  -> 0x10BE4
-index 6  -> 0x10BD0
-index 8  -> 0x10BF8
-index 10 -> 0x10C0C
-index 12 -> 0x10BD0
-index 14 -> 0x10BD0
-index 16 -> 0x10BD0
-```
-
-共 5 个 unique target。
-
-### 8.3 每个 state99 block 还有 A0+0x2A 第二层分派
-
-这 5 个 block 全部匹配同一结构：
-
-```text
-MOVE.B 42(A0),D0
-MOVE.W table(PC,D0.W),D1
-JMP table(PC,D1.W)
-```
-
-所以状态结构是：
-
-```text
-A0+0x99
-→ 第一层 state99 jump
-→ A0+0x2A
-→ 第二层 action jump
+enemy+0x99
+→ 第一层 state table
+→ enemy+0x2A
+→ 第二层 action table
 → 具体 AI routine
+→ dispatcher 0x25C8
+→ descriptor
 ```
 
-5 个 block 的第二层目标合并后共有 9 个 unique final targets：
+已严格证明的一条路线：
 
 ```text
-0x010EC6
-0x011078
-0x011190
-0x0112C2
-0x011456
-0x01156A
-0x011656
-0x01178E
-0x011908
+state99 = 0
+→ first block 0x010BBC
+
+action2A = 2
+→ 0x010EC6
+→ ...
+→ dispatcher 0x25C8
+```
+
+这条 selector / state / action / dispatcher bridge 已经是结构性证明，不再是猜测。
+
+---
+
+## 8. Descriptor consumer 0x247C 已解决
+
+`0x25C8` 选择的是 descriptor DATA，不是直接 handler code。
+
+`0x247C` 的 descriptor 语义已确认：
+
+```text
++0      frame / payload end -> enemy+0x12
++4      long                -> enemy+0x30
++8      timer / flag
+bit15 clear  -> inline next
+bit15 set    -> explicit next ptr at +0x0A
+next         -> enemy+0x2C
+timer        -> enemy+0x34
+payload tail -> enemy+0x6C / +0x6E ...
+```
+
+`frameEnd` 是 DATA / payload boundary，不是代码入口。
+
+---
+
+## 9. ACTIVE 的当前定义
+
+所有 prospective 规则统一使用：
+
+```text
+enemy +0x70 U16
+0 -> nonzero
+```
+
+定义为：
+
+**ACTIVE-start convention**
+
+它不是：
+
+```text
+exact hitbox onset
+exact collision frame
+exact damage frame
+```
+
+因此所有 `leadMs` 只能解释成：
+
+```text
+距离 +0x70 ACTIVE-start 还有多少时间
+```
+
+不能说“X ms 后一定打中玩家”。
+
+---
+
+## 10. 方法论重大演化：fixed-lag → same-cycle
+
+### 旧方法：fixed lag
+
+早期使用：
+
+```text
+50 / 100 / 150 / 250 / 500ms lag
+```
+
+在 ACTIVE 发生后回看历史 fingerprint。
+
+问题：某些 enemy state 可以长时间持续、甚至跨攻击周期，所以 `T-100ms` 看到的状态不一定属于本次攻击，可能是上一周期残留。
+
+结论：
+
+```text
+fixed-lag fingerprint
+terminal state
+```
+
+现在只能用于 discovery / correlation，不能直接 production。
+
+### 新方法：attack-zero same-cycle miner
+
+从 WOF-041 开始：
+
+```text
+enemy+0x70 == 0
+→ 建立该 enemy 当前 zero-attack cycle
+→ 记录该 cycle 真实经历的状态
+→ 同一个 enemy 后来 0->nonzero ACTIVE
+→ 才把状态归因给这个 ACTIVE
+```
+
+重要输出：
+
+```text
+cyclePrecursorTop
+cyclePrecursorFocus
+```
+
+记录：
+
+```text
+type
+activeAttack
+signature
+cycleCount
+firstLeadSamples
+lastLeadSamples
+targetSameRate
+sideStableRate
+```
+
+这套 same-cycle forward-chain 证据已经成为新规则 discovery 的主方法。
+
+---
+
+## 11. Held state 修正：edge trigger → once-per-cycle level arm
+
+WOF-042 中 T24 A5424 曾出现：
+
+```text
+rawMatch > 0
+transitionEntry = 0
+signals = 0
+```
+
+原因不是规则失败，而是采样器第一次看到 enemy 时状态已经 held，传统 `previous != match && current == match` entry detector 会漏掉。
+
+WOF-043 改成：
+
+```text
+当前 zero->ACTIVE cycle 第一次看到该状态
+→ arm 一次
+→ cycle-id 去重
+```
+
+也就是 **once-per-zero-cycle level arm**。
+
+改完后 T24 A5424 直接 21/21 strict。
+
+因此 held-state 类规则以后默认优先考虑：
+
+```text
+level visibility + cycle-id 去重
 ```
 
 ---
 
-## 9. 已严格接通的一条 state → dispatcher 路线
+## 12. 多房采集系统
 
-当前最重要的严格证明：
+### WOF-039 的问题
 
-```text
-state99 index = 0
-→ first block = 0x010BBC
+WOF-039 使用 45s join window，导致后来进入的 2P 房没有加入同 batch；另外 Worker 没有 `document`，不能直接负责总 JSON download。
 
-action2A index = 2
-→ table entry 0x010BCA = 0x02FE
-→ final target = 0x010EC6
-```
+### WOF-040 起的正确架构
 
-然后 `0x010EC6` 到 dispatcher 的关键 opcode 全 exact-word 验证通过：
+同一条 JS 自动双模式：
 
 ```text
-0x10EC6 CMPI.W #0,2(A0)
-0x10ECC BNE 0x10ED2
-0x10ECE JSR 0x1B02
-0x10ED2 TST.B 43(A0)
-0x10ED6 BNE 0x10F08
-...
-0x10F08 MOVE.W 64(A0),D1
-0x10F0C ADD.W D1,4(A0)
-0x10F10 SUBQ.B #1,31(A0)
-0x10F14 BNE 0x10F5C
-0x10F16 MOVEQ #0,D0
-...
-0x10F24 BTST #4,114(A0)
-0x10F2A BEQ 0x10F4C
-0x10F2C JSR 0x1426
-0x10F30 BCS 0x10F40
-...
-0x10F40 MOVE.W #0x0600,42(A0)
-0x10F46 MOVEQ #24,D0
-0x10F48 JMP 0x25C8
+gstyphoon.js Worker -> ROOM-COLLECT
+top                 -> TOP-FINALIZE
 ```
 
-因此已经严格证明：
+特性：
 
 ```text
-state99=0 + action2A=2
-→ 0x10EC6
-→ D0 = 24
-→ 0x25C8
-→ type-specific level2 handler
+最多 5 rooms
+每房约 120s
+无短 join window
+1P / 2P / 3P 均可加入
+per-room 边界保留
+heartbeat / stale-interrupted 判断
+完成后 top 合并并只下载 ONE JSON
 ```
 
-脚本 verdict：
+用户流程：
 
 ```text
-allState2APatternsValid = true
-routes = 36
-uniqueFinalTargets = 9
-routesTo10EC6 = 1
-strictBridge10EC6To10F48 = true
-bridgeD0 = MOVEQ #24,D0
-dispatcher = 0x25C8
+每个目标房间 Worker 运行同一条
+→ 看到 ✅ room N complete
+→ 所有目标房完成后切 top
+→ 再运行同一条
+→ 合并并下载 WOF-xxx_<batchId>.json
 ```
 
-这是目前第一次把 selector 所在同一区域的状态机严格接到真实 dispatcher。
+如果还有 live room 在采集，top 会拒绝提前 finalize。
+
+WOF-040 后已真实验证 1P / 2P / 3P context 都能进入批次。
 
 ---
 
-## 10. 0x10FA2 → 0x25B6 分支
+## 13. 最近主线 WOF-039 → WOF-045 的演化
 
-同一区域还存在：
+### WOF-039
+
+关键结果：
+
+- T20 B0->B255：23/23 最终 A5136，target/side 23/23，lead 约 442–781ms。
+- D867BA：6/6 forward A3232，跨 T9/T36。
+- D8811E：3/3 forward A3232，在新 type T11 成立。
+- T16 B4：26/26 <=40ms 进入 danger ACTIVE，但攻击 25×A6432 + 1×A4840。
+
+因此 T16 被修正为：
 
 ```text
-0x10FA0 MOVEQ #8,D0
-0x10FA2 JSR 0x25B6
+强 imminent danger
+≠ exclusive A6432
 ```
 
-已确认这是真 dispatcher edge，但当前还没有像 `0x10F48 → 0x25C8` 那样完成完整 state99/action2A 路由归属证明。
+### WOF-040
 
-它仍是后续要补齐的第二条本地主线。
+多房采集工作流修正并证明 1P/2P/3P 均可采。
+
+规则：
+
+- D8811E 24/24 -> A3232，跨 T37/T11/T34。
+- D867BA 33/33 -> A3232，跨 T36/T9/T33。
+
+### WOF-041
+
+same-cycle miner 找到两条真正 T24 前驱：
+
+```text
+T24 S2/A2/B4 BODY7512 FE8AF46 NX8A6D0 V180001 TM3
+→ A5440
+≈49–60ms
+```
+
+```text
+T24 S2/A2/B4 BODY7520 FE8AF6C NX8A6E4 V180001 TM4
+→ A5424
+≈50–70ms
+```
+
+### WOF-042 / WOF-043
+
+T24 A5440 prospective：11/11 strict，正式 production-shadow。
+
+T24 A5424 在 WOF-042 因 held-state 导致 transitionEntry=0；WOF-043 改 cycle-level arm 后：
+
+```text
+21/21 strict
+21/21 A5424
+target 21/21
+side 21/21
+lead 60.8–71.5ms
+```
+
+因此第二条 T24 也正式 production-shadow。
+
+### WOF-044
+
+原计划输出 `cyclePrecursorFocus.T23/T18`，但 exporter 有 bug：model 文本声称存在，实际 result 没有字段。
+
+因此 WOF-044 不能用于 focused T23 结论；这不是“T23 没前驱”，只是 exporter 缺陷。
+
+不过 global same-cycle top 找到两条强 T18 discovery：
+
+```text
+T18 S2/A2/B4 BODY7512 FE8BBB2 NX8B290 V180001 TM4
+→ A5440
+9/9 cycles
+≈60.2–70.5ms
+```
+
+```text
+T18 S2/A2/B4 BODY7520 FE8BBDE NX8B2A4 V180001 TM4
+→ A5424
+9/9 cycles
+≈60.7–71.1ms
+```
+
+### WOF-045 — 当前最新完成批次
+
+Batch：
+
+```text
+b-c45e8d2d-d9d
+```
+
+身份严格通过：
+
+```text
+copyId = WOF-045
+project = WOF-AI-PRIVATE
+version = wof-future-danger-multiroom-coordinator-v45
+marker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V45 JSON ===
+readOnly = true
+ramWrites = 0
+```
+
+批次：
+
+```text
+5 joined
+5 complete
+0 error
+0 interrupted
+59994 polls
+202612 enemy samples
+1025 ACTIVE edges
+```
+
+结果：
+
+```text
+137 signals
+137 strict
+0 jitter
+0 real-late
+0 hard miss
+0 censored
+0 retarget
+```
+
+玩家 context：
+
+```text
+0P = 119
+1P = 42
+2P = 1179
+3P = 1088
+```
+
+WOF-045 同时修复 WOF-044 focused export bug：真实 JSON 已存在 `cyclePrecursorFocus.T23/T18`。有 T23 的房间输出 populated T23 focus；T18 房输出 populated T18 focus；没有对应 type 的房间为空数组属于正常。
 
 ---
 
-## 11. 当前“完整链”到底证明到什么程度
+## 14. 当前 Production Shadow 集合
 
-### 已经证明
+### 14.1 T16 B4 — imminent danger
 
-1. `player+0x7C` 的固定 self index：P1=0 / P2=4 / P3=8。
-2. `enemy+0x7E` 在真实运行时是 0/4/8 target selector。
-3. `enemy+0x7E → D1.W → 0x10CF8 player table → A1=selected player`。
-4. selected player 低 16-bit 会写进 `506(A5)`，并可在其它代码中恢复为真正 player pointer。
-5. selector 附近存在 `A0+0x99 → A0+0x2A` 两层状态机。
-6. 其中一条明确 route：`state99=0/action2A=2 → 0x10EC6 → D0=24 → 0x25C8`。
-7. `0x25C8` 使用 D0 作为 level2 state offset，按 enemy type 取最终 handler。
-
-### 还没有完全证明
-
-还差“同一次实际执行中”的最终端到端因果闭环：
+规则：
 
 ```text
-enemy+0x7E 某个 P1/P2/P3 selector 值
-→ selected player A1
-→ 哪些 target-dependent 比较 / helper
-→ 如何决定或影响 A0+0x99 / A0+0x2A
-→ 走到某个 D0
-→ 0x25B6 / 0x25C8
+T16_B4_DANGER_40
 ```
 
-换句话说：
+WOF-045：23/23 strict danger timing，lead 约 9–29ms，本轮均 A6432。
 
-- selector 本身已锁死；
-- dispatcher 本身已锁死；
-- selector 所在状态机的一条 route 已接到 dispatcher；
-- 现在差最后“selector 值怎样影响状态选择”的因果层。
+但历史真实反例：
 
-这也是 `wof_selector_end_to_end_proof.js` 当前要做的事。
+```text
+A4832
+A4840
+```
+
+以及 ACTIVE 前 retarget。
+
+因此 production 语义只能是：
+
+```text
+T16 B4 -> 马上有危险
+```
+
+禁止：
+
+```text
+T16 B4 -> 必然 A6432
+warning entry target -> 最终 target lock
+```
+
+### 14.2 T20 B0->B255 -> A5136
+
+规则：
+
+```text
+T20_5136_B0_TO_B255_1250
+```
+
+WOF-045：
+
+```text
+10/10 strict
+A5136 10/10
+target 10/10
+side 10/10
+lead 460.0–1020.1ms
+```
+
+级别：
+
+```text
+production-shadow-coarse
+```
+
+历史 lead 已覆盖约 0.4–1.2s，因此这是粗粒度 early warning，不是固定 countdown。
+
+`1250ms` 只是一条 audit horizon，不是 causal timing boundary。
+
+### 14.3 D867BA TM6 -> A3232
+
+descriptor family：
+
+```text
+BODY2872
+FE867BA
+NX85ECE
+V100000
+P6C2784
+A4
+B2
+state99 2/4
+TM6
+```
+
+WOF-045：
+
+```text
+41/41 strict
+A3232 41/41
+target 41/41
+side 41/41
+all 5 rooms
+```
+
+当前批次 type：T9/T33；历史还验证过 T36。
+
+级别：`production-shadow`。
+
+### 14.4 D8811E TM6 -> A3232
+
+```text
+BODY2872
+FE8811E
+NX879E2
+V100000
+P6C2784
+A4
+B2
+state99 2/4
+TM6
+```
+
+WOF-045：
+
+```text
+14/14 strict
+A3232 / target / side = 14/14
+lead 99.0–109.8ms
+```
+
+历史 WOF-044 有一条 clean 209.5ms tail hit，最终仍 A3232。
+
+因此 production-shadow 继续有效；135ms 只是 audit horizon，不是 causal boundary。
+
+### 14.5 T24 BODY7512/TM3 -> A5440
+
+```text
+T24_5440_CYCLE_BODY7512_TM3_80
+```
+
+WOF-045：
+
+```text
+14/14 strict
+A5440 / target / side = 14/14
+lead 49.1–59.4ms
+```
+
+级别：`production-shadow`。
+
+### 14.6 T24 BODY7520/TM4 -> A5424
+
+```text
+T24_5424_CYCLE_BODY7520_TM4_S24_LEVEL_90
+```
+
+WOF-045：
+
+```text
+15/15 strict
+A5424 / target / side = 15/15
+lead 59.9–71.0ms
+```
+
+级别：`production-shadow`。
+
+这是典型 held-state / once-per-zero-cycle level trigger。
+
+### 14.7 T18 BODY7512/TM4 -> A5440
+
+```text
+T18_5440_CYCLE_BODY7512_TM4_LEVEL_90
+```
+
+signature：
+
+```text
+S2/A2/B4|BODY7512|FE8BBB2|NX8B290|V180001|TM4|P6C0
+```
+
+WOF-044 discovery：9/9 same-cycle。
+
+WOF-045 direct prospective：
+
+```text
+10/10 strict
+A5440 / target / side = 10/10
+lead 60.5–70.4ms
+```
+
+WOF-046 起升级：`production-shadow`。
+
+### 14.8 T18 BODY7520/TM4 -> A5424
+
+```text
+T18_5424_CYCLE_BODY7520_TM4_LEVEL_90
+```
+
+signature：
+
+```text
+S2/A2/B4|BODY7520|FE8BBDE|NX8B2A4|V180001|TM4|P6C0
+```
+
+WOF-044 discovery：9/9 same-cycle。
+
+WOF-045 direct prospective：
+
+```text
+10/10 strict
+A5424 / target / side = 10/10
+lead 61.5–70.3ms
+```
+
+WOF-046 起升级：`production-shadow`。
 
 ---
 
-## 12. 当前最新端到端脚本
+## 15. T23 当前状态
 
-### `wof_selector_end_to_end_proof.js`
+### 15.1 旧 BODY4920/B0 规则已退役
 
-commit：
-
-```text
-31dea3a6a1a89799ba86724321c7a5db618d5596
-```
-
-目标：把这些已知事实一次性 strict 验证成一条结构链：
+旧规则：
 
 ```text
-0x10E66 enemy+0x7E selector
-→ 0x10CF8 P1/P2/P3 table
-→ state99
-→ action2A
-→ proven 0x10EC6 route
-→ MOVEQ #24,D0
-→ 0x10F48
-→ 0x25C8
+T23_4792_BODY4920_B0_ENTRY_180
 ```
 
-当前用户还没执行它的最终 JSON；所以不要在新对话里假设 `endToEndStructuralProof=true`，必须先跑一次确认。
+多轮有大量 T23 samples 和真实 A4792 ACTIVE，但 `rawMatch=0 / signals=0`。
 
-执行：
+结论：`retired-no-forward-coverage`，不要复活。
+
+### 15.2 新 short-lead A4792 候选
+
+WOF-045 focused same-cycle mining 找到：
+
+```text
+T23
+S0/A6/B4|BODY4976|FE84868|NX83F20|V0|TM5|P6C0
+→ A4792
+```
+
+当前 discovery：
+
+```text
+4/4 same-cycle -> A4792
+target 4/4
+side 4/4
+first lead = 79.3, 79.5, 81.1, 89.4ms
+last lead  = 59.5, 71.0, 78.5, 79.3ms
+```
+
+这是 WOF-046 的主要 direct-forward 目标。
+
+新 rule：
+
+```text
+T23_4792_BODY4976_A6_B4_TM5_LEVEL_100
+once-per-zero-cycle level arm
+horizon = 100ms
+tail = 300ms
+```
+
+### 15.3 另一个长 lead T23 分支
+
+另一个 T23 房间存在：
+
+```text
+S2/A4/B0|BODY0|FE84A98|NX83D14|V100000|TM20|P6C0
+```
+
+当前仅约 2 cycles，first lead 约 1.4–2.9s。
+
+样本过少，并可能是更长 preparation/phase 状态。
+
+策略：继续 focused mining，不 promotion。
+
+---
+
+## 16. 证据等级
+
+### Level 1 — retrospective / correlation
+
+```text
+fixed-lag fingerprint
+terminal state
+```
+
+只能 discovery。
+
+### Level 2 — same-cycle discovery
+
+状态必须真实出现在当前 `attack==0` cycle，且同 enemy 后来发生 0->nonzero ACTIVE。
+
+这是强候选，但仍不是 production。
+
+### Level 3 — prospective validation
+
+提前 arm，然后未来等待 ACTIVE，验证：
+
+```text
+attack
+target
+side
+lead
+hard miss
+```
+
+这是 production-shadow 升级的核心证据。
+
+### Level 4 — multi-room / cross-type confirmation
+
+跨不同房间、target、side、enemy type 后仍稳定，是当前最强 production 证据。
+
+---
+
+## 17. 已排除 / 降级 / 禁止复活的方向
+
+除非出现强新证据，否则不要重启：
+
+```text
+broad T16 FAST <=100ms
+broad T16 MID <=250ms
+broad T30_FAST
+```
+
+不要把：
+
+```text
+absDx / 距离
+```
+
+解释成 hitbox / causal timing threshold。
+
+不要把：
+
+```text
+enemy+0x70
+```
+
+叫 exact damage / hitbox onset。
+
+不要把 warning entry target 当最终 target lock。
+
+不要声称 T16 B4 100% exclusive A6432。
+
+不要把：
+
+```text
+T20 1250ms
+D867 220ms
+D881 135ms
+```
+
+解释成 causal boundary。
+
+不要复活旧 fixed-lag T24 BODY5424/5440。
+
+不要复活 old T23 BODY4920/B0。
+
+不要因为 2 cycles 就 promotion T23 long-lead branch。
+
+历史已解决、不应重复投入：
+
+```text
+P1/P2/P3 identity
+enemy+0x7E selector
+player pointer table
+dispatcher 44 incoming edges
+descriptor consumer 0x247C
+Focus Multiroom
+0x0080F2
+0x11C26 bridge 假设
+A0+0x40/+0x44 target XY writer 假设
+AD5A/low4
+all-ROM arbitrary-even-address opcode scan
+```
+
+---
+
+## 18. WinKawaks 并行 discovery 研究
+
+Browser 主线之外允许独立 WinKawaks lanes：
+
+```text
+GEO-*     人物几何 / 坐标
+EFIELD-*  enemy 0xE0 字段地图
+RAWMINE-* raw diff / transition / offset ranking
+```
+
+完整协议见：
+
+```text
+PARALLEL_RESEARCH.md
+COLLECTOR_ROUTING.md
+```
+
+本地 Collector repo：
+
+```text
+ouyong520/wof-winkawaks-bridge
+```
+
+支持：
+
+```text
+capture_raw_snapshot
+capture_raw_burst
+```
+
+关键原则：
+
+```text
+WinKawaks = discovery
+Browser/Web = production proof
+```
+
+WinKawaks offset 与 Browser/WASM offset 是不同命名空间；本地发现必须回到 Browser/Web prospective 环境验证后才能进入 production-shadow。
+
+并行 GEO / EFIELD / RAWMINE lane 不得推进或改写当前 WOF mainline coordinator / validator / production rules。
+
+---
+
+## 19. 当前工程进度估计
+
+这不是正式统计覆盖率，只是工程进度判断：
+
+```text
+底层 selector / dispatcher / descriptor     约 90%+
+采集 / 多房 / prospective 验证基础设施      约 90%+
+Future Danger 常见攻击覆盖                  约 65–70%
+```
+
+当前真正瓶颈已经不是“怎么读 RAM / dispatcher 怎么走”，而是：
+
+```text
+扩大不同 enemy type / attack branch 的可靠 Future Danger production 覆盖
+```
+
+目前主攻 T23，同时持续 audit 已有 production 集合。
+
+---
+
+## 20. 当前 GitHub 权威状态
+
+```text
+resume = wof-resume-dispatch-selector-v56
+nextCopyId = WOF-046
+nextScript = wof_future_danger_multiroom_coordinator_v46.js
+nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V46 JSON ===
+embedded = WOF-046R / wof_future_danger_cycle_validator_v46r.js
+```
+
+WOF-046 目的：
+
+```text
+1. 直接 prospective 验证新的 T23 A4792 short-lead rule
+2. 两条 T18 规则以 production-shadow 身份继续 audit
+3. cyclePrecursorFocus.T23 继续寻找 alternate branch
+4. T16 / T20 / D867 / D881 / T24 继续 production audit
+```
+
+WOF-046R 已加入：
+
+```text
+T23_4792_BODY4976_A6_B4_TM5_LEVEL_100
+```
+
+---
+
+## 21. WOF-046 当前唯一 Browser 命令
+
+最多 5 个 live `gstyphoon.js Worker` 各运行一次；每房约 120 秒。全部目标房完成后切到 `top`，再运行同一条，生成唯一总 JSON。
 
 ```js
-await fetch('https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_selector_end_to_end_proof.js?x='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(s=>(0,eval)(s));
+// WOF-046
+await fetch('https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_future_danger_multiroom_coordinator_v46.js?x='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(s=>(0,eval)(s));
 ```
 
-预期：
+收到 WOF-046 JSON 后必须首先验证：
 
 ```text
-=== SELECTOR END-TO-END JSON ===
+copyId = WOF-046
+project = WOF-AI-PRIVATE
+version = wof-future-danger-multiroom-coordinator-v46
+expectedMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V46 JSON ===
+readOnly = true
+ramWrites = 0
 ```
 
-关键字段：
+重点检查：
 
 ```text
-selectorStrict
-playerTableOk
-state99Strict
-action2AStrict
-bridgeStrict
-endToEndStructuralProof
+T23_4792_BODY4976_A6_B4_TM5_LEVEL_100
+signals
+strictHit
+jitter / realLate / hardMiss
+expectedAttackRate
+targetSameRate
+sideStableRate
+leads
+roomsWithSignal
 ```
+
+并继续分析 `cyclePrecursorFocus.T23`。
 
 ---
 
-## 13. 新房间 / 新 Worker 恢复流程
+## 22. 一句话当前前沿
 
-最新 `wof_resume_dispatch_selector.js` 已更新到当前 frontier。
-
-换房间时，先只执行：
-
-```js
-await fetch('https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_resume_dispatch_selector.js?x='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(s=>(0,eval)(s));
-```
-
-它负责恢复 ROM cache / dispatcher 基础状态。恢复成功后不要重跑旧 Focus / 0x80F2 / 44-edge 大扫。
-
----
-
-## 14. 关键脚本时间线
-
-### dispatcher / CFG
-
-```text
-wof_dispatch_incoming_edges.js
-wof_dispatch_edge_selector_scan.js
-wof_dispatch_predecessor_selector.js
-wof_dispatch_reverse_cfg_selector.js
-wof_dispatch_d0_source_focus.js
-wof_dispatch_a1_d1_trace.js
-wof_dispatch_frontier_validate.js
-wof_dispatch_two_edge_strict_decode.js
-wof_dispatch_edge_seed_reverse_selector.js
-```
-
-### 排除旧分支
-
-```text
-wof_dispatch_ad5a_inspect.js
-wof_dispatch_ad5a_leaf_decode.js
-wof_dispatch_low4_chain.js
-wof_dispatch_targetxy_local_writers.js
-wof_state_writer_overlap_v4.js
-```
-
-### 111xx / player selector 发现
-
-```text
-wof_dispatch_111fa_42c2_focus.js
-wof_dispatch_111c2_call_provenance.js
-wof_dispatch_111b4_a5_provenance.js
-wof_dispatch_111b4_entry_incoming.js
-wof_dispatch_111190_table_a5_role.js
-wof_player_table_10cf8_xrefs.js
-wof_player_selector_7e_1fa_flow.js
-wof_player_selector_7c_source.js
-wof_player_selector_5f6ba_d45_provenance.js
-```
-
-### 动态 selector 锁定
-
-```text
-wof_player_selector_7e_runtime_probe.js
-wof_player_self_index_probe.js
-wof_player_selector_7e_alias_writers.js
-wof_player_selector_7c_alias_writers.js
-```
-
-### selector → state → dispatcher
-
-```text
-wof_selector_11c26_dispatch_bridge.js
-wof_selector_1fa_consumers_bridge.js
-wof_selector_10e66_dispatch_local_raw.js
-wof_selector_state99_jump_cfg.js
-wof_selector_state2a_dispatch_bridge.js
-wof_selector_end_to_end_proof.js
-```
-
----
-
-## 15. 最重要的 68000 解析坑
-
-1. **偶地址不等于指令边界。** 多次把 extension word 误扫成 ORI / branch；所有关键路径必须 exact target + raw words / strict decode 验证。
-2. 例如 `0xEB6C = 0x3031 0x1000`，`0xEB6E` 是 extension word，不是独立 opcode。
-3. PC-relative indexed 的 base 要按 68000 实际 PC 规则算。
-4. indexed `.W` 值要 sign-extend。
-5. `MOVEA.W` 会 sign-extend，所以 `BE1C` 能恢复成 `FFFFBE1C`。
-6. raw full-ROM opcode hit 只能当候选，不能直接当 CFG evidence。
-7. 不要因为某 field offset 在不同结构体都存在，就假设语义相同；`0x05F6BA` 就曾因相同 `+0x7C` 偏移造成误导。
-
----
-
-## 16. 当前进度判断
-
-工程进度估计：**约 90%–93%**。
-
-已经完成：
-
-```text
-真实 dispatcher
-真实 two-level type/state dispatch
-44 incoming edges
-真实 player pointer table
-P1/P2/P3 self index 0/4/8
-真实 enemy target selector +0x7E
-selected player A1
-selected-player scratch 506(A5)
-selector 邻近 state99/action2A 两层状态机
-至少 1 条 state route → D0 → 0x25C8 的严格桥
-```
-
-剩余核心：
-
-```text
-1. 跑完 end-to-end structural proof。
-2. 找 selector 值影响 state99/action2A 的真正 target-dependent compare / decision。
-3. 把 0x10FA2 → 0x25B6 第二条分支也归属到具体状态路线。
-4. 做动态因果验证：target selector 变化时，后续 state/action/D0 是否按预期变化。
-5. 把 target + state + handler 映射成 Future Danger 0~1000ms 预测特征。
-6. 最后才回 HUD / Future Danger Map / Safe Path。
-```
-
----
-
-## 17. 下一步唯一主线
-
-先执行 `wof_selector_end_to_end_proof.js`。
-
-如果：
-
-```text
-endToEndStructuralProof = true
-```
-
-则静态结构层收口，不再继续找“selector 在哪”。下一阶段改为：
-
-```text
-selector 值 0/4/8
-→ 选中哪个 player
-→ target-dependent comparison
-→ state99/action2A transition
-→ D0
-→ dispatcher
-→ handler
-→ future attack / threat semantics
-```
-
-动态验证优先读-only 观察；只有必要时再做最小 RAM perturbation。
-
----
-
-## 18. 一句话总结
-
-目前已经不再是“猜敌人打谁”。游戏内部真实 target selector 已经找到并动态验证：
-
-```text
-P1/P2/P3 自身 +0x7C = 0/4/8
-enemy +0x7E = 当前目标玩家 0/4/8
-enemy+0x7E → 0x10CF8 player table → A1 = selected player
-```
-
-同一区域的状态机也已被拆成：
-
-```text
-A0+0x99
-→ 第一层 state jump
-→ A0+0x2A
-→ 第二层 action jump
-→ specific AI routine
-→ D0
-→ 0x25B6 / 0x25C8
-```
-
-并且已经严格证明其中一条：
-
-```text
-state99=0 + action2A=2
-→ 0x10EC6
-→ D0=24
-→ 0x10F48
-→ 0x25C8
-```
-
-现在只差最后的因果闭环：**当前 target selector 怎样影响 state/action 决策，从而选择最终 D0 / handler。**
+**WOF 的 selector / dispatcher / descriptor 与 5 房采集链已经基本解决；方法已经从风险较高的 fixed-lag retrospective 转为 same-cycle attack-zero mining + prospective forward validation；T16/T20/D867/D881/T24 与新 T18 两条攻击规则已经形成 production-shadow；WOF-045 完成 137/137 strict 并修复 focused T23/T18 exporter；当前最前沿是新发现的 T23 `S0/A6/B4 BODY4976 FE84868 NX83F20 TM5 -> A4792` 4/4 same-cycle、约79–89ms 前驱，下一轮 WOF-046 正在等待直接 prospective 验证。**
