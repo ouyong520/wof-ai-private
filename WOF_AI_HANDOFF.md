@@ -19,83 +19,77 @@
 - selector、player table、dispatcher44 incoming edges、descriptor consumer `0x247C` 已解决
 - `enemy+0x70 U16 0->nonzero` 仅 ACTIVE-start convention，不是 exact hitbox/damage onset
 
-## WOF-039 — 已完成的 3 房 batch
-身份严格通过：`WOF-039 / WOF-AI-PRIVATE / wof-future-danger-multiroom-batch-v39 / marker`，`readOnly=true`，`ramWrites=0`。
+## WOF-040 — 已完成 5 房 batch
+身份严格通过：`WOF-040 / WOF-AI-PRIVATE / wof-future-danger-multiroom-coordinator-v40 / marker`，`readOnly=true`，`ramWrites=0`。
 
-Batch `b-cab8bed7-fd3`：
-- joined 3 / complete 3 / error 0 / interrupted 0
-- 105571 enemy samples
-- 515 ACTIVE edges
-- 58 signals
-- 55 strict + 3 real-late + 0 hard miss
-- 这 3 个实际被收进来的房间全是 3P；用户尝试的 2P 房因为 v39 的 45 秒 join window 被拒绝，所以 **WOF-039 没有 2P coverage**。
-
-### T20 B0->B255 -> A5136
-WOF-039：23 signals / 23 evaluable；20 strict<=700ms，3 real-late（729.9/740.9/780.8ms），0 hard miss；A5136=23/23，target=23/23，side=23/23；P1=11/P2=4/P3=8；LEFT21/RIGHT2；lead 442.1..780.8ms。
-
-结论：规则本身继续强，700ms 只是过紧的验证 horizon，不是因果 timing boundary。仍定义 coarse early warning；不要从 absDx 造 threshold。
-
-### D867BA descriptor family -> A3232
-`D867BA_3232_TM6_120`：6/6 strict，A3232=6/6，target/side=6/6，lead 90.2..120ms；跨两房；entry types `T9=5, T36=1`；P1/P2 与 LEFT/RIGHT 都有覆盖。
-
-这已经是直接 forward 证据，结合历史 T33 5/5 prospective，D867BA family 可升为 **type-agnostic production-shadow-candidate**。
+Batch `b-f998189b-ff0`：
+- joined 5 / complete 5 / error 0 / interrupted 0
+- 59991 polls
+- 198105 enemy samples
+- 1002 ACTIVE edges
+- 111 signals
+- 109 strict + 1 jitter + 1 real-late + 0 hard miss
+- multiroom workflow 已证明能收 3P、纯2P(P2+P3)、纯1P(P2)。aggregate player-count samples = `[0P49,1P808,2P538,3P1017]`。
 
 ### D8811E descriptor family -> A3232
-`D8811E_3232_TM6_120`：3/3 strict，A3232/target/side=3/3，lead 99.6..119.3ms，当前 entry type `T11=3`。
+`D8811E_3232_TM6_120`：24/24 strict<=120ms；A3232=24/24；target=24/24；side=24/24；lead 98.8..112.4ms。
 
-结合历史 T34 3/3 prospective，D8811E family 可升为 **type-agnostic production-shadow-candidate**，但当前新 batch 的 forward 新 type 只有 T11。
+跨 type：`T37=1,T11=10,T34=13`；P1/P2/P3、LEFT/RIGHT 都覆盖；跨3房。
 
-### T16 B4 imminent danger
-`T16_6432_B4_40`：26/26 <=40ms ACTIVE danger，target/side=26/26；但 attack identity 不是 100% exclusive：A6432=25，A4840=1。
+结论：升为 **type-agnostic production-shadow**。
 
-结论：T16 B4 仍是强 **imminent-danger production shadow**，但禁止继续声称“exact B4 必然 A6432”。那 1 个 A4840 必须保留为真实反例。
+### D867BA descriptor family -> A3232
+WOF-040：33/33 都最终 A3232，target/side 33/33；31 strict<=120ms，1 jitter=121ms，1 clean real-late=200ms，0 hard miss。
 
-### T23 / T24
-WOF-039 中 T23 B0 与四条 T24 TM2 都是 0 exact entry；仍只是 no coverage，不是 falsification。
+跨 type：`T36=3,T9=10,T33=20`；P1/P2/P3、LEFT/RIGHT 全覆盖；跨4房。
 
-## WOF-039 workflow 缺陷
-v39 的规则采集结果有效，但批量工作流不合格：
-- 45 秒 join window 会阻止后来切入的 1P/2P/3P 房间。
-- Worker 没有 `document`，不能直接负责浏览器下载。
-- 不应让 Worker 自动猜“所有房间已经加入”。
+结论：规则本身强，但 120ms horizon 太窄。升为 **production-shadow-candidate**，下一轮用 220ms audit horizon。200ms 只是观测到的较慢样本，不得从 absDx/距离制造 timing law。
 
-因此 v39 不再作为下一轮入口。
+### T16 exact B4
+WOF-040：54/54 都在40ms内进入 ACTIVE danger，target/side=54/54；但攻击 identity 为 A6432=53、A4832=1。WOF-039 另有1次 A4840。
 
-## Current next — WOF-040
+结论：T16 exact B4 是 **imminent-danger production-shadow**，不是“100% exclusive A6432”。A6432 继续作为 specificity audit。
+
+### T20 B0->B255 -> A5136
+WOF-040 有 T20/A5136 activity，但 exact B0->B255 transition entry=0，所以没有新的 forward 样本，也没有负面证据。
+
+历史 WOF-039 23/23 A5136/target/side，lead442.1..780.8ms；下一轮 audit horizon 调到850ms，仍称 coarse early warning，不称 countdown/因果边界。
+
+### T24/T23 correction
+WOF-040 有很强 T24 coverage：T24 samples=6024，A5440=19，A5424=16；但旧四条 T24 exact prospective rule 全部 `rawMatch=0 / transitionEntry=0`。
+
+同时 retrospective `fingerprintTop` 又能在约100ms看到旧 TM2 signature（A5424候选6次，A5440候选5次）。这正说明固定 lag 可能抓到前一攻击周期/非当前 attack-zero 链，不能当 forward proof。
+
+因此：旧 T24 fixed-lag TM2/TM3/TM4 全部降为 retrospective/correlation only。T23 同理继续等待真正 same-cycle evidence。
+
+## Current next — WOF-041
 ```text
-resume = wof-resume-dispatch-selector-v50
-nextCopyId = WOF-040
-nextScript = wof_future_danger_multiroom_coordinator_v40.js
-nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V40 JSON ===
+resume = wof-resume-dispatch-selector-v51
+nextCopyId = WOF-041
+nextScript = wof_future_danger_multiroom_coordinator_v41.js
+nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V41 JSON ===
 ```
 
-### WOF-040 正确工作方式
-同一条 WOF-040 命令按当前 DevTools context 自动选择模式：
+### WOF-041 目的
+继续使用已经验证成功的 dual-mode multiroom workflow，但 embedded validator 改成 `WOF-041R`：
+- D8811E 按 production-shadow 继续独立复核。
+- D867BA 用220ms horizon 复核。
+- T16 改成 imminent-danger 语义；A6432 只作为 specificity audit。
+- T20 horizon=850ms，仍 coarse early warning。
+- 新增 `cyclePrecursorTop`：只统计 **enemy+0x70==0 且位于同一个之后真正 0->nonzero ACTIVE 的 cycle** 中出现过的状态。
+- 这条 same-cycle attack-zero 约束专门用来淘汰 fixed-lag 污染，并为 T24/T23 找真正前驱状态。
 
-1. 在任意 live `gstyphoon.js` Worker 执行：**ROOM-COLLECT**
-   - 加入当前 active batch；最多5房。
-   - **没有 45 秒 join window**。
-   - 1P / 2P / 3P 都允许加入。
-   - 每房独立跑 embedded WOF-038 120 秒，并写入 same-origin IndexedDB v2。
-   - 记录 player count/presence、enemy types、`+0x7E` target distribution。
-   - 房间关闭后 heartbeat 停止。
-
-2. 所有想收的房间都完成后，把 DevTools context 切到 **top**，再运行**同一条 WOF-040 命令**：**TOP-FINALIZE**
-   - 如果还有活跃房间，拒绝过早 finalize。
-   - 已关闭且 heartbeat 超时的房间标为 `interrupted`。
-   - 汇总所有 complete rooms，保留 `rooms[]` per-room 明细。
-   - **只生成并下载一份** `WOF-040_<batchId>.json`。
-   - finalize 后下一次 Worker 运行会自动创建新 batch。
-
-### Scene policy
-尚无已证明的 authoritative stage/scene RAM field；只能把 player presence / enemy-type composition / target distribution 称为 context fingerprint，不能冒充正式 scene ID。
+### WOF-041 操作
+- 在最多5个 live `gstyphoon.js` Worker 分别运行同一条 WOF-041；无短 join window；1P/2P/3P 都可。
+- 每房约120秒。
+- 所有想收的房间结束后切到 `top`，再运行同一条 WOF-041；若仍有活房会拒绝过早 finalize，否则只下载一份 `WOF-041_<batchId>.json`。
 
 ## 禁止误判
 - broad T16 FAST/MID ❌
 - broad T30_FAST ❌
-- absDx130 / T20 absDx = hitbox或timing threshold ❌
-- T16 B4 = 100% exclusive A6432 ❌（WOF-039 已有 1 个 A4840 反例）
-- T20 700ms = causal boundary ❌
-- retrospective lag = fixed-time predictor ❌
-- mined correlation = prospective proof ❌
+- absDx130 / 距离 = hitbox或timing threshold ❌
+- T16 B4 = 100% exclusive A6432 ❌
+- T20 850ms / D867 220ms = causal boundary ❌
+- retrospective fixed-lag fingerprint = forward predictor ❌
+- 旧 T24 fixed-lag TM2/TM3/TM4 直接复活 ❌
 - 未证明 RAM field 就声称精确 scene/stage ID ❌
