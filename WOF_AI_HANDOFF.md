@@ -1,31 +1,52 @@
-# WOF Future Danger AI — 最新交接 / 新房间续接说明
+# WOF Future Danger AI — 最新交接 / 新对话 START HERE
 
 更新时间：2026-08-31
 仓库：`ouyong520/wof-ai-private`
-游戏：WOF / Warriors of Fate / 吞食天地II / 三国志II，World 921002 / MAME `wofr1`
+项目：Project A — Browser/MAME Future Danger
+游戏：Warriors of Fate / 吞食天地II / 三国志II，World 921002 / MAME `wofr1`
 
-> 新对话先读本文件。不要从头重做，不要回 Focus Multiroom / HUD，不要复活 `0x0080F2`，不要重扫 44 dispatcher incoming edges。
+> **新对话第一步：读本文件，再读 `WOF_AI_CURRENT_FRONTIER.md` 和 `wof_resume_dispatch_selector.js`。不要从头重做。**
+>
+> 本项目与 `ouyong520/wof-winkawaks-bridge` 是两个项目；不要把 WinKawaks 的 M3/M4 / LOCAL_TO_WEB 数据混进来。
 
 ---
 
-## 0. 用户工作方式
+## 0. 用户协作方式 / 强制协议
 
-用户只负责在 `gstyphoon.js` DevTools Console 执行每轮一条命令，然后回传 JSON / 截图。
+用户主要负责在 live `gstyphoon.js` Worker Console 执行测试，然后发回 JSON / 截图。
 
-- 能直接改 GitHub 就自己改。
-- 不要求用户手工编辑 JS。
-- 新房间 / 新 Worker 优先用 `wof_resume_dispatch_selector.js` 恢复。
-- 重要 68000 结论只能从真实 instruction boundary / exact raw / runtime 验证得出；不能把任意偶地址当 opcode。
+必须遵守：
+
+- 每轮只给 **一条可执行 Console 命令**。
+- 第一行必须有唯一 copy ID，例如 `// WOF-034`。
+- Assistant 自己管理 ID ↔ script/version/test。
+- 收到结果后，**先校验** `copyId/project/version/marker`，不匹配就判为旧结果/发错，不作当前证据。
+- 能直接改 GitHub 就自己改，不要求用户手工编辑 JS。
+- 用户经常换房间，所以优先设计 coverage-adaptive 测试，不要让固定类型 validator 白跑。
+- 默认测试脚本 read-only；`ramWrites=0`。
 
 ---
 
 ## 1. 最终目标
 
-Future Danger AI：结合 ROM AI + CPS RAM，预测未来约 0~1000ms 哪个敌人真正会威胁 P1/P2/P3 中谁，并识别攻击 startup / active / recovery，最终用于 Future Danger Map / Safe Path。不是自动操作。
+Future Danger AI：
+
+```text
+ROM AI / descriptor / state
++ CPS RAM live enemy data
++ enemy+0x7E 当前 P1/P2/P3 target
++ enemy/target XY
++ 攻击前 terminal state
+→ 预测未来约0~1000ms真实威胁
+→ 判断打谁、来自哪侧、多久进入 ACTIVE
+→ Future Danger Map / Safe Path
+```
+
+不是 auto-play。
 
 ---
 
-## 2. 固定 RAM
+## 2. 固定地址 / 已锁死 ground truth
 
 ```text
 P1 = 0xFFBE1C
@@ -38,13 +59,7 @@ enemy stride = 0xE0
 slots = 20
 ```
 
-ROM cache：`self.__WOF_ROM_LOC_CACHE`。旧 offline DB → live ROM：`live = offline + 0x34`。
-
----
-
-## 3. P1/P2/P3 target selector 已完全锁死
-
-玩家 identity 动态严格证明：
+玩家 self index：
 
 ```text
 P1+0x7C = 0
@@ -52,14 +67,13 @@ P2+0x7C = 4
 P3+0x7C = 8
 ```
 
-敌人 target selector 动态严格证明：
+敌人 target selector：
 
 ```text
-enemy+0x7E = 0 / 4 / 8
-0 → P1
-4 → P2
-8 → P3
+enemy+0x7E = 0/4/8 → P1/P2/P3
 ```
+
+**+0x7E 永远是 authoritative live target。**
 
 player pointer table：
 
@@ -69,7 +83,7 @@ player pointer table：
 0x010D00 = P3
 ```
 
-严格 selector load：
+selector strict route：
 
 ```text
 0x010E66 MOVE.W 126(A0),D1
@@ -77,343 +91,384 @@ player pointer table：
 0x010E6E MOVE.L 0(A1,D1.W),A1
 ```
 
-即 `enemy+0x7E → selected P1/P2/P3 → A1`。
-
-不要再找 selector。
+`enemy+0x6A` 是 selected-player pointer cache low16，只有值严格等于 `BE1C/BEFC/BFDC` 时才作为 supporting evidence，不替代 +0x7E。
 
 ---
 
-## 4. selected-player pointer cache 新主线
+## 3. dispatcher / descriptor 已解决，不要重做
 
-动态 + 静态已证明：
+AI 两层 state/action：
 
 ```text
-enemy+0x6A = selected-player pointer low16
-P1 = BE1C
-P2 = BEFC
-P3 = BFDC
+enemy+0x99
+→ state table
+→ enemy+0x2A
+→ action table
+→ AI routine
 ```
 
-三个真实 reader：
+严格 route 之一：
 
 ```text
-0x0112AA
-0x0065E2
-0x006834
-```
-
-最强 bridge：
-
-```text
-0x006834 MOVEA.W 106(A0),A1
-0x006838 CMPI.B #4,41(A1)
-0x00683E BEQ 0x006850
-0x006850 MOVEQ #0,D0
-0x006852 MOVE.B 42(A0),D0
-0x006856 MOVE.W table(PC,D0.W),D1
-0x00685A JMP indexed
-```
-
-所以已经严格成立：
-
-```text
-enemy+0x6A
-→ selected player
-→ selectedPlayer+0x29 compared with 4
-→ enemy+0x2A action dispatch
-```
-
-不要给 selectedPlayer+0x29 强行命名；目前只称 selected-player state/flag byte。
-
----
-
-## 5. action2A=2 → D0=16/20 已锁死
-
-`0x6850` action table 只有两项：
-
-```text
-action2A=0 → 0x6862
-action2A=2 → 0x6904
-```
-
-在 action2A=2 路径：
-
-```text
-0x006A10 MOVEQ #16,D0
-0x006A12 JSR 0x25C8
-
-0x006A62 MOVEQ #20,D0
-0x006A64 JSR 0x25C8
-```
-
-因此 D0 provenance 是 exact opcode proof，不是推测。
-
----
-
-## 6. dispatcher 语义修正：0x25C8 选的是 descriptor，不是代码 handler
-
-原先把 type-specific level2 entry 称为 final handler，这个命名已修正。
-
-`0x25C8`：
-
-```text
-enemy type
-→ type table
-→ type-specific table
-→ 0(A4,D0.W)
-→ A4 = action descriptor pointer
-→ BRA 0x247C
-```
-
-`0x247C` 从真实边界解出：
-
-```text
-0x247C MOVEA.L (A4)+,A6
-0x247E MOVE.L  (A4)+,0x30(A0)
-0x2482 MOVE.W  (A4)+,D1
-```
-
-如果 D1 bit15=0：timer 写 enemy+0x34，next descriptor 是 inline record。
-
-如果 D1 bit15=1：
-
-```text
-0x249E ANDI.W #0x7FFF,D1
-0x24A2 timer → enemy+0x34
-0x24A6 MOVEA.L (A4),A4
-0x24A8 A4 → enemy+0x2C
-```
-
-即显式 next-descriptor pointer。
-
-A6 不是代码地址，而是 frame/payload end pointer：
-
-```text
-0x2490 A6 → enemy+0x12
-0x2494 LEA enemy+0x6C,A4
-0x2498 MOVE.W -(A6),(A4)+
-0x249A MOVE.L -(A6),(A4)+
-```
-
-所以 frameEnd 前 6 bytes 被复制到 enemy+0x6C..+0x71。
-
----
-
-## 7. type35 D0=16/20 descriptor 已完整解析
-
-Type35 table base：
-
-```text
-0x081774
-shared by type7/type35
-```
-
-合法连续 D0 prefix 只有：
-
-```text
-0  → 0x81876
-4  → 0x81884
-8  → 0x818CA
-12 → 0x81906
-16 → 0x81864
-20 → 0x81856
-24 → 0x81892
-```
-
-D0=28 开始是机器数据，不允许继续把后面当 table。
-
-### D0=16
-
-```text
-descriptor = 0x81864
-frameEnd = 0x825D0
-value30 = 0
-timerRaw = 0xFFFF
-timer = 32767
-next = 0x81864 self-loop
-```
-
-强语义：长时间 hold / self-loop descriptor。
-
-### D0=20
-
-```text
-descriptor = 0x81856
-frameEnd = 0x825D0
-value30 = 0
-timerRaw = 0x8010
-timer = 16
-next = 0x817CC
-```
-
-后续 chain：
-
-```text
-0x81856 timer16
-→ 0x817CC timer1
-→ 0x817D6 timer5
-→ 0x817E0 timer5
-→ 0x817EA timer5
-→ 0x817F4 timer5
-→ 0x817FE timer5
-→ 0x81808 timer5
-→ 0x817D6 loop
-```
-
-首次进入约 47 tick；之后约 30-tick loop。
-
----
-
-## 8. D0=20 已有历史实战 startup 证据
-
-旧 Multiroom / Future AI 数据并不是当前因果 proof，但能做独立语义验证。
-
-D0=20 chain 中的多个 type35 frame 已在旧实战里出现：
-
-```text
-531402: attack=0, startupTop=T35_F01/T35_F02
-531464: attack=0, startupTop=T35_F01/T35_F02
-531620: attack=0
-531690: attack=0, startupTop=T35_F01/T35_F02
-```
-
-因此当前最强语义是：
-
-```text
-D0=20 = pre-active / attack startup descriptor chain
-```
-
-不是 active attack，也不像 recovery。仍需新的 live RAM 因果顺序把 `selected player → action2A → D0=20 descriptor` 抓在同一个事件上。
-
----
-
-## 9. 旧 state99/action2A structural route 仍有效
-
-另一条已严格证明的 structural route：
-
-```text
-state99=0
-action2A=2
-→ 0x010EC6
-→ 0x10F40 MOVE.W #0x0600,42(A0)
+state99=0 / action2A=2
+→ 0x10EC6
+→ 0x10F40 writes #0600 to enemy+0x2A word
 → 0x10F46 MOVEQ #24,D0
-→ 0x10F48 JMP 0x25C8
+→ 0x25C8
 ```
 
-注意 action2A 入路径时是 2，但 0x10F40 会写 word `0x0600`，所以之后 byte +0x2A 变 6。不要混淆 pre/post action value。
+`0x25C8` 选择的是 **descriptor data**，不是 direct code handler。
 
-`0x10FA2 → 0x25B6` 仍第二优先级，不要抢当前主线。
+`0x247C` 是 descriptor consumer：
+
+```text
+descriptor +0  long → frame/payload end pointer → enemy+0x12
+           +4  long → enemy+0x30
+           +8  word → timer / flag
+bit15 clear → inline next descriptor
+bit15 set   → explicit next pointer at +0x0A
+next → enemy+0x2C
+timer → enemy+0x34
+frameEnd payload tail → enemy+0x6C/+0x6E...
+```
+
+**frameEnd 不是代码地址。**
+
+Dispatcher incoming edges 已完整：44 direct edges；不要重扫。
 
 ---
 
-## 10. 动态 transition 已知结论
+## 4. ACTIVE 统一约定
 
-干净 transition 已证明：target reselection 常与 action transition boundary 同帧/近帧发生，state99 不要求变化。
+```text
+enemy+0x70 U16: 0 → nonzero
+```
 
-`enemy+0x6A` 会随 target 同步变成目标玩家低16 pointer：BE1C/BEFC/BFDC。
+作为 ACTIVE-start convention。
 
-16ms/20ms JS sampling 只能证明时间窗口，不能单凭同一个 sample 宣称 exact CPU instruction order。
+它不是 exact damage / hitbox onset，所以 leadMs 只能说“距离 ACTIVE 起点”，不能说“距离命中”。
 
 ---
 
-## 11. 当前房间最新情况
+## 5. 已验证 production-shadow：T16 exact terminal B4
 
-`wof_type35_descriptor_chain_runtime_v1.js` 的静态 descriptor proof 全通过，但当前 10 秒窗口：
+Broad T16 FAST/MID 已经被 V25 的 late/hard miss 否定，不能再当 production。
+
+V26 找到真正 terminal phase：
 
 ```text
-type35SlotsSeen = []
-eventCount = 0
+type16
+attack=0
+body=4856
+frameEnd=0x851AE
+next=0x84C44
+value30=0xFFFF
+timer34=1
+action2A=4
+b2B=4
+state99 ∈ {0,2,4}
 ```
 
-这只表示当前房间当时没有 type35 enemy，不是链失败。
+规则：
 
-因此下一步改成 **全类型 runtime descriptor correlation**，不再等 type35。
+```text
+T16_6432_B4_40
+```
+
+WOF-030 prospective：
+
+```text
+65/65 strict <=40ms
+65/65 attack6432
+65/65 target stable
+65/65 side stable
+lead≈9.0..21.1ms
+0 late
+0 hard miss
+```
+
+WOF-032 又 2/2 strict：10.0 / 19.8ms，均 attack6432。
+
+所以：
+
+```text
+T16 exact B4 = production-shadow
+```
+
+注意目前 T16 entry side 的强样本仍主要是 LEFT，RIGHT symmetry 尚缺直接强覆盖。
 
 ---
 
-## 12. 当前下一条脚本
+## 6. T33/T34 attack3232：当前最强新候选
+
+WOF-031 mining 找到 clean countdown。
+
+### T34
 
 ```text
-wof_d016_20_descriptor_runtime_alltypes_v1.js
+type34
+attack0
+body2872
+FE8811E
+NX879E2
+V100000
+P6C2784
+action2A=4
+b2B=2
+state99 2/4
+TM6
 ```
 
-它会对当前所有 active enemy type：
+WOF-032 prospective：
 
 ```text
-从 type table 自动算各自 D0=16 / D0=20 descriptor
-+ 实时读取 target7E
-+ ptr6A selected player
-+ selectedPlayer+0x29
-+ state99
-+ action2A
-+ enemy+0x12/+0x2C/+0x30/+0x34/+0x6C..+0x71
+3/3 strict
+lead 99.9 / 101.6 / 102.4ms
+attack3232 3/3
+target stable 3/3
+side stable 3/3
 ```
 
-只在语义状态/descriptor 改变时记录，不会每个 timer tick 灌爆 JSON。
+状态：`production-shadow-candidate`。
 
-目标是抓到：
+### T33
 
 ```text
-selected player condition
-→ action2A transition
-→ D0=16 / D0=20 descriptor fingerprint
+type33
+attack0
+body2872
+FE867BA
+NX85ECE
+V100000
+P6C2784
+action2A=4
+b2B=2
+state99 2/4
+TM6
 ```
 
-的同一实时事件。
+WOF-032 prospective：
+
+```text
+5/5 strict
+lead 100 / 100 / 100.5 / 107.4 / 108.4ms
+attack3232 5/5
+target stable 5/5
+side stable 5/5
+LEFT 4 + RIGHT 1
+```
+
+状态：`production-shadow-candidate`。
+
+需要更多独立覆盖后再升 production-shadow。
 
 ---
 
-## 13. 新房间恢复
+## 7. T30：broad 规则已降级
 
-先运行：
+旧：
+
+```text
+type30 + attack0 + body1800 + state99=0 + action2A=0 + b2B=0
+```
+
+早期数据很强，但 WOF-032 出现：
+
+```text
+10 evaluable
+8 strict
+2 hard miss
+```
+
+两个 hard miss：
+
+```text
+TM1, absDx190
+TM1, absDx151
+```
+
+而 TM1 strict 样本曾有：
+
+```text
+absDx125 / 89 / 51
+```
+
+所以 broad T30 不能 production。
+
+WOF-033 原计划拆：
+
+```text
+TM3~6
+TM1 + absDx<=130
+TM1 + absDx>130 diagnostic
+```
+
+但该房间所有 exact T30 split match 都是0，因此没有新证据。
+
+**absDx130 只是 provisional diagnostic split，不是 hitbox，不是 exact attack range。**
+
+---
+
+## 8. T27 / T23
+
+WOF-031 发现：
+
+### T27 → attack5064
+
+```text
+BODY5048 / FE9A32C / NX99CB0 / VFFFF / TM1 / P6C5056
+```
+
+B4 曾出现在约20ms和约100ms前；尚缺足够 prospective coverage。
+
+### T23 → attack5888
+
+```text
+BODY4936 / FE84060 / NX83C60 / VFFFF / TM1 / P6C4944
+```
+
+同样缺 coverage。
+
+状态都保持 discovery/prospective，不得直接 production。
+
+---
+
+## 9. WOF-033 最新结果 / 为什么切换策略
+
+正确 WOF-033：
+
+```text
+duration ≈120000.8ms
+interval 10ms
+enemySamples 32989
+ACTIVE edges 291
+signals 0
+```
+
+主要 room types：
+
+```text
+T24 13492
+T18 8544
+T21 8746
+T30 1724
+```
+
+但所有固定 validator exact match：0。
+
+这不是规则失败，是 **coverage=0**。
+
+工程结论：以后不能继续让用户每换房间就固定等 T16/T33/T34/T27/T23；否则可能白跑120秒。
+
+---
+
+## 10. 当前 next：WOF-034 adaptive terminal miner
+
+当前 resume 已更新：
+
+```text
+version = wof-resume-dispatch-selector-v44
+nextCopyId = WOF-034
+nextScript = wof_future_danger_adaptive_terminal_miner_v34.js
+nextMarker = === WOF FUTURE DANGER ADAPTIVE TERMINAL MINER V34 JSON ===
+```
+
+WOF-034 的作用：**无论房间有什么 enemy type，都能产出攻击前证据。**
+
+它会对每个真实 ACTIVE edge：
+
+```text
+抓最后 attack=0 terminal state
+记录最近 pre-ACTIVE transition chain
+回看约20/50/100/150/250/500ms fingerprint
+按 type + actual attack 聚合
+target/side stability 一起统计
+```
+
+同时 opportunistically 验证已知 T16/T33/T34。
+
+目标优先挖当前常见：
+
+```text
+T24 / T18 / T21 / T30
+```
+
+WOF-034 mining 出来的新 signature **只能算 discovery evidence**；下一轮必须另写 prospective validator 才能升级。
+
+---
+
+## 11. 新对话接手后的实际工作
+
+按顺序：
+
+1. 读本文件。
+2. 读 `WOF_AI_CURRENT_FRONTIER.md`，里面有完整过程和 exclusions。
+3. 读 `wof_resume_dispatch_selector.js`，确认 `v44 / WOF-034`。
+4. 让用户跑 WOF-034。
+5. 收到 JSON 后先校验 ID/version/marker/readOnly/ramWrites。
+6. 分析 strongest terminal fingerprints，优先选择重复多、lead 窄、actual attack identity 稳定的候选。
+7. 写下一版 prospective validator，只验证最强 2~4 个候选。
+8. 规则通过独立 prospective 样本后再升 production-shadow。
+9. 当 production rules 覆盖足够，再做最终 multi-enemy Future Danger Map / Safe Path。
+
+当前 WOF-034 Console 命令：
 
 ```js
-await fetch('https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_resume_dispatch_selector.js?x='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(s=>(0,eval)(s));
+// WOF-034
+await fetch('https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_future_danger_adaptive_terminal_miner_v34.js?x='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(s=>(0,eval)(s));
 ```
 
-当前 resume 应显示：
+运行约120秒，最后应出现：
 
 ```text
-wof-resume-dispatch-selector-v12
-nextScript = wof_d016_20_descriptor_runtime_alltypes_v1.js
+=== WOF FUTURE DANGER ADAPTIVE TERMINAL MINER V34 JSON ===
 ```
-
-不要重跑过去几十个旧 probe。
 
 ---
 
-## 14. 绝对不要重做
+## 12. 不要重做 / 不要误判
+
+不要重做：
 
 ```text
 Focus Multiroom
-HUD 调整
+HUD
 0x0080F2
-44 dispatcher incoming edge scan
-重新寻找 enemy+0x7E
-重新证明 player+0x7C
-重新证明 0x10CF8 player table
-0x11C26 bridge
+44 dispatcher incoming edges
+selector +0x7E
+player identity +0x7C
+player table 0x010CF8
+0x11C26
 0x05F6BA
 A0+0x40/+0x44 target XY
-AD5A / low4 classification
-全 ROM raw-even-address opcode 扫描
-把 A5 默认当 player
-把 A5+1FA 当唯一主线
+AD5A/low4
+全 ROM 任意偶地址 opcode scan
+```
+
+不要误判：
+
+```text
++0x70 = exact hitbox/damage onset       ❌
+frameEnd = code                         ❌
+descriptor = direct handler code        ❌
+broad T16 FAST/MID = production         ❌
+T16 4840 divergence = production        ❌
+broad T30 = production                  ❌
+absDx130 = exact attack range/hitbox     ❌
+WOF-033 zero match = T33/T34 rule失败   ❌
+WOF-034 mined correlation = causal proof ❌
 ```
 
 ---
 
-## 15. 当前一句话主线
+## 13. 一句话 current frontier
 
 ```text
-enemy+0x7E target P1/P2/P3
-→ enemy+0x6A selected-player pointer cache
-→ selectedPlayer+0x29 compare
-→ enemy+0x2A action dispatch
-→ action2A=2 → 0x6904
-→ D0=16 / D0=20
-→ 0x25C8 type-specific descriptor selection
-→ 0x247C descriptor engine
-→ D0=20 pre-active/startup chain
-→ 实时 target-aware Future Danger
+selector/dispatcher/descriptor 已解；
+T16 exact B4 已 production-shadow；
+T33/T34 3232 TM6 已 prospective 全命中候选；
+T30 broad 已有 hard miss 被降级；
+当前不再固定等某种 enemy，而是 WOF-034 coverage-adaptive mining，
+从任何房间每个 ACTIVE edge 挖 terminal fingerprint，
+再做 prospective validation 扩大 Future Danger 覆盖。
 ```
