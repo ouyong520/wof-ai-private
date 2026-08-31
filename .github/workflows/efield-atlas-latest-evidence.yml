@@ -1,0 +1,117 @@
+name: EFIELD atlas latest evidence
+
+on:
+  push:
+    paths:
+      - '.github/workflows/efield-atlas-latest-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: efield-atlas-latest-evidence
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Merge latest EFIELD discovery evidence
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('reports/EFIELD_WIN_KAWAKS_ENEMY_FIELD_ATLAS.md')
+          s=p.read_text(encoding='utf-8')
+
+          block=r'''
+## Record-local `0x34` reload ceiling
+
+The exact post-arrival `0x34` value is not a single fixed constant per logical record, but the seven-run corpus shows a much stronger **record-local upper-ceiling / nominal-duration** structure than the earlier raw modal-purity result implied.
+
+Across **4,323** logical `+0x0A` destination arrivals and **146** destination logical records:
+
+- arrival value equals that record's observed maximum: **3,192/4,323 = 73.84%**;
+- arrival value is within 1 below the record maximum: **4,000/4,323 = 92.53%**;
+- within 2 below: **4,090/4,323 = 94.61%**;
+- 130/146 record reload domains are contiguous;
+- 129/146 records have more than one observed arrival value.
+
+Leave-one-run-out ceiling validation is also stable:
+
+- holdout destination record covered by the other six runs: **4,321/4,323 = 99.95%**;
+- holdout reload exceeds the training-record maximum only **11/4,321 = 0.25%**;
+- exact training ceiling: **73.59%**;
+- within 1 below training ceiling: **92.34%**;
+- within 2 below: **94.40%**.
+
+This favors a **record-specific nominal/ceiling dwell value observed at slightly different countdown phases**, rather than arbitrary per-instance duration. The earlier in-sample gains from conditioning on type/B6 do not survive leave-one-run-out as cleanly; destination record alone is the strongest robust baseline. Sampling phase and same-frame execution ordering remain plausible explanations for the common `max-1` / `max-2` observations.
+
+Evidence: `results/efield/RELOAD_CEILING.md`, `results/efield/RELOAD_HOLDOUT.md`, `results/efield/RELOAD_CONTEXT.md`.
+
+## C6 update checkpoints inside script execution
+
+The 11 same-type `0xC6` changes are not uniformly distributed across the executor state space.
+
+Exposure-normalized script alignment shows:
+
+- **5/11** C6 changes occur exactly on a logical cursor `+0x0A` sequential record advance;
+- the other **6/11** occur while the logical record is unchanged;
+- all 11 switches occur in only two observed phase tuples, both with coarse `0x73=0A`:
+  - `E0,A0,D8,0A,0C`: 9 switches;
+  - `E0,00,38,0A,00`: 2 switches;
+- switch-bearing logical cursors are confined to the `0x02008Bxx/0x02008Cxx` and `0x02005Exx` record families in the current corpus;
+- flag `0x100000` has a higher observed switch rate than flag zero, but the sample is only 2 switches vs 9 and is not enough for a semantic promotion;
+- C6 changes occur both at countdown reload boundaries and mid-record (`0x34` can continue decrementing), so C6 is not simply a record-boundary latch.
+
+Current interpretation: C6 remains a **sticky horizontal-proximity-associated physical-player link/bookkeeping field**, but its updates appear restricted to particular script/phase contexts rather than being evaluated every frame. The exact update trigger remains unresolved.
+
+Evidence: `results/efield/C6_SCRIPT_CHECKPOINTS.md`, `results/efield/C6_SWITCH_LATENCY.md`, `results/efield/PLAYER_ASSOC_GEOMETRY.md`.
+
+## Collector discovery blocker after run 006
+
+No valid EFIELD raw capture has been added after EFIELD-006.
+
+- EFIELD-007 60-second passive burst: failed before capture because fresh immutable CPS RAM discovery was not uniquely qualified.
+- EFIELD-008 one-frame discovery probe: failed before capture under the strengthened immutable-player-structure-v3 fingerprint.
+- EFIELD-009 one-frame candidate diagnostic: also failed before capture.
+- all three failures occurred before raw sampling and preserved the read-only/no-game-write contract.
+
+The v3 player fingerprint itself is strongly supported by retained evidence: across **13 compatible captures / 26,402 frames**, stable player triplets at `0x20`, `0x21`, `0x26`, `0x62`, `0x7C`, and `0x92` have **zero mismatches**. Therefore discovery ambiguity is not evidence that these invariants are unstable.
+
+GitHub-side queue logic now treats a matching FAILED task blob as terminal and records fresh-discovery candidate details on future failures. The currently running local Collector process did not hot-load that newer failure-detail code for EFIELD-009, so its status still contains only the generic non-unique-discovery error. Do **not** weaken the uniqueness gate or fall back to cached RAM addresses merely to resume capture.
+'''
+
+          marker='## Record-local `0x34` reload ceiling'
+          if marker not in s:
+              anchor='## High-value evidence outputs'
+              pos=s.find(anchor)
+              s=s[:pos]+block+'\n'+s[pos:] if pos!=-1 else s+'\n'+block
+
+          # Add latest evidence filenames if not already listed.
+          anchor='## Current priorities'
+          extra='''- `results/efield/RELOAD_CONTEXT.md`\n- `results/efield/RELOAD_HOLDOUT.md`\n- `results/efield/RELOAD_CEILING.md`\n- `results/efield/C6_SCRIPT_CHECKPOINTS.md`\n- `results/efield/PLAYER_FINGERPRINT_CROSSCORPUS.md`\n'''
+          if 'results/efield/RELOAD_CEILING.md' not in s and anchor in s:
+              pos=s.find(anchor)
+              s=s[:pos]+extra+'\n'+s[pos:]
+
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit atlas refresh
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reports/EFIELD_WIN_KAWAKS_ENEMY_FIELD_ATLAS.md
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'EFIELD: consolidate reload ceiling and C6 checkpoint evidence'
+          git pull --rebase origin "${GITHUB_REF_NAME:-main}"
+          git push
