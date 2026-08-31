@@ -6,48 +6,65 @@ Evidence class: `WinKawaks-local-discovery-only`
 
 ## Why this file exists
 
-`COMPLETION_20260901.md` closed the retained-raw candidate-screen phase. Work continued afterward only to keep the automatic evidence pipeline synchronized with owner-lane state and to prepare for the next already-queued GEO discriminator. No Browser mainline or production-shadow rule is modified here.
+`COMPLETION_20260901.md` closed the retained-raw candidate-screen phase. Work continued afterward only to keep the automatic evidence pipeline synchronized with owner-lane state and to answer concrete owner questions with discriminative evidence. No Browser mainline or production-shadow rule is modified here.
 
 ## EFIELD owner synchronization
 
 EFIELD subsequently closed its bounded high-value field-mapping phase in `parallel/EFIELD/COMPLETION_20260901.md`, with Round 010 retaining `+0x2D`, `+0x2E`, `+0x37`, and the earlier `+0x72` at owner-level `STRONG_CANDIDATE` where appropriate while refusing narrower gameplay semantics.
 
-RAWMINE bridge follow-up now records that owner boundary explicitly so a question-specific RAWMINE numerical class cannot be confused with an EFIELD semantic classification.
+RAWMINE bridge follow-up records that owner boundary explicitly so a question-specific RAWMINE numerical class cannot be confused with an EFIELD semantic classification.
 
 Bridge changes:
 
 - `analysis/rawmine/candidate_screen_completion_sync.py`
 - workflow stage `Synchronize owner completion state`
-- summary revision `v6-owner-sync-through-efield-round010-completion`
+- candidate-screen workflow refreshes from latest `main` before analysis to avoid stale-report rebase conflicts
 
 No generic EFIELD capture is requested by RAWMINE.
 
-## GEO P1 depth discriminator continuation
+## GEO P1 depth discriminator — first controlled attempt
 
-GEO has queued the concrete operator-controlled task:
+Owner task:
 
 `GEO-0008-p1-depth-only-5s60-20260831-2115Z`
 
-Question: P1 UP/DOWN-only floor/depth discriminator, with reconstructed X (`+0x04/+0x0B`) and Z (`+0x0C/+0x11`) expected to remain stable.
+The collector produced a mechanically valid 300-frame read-only raw. RAWMINE consumed it automatically and added a second validation layer beyond collector health.
 
-RAWMINE prepared `analysis/rawmine/candidate_screen_geo_depth.py` so the next eligible raw is consumed automatically. The screen is deliberately evidence-only and evaluates:
+Owner-specified orthogonal controls passed cleanly:
 
-- P1 change-event support per byte;
-- untouched P2/P3 control change rate;
-- P1-specificity;
-- small circular delta behavior;
-- bidirectional delta evidence;
-- exact co-change precision/recall relative to `+0x08` as supporting evidence only;
-- contamination guardrails from reconstructed X and Z control changes.
+- reconstructed X (`+0x04/+0x0B`) changes: 0
+- reconstructed Z (`+0x0C/+0x11`) changes: 0
 
-If the controlled X/Z guardrails fail, the screen reports `CONTAMINATED_CONTROL` rather than forcing a coordinate conclusion.
+But the intended P1 UP/DOWN manipulation was not present in player-object evidence:
 
-## Current mechanical state
+- `+0x08` controlled-run changes: 0
+- only `+0x7F` was strongly dynamic on P1, but it was similarly dynamic on untouched P2/P3 (`P1 specificity ~0.5133`)
+- no byte passed the minimum repeated P1-specific manipulation guardrail
 
-At the time of this continuation the GEO task status is `WAITING_FOR_OPERATOR`. That is an owner-controlled scene gate, not a RAWMINE evidence failure. RAWMINE must not duplicate it with a separate `RAWMINE-*` capture or bypass the operator gate.
+Automated verdict:
 
-Once `captures/GEO-0008-p1-depth-only-5s60-20260831-2115Z.jsonl.gz` exists, the bridge workflow automatically reruns the generic evidence, owner-scoped rankings, controlled GEO depth screen, and owner-completion synchronization.
+`CONTROLLED_RAW_NO_P1_DEPTH_MANIPULATION_EVIDENCE`
+
+This is an ineffective manipulation capture, **not** negative evidence against `+0x08` and not support for `+0x7F` as depth. Detailed evidence is in `parallel/RAWMINE/GEO_0008_DEPTH_SCREEN.md`.
+
+## Targeted retry
+
+Because the GEO-owned depth question remains unresolved and the original owner task is already complete, RAWMINE routed one narrow evidence-only retry rather than generic acquisition:
+
+`RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z`
+
+The retry requires:
+
+- an open walkable area;
+- visibly repeated P1 UP/DOWN traversal for the full capture;
+- P2/P3 untouched;
+- no LEFT/RIGHT, jump, attack, or other action;
+- the same reconstructed X/Z contamination guards.
+
+Current task state: `WAITING_FOR_OPERATOR`.
+
+`analysis/rawmine/candidate_screen_geo_depth.py` now consumes both the original GEO discriminator and this RAWMINE retry. A mechanically healthy raw is accepted for ranking only if at least one byte has >=5 P1 changes, >=0.80 P1-specificity, and <=0.05 untouched-P2/P3 change rate. Otherwise it remains insufficient manipulation evidence.
 
 ## Lane stop condition
 
-There is no additional unattended RAWMINE acquisition justified before that owner raw arrives. Existing EFIELD raw is exhausted; existing GEO raw has insufficient P1 depth coverage; a concrete discriminative GEO task is already active. The correct RAWMINE behavior is therefore automatic consumption of that result, not more generic collection.
+Existing EFIELD raw is exhausted and requires no generic continuation. Existing GEO-0008 raw is explicitly bounded as ineffective for P1 depth. The only active RAWMINE work item is the already-routed discriminative retry above. No additional capture should be queued in parallel with that operator gate.
