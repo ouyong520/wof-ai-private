@@ -7,69 +7,95 @@
 > 与 `ouyong520/wof-winkawaks-bridge` 完全分开。
 
 ## 强制协议
-- 每轮只使用一个唯一 copyId；回传先校验 `copyId/project/version/marker/readOnly/ramWrites`。
+- 回传先校验 `copyId/project/version/marker/readOnly/ramWrites`。
 - RAM 默认只读，`ramWrites=0`。
 - Assistant 负责分析、GitHub 修改、版本推进。
-- 多房间 batch 仍然使用**同一条 WOF-039 命令**；由于各 `gstyphoon.js` 是彼此隔离的 Worker，同一命令需分别贴入各房间 Worker，不能从一个 Worker 直接 eval 其他既有 Worker。
+- 多房间必须保留 per-room 边界，不能先混合再判断规则。
 
 ## 已锁死底层
 - P1/P2/P3 `0xFFBE1C / 0xFFBEFC / 0xFFBFDC`
 - enemy pool `0xFFC0BC`, stride `0xE0`, 20 slots
 - enemy authoritative target `+0x7E=0/4/8 -> P1/P2/P3`
-- selector、player pointer table、dispatcher44 incoming edges、descriptor consumer `0x247C` 已解决
+- selector、player table、dispatcher44 incoming edges、descriptor consumer `0x247C` 已解决
 - `enemy+0x70 U16 0->nonzero` 仅 ACTIVE-start convention，不是 exact hitbox/damage onset
 
-## 当前规则状态
-- T16 exact B4 -> A6432 = `production-shadow`，已有 LEFT+RIGHT 强覆盖。
-- T20 `B0->B255` -> A5136 = `production-shadow-candidate`：WOF-037 forward prospective 6/6 strict，attack/target/side 6/6，LEFT1 RIGHT5，lead 418.6..680.1ms；只称 coarse early warning。
-- T33/T34 TM6 -> A3232 = type-specific `production-shadow-candidates`。
-- `D867BA_3232_TM6_120` / `D8811E_3232_TM6_120` = descriptor-family prospective，等待 forward evidence。
-- T24 四条 exact TM2 与 T23 B0 保留 prospective，等待 coverage。
+## WOF-039 — 已完成的 3 房 batch
+身份严格通过：`WOF-039 / WOF-AI-PRIVATE / wof-future-danger-multiroom-batch-v39 / marker`，`readOnly=true`，`ramWrites=0`。
 
-## WOF-037 最新完成结果
-身份正确，readOnly=true，ramWrites=0；120002.3ms / 10ms；40039 enemy samples；140 ACTIVE edges。
+Batch `b-cab8bed7-fd3`：
+- joined 3 / complete 3 / error 0 / interrupted 0
+- 105571 enemy samples
+- 515 ACTIVE edges
+- 58 signals
+- 55 strict + 3 real-late + 0 hard miss
+- 这 3 个实际被收进来的房间全是 3P；用户尝试的 2P 房因为 v39 的 45 秒 join window 被拒绝，所以 **WOF-039 没有 2P coverage**。
 
-### T20 A5136
-`T20_5136_B0_TO_B255_700`：6 signals / 6 evaluable / 6 strict / 0 late / 0 hard miss；expected A5136 6/6；target 6/6；side 6/6；lead 418.6,458.6,530.1,647.8,670.1,680.1ms。
-Entry absDx 与 lead 无可信单调关系，不得制造 distance threshold。
+### T20 B0->B255 -> A5136
+WOF-039：23 signals / 23 evaluable；20 strict<=700ms，3 real-late（729.9/740.9/780.8ms），0 hard miss；A5136=23/23，target=23/23，side=23/23；P1=11/P2=4/P3=8；LEFT21/RIGHT2；lead 442.1..780.8ms。
 
-### 3232 descriptor-family discovery
-- T9 `BODY2872 FE867BA NX85ECE V100000 A4/B2 TM6 P6C2784`：3 个 retrospective ~100ms -> A3232。
-- T11 `BODY2872 FE8811E NX879E2 V100000 A4/B2 TM6 P6C2784`：2 个 retrospective ~100ms -> A3232。
-与历史 T33/T34 exact TM6 结构一致，但 T9/T11 仍需 forward prospective。
+结论：规则本身继续强，700ms 只是过紧的验证 horizon，不是因果 timing boundary。仍定义 coarse early warning；不要从 absDx 造 threshold。
 
-## WOF-039 多房间批量采集
-当前 frontier：
+### D867BA descriptor family -> A3232
+`D867BA_3232_TM6_120`：6/6 strict，A3232=6/6，target/side=6/6，lead 90.2..120ms；跨两房；entry types `T9=5, T36=1`；P1/P2 与 LEFT/RIGHT 都有覆盖。
+
+这已经是直接 forward 证据，结合历史 T33 5/5 prospective，D867BA family 可升为 **type-agnostic production-shadow-candidate**。
+
+### D8811E descriptor family -> A3232
+`D8811E_3232_TM6_120`：3/3 strict，A3232/target/side=3/3，lead 99.6..119.3ms，当前 entry type `T11=3`。
+
+结合历史 T34 3/3 prospective，D8811E family 可升为 **type-agnostic production-shadow-candidate**，但当前新 batch 的 forward 新 type 只有 T11。
+
+### T16 B4 imminent danger
+`T16_6432_B4_40`：26/26 <=40ms ACTIVE danger，target/side=26/26；但 attack identity 不是 100% exclusive：A6432=25，A4840=1。
+
+结论：T16 B4 仍是强 **imminent-danger production shadow**，但禁止继续声称“exact B4 必然 A6432”。那 1 个 A4840 必须保留为真实反例。
+
+### T23 / T24
+WOF-039 中 T23 B0 与四条 T24 TM2 都是 0 exact entry；仍只是 no coverage，不是 falsification。
+
+## WOF-039 workflow 缺陷
+v39 的规则采集结果有效，但批量工作流不合格：
+- 45 秒 join window 会阻止后来切入的 1P/2P/3P 房间。
+- Worker 没有 `document`，不能直接负责浏览器下载。
+- 不应让 Worker 自动猜“所有房间已经加入”。
+
+因此 v39 不再作为下一轮入口。
+
+## Current next — WOF-040
 ```text
-version = wof-resume-dispatch-selector-v49
-nextCopyId = WOF-039
-nextScript = wof_future_danger_multiroom_batch_v39.js
-nextMarker = === WOF FUTURE DANGER MULTIROOM BATCH V39 JSON ===
+resume = wof-resume-dispatch-selector-v50
+nextCopyId = WOF-040
+nextScript = wof_future_danger_multiroom_coordinator_v40.js
+nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V40 JSON ===
 ```
 
-### 工作方式
-1. 第一个房间启动 WOF-039 后创建 shared batch。
-2. 在 **45 秒 join window** 内，把**同一条 WOF-039 命令**贴入另外 3~4 个 live `gstyphoon.js` Worker；最多5房。
-3. 每房独立运行 embedded WOF-038 约120秒，互不混数据。
-4. 每房额外记录：`roomId`、玩家数量直方图、玩家 presence 变化、enemy type composition、`+0x7E` target distribution。
-5. 当前没有已证明的 authoritative scene/stage RAM field，因此这些只叫 `contextTimeline/context fingerprint`，不能冒充正式 scene ID。
-6. 每房结果写入 same-origin IndexedDB；某房关闭时其他房仍可继续，最终标记 interrupted。
-7. join window 关闭且房间完成后，一个 elected Worker 自动输出**一份合并 WOF-039 JSON**。
-8. 合并 JSON 同时保留 per-room 原始 WOF-038 result，并生成 aggregate diagnostics/ruleStats；分析时先看 per-room，再看 aggregate。
+### WOF-040 正确工作方式
+同一条 WOF-040 命令按当前 DevTools context 自动选择模式：
 
-### Embedded WOF-038
-- `D867BA_3232_TM6_120`
-- `D8811E_3232_TM6_120`
-- `T20_5136_B0_TO_B255_700`
-- opportunistic T16/T23/四条 T24
-- fallback mining 仍只算 discovery/correlation
+1. 在任意 live `gstyphoon.js` Worker 执行：**ROOM-COLLECT**
+   - 加入当前 active batch；最多5房。
+   - **没有 45 秒 join window**。
+   - 1P / 2P / 3P 都允许加入。
+   - 每房独立跑 embedded WOF-038 120 秒，并写入 same-origin IndexedDB v2。
+   - 记录 player count/presence、enemy types、`+0x7E` target distribution。
+   - 房间关闭后 heartbeat 停止。
+
+2. 所有想收的房间都完成后，把 DevTools context 切到 **top**，再运行**同一条 WOF-040 命令**：**TOP-FINALIZE**
+   - 如果还有活跃房间，拒绝过早 finalize。
+   - 已关闭且 heartbeat 超时的房间标为 `interrupted`。
+   - 汇总所有 complete rooms，保留 `rooms[]` per-room 明细。
+   - **只生成并下载一份** `WOF-040_<batchId>.json`。
+   - finalize 后下一次 Worker 运行会自动创建新 batch。
+
+### Scene policy
+尚无已证明的 authoritative stage/scene RAM field；只能把 player presence / enemy-type composition / target distribution 称为 context fingerprint，不能冒充正式 scene ID。
 
 ## 禁止误判
 - broad T16 FAST/MID ❌
 - broad T30_FAST ❌
 - absDx130 / T20 absDx = hitbox或timing threshold ❌
-- T16 4840 divergence production ❌
+- T16 B4 = 100% exclusive A6432 ❌（WOF-039 已有 1 个 A4840 反例）
+- T20 700ms = causal boundary ❌
 - retrospective lag = fixed-time predictor ❌
 - mined correlation = prospective proof ❌
-- 把不同房间先混合再判断规则 ❌
 - 未证明 RAM field 就声称精确 scene/stage ID ❌
