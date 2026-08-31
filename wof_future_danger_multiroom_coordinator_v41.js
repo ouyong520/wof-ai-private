@@ -8,6 +8,7 @@ code=code
   .replaceAll('wof-future-danger-multiroom-coordinator-v40','wof-future-danger-multiroom-coordinator-v41')
   .replaceAll('wof-future-danger-multiroom-v2','wof-future-danger-multiroom-v3')
   .replaceAll('WOF-038','WOF-041R')
+  .replaceAll('__WOF_V38_RESULT','__WOF_V41R_RESULT')
   .replaceAll('wof-future-danger-descriptor-family-validator-v38','wof-future-danger-cycle-validator-v41r')
   .replaceAll('=== WOF FUTURE DANGER DESCRIPTOR FAMILY VALIDATOR V38 JSON ===','=== WOF FUTURE DANGER CYCLE VALIDATOR V41R JSON ===')
   .replaceAll('wof_future_danger_descriptor_family_validator_v38.js','wof_future_danger_cycle_validator_v41r.js');
