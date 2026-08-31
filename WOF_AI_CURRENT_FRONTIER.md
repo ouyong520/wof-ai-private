@@ -6,6 +6,18 @@
 ## 阶段
 底层 selector/dispatcher/descriptor 已解决。当前是 **production-shadow 扩展 + focused same-cycle mining + T23 forward validation**。
 
+## 并行研究状态
+项目级并行协议已启用，见 `PARALLEL_RESEARCH.md`。当前允许以下研究线与 Browser/Web 主线同时推进：
+
+```text
+MAINLINE  = 当前 WOF 主线（本文件 Current next）
+GEO-*     = WinKawaks 人物几何/坐标
+EFIELD-*  = WinKawaks enemy 0xE0 字段地图
+RAWMINE-* = WinKawaks raw diff/transition/offset ranking
+```
+
+并行线不得修改或推进主线 coordinator/validator、不得改变 production-shadow 规则。多个 AI 可并发提交 Collector task，但同一个 WinKawaks capture 由 Collector 严格串行执行。本地发现只能作为 discovery evidence，进入生产结论前仍需 Browser/Web prospective validation。
+
 ## WOF-045
 身份严格通过：5/5 complete，0 error，0 interrupted，`readOnly=true`，`ramWrites=0`。  
 59994 polls / 202612 enemy samples / 1025 ACTIVE edges / 137 signals / **137 strict** / 0 miss。
