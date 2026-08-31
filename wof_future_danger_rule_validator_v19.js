@@ -1,0 +1,56 @@
+(async()=>{
+'use strict';
+const RAW='https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/';
+const load=async f=>{const r=await fetch(RAW+f+'?x='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('fetch failed '+r.status+' '+f);return(0,eval)(await r.text());};
+if(!self.__WOF_ROM_LOC_CACHE)await load('wof_resume_dispatch_selector.js');
+const C=self.__WOF_ROM_LOC_CACHE;if(!C)throw new Error('ROM cache missing');
+const M=_0x515056.HEAPU8,romBase=C.base,SW=!!C.swap16,ROMMAX=Math.min(0x100000,M.length-romBase);
+const r8=o=>M[romBase+(SW?(o^1):o)]>>>0;
+const r16=o=>((r8(o)<<8)|r8(o+1))>>>0;
+const r32=o=>(r8(o)*0x1000000+r8(o+1)*0x10000+r8(o+2)*0x100+r8(o+3))>>>0;
+const validRom=v=>v>=0x2000&&v<ROMMAX&&(v&1)===0;
+const gate={dispatcher25C8:r16(0x25C8)===0x3228&&r16(0x25D0)===0x287B&&r16(0x25D4)===0x2874,handoff247C:r16(0x247C)===0x2C5C&&r16(0x247E)===0x215C&&r16(0x2482)===0x321C,d0_20Source:r16(0x6A62)===0x7014&&r16(0x6A64)===0x4EB8&&r16(0x6A66)===0x25C8,attackField:true,xyFields:true};
+const R=_0x515056?.HEAPU32?.[0x2e39e4>>>2]>>>0;if(!R)throw new Error('CPS RAM base missing');
+const B=a=>M[R+((((a-0xFF0000)&0xffff)^1))]>>>0;
+const U16=a=>((B(a)<<8)|B(a+1))>>>0;
+const U32=a=>(B(a)*0x1000000+B(a+1)*0x10000+B(a+2)*0x100+B(a+3))>>>0;
+const S32=a=>{const v=U32(a);return v>=0x80000000?v-0x100000000:v;};
+const PX=a=>Math.round(S32(a+4)/65536),PY=a=>Math.round(S32(a+8)/65536);
+const ENEMY=0xFFC0BC,STRIDE=0xE0,SLOTS=20,PLAYERS={0:'P1',4:'P2',8:'P3'},PBASE={0:0xFFBE1C,4:0xFFBEFC,8:0xFFBFDC};
+const side=dx=>dx<-4?'LEFT':dx>4?'RIGHT':'CENTER';
+const lane=dy=>dy<-4?'UP':dy>4?'DOWN':'SAME';
+function geom(a,target7E){const ex=PX(a),ey=PY(a),pb=PBASE[target7E];if(!pb)return{enemyX:ex,enemyY:ey,targetX:null,targetY:null,dx:null,dy:null,absDx:null,absDy:null,side:null,lane:null};const tx=PX(pb),ty=PY(pb),dx=tx-ex,dy=ty-ey;return{enemyX:ex,enemyY:ey,targetX:tx,targetY:ty,dx,dy,absDx:Math.abs(dx),absDy:Math.abs(dy),side:side(dx),lane:lane(dy)};}
+function snap(slot){const a=ENEMY+slot*STRIDE,type=U16(a+0x20);if(type>=47)return null;const frameEnd=U32(a+0x12),next=U32(a+0x2C);if(frameEnd===0&&next===0)return null;const target7E=U16(a+0x7E);return{slot,a,type,target7E,target:PLAYERS[target7E]||null,state99:B(a+0x99),action2A:B(a+0x2A),b2B:B(a+0x2B),timer:U16(a+0x34),attack:U16(a+0x70),body:U16(a+0x6E),frameEnd,next,value30:U32(a+0x30),...geom(a,target7E)};}
+const tuple=(s,a,b)=>s.state99===s&&a===a&&b===b;
+const T16_FAST_TUPLES=new Set(['0/4/2','0/4/4','2/4/2','2/4/4','2/0/0','4/4/2','4/4/4','4/0/0']);
+const RULES=[
+ {id:'T16_FAST_100',type:16,horizon:100,level:'IMMINENT',expected:[6432],match:s=>s.type===16&&s.attack===0&&s.body===4856&&s.frameEnd===0x851ae&&s.next===0x84c44&&s.value30===0xffff&&T16_FAST_TUPLES.has(`${s.state99}/${s.action2A}/${s.b2B}`)},
+ {id:'T16_MID_250',type:16,horizon:250,level:'IMMINENT',expected:[6432],match:s=>s.type===16&&s.attack===0&&s.body===4856&&s.state99===2&&s.action2A===4&&s.b2B===2&&s.frameEnd===0x85240&&s.next===0x84c3a&&s.value30===0x100000},
+ {id:'T7_817FE_250',type:7,horizon:250,level:'IMMINENT',expected:[2528,2536],match:s=>s.type===7&&s.attack===0&&s.body===1800&&s.state99===0&&s.action2A===6&&s.b2B===4&&s.frameEnd===0x81c5e&&s.next===0x817fe&&s.value30===0},
+ {id:'T7_81808_250',type:7,horizon:250,level:'IMMINENT',expected:[2528,2536],match:s=>s.type===7&&s.attack===0&&s.body===1800&&s.state99===0&&s.action2A===6&&s.b2B===4&&s.frameEnd===0x81ca4&&s.next===0x81808&&s.value30===0},
+ {id:'T30_FAST_100',type:30,horizon:100,level:'IMMINENT',expected:[2528,2536],match:s=>s.type===30&&s.attack===0&&s.body===1800&&s.state99===0&&s.action2A===0&&s.b2B===0}
+];
+const DURATION=120000,INTERVAL=20,start=performance.now();
+const prev=new Map(),cycle=new Map(),armedCycle=new Map(),watches=[],events=[],activeEdges=[];let wid=0,eid=0,aid=0;
+const diag={polls:0,enemySamples:0,activeEdges:0,validTargetActiveEdges:0,signals:0,bootstrapSignals:0,censoredSlotGone:0,censoredTypeChange:0};
+const keyArm=(slot,rule)=>slot+'|'+rule;
+function emitEvent(kind,t,w,s,extra={}){const e={id:++eid,rel:t,kind,rule:w?.rule??null,watchId:w?.id??null,slot:s?.slot??w?.slot??null,type:s?.type??w?.type??null,target:s?.target??null,...extra};events.push(e);console.log(`[WOF V19] ${kind}${e.rule?' '+e.rule:''} T${e.type} slot${e.slot}${e.target?' -> '+e.target:''}${e.leadMs!=null?' '+e.leadMs+'ms':''}`);}
+function arm(rule,s,t,bootstrap){const c=cycle.get(s.slot)||0,ak=keyArm(s.slot,rule.id);if(armedCycle.get(ak)===c)return;armedCycle.set(ak,c);const w={id:++wid,rule:rule.id,type:s.type,slot:s.slot,cycle:c,horizon:rule.horizon,level:rule.level,expected:rule.expected,at:t,bootstrap:!!bootstrap,target7E:s.target7E,target:s.target,side:s.side,state99:s.state99,action2A:s.action2A,b2B:s.b2B,body:s.body,frameEnd:s.frameEnd,next:s.next,value30:s.value30,entryAbsDx:s.absDx,entryAbsDy:s.absDy,resolved:false,hit:null,censored:false,censorReason:null,leadMs:null,activeAttack:null,attackExpected:null,targetSame:null,sideSame:null,activeAbsDx:null,activeAbsDy:null};watches.push(w);diag.signals++;if(bootstrap)diag.bootstrapSignals++;emitEvent('SIGNAL',t,w,s,{horizonMs:rule.horizon,bootstrap:!!bootstrap});}
+function censorSlot(slot,reason,t){for(const w of watches){if(w.resolved||w.slot!==slot)continue;w.resolved=true;w.censored=true;w.censorReason=reason;if(reason==='slotGone')diag.censoredSlotGone++;else if(reason==='typeChange')diag.censoredTypeChange++;emitEvent('CENSOR',t,w,null,{reason});}}
+function expire(t){for(const w of watches){if(w.resolved)continue;if(t-w.at>w.horizon){w.resolved=true;w.hit=false;emitEvent('MISS',t,w,null,{leadMs:t-w.at});}}}
+function activeEdge(s,t){const e={id:++aid,rel:t,slot:s.slot,type:s.type,target:s.target,target7E:s.target7E,attack:s.attack,body:s.body,state99:s.state99,action2A:s.action2A,b2B:s.b2B,absDx:s.absDx,absDy:s.absDy,side:s.side,lane:s.lane};activeEdges.push(e);diag.activeEdges++;if(s.target)diag.validTargetActiveEdges++;
+ for(const w of watches){if(w.resolved||w.slot!==s.slot||w.type!==s.type)continue;const lead=t-w.at;if(lead<0||lead>w.horizon)continue;w.resolved=true;w.hit=true;w.leadMs=lead;w.activeAttack=s.attack;w.attackExpected=w.expected.includes(s.attack);w.targetSame=w.target7E===s.target7E;w.sideSame=w.side===s.side;w.activeAbsDx=s.absDx;w.activeAbsDy=s.absDy;emitEvent('HIT',t,w,s,{leadMs:lead,attack:s.attack,attackExpected:w.attackExpected});}
+ cycle.set(s.slot,(cycle.get(s.slot)||0)+1);
+ return e;}
+await new Promise(resolve=>{const id=setInterval(()=>{const t=Math.round(performance.now()-start);diag.polls++;for(let i=0;i<SLOTS;i++){const s=snap(i),p=prev.get(i)||null;if(!s){if(p)censorSlot(i,'slotGone',t);prev.delete(i);continue;}diag.enemySamples++;if(p&&p.type!==s.type){censorSlot(i,'typeChange',t);cycle.set(i,(cycle.get(i)||0)+1);}if(p&&p.attack===0&&s.attack!==0)activeEdge(s,t);
+ for(const rule of RULES){if(rule.type!==s.type)continue;const m=rule.match(s),pm=!!(p&&p.type===s.type&&rule.match(p));if(m&&!pm)arm(rule,s,t,!p);}prev.set(i,s);}expire(t);if(t>=DURATION){clearInterval(id);for(const w of watches){if(!w.resolved){if(t-w.at>w.horizon){w.resolved=true;w.hit=false;}else{w.resolved=true;w.censored=true;w.censorReason='captureEnd';}}}resolve();}},INTERVAL);});
+const median=a=>{if(!a.length)return null;const b=[...a].sort((x,y)=>x-y),m=Math.floor(b.length/2);return b.length%2?b[m]:Math.round((b[m-1]+b[m])/2);};
+const pct=(a,p)=>{if(!a.length)return null;const b=[...a].sort((x,y)=>x-y),i=Math.ceil(p*b.length)-1;return b[Math.max(0,Math.min(b.length-1,i))];};
+const ruleStats={};for(const r of RULES)ruleStats[r.id]={rule:r.id,type:r.type,level:r.level,horizonMs:r.horizon,signals:0,evaluable:0,hit:0,miss:0,censored:0,bootstrap:0,leads:[],attackCounts:{},attackExpected:0,attackTotal:0,targetSame:0,targetTotal:0,sideSame:0,sideTotal:0,activeAbsDx:[],activeAbsDy:[]};
+for(const w of watches){const q=ruleStats[w.rule];q.signals++;if(w.bootstrap)q.bootstrap++;if(w.censored){q.censored++;continue;}q.evaluable++;if(w.hit){q.hit++;q.leads.push(w.leadMs);q.attackCounts[String(w.activeAttack)]=(q.attackCounts[String(w.activeAttack)]||0)+1;q.attackTotal++;if(w.attackExpected)q.attackExpected++;if(w.targetSame!=null){q.targetTotal++;if(w.targetSame)q.targetSame++;}if(w.sideSame!=null){q.sideTotal++;if(w.sideSame)q.sideSame++;}if(w.activeAbsDx!=null)q.activeAbsDx.push(w.activeAbsDx);if(w.activeAbsDy!=null)q.activeAbsDy.push(w.activeAbsDy);}else q.miss++;}
+for(const q of Object.values(ruleStats)){q.precision=q.evaluable?+(q.hit/q.evaluable).toFixed(3):null;q.attackExpectedRate=q.attackTotal?+(q.attackExpected/q.attackTotal).toFixed(3):null;q.targetSameRate=q.targetTotal?+(q.targetSame/q.targetTotal).toFixed(3):null;q.sideStableRate=q.sideTotal?+(q.sideSame/q.sideTotal).toFixed(3):null;q.leads.sort((a,b)=>a-b);q.attackCounts=Object.entries(q.attackCounts).map(([attack,count])=>({attack:+attack,count})).sort((a,b)=>b.count-a.count);q.activeAbsDxMedian=median(q.activeAbsDx);q.activeAbsDxP90=pct(q.activeAbsDx,.9);q.activeAbsDxP95=pct(q.activeAbsDx,.95);q.activeAbsDyMedian=median(q.activeAbsDy);q.activeAbsDyP90=pct(q.activeAbsDy,.9);q.activeAbsDyP95=pct(q.activeAbsDy,.95);delete q.activeAbsDx;delete q.activeAbsDy;}
+const clusterMap=new Map();for(const e of activeEdges){const k=`T${e.type}|A${e.attack}`;let g=clusterMap.get(k);if(!g){g={key:k,type:e.type,attack:e.attack,count:0,absDx:[],absDy:[],left:0,right:0,center:0,up:0,down:0,same:0};clusterMap.set(k,g);}g.count++;if(e.absDx!=null)g.absDx.push(e.absDx);if(e.absDy!=null)g.absDy.push(e.absDy);if(e.side)g[e.side.toLowerCase()]++;if(e.lane)g[e.lane.toLowerCase()]++;}
+const attackClusters=[];for(const g of clusterMap.values()){g.absDxMedian=median(g.absDx);g.absDxP90=pct(g.absDx,.9);g.absDxP95=pct(g.absDx,.95);g.absDyMedian=median(g.absDy);g.absDyP90=pct(g.absDy,.9);g.absDyP95=pct(g.absDy,.95);delete g.absDx;delete g.absDy;attackClusters.push(g);}attackClusters.sort((a,b)=>b.count-a.count);
+const out={version:'wof-future-danger-rule-validator-v19',readOnly:true,ramWrites:0,gate,gateStrict:Object.values(gate).every(Boolean),durationRequestedMs:DURATION,intervalMs:INTERVAL,model:{purpose:'independent-cycle prospective validation of V18 candidate pre-active rules',dedupe:'at most one signal per rule/slot/attack-cycle; V18 raw exposure counts were state-entry observations and can be correlated within the same eventual attack',targetPolicy:'live enemy+0x7E authoritative',geometry:'rule-hit ACTIVE distances are empirical branch-conditioned geometry, not proven hitboxes'},rules:RULES.map(r=>({id:r.id,type:r.type,horizon:r.horizon,level:r.level,expectedAttacks:r.expected})),diagnostics:diag,totals:{signals:watches.length,activeEdges:activeEdges.length,rules:RULES.length},ruleStats,watches,attackClusters:attackClusters.slice(0,50),note:'Promote only rules that remain high precision across independent rooms/cycles. V19 intentionally deduplicates V18 state-entry inflation before attaching geometry or Safe Path scoring.'};
+self.__WOF_FUTURE_DANGER_RULE_VALIDATOR_V19=out;console.log('=== FUTURE DANGER RULE VALIDATOR V19 JSON ===');console.log(JSON.stringify(out,null,2));return out;
+})().catch(e=>{console.error('WOF_FUTURE_DANGER_RULE_VALIDATOR_V19_ERROR',e);throw e;});
