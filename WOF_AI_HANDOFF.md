@@ -2,36 +2,30 @@
 
 更新时间：2026-08-31
 仓库：`ouyong520/wof-ai-private`
+游戏：WOF / Warriors of Fate / 吞食天地II / 三国志II，World 921002 / MAME `wofr1`
 
-> **新对话第一份必须完整读本文件。**
-> 完整历史、所有关键结论、踩坑和脚本时间线见：`WOF_AI_MASTER_PROGRESS.md`。
-> 不要从头重做，不要让用户重新解释，不要回 Focus Multiroom / HUD，不要复活 `0x0080F2`。
+> 新对话先读本文件。不要从头重做，不要回 Focus Multiroom / HUD，不要复活 `0x0080F2`，不要重扫 44 dispatcher incoming edges。
 
 ---
 
 ## 0. 用户工作方式
 
-用户只负责在 **`gstyphoon.js` DevTools Console** 执行一条测试命令并回传 JSON / 截图。
+用户只负责在 `gstyphoon.js` DevTools Console 执行每轮一条命令，然后回传 JSON / 截图。
 
-原则：
-
-- 能直接修改 GitHub 就自己修改。
-- 每轮尽量只给用户一条准确命令。
+- 能直接改 GitHub 就自己改。
 - 不要求用户手工编辑 JS。
-- 新房间 / 新 Worker 先恢复 ROM cache，不重跑历史 probe。
-- 关键 68000 结论必须 strict validate；不要把任意偶地址当指令边界。
+- 新房间 / 新 Worker 优先用 `wof_resume_dispatch_selector.js` 恢复。
+- 重要 68000 结论只能从真实 instruction boundary / exact raw / runtime 验证得出；不能把任意偶地址当 opcode。
 
 ---
 
 ## 1. 最终目标
 
-Future Danger AI：根据 ROM AI + CPS RAM 预测未来约 0~1000ms 的真实威胁目标 P1/P2/P3，并减少误报。
-
-不是自动操作；最后才回 Future Danger HUD / Map / Safe Path。
+Future Danger AI：结合 ROM AI + CPS RAM，预测未来约 0~1000ms 哪个敌人真正会威胁 P1/P2/P3 中谁，并识别攻击 startup / active / recovery，最终用于 Future Danger Map / Safe Path。不是自动操作。
 
 ---
 
-## 2. 固定地址
+## 2. 固定 RAM
 
 ```text
 P1 = 0xFFBE1C
@@ -41,91 +35,16 @@ player stride = 0xE0
 
 enemy pool = 0xFFC0BC
 enemy stride = 0xE0
-20 slots
+slots = 20
 ```
 
-ROM cache：
-
-```js
-self.__WOF_ROM_LOC_CACHE
-```
-
-live/offline：
-
-```text
-live = offline + 0x34
-```
+ROM cache：`self.__WOF_ROM_LOC_CACHE`。旧 offline DB → live ROM：`live = offline + 0x34`。
 
 ---
 
-## 3. 已锁定 dispatcher
+## 3. P1/P2/P3 target selector 已完全锁死
 
-### 0x25B6
-
-```text
-32(A0) enemy type
-→ type * 4
-→ type-specific level2 table
-→ 0(A4,D0.W)
-→ final handler
-```
-
-### 0x25C8
-
-同样结构，最后继续 BRA 0x247C。
-
-核心事实：
-
-```text
-D0 = 上游 AI 已经选好的 state byte offset
-```
-
-不是 dispatcher 内生成。
-
-44 direct incoming edges 已确认：
-
-```text
-44 total
-4 → 0x25B6
-40 → 0x25C8
-```
-
-不要重扫 44 edge。
-
----
-
-## 4. 已排除主线
-
-不要再追：
-
-```text
-Focus Multiroom
-HUD
-0x0080F2
-A0+0x40/+0x44 target XY writer
-AD5A / low4 classification
-0x11C26 作为 selector→dispatcher bridge
-```
-
-`0x11C26` 内部会覆盖 A1，不保留传入 selected-player A1。
-
----
-
-## 5. 真正 P1/P2/P3 selector 已锁死
-
-### 玩家 pointer table
-
-主表：
-
-```text
-0x010CF8 = P1 0xFFBE1C
-0x010CFC = P2 0xFFBEFC
-0x010D00 = P3 0xFFBFDC
-```
-
-### 玩家自身 self-index
-
-动态 101/101 samples：
+玩家 identity 动态严格证明：
 
 ```text
 P1+0x7C = 0
@@ -133,27 +52,24 @@ P2+0x7C = 4
 P3+0x7C = 8
 ```
 
-### 敌人当前 target selector
-
-动态 301 samples / 3 active enemy slots：
+敌人 target selector 动态严格证明：
 
 ```text
-enemy+0x7E ∈ {0,4,8}
-valid048Pct = 1.0
-```
-
-因此语义已锁定：
-
-```text
-enemy+0x7E = 当前目标玩家 slot offset
+enemy+0x7E = 0 / 4 / 8
 0 → P1
 4 → P2
 8 → P3
 ```
 
-### selector 使用
+player pointer table：
 
-最清楚的一处：
+```text
+0x010CF8 = P1
+0x010CFC = P2
+0x010D00 = P3
+```
+
+严格 selector load：
 
 ```text
 0x010E66 MOVE.W 126(A0),D1
@@ -161,274 +77,343 @@ enemy+0x7E = 当前目标玩家 slot offset
 0x010E6E MOVE.L 0(A1,D1.W),A1
 ```
 
-即：
+即 `enemy+0x7E → selected P1/P2/P3 → A1`。
 
-```text
-enemy+0x7E
-→ D1.W
-→ P1/P2/P3 pointer table
-→ A1 = selected player
-```
-
-随后：
-
-```text
-0x010E72 MOVE.W A1,506(A5)
-```
-
-`506(A5)` 是 selected-player 低 16-bit pointer scratch；已找到多处 reader 会 `MOVEA.W` 恢复为真正 player pointer。
+不要再找 selector。
 
 ---
 
-## 6. selector 附近真实状态机
+## 4. selected-player pointer cache 新主线
 
-selector 后不是直接进 dispatcher，而是两层状态分派。
-
-### 第一层：A0+0x99
+动态 + 静态已证明：
 
 ```text
-0x10EA8 MOVE.B 0x99(A0),D0
-0x10EAC MOVE.W table(PC,D0.W),D1
-0x10EB0 JMP table(PC,D1.W)
+enemy+0x6A = selected-player pointer low16
+P1 = BE1C
+P2 = BEFC
+P3 = BFDC
 ```
 
-9 项 → 5 个 unique block：
+三个真实 reader：
 
 ```text
-0x10BBC
-0x10BD0
-0x10BE4
-0x10BF8
-0x10C0C
+0x0112AA
+0x0065E2
+0x006834
 ```
 
-### 第二层：A0+0x2A
-
-5 个 block 都是同一结构：
+最强 bridge：
 
 ```text
-MOVE.B 42(A0),D0
-MOVE.W table(PC,D0.W),D1
-JMP table(PC,D1.W)
+0x006834 MOVEA.W 106(A0),A1
+0x006838 CMPI.B #4,41(A1)
+0x00683E BEQ 0x006850
+0x006850 MOVEQ #0,D0
+0x006852 MOVE.B 42(A0),D0
+0x006856 MOVE.W table(PC,D0.W),D1
+0x00685A JMP indexed
 ```
 
-合并后 9 个 unique final targets：
+所以已经严格成立：
 
 ```text
-0x010EC6
-0x011078
-0x011190
-0x0112C2
-0x011456
-0x01156A
-0x011656
-0x01178E
-0x011908
+enemy+0x6A
+→ selected player
+→ selectedPlayer+0x29 compared with 4
+→ enemy+0x2A action dispatch
 ```
+
+不要给 selectedPlayer+0x29 强行命名；目前只称 selected-player state/flag byte。
 
 ---
 
-## 7. 已严格证明的一条 state → D0 → dispatcher 路线
+## 5. action2A=2 → D0=16/20 已锁死
 
-最新关键结果：
+`0x6850` action table 只有两项：
+
+```text
+action2A=0 → 0x6862
+action2A=2 → 0x6904
+```
+
+在 action2A=2 路径：
+
+```text
+0x006A10 MOVEQ #16,D0
+0x006A12 JSR 0x25C8
+
+0x006A62 MOVEQ #20,D0
+0x006A64 JSR 0x25C8
+```
+
+因此 D0 provenance 是 exact opcode proof，不是推测。
+
+---
+
+## 6. dispatcher 语义修正：0x25C8 选的是 descriptor，不是代码 handler
+
+原先把 type-specific level2 entry 称为 final handler，这个命名已修正。
+
+`0x25C8`：
+
+```text
+enemy type
+→ type table
+→ type-specific table
+→ 0(A4,D0.W)
+→ A4 = action descriptor pointer
+→ BRA 0x247C
+```
+
+`0x247C` 从真实边界解出：
+
+```text
+0x247C MOVEA.L (A4)+,A6
+0x247E MOVE.L  (A4)+,0x30(A0)
+0x2482 MOVE.W  (A4)+,D1
+```
+
+如果 D1 bit15=0：timer 写 enemy+0x34，next descriptor 是 inline record。
+
+如果 D1 bit15=1：
+
+```text
+0x249E ANDI.W #0x7FFF,D1
+0x24A2 timer → enemy+0x34
+0x24A6 MOVEA.L (A4),A4
+0x24A8 A4 → enemy+0x2C
+```
+
+即显式 next-descriptor pointer。
+
+A6 不是代码地址，而是 frame/payload end pointer：
+
+```text
+0x2490 A6 → enemy+0x12
+0x2494 LEA enemy+0x6C,A4
+0x2498 MOVE.W -(A6),(A4)+
+0x249A MOVE.L -(A6),(A4)+
+```
+
+所以 frameEnd 前 6 bytes 被复制到 enemy+0x6C..+0x71。
+
+---
+
+## 7. type35 D0=16/20 descriptor 已完整解析
+
+Type35 table base：
+
+```text
+0x081774
+shared by type7/type35
+```
+
+合法连续 D0 prefix 只有：
+
+```text
+0  → 0x81876
+4  → 0x81884
+8  → 0x818CA
+12 → 0x81906
+16 → 0x81864
+20 → 0x81856
+24 → 0x81892
+```
+
+D0=28 开始是机器数据，不允许继续把后面当 table。
+
+### D0=16
+
+```text
+descriptor = 0x81864
+frameEnd = 0x825D0
+value30 = 0
+timerRaw = 0xFFFF
+timer = 32767
+next = 0x81864 self-loop
+```
+
+强语义：长时间 hold / self-loop descriptor。
+
+### D0=20
+
+```text
+descriptor = 0x81856
+frameEnd = 0x825D0
+value30 = 0
+timerRaw = 0x8010
+timer = 16
+next = 0x817CC
+```
+
+后续 chain：
+
+```text
+0x81856 timer16
+→ 0x817CC timer1
+→ 0x817D6 timer5
+→ 0x817E0 timer5
+→ 0x817EA timer5
+→ 0x817F4 timer5
+→ 0x817FE timer5
+→ 0x81808 timer5
+→ 0x817D6 loop
+```
+
+首次进入约 47 tick；之后约 30-tick loop。
+
+---
+
+## 8. D0=20 已有历史实战 startup 证据
+
+旧 Multiroom / Future AI 数据并不是当前因果 proof，但能做独立语义验证。
+
+D0=20 chain 中的多个 type35 frame 已在旧实战里出现：
+
+```text
+531402: attack=0, startupTop=T35_F01/T35_F02
+531464: attack=0, startupTop=T35_F01/T35_F02
+531620: attack=0
+531690: attack=0, startupTop=T35_F01/T35_F02
+```
+
+因此当前最强语义是：
+
+```text
+D0=20 = pre-active / attack startup descriptor chain
+```
+
+不是 active attack，也不像 recovery。仍需新的 live RAM 因果顺序把 `selected player → action2A → D0=20 descriptor` 抓在同一个事件上。
+
+---
+
+## 9. 旧 state99/action2A structural route 仍有效
+
+另一条已严格证明的 structural route：
 
 ```text
 state99=0
-→ 0x010BBC
-
 action2A=2
-→ table 0x010BCA = 0x02FE
 → 0x010EC6
-```
-
-然后 exact-word 全通过：
-
-```text
-0x10EC6 ...
 → 0x10F40 MOVE.W #0x0600,42(A0)
 → 0x10F46 MOVEQ #24,D0
 → 0x10F48 JMP 0x25C8
 ```
 
-verdict：
+注意 action2A 入路径时是 2，但 0x10F40 会写 word `0x0600`，所以之后 byte +0x2A 变 6。不要混淆 pre/post action value。
 
-```text
-allState2APatternsValid = true
-routes = 36
-uniqueFinalTargets = 9
-routesTo10EC6 = 1
-strictBridge10EC6To10F48 = true
-bridgeD0 = MOVEQ #24,D0
-dispatcher = 0x25C8
-provenRoute = state99=0, action2A=2 -> 0x10EC6 -> 0x10F48 -> 0x25C8
-```
-
-这意味着 selector 所在同一区域的状态机已经第一次严格接到真实 dispatcher。
+`0x10FA2 → 0x25B6` 仍第二优先级，不要抢当前主线。
 
 ---
 
-## 8. 另一条本地 dispatcher edge
+## 10. 动态 transition 已知结论
 
-```text
-0x10FA0 MOVEQ #8,D0
-0x10FA2 JSR 0x25B6
-```
+干净 transition 已证明：target reselection 常与 action transition boundary 同帧/近帧发生，state99 不要求变化。
 
-真实存在，但尚未像 `0x10F48→0x25C8` 那样完成完整 state99/action2A route 归属。
+`enemy+0x6A` 会随 target 同步变成目标玩家低16 pointer：BE1C/BEFC/BFDC。
 
-后续需要补。
+16ms/20ms JS sampling 只能证明时间窗口，不能单凭同一个 sample 宣称 exact CPU instruction order。
 
 ---
 
-## 9. 当前静态证明边界
+## 11. 当前房间最新情况
 
-已经锁死：
-
-```text
-player+0x7C = P1/P2/P3 self index 0/4/8
-enemy+0x7E = 当前 target selector
-+0x7E → player table → A1 selected player
-selector 邻近存在 state99/action2A 两层 AI state machine
-其中一条 state route → D0=24 → 0x25C8
-```
-
-还没完全闭环的是：
+`wof_type35_descriptor_chain_runtime_v1.js` 的静态 descriptor proof 全通过，但当前 10 秒窗口：
 
 ```text
-当前 selector 值 0/4/8
-→ 哪些 target-dependent compare / decision
-→ 如何影响 state99 / action2A
-→ 最终选哪个 D0 / handler
+type35SlotsSeen = []
+eventCount = 0
 ```
 
-所以不要再寻找“selector 在哪”；selector 已找到。下一阶段是找 selector **如何影响决策**。
+这只表示当前房间当时没有 type35 enemy，不是链失败。
+
+因此下一步改成 **全类型 runtime descriptor correlation**，不再等 type35。
 
 ---
 
-## 10. 当前最新脚本：先跑这个
+## 12. 当前下一条脚本
 
 ```text
-wof_selector_end_to_end_proof.js
-commit: 31dea3a6a1a89799ba86724321c7a5db618d5596
+wof_d016_20_descriptor_runtime_alltypes_v1.js
 ```
 
-用户尚未回传它的最终 JSON。
-
-新房间恢复后，当前第一测试应执行：
-
-```js
-await fetch('https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_selector_end_to_end_proof.js?x='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(s=>(0,eval)(s));
-```
-
-预期：
+它会对当前所有 active enemy type：
 
 ```text
-=== SELECTOR END-TO-END JSON ===
+从 type table 自动算各自 D0=16 / D0=20 descriptor
++ 实时读取 target7E
++ ptr6A selected player
++ selectedPlayer+0x29
++ state99
++ action2A
++ enemy+0x12/+0x2C/+0x30/+0x34/+0x6C..+0x71
 ```
 
-关键字段：
+只在语义状态/descriptor 改变时记录，不会每个 timer tick 灌爆 JSON。
+
+目标是抓到：
 
 ```text
-selectorStrict
-playerTableOk
-state99Strict
-action2AStrict
-bridgeStrict
-endToEndStructuralProof
+selected player condition
+→ action2A transition
+→ D0=16 / D0=20 descriptor fingerprint
 ```
 
-如果：
-
-```text
-endToEndStructuralProof = true
-```
-
-则静态结构层正式收口，下一步转动态因果 / target-dependent decision，不再继续结构性找 selector。
+的同一实时事件。
 
 ---
 
-## 11. 新房间恢复
+## 13. 新房间恢复
 
-如果 Worker 状态丢失，先执行：
+先运行：
 
 ```js
 await fetch('https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_resume_dispatch_selector.js?x='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(s=>(0,eval)(s));
 ```
 
-恢复成功后直接跑 `wof_selector_end_to_end_proof.js`。
-
-不要重跑 Focus、0x80F2、旧 44-edge scan 或旧几十秒 probe。
-
----
-
-## 12. 关键脚本 / commit
+当前 resume 应显示：
 
 ```text
-wof_selector_state2a_dispatch_bridge.js
-  7cf1e1eda14b30a5fd520491c1ce990e1a4cdee6
-
-wof_selector_end_to_end_proof.js
-  31dea3a6a1a89799ba86724321c7a5db618d5596
-
-wof_selector_state99_jump_cfg.js
-  5178563dd8600d83a4882bc02f3a9c6680b67bfb
-
-wof_selector_10e66_dispatch_local_raw.js
-  b305c777e8db19654c4a259174d6023cd617ff72
-
-wof_player_selector_7e_runtime_probe.js
-  43edb9f3f1befc860bc4d3ba5a139dc0afe67644
-
-wof_player_self_index_probe.js
-  6211a575d50069c369a56baac913ba9d254119dc
-
-wof_player_selector_7e_alias_writers.js
-  6102e57d09c9bcab65dd72a4ec8b0e4af0764d4c
-
-wof_player_selector_7c_alias_writers.js
-  79010c8cb59ec702b3fa26f143f53a01bca75606
-
-wof_player_table_10cf8_xrefs.js
-  624fbed13125382fac5efa3713a619c5efa62709
-
-wof_resume_dispatch_selector.js
-  最新 main 版本已改到当前 frontier
+wof-resume-dispatch-selector-v12
+nextScript = wof_d016_20_descriptor_runtime_alltypes_v1.js
 ```
 
-完整时间线见 `WOF_AI_MASTER_PROGRESS.md`。
+不要重跑过去几十个旧 probe。
 
 ---
 
-## 13. 当前进度
-
-工程进度估计：**90%–93%**。
-
-已经完成：dispatcher、真实 target selector、player table、selected player、两层状态机、至少一条 D0→0x25C8 严格路线。
-
-剩余：
+## 14. 绝对不要重做
 
 ```text
-1. end-to-end structural proof 最终确认
-2. selector→state99/action2A 的 target-dependent 因果决策
-3. 0x10FA2→0x25B6 路线归属
-4. 动态因果验证
-5. handler / attack / future danger 语义映射
-6. 最后回 HUD / Future Danger Map
+Focus Multiroom
+HUD 调整
+0x0080F2
+44 dispatcher incoming edge scan
+重新寻找 enemy+0x7E
+重新证明 player+0x7C
+重新证明 0x10CF8 player table
+0x11C26 bridge
+0x05F6BA
+A0+0x40/+0x44 target XY
+AD5A / low4 classification
+全 ROM raw-even-address opcode 扫描
+把 A5 默认当 player
+把 A5+1FA 当唯一主线
 ```
 
 ---
 
-## 14. 一句话主线
+## 15. 当前一句话主线
 
 ```text
-enemy+0x7E = P1/P2/P3 target selector
-→ 0x10CF8 player table
-→ selected player A1
-→ target-dependent AI decision（当前最后缺口）
-→ A0+0x99 state
-→ A0+0x2A action
-→ D0 state offset
-→ 0x25B6 / 0x25C8
-→ type-specific final handler
-→ Future Danger
+enemy+0x7E target P1/P2/P3
+→ enemy+0x6A selected-player pointer cache
+→ selectedPlayer+0x29 compare
+→ enemy+0x2A action dispatch
+→ action2A=2 → 0x6904
+→ D0=16 / D0=20
+→ 0x25C8 type-specific descriptor selection
+→ 0x247C descriptor engine
+→ D0=20 pre-active/startup chain
+→ 实时 target-aware Future Danger
 ```
