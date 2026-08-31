@@ -52,7 +52,7 @@ The first malformed version of EFIELD-005 was rejected by Collector schema valid
 | `0x28` | U8 | sparse; retarget-associated but far more changes than true retargets | sparse transition/pulse state; not target identity |
 | `0x2D` | U8 | broad action/reset dynamics | action/reset-state candidate |
 | `0x2E` | U8 | broad state dynamics | broad action/state candidate |
-| `0x2F..0x32` | **flagged U32 BE cursor candidate** | masking `0x001C0000` collapses many raw flag jumps into logical `+0x0A`; 4323/5539 logical pointer changes are `+0x0A`; repeated logical `-0x32` loops remain | **10-byte script/animation record cursor with embedded flag bits candidate** |
+| `0x2F..0x32` | **flagged U32 BE cursor candidate** | 4323/5539 logical changes are `+0x0A`; sequential destination logical record predicts full `(6C,70,72,73,77)` phase tuple with **99.9769%** modal purity; raw embedded flags raise steady-state cursor->phase purity from 96.31% to 97.30% | **10-byte script/animation record cursor with phase-modifier flag bits** |
 | `0x34` | **U8** | pointer-stable changes overwhelmingly `-1/-2`; before logical `+0x0A` cursor steps, `0x34<=2` in 4206/4323 = 97.29% and `<=1` in 75.99%; then usually reloads upward | **current 10-byte record countdown/dwell timer candidate** |
 | `0x37` | **U8** | values `00/80/02`; 1528 changes, heavily attack-associated; `0x38` is constant `0x84` | attack-associated gate/flag/substate; **not supported as a U16 timer** |
 | `0x3D..0x3E` | **U16 BE** | values exactly `BE1C/BEFC/BFDC`; deterministic relation with `0xC6` | **player-association/proximity pointer candidate**, separate from live target |
@@ -377,6 +377,55 @@ Current structural model:
 This remains a dynamic structural interpretation. It does not yet identify record opcode semantics or claim Browser/WASM address equivalence.
 
 Evidence: `results/efield/NEXT_POINTER.md`, `results/efield/TIMER_SEMANTICS.md`, `results/efield/ATTACK_TIMERS.md`, `results/efield/POINTER_RECORD_MASK.md`.
+
+
+
+## Logical record identity drives attack phase
+
+The executor model is now supported not only by pointer stride/countdown behavior but by direct state-output concentration.
+
+Across **60,271 type-present samples** and 174 masked logical cursor values:
+
+- weighted modal purity of full `(0x6C,0x70,0x72,0x73,0x77)` phase tuple given logical cursor: **96.3117%**;
+- weighted conditional entropy `H(phaseTuple | logicalCursor)`: only **0.0936 bits**;
+- weighted coarse `0x73` purity given logical cursor: **96.3133%**;
+- most populated logical cursor values map to exactly one phase tuple with 100% observed purity.
+
+The strongest causal-looking transition evidence comes from sequential record execution:
+
+- logical `+0x0A` destination events: **4323**;
+- destination logical record -> post-arrival full phase tuple modal purity: **99.9769%**.
+
+This strongly supports a record-driven phase machine: the logical record cursor nearly determines the attack/animation state tuple reached after the cursor advances.
+
+### Embedded cursor flag bits are phase modifiers
+
+Keeping the `0x001C0000` flag-like bits increases steady-state phase-tuple purity:
+
+- masked logical cursor: **96.3117%**;
+- raw cursor / logical+flag: **97.2955%**;
+- raw cursor + enemy type: **97.4499%**.
+
+Specific flag classes are structurally informative:
+
+- `0x080000`: 4963 samples, **100%** `E0,A0,D8,0A,0C`;
+- `0x140000`: only the rare `0x73=1E` boundary family (`78,78,78,1E,0B` / `70,70,70,1E,0B`);
+- at ambiguous logical cursors `0x02008BD6` and `0x02005E9A`, flag `0x100000` maps **100%** to `E0,00,38,0A,00` in the current corpus.
+
+Therefore the masked value is useful for recovering the underlying 10-byte record address, while the removed bits should be retained as meaningful **record/phase modifier flags**, not discarded as noise.
+
+### `0x34` reload is context-dependent
+
+On the same 4323 sequential `+0x0A` arrivals:
+
+- destination logical cursor predicts the reloaded `0x34` value with only **75.6650%** modal purity;
+- retaining raw flag bits does not improve that value;
+- conditioning on destination logical cursor + enemy type raises reload purity to **80.3840%**;
+- conditioning on phase tuple does not materially improve it.
+
+Thus record identity strongly determines phase, but record dwell duration is not a fixed per-record constant. Current evidence favors a **record + enemy/context dependent duration** model.
+
+Evidence: `results/efield/POINTER_PHASE_MAPPING.md`, `results/efield/POINTER_FLAG_SEMANTICS.md`, `results/efield/POINTER_RECORD_MASK.md`.
 
 ## High-value evidence outputs
 
