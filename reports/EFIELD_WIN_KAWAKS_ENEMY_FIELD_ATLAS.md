@@ -1,446 +1,356 @@
 # WinKawaks Enemy Field Atlas (EFIELD)
 
-Research line: `EFIELD-` only. This is a WinKawaks-local discovery atlas, not a Browser/WASM offset contract and not a production-rule specification.
+Research line: `EFIELD-` only. This report is a **WinKawaks-local discovery atlas**. It is not a Browser/WASM offset contract and does not promote or modify any production rule.
 
 ## Scope / invariants
 
 - enemy pool: `0xFFC0BC`
 - stride: `0xE0`
 - enemy slots: `20`
-- read-only; no game-memory writes
-- do not modify/advance `WOF-045`
+- Collector raw block: P1 + P2 + P3 + 20 enemies, `23 * 0xE0 = 5152` bytes/frame
+- read-only only; no game-memory writes
+- do not modify or advance `WOF-045`
 - do not modify T16/T18/T20/T23/T24/D867/D881 production-shadow rules
 - WinKawaks offsets remain namespace-local unless separately re-proven elsewhere
 - raw Collector frames are normalized CPS byte-lane captures
 
+## Current corpus
+
+Seven valid EFIELD raw captures are now in the corpus:
+
+- `EFIELD-001-baseline-30s60`
+- `EFIELD-002-natural-diversity-60s60`
+- `EFIELD-003-passive-retarget-60s60`
+- `EFIELD-004-passive-lifecycle-retarget-60s60`
+- `EFIELD-005-cross-session-target-60s60`
+- `EFIELD-005R-cross-session-target-60s60`
+- `EFIELD-006-cross-session-lifecycle-target-60s60`
+
+Combined coverage:
+
+- frames: **23,400**
+- enemy-object samples: **468,000**
+- WinKawaks process sessions represented: **2**
+- `0x24` type-present enter/exit boundaries: **74 / 74**
+- `0x00` transitions: **0**
+- live target `0x6D..0x6E` transitions: **8**
+- known-player live retargets: **8/8**
+- game-memory writes: **0**
+
+The first malformed version of EFIELD-005 was rejected by Collector schema validation. The same task ID was later corrected to the valid `parameters` shape and successfully executed; its final task status/result is PASS. EFIELD-005R also executed successfully and remains a separate valid raw capture.
+
 ## Current field atlas
 
-| Offset | Width | Evidence | Current interpretation |
+| Offset | Width | Current evidence | Current WinKawaks-local interpretation |
 |---|---:|---|---|
-| `0x00` | U8 | 9000 frames: slots17/18/19 always `1`, slots0..16 always `0`, zero transitions | **slot-allocation / occupied-object-header candidate**; not current enemy-presence ACTIVE |
-| `0x07..0x0A` | s32 candidate | X geometry anchor; dynamic payload mainly `0x08/0x09` in current range | X coordinate / geometry candidate |
-| `0x0B..0x0E` | s32 candidate | Y geometry anchor; dynamic payload mainly `0x0C/0x0D` | Y coordinate / geometry candidate |
-| `0x19` | U8 | binary `00/FF`; 246/266 same-type episodes constant; 21 within-episode changes | slowly-changing instance/type/variant flag candidate |
-| `0x23` | U8 | `0x00` in all 180000 samples | verified padding/high byte for legacy type wrapper |
-| `0x24` | **U8** | 31 values; 21 enter + 21 exit edges; actual nonzero type values | **type / current-type-present candidate** |
-| `0x28` | U8 | runs2+3 exact on 6/6 retargets but 53 total changes; all retargets `00->02` | sparse retarget-associated pulse/state, not identity |
-| `0x2D` | U8 | broad action/reset dynamics; exact on 6/6 retargets | action/reset-state candidate |
-| `0x2E` | U8 | broad state dynamics; strong provisional type-present classifier | broad action/state candidate |
-| `0x2F` | u32 candidate | very high transition activity | animation/state progression candidate |
-| `0x33` | u32 candidate | repeated independent and clustered changes | timer/progress/phase candidate |
-| `0x37` | u16 candidate | sparse transitions | sparse timer/state candidate |
-| `0x65` | U8 | exact on 6/6 retargets but 247 total changes | retarget-associated trigger/substate; not target identity |
-| `0x6C` | **U8** | 810 active changes; every 0x73 attack transition accompanied; `0x6C -> 0x73` deterministic in current sample | **fine attack substate/phase candidate** |
-| `0x6D..0x6E` | **U16 BE** | six total changes across runs2+3; all six are known P1/P2/P3 retargets | **strong WinKawaks-local player-target pointer candidate** |
-| `0x70` | U8 | strongly attack-biased; `0x70 -> 0x77` deterministic | fine attack/body state candidate |
-| `0x71..0x72` | u16 candidate | both bytes dynamic; `0x72` highly attack-coupled | body/animation-state structure; width not yet semantically settled |
-| `0x73` | **U8** | five values, 772 changes; following byte `0x74` is zero in all 21847 type-present samples | **coarse attack state/family candidate**; replaces legacy U16 wrapper |
+| `0x00` | U8 | 23,400 frames; slots17..19 always `1`, slots0..16 always `0`; **0 transitions** while `0x24` has 74/74 lifecycle edges | persistent physical-slot/object-header marker candidate; **not current enemy-presence ACTIVE** |
+| `0x07..0x0A` | s32 candidate | dynamic coordinate anchor used successfully for velocity and proximity conditioning | X coordinate / geometry candidate |
+| `0x0B..0x0E` | s32 candidate | dynamic coordinate anchor used for 2D geometry conditioning | Y coordinate / geometry candidate |
+| `0x19` | U8 | slow binary `00/FF`; mostly episode-stable but not immutable | slowly-changing instance/type/variant property candidate |
+| `0x23` | U8 | zero high byte in legacy type wrapper | padding/high byte next to type |
+| `0x24` | **U8** | 31 observed values; **74 enter + 74 exit** zero/nonzero edges | **current type / type-present lifecycle anchor** |
+| `0x28` | U8 | sparse; retarget-associated but far more changes than true retargets | sparse transition/pulse state; not target identity |
+| `0x2D` | U8 | broad action/reset dynamics | action/reset-state candidate |
+| `0x2E` | U8 | broad state dynamics | broad action/state candidate |
+| `0x2F..0x32` | **U32 BE candidate** | 178 values, 5540 changes; `+0x0A` exactly 3006 times; repeated `-0x32` loops and `+0x4000A`/bank-like steps | **script/animation record pointer / progression address candidate** |
+| `0x34` | **U8** | 43 values; 31,920 changes; pointer-stable changes are overwhelmingly `-1/-2`; at pointer changes it reloads upward 4967 times | **script/animation duration or frame-countdown candidate** |
+| `0x37` | **U8** | values `00/80/02`; 1528 changes, heavily attack-associated; `0x38` is constant `0x84` | attack-associated gate/flag/substate; **not supported as a U16 timer** |
+| `0x3D..0x3E` | **U16 BE** | values exactly `BE1C/BEFC/BFDC`; deterministic relation with `0xC6` | **player-association/proximity pointer candidate**, separate from live target |
+| `0x65` | U8 | changes at all original retarget events but many unrelated changes | retarget-associated trigger/substate, not identity |
+| `0x68` | U8 | strong player-reference relation; near retargets often reaches destination low byte before or at live commit | player-reference mirror/association byte candidate |
+| `0x6C` | **U8** | fine state deterministically projects to coarse `0x73` in current corpus | **fine attack substate/phase candidate** |
+| `0x6D..0x6E` | **U16 BE** | only P1 `BE1C`, P2 `BEFC`, P3 `BFDC`; 8 changes and all 8 are true known-player retargets | **strong live/materialized player-target pointer candidate** |
+| `0x6F` | U8 | strong player-reference relation and retarget lead/commit association | player-reference high-byte mirror/association candidate |
+| `0x70` | U8 | fine state deterministically projects to `0x77` | fine attack/body state candidate |
+| `0x71..0x72` | structure candidate | dynamic attack/body neighborhood; `0x72` highly attack-coupled | body/animation state structure; final width still unresolved |
+| `0x73` | **U8** | values mainly `00/0A/0B/1B/1E`; following `0x74` is zero | **coarse attack state/family anchor** |
 | `0x74` | U8 | constant zero in current type-present corpus | padding/zero neighbor to `0x73` |
-| `0x77` | U8 | strongly attack-biased; coarse deterministic projection of `0x70` | attack-neighborhood coarse state candidate |
-| `0x81` | historical u16 reference | prior integration treated as non-semantic | unknown/reference only; do not promote |
-| `0x9C` | U8 | high-frequency state/counter; strong +1-frame relation with `0x04` | pipelined/high-frequency state candidate |
-| `0xA2` | U8 | same-frame equality with X byte `0x08` 95.57%; `0x08[t] == 0xA2[t+1]` 97.80% | **one-frame-delayed X-coordinate mirror/history candidate**, not an independent movement timer |
-| `0xB0` | U8 | 249/266 same-type episodes constant; 21 within-episode changes | slowly-changing instance/type/variant property candidate |
-| `0xB4` | **U8** | 266/266 same-type episodes constant, zero within-episode changes; next byte `0xB5` always zero | **instance-initialized binary property/variant metadata candidate** |
-| `0xB6` | **U8** | 266/266 same-type episodes constant, zero within-episode changes; 18-value domain | **instance-initialized property/variant metadata candidate** |
-| `0xB9` | U8 | 2765 changes on movement frames vs only 9 on idle; 9-value cyclic domain | **movement phase/cycle counter candidate** |
-| `0xBB` | U8 | 457 changes on movement frames vs only 2 on idle; countdown-like chains | **movement-associated timer/countdown candidate** |
+| `0x77` | U8 | deterministic coarse projection of `0x70` | attack-neighborhood coarse state candidate |
+| `0x81` | historical reference | no current semantic promotion | unknown/reference only |
+| `0x9C` | U8 | high-frequency state; strong +1-frame relation with `0x04` | pipelined/high-frequency state candidate |
+| `0xA2` | U8 | X payload equality peaks with a +1-frame relation | one-frame-delayed/latched X-coordinate mirror/history candidate |
+| `0xB0` | U8 | mostly episode-stable but changes at some replacements | slowly-changing instance/profile property candidate |
+| `0xB4` | **U8** | **1604/1604** type episodes constant, zero within-episode changes; binary domain | **instance-initialized coarse profile/variant metadata candidate** |
+| `0xB6` | **U8** | **1604/1604** type episodes constant, zero within-episode changes; 34-value domain; changes on 9/11 same-type replacement boundaries | **strong instance/profile/variant initialization code candidate** |
+| `0xB9` | U8 | almost static without horizontal motion; strong cyclic changes on horizontal/diagonal movement | **horizontal locomotion / walk-phase counter candidate** |
+| `0xBB` | U8 | movement changes overwhelmingly decrement; absent on stationary/pure-vertical transitions | **horizontal movement countdown / step-timer candidate** |
+| `0xC6` | **U8** | only `00/01/02`; exact mapping to P1/P2/P3 association pointer; 87.02% agreement with nearest-X player; only 1/11 same-type C6 changes committed to live target within 240 frames | **sticky/hysteretic horizontal proximity player-association index candidate**, not a direct future target selector |
 
-## Verified width corrections
+## Lifecycle: `0x00` is not current ACTIVE
 
-### Type
+Across all 23,400 frames:
 
-Across `180000` enemy-object samples:
+- slots `0..16`: `0x00 == 0` throughout
+- slots `17..19`: `0x00 == 1` throughout
+- total `0x00` transitions: **0**
+- `0x24` zero->nonzero: **74**
+- `0x24` nonzero->zero: **74**
 
-- `0x23` = `00` for all samples
-- `0x24` has `31` distinct byte values
-- legacy U16 `0x23..0x24` is always `00XX`
+Therefore the corpus contains repeated enemy lifecycle/type-presence transitions without any `0x00` transition. Current model:
 
-Therefore type is tracked as **`0x24` U8**. The bridge analyzer now uses `type_candidate=(0x24,1)`.
+1. `0x00` = persistent physical-slot/object-header layer in the observed runtime configuration.
+2. `0x24` = faster current type/type-present lifecycle layer.
 
-### Attack
+No semantic production ACTIVE rule is promoted from this WinKawaks evidence.
 
-Across `21847` type-present samples:
+## Live target layer: `0x6D..0x6E`
 
-- `0x73` has five values: mainly `0A`, `00`, `1B`, `0B`, `1E`
-- `0x73` changes `772` times
-- `0x74` is `00` for every sample and changes zero times
-- U16@`0x73` therefore adds only a constant low zero byte
-
-The atlas and bridge analyzer now use **`0x73` U8** as the coarse attack anchor.
-
-### Target
-
-`0x6D..0x6E` must remain **U16 BE**. Observed values are exactly:
+Observed U16 BE values are exactly:
 
 - P1 `0xBE1C`
 - P2 `0xBEFC`
 - P3 `0xBFDC`
 
-## Allocation vs type-present lifecycle
+Across seven captures:
 
-Across 9000 frames / 180000 enemy-object samples:
+- total live-target transitions: **8**
+- known-player retargets: **8**
+- precision among observed target changes: **8/8 = 1.0**
+- six retargets occurred while `0x24` type stayed unchanged
+- the other two were nonzero-type -> nonzero-type changes, not lifecycle zero/nonzero boundaries
+- no target transition coincided with an ordinary type-present enter/exit edge
 
-- slots0..16: `0x00 == 0` for all `153000` samples
-- slots17..19: `0x00 == 1` for all `27000` samples
-- within those allocated slots, `0x24 != 0` for `21847` samples and `0x24 == 0` for `5153`
-- `0x00` changed zero times
-- `0x24` zero->nonzero edges: `21`
-- `0x24` nonzero->zero edges: `21`
-- whole-object all-zero transitions: none
+Target values can remain latched through `0x24 == 0`, so target lifetime is not the same as type-present lifetime.
 
-Current model has at least two layers:
+## Separate player-association / proximity layer: `0xC6` + `0x3D..0x3E`
 
-1. `0x00`: stable allocation/object-header layer in current corpus.
-2. `0x24`: current type/type-present layer inside allocated slots.
+`0xC6` and `0x3D..0x3E` form an exact three-player encoding:
 
-Inactive/type-zero objects can retain nonzero stale state; “inactive == all zero bytes” is false. No semantic production ACTIVE rule is promoted.
+- `C6=00 -> 0x3D..0x3E = 0xBE1C` = P1
+- `C6=01 -> 0x3D..0x3E = 0xBEFC` = P2
+- `C6=02 -> 0x3D..0x3E = 0xBFDC` = P3
 
-## Target-pointer evidence
+Across **60,271 type-present samples**:
 
-Across EFIELD-002 + EFIELD-003 (`7200` frames):
+- exact `0x3D..0x3E == live 0x6D..0x6E`: only **18,753/60,271 = 31.11%**
+- both fields nevertheless always belong to the known P1/P2/P3 set in this corpus
+- `C6` agrees with the **nearest-X player** on **52,445/60,271 = 87.02%**
+- live target agrees with nearest-X on only **18,519/60,271 = 30.73%**
+- `C6` agrees with nearest Manhattan(X,Y) player on 70.25%
 
-- `0x6D` total transitions: `6`
-- known P1/P2/P3 retargets: `6`
-- all `0x6D` transitions are known retargets: `6/6`
-- all known retargets changed `0x6D`: `6/6`
-- local sample event precision: `1.0`
-- directions include P1->P3, P3->P1 and P3->P2
+This strongly separates the layers:
 
-EFIELD-003 supplied the first natural P2 observation.
+- `0xC6` / `0x3D..0x3E`: spatial/proximity association candidate
+- `0x6D..0x6E`: live/materialized target pointer candidate
 
-Retarget companion specificity:
+### C6 is not a simple intended-target predictor
 
-| Offset | Total changes | Exact on retarget | Event precision | Interpretation |
-|---|---:|---:|---:|---|
-| `0x28` | 53 | 6 | 0.113208 | sparse retarget pulse |
-| `0x2D` | 361 | 6 | 0.016620 | broad action reset |
-| `0x2E` | 710 | 6 | 0.008451 | broad state |
-| `0x65` | 247 | 6 | 0.024291 | retarget substate/trigger |
-| `0x6D` | 6 | 6 | **1.000000** | target U16 field |
-| `0x6E` | 6 | 6 | **1.000000** | low byte of same U16 target |
-| `0x42` | 14546 | 5 | 0.000344 | generic high-frequency field |
-| `0x14` | 2054 | 3 | 0.001461 | generic state/animation field |
+There are 11 same-type `C6` changes in the seven-run corpus. Only **1/11** was followed within 240 frames by the live target committing to the newly selected player. Therefore the earlier “future intended target selector” hypothesis is rejected as a general model.
 
-This remains WinKawaks-local discovery only.
+Geometry conditioning instead shows:
 
-## Attack hierarchy and cycle
+- 8/11 switches moved from a player that was not nearest-X to one that was nearest-X on the switch frame
+- 3/11 switched away from the instantaneous nearest-X player
+- global nearest-X agreement rises only slightly from 87.02% at `t` to 87.38% at `t+15`; there is no sharp fixed lead/lag
+- many switches occur after the new player has already been closer for multiple frames, while a few counterexamples show a switch before or without a local nearest crossing
 
-The attack neighborhood is now structured rather than merely correlated.
+Best current label: **sticky/hysteretic horizontal proximity association**, not per-frame `argmin(distance)` and not direct target identity.
 
-Deterministic/current-sample relations:
+## Script / animation executor candidate: `0x2F..0x32` + `0x34`
 
-- H(`0x73 | 0x6C`) = `0`: each `0x6C` fine state maps to exactly one coarse `0x73` family.
-- H(`0x77 | 0x70`) = `0`: each `0x70` fine state maps to exactly one `0x77` coarse state.
+The old generic labels around `0x2F` and `0x33` are refined substantially.
+
+### Pointer/progression field
+
+U32 BE at `0x2F..0x32`:
+
+- unique values: **178**
+- changes: **5540**
+- exact delta `+0x0A`: **3006**
+- exact `-0x0A`: 24
+- repeated `-0x32` loop/reset transitions
+- repeated `+0x4000A` and paired bank-like return jumps
+- examples include `0x02008BE0 -> 0x02008BEA -> 0x02008BF4 -> ...`
+
+Byte `0x2F` alone is constant `0x02` in the current type-present corpus; the semantic candidate is the **whole U32 structure**, not byte `0x2F` by itself.
+
+### Countdown/reload field
+
+`0x34` U8:
+
+- 43 values
+- 31,920 changes
+- when pointer is stable but countdown changes, dominant deltas are `-1` and `-2`
+- at pointer changes, `0x34` changes 5203 times and moves upward/reloads **4967** times
+
+Current model is a strong **record pointer + duration/countdown** executor candidate. It is consistent with an animation/script progression mechanism, but the exact ROM/program semantics remain discovery-only.
+
+### `0x37` correction
+
+`0x37` is not supported as the old U16 timer hypothesis:
+
+- U8 values: `00`, `80`, `02`
+- 1528 changes
+- `0x38` is constant `0x84`
+- changes are strongly attack-associated
+
+Treat `0x37` as an attack-associated flag/gate/substate until further evidence.
+
+## Attack hierarchy / phase topology
+
+Current structural relations:
+
+- H(`0x73 | 0x6C`) = `0` in the analyzed corpus: each fine `0x6C` state maps to one coarse `0x73` family.
+- H(`0x77 | 0x70`) = `0`: each fine `0x70` state maps to one `0x77` coarse state.
 - `0x72 -> 0x73` is near-deterministic but not perfect.
 
 Representative mappings:
 
-- `6C=E0 -> 73=0A` (`11882` samples)
+- `6C=E0 -> 73=0A`
 - `6C=40/48/50/58 -> 73=1B`
 - `6C=90 -> 73=0B`
 - `6C=70/78 -> 73=1E`
-- `70=A0 -> 77=0C` (`10640`)
+- `70=A0 -> 77=0C`
 - `70=80/10/58/28 -> 77=0B`
 - `70=D8 -> 77=14`
 - `70=F8 -> 77=0A`
 
-Attack-cycle mining found `271` contiguous `0x73 != 0` episodes:
+Phase-boundary analysis separates structural states:
 
-- median duration `31` frames
-- mean `58.934`
-- maximum `345`
+- `90,00,88,0B,00`: **94.83% interior**; strongest long-dwell interior candidate
+- `E0,A0,D8,0A,0C`: **84.21% interior**; dominant core/loop state
+- `40,00,E8,1B,00`: common bridge/core state
+- `50,00,18,1B,00` and `58,00,30,1B,00`: more boundary-enriched
+- `78,78,78,1E,0B` and `70,70,70,1E,0B`: no interior samples in the phase-boundary corpus; rare boundary/termination candidates
 
-Dominant joint phase states `(6C,70,72,73,77)` include:
-
-- `E0,A0,D8,0A,0C`: `10640` samples
-- `40,00,E8,1B,00`: `2660`
-- `E0,00,38,0A,00`: `1242`
-
-The most frequent cross-family transition is:
-
-`40,00,E8,1B,00 -> E0,A0,D8,0A,0C` (`123`)
-
-with the reverse transition observed `113` times. This supports a repeatable multi-field attack phase graph rather than incidental cochange.
+These are structural labels only. They do not yet claim visual onset/hit/recovery semantics.
 
 ## Movement subsystem
 
-Clean movement vs attack separation originally showed:
+Velocity-conditioned evidence strongly separates locomotion fields from attack fields.
 
-- movement events: `6231`
-- attack-anchor transitions: `772`
+### `0xB9`
 
-The movement-cycle pass then found `2163` contiguous movement bouts:
+- nearly static when X is stationary
+- approximately 45% change rate on pure horizontal movement in the analyzed pass
+- approximately 77–99% change rate on diagonal movement
+- left/right share recurring chains such as `04->03->02->01->04`
 
-- median duration `2` frames
-- mean `2.897`
-- max `18`
+Current interpretation: **horizontal locomotion/walk-phase counter**, not direction bit.
 
-Key field-change class counts:
+### `0xBB`
 
-- `0xB9`: moving `2765`, idle `9`
-- `0xBB`: moving `457`, idle `2`
-- `0xA2`: moving `898`, idle `26`
-- `0x28`: moving `10`, idle `58`
-- `0x2D`: moving `94`, idle `305`
-- `0x2E`: moving `222`, idle `526`
-- `0x9C`: moving `5327`, idle `348`
+- no changes in stationary/pure-vertical samples in the velocity pass
+- changes only when a horizontal component is present
+- among changes, roughly 86–94% are `-1`
 
-`0xB9` and `0xBB` generally do **not** toggle exactly at movement start/stop; they continue/advance during movement. This argues for phase/timer semantics rather than boolean movement flags.
+Current interpretation: **horizontal movement countdown / step timer**.
 
-### Lagged coordinate mirror
+### `0xA2`
 
-For `0x08` (X payload byte) vs `0xA2`:
+X payload equality peaks at a +1-frame relation (`0x08[t] == 0xA2[t+1]` about 97.8% in the original lag pass), supporting a delayed/latched X-coordinate mirror/history interpretation.
 
-- A2[t-3]: equality `0.887378`
-- A2[t-2]: `0.901193`
-- A2[t-1]: `0.922816`
-- A2[t]: `0.955692`
-- **A2[t+1]: `0.977954`**
-- A2[t+2]: `0.955530`
-- A2[t+3]: `0.923218`
+## Instance/profile metadata
 
-Thus `0xA2` is best treated as a one-frame-delayed/latched X-coordinate mirror or history byte, not an independent movement counter.
+Episodes are contiguous same-nonzero-`0x24` type segments in a physical slot.
 
-For `0x04` vs `0x9C`, equality similarly peaks at +1 frame (`0.835136`) rather than same frame (`0.662288`), indicating a likely pipelined state relationship rather than aliasing.
+Across **1604 episodes**:
 
-## Instance-initialized metadata candidates
+- `0xB4`: **1604/1604 constant**, zero within-episode changes
+- `0xB6`: **1604/1604 constant**, zero within-episode changes
+- `0xB6`: 34-value domain in the seven-run episode pass
 
-Episodes are defined as a contiguous nonzero constant `0x24` type in one slot. Across `266` such episodes:
+Across **1583 consecutive episode boundaries**:
 
-| Offset | Constant episodes | Within-episode changes | Interpretation |
-|---|---:|---:|---|
-| `0xB4` | **266/266** | **0** | strong instance-initialized binary metadata/variant candidate |
-| `0xB6` | **266/266** | **0** | strong instance-initialized multi-value metadata/variant candidate |
-| `0xB0` | 249/266 | 21 | slowly-changing instance/type property candidate |
-| `0x19` | 246/266 | 21 | slowly-changing binary type/variant property candidate |
-| `0x28` | 236/266 | 67 | runtime state/pulse, not static metadata |
-| `0x65` | 232/266 | 243 | runtime state/substate |
-| `0xB9` | 59/266 | 2601 | runtime movement phase |
-| `0xBB` | 194/266 | 332 | runtime movement timer |
+- same-type replacement boundaries: 11
+- `B6` changed on **9/11** same-type replacements
+- `B4` changed on 3/11 same-type replacements
 
-The earlier apparent `B4/B6` lifecycle-exit correlation is now interpreted as an episode-boundary effect: these fields are constant inside a type episode but can be reinitialized when a new enemy instance/type episode begins.
+This strongly rejects “type constant” and supports initialization-time instance/profile semantics for B6. Earlier factorization also found low individual type/slot/run purity and high simultaneous uniqueness without strict uniqueness, so B6 is better described as **instance/profile/variant code** than unique ID.
 
-## EFIELD run ledger
+Additional deterministic/co-change structure:
+
+- `0xC6 <-> 0x3E` is exact in the current corpus and now has player-association semantics rather than generic metadata semantics.
+- `0xC6` and `0x3E` should not be treated as independent unknowns.
+- `0xB6` almost determines coarse binary `0xB4`; B4 behaves like a coarse projection of a richer profile code.
+
+## Run ledger
 
 ### EFIELD-001-baseline-30s60 — PASS
-- 1800 frames @ ~59.984Hz
-- distinct 1448/1800 = 80.44%
+- 1800 frames
+- ~59.984 Hz
+- distinct raw frames 1448/1800 = 80.44%
+- type enter/exit 7/6
+- target transitions 0
 - read/frame errors 0/0
-- raw `captures/EFIELD-001-baseline-30s60.jsonl.gz`
 
 ### EFIELD-002-natural-diversity-60s60 — PASS
-- 3600 frames @ ~59.993Hz
+- 3600 frames
+- ~59.993 Hz
 - distinct 2848/3600 = 79.11%
-- retargets 3/3
-- raw `captures/EFIELD-002-natural-diversity-60s60.jsonl.gz`
+- type enter/exit 3/4
+- target retargets 3/3
 
 ### EFIELD-003-passive-retarget-60s60 — PASS
-- 3600 frames @ 60.001Hz
+- 3600 frames
+- ~60 Hz
 - distinct 2817/3600 = 78.25%
-- frame492 slot17 P1->P3
-- frame1827 slot17 P3->P2
-- frame3322 slot19 P3->P1
-- raw `captures/EFIELD-003-passive-retarget-60s60.jsonl.gz`
+- type enter/exit 11/11
+- target retargets 3/3
+- includes first natural P2 target observation
 
 ### EFIELD-004-passive-lifecycle-retarget-60s60 — PASS
-- 3600 frames @ 59.990Hz; distinct 2480/3600 = 68.89%
-- read/frame errors 0/0; raw uploaded successfully
-- fresh WinKawaks session PID `30144`, RAM base `0x8E1FDFC`, mapping `xor3`
-- `0x00` allocation transitions: `0`; slots0..16 remained 0 and slots17..19 remained 1 for all 3600 frames
-- `0x24` type-present edges: 5 enter + 5 exit
-- U16 BE `0x6D..0x6E` target transitions: 2; both are known-player retargets
-- run4 retargets: slot17 P3->P1 and slot18 P2->P1 at frame 2961
-- raw `captures/EFIELD-004-passive-lifecycle-retarget-60s60.jsonl.gz`
+- 3600 frames
+- ~59.990 Hz
+- distinct 2480/3600 = 68.89%
+- fresh/new WinKawaks process session
+- type enter/exit 5/5
+- two simultaneous known-player retargets at frame 2961
 
-## Offline analysis outputs
+### EFIELD-005-cross-session-target-60s60 — PASS after corrected schema
+- initial malformed task attempt failed validation before capture
+- corrected task blob later executed successfully under the same task ID
+- 3600 frames @ 59.993 Hz
+- distinct 3376/3600 = **93.78%**
+- type enter/exit 17/16
+- target transitions 0; target stayed P1 in the observed active slots
 
-- `results/efield/latest.json`
+### EFIELD-005R-cross-session-target-60s60 — PASS
+- 3600 frames @ 59.994 Hz
+- distinct 3356/3600 = **93.22%**
+- type enter/exit 16/17
+- target transitions 0; target stayed P1 in the observed active slots
+
+### EFIELD-006-cross-session-lifecycle-target-60s60 — PASS
+- 3600 frames @ 59.993 Hz
+- distinct 1841/3600 = **51.14%**
+- type enter/exit 15/15
+- target transitions 0
+- read/frame errors 0/0
+
+### EFIELD-007-passive-proximity-association-60s60 — queued
+
+Purpose: expand the sparse same-type `C6` proximity-association switch sample, measure proximity hysteresis/crossings, preserve separation from live target `0x6D..0x6E`, and replicate the script-pointer/countdown model. No operator gate is required.
+
+## High-value evidence outputs
+
 - `results/efield/summary.json`
-- `results/efield/DECISION.md`
-- `results/efield/RUN3_RETARGET.md`
-- `results/efield/RETARGET_PRECISION.md`
-- `results/efield/LIFECYCLE.md`
-- `results/efield/ACTIVE_CLASSIFIER.md`
-- `results/efield/TYPE_WIDTH.md`
-- `results/efield/MOVE_ATTACK.md`
-- `results/efield/STATE_VALUES.md`
-- `results/efield/TYPE_FINGERPRINT.md`
-- `results/efield/MIRROR_STATIC.md`
-- `results/efield/LAG_MIRRORS.md`
-- `results/efield/ATTACK_CYCLE.md`
-- `results/efield/INSTANCE_PROPERTIES.md`
-- `results/efield/WIDTH_REFINEMENT.md`
-- `results/efield/MOVEMENT_CYCLE.md`
-
-Analysis workflow hardening/corrections:
-
-- analyzer concurrent-push race fixed; result pushes rebase before push and no longer cancel newer queued analyses
-- compact decision workflow also retains concurrent runs
-- analyzer type anchor corrected to `(0x24,1)`
-- analyzer attack anchor corrected to `(0x73,1)`
-
-
-
-## EFIELD-005R consolidation
-
-### Run ledger
-
-`EFIELD-005-cross-session-target-60s60` was rejected by Collector schema validation before execution because the capture parameters were at the wrong JSON level. No game capture or memory operation occurred for that rejected task.
-
-`EFIELD-005R-cross-session-target-60s60` then ran successfully using the validated Collector v1 `parameters` shape:
-
-- PASS; 3600 frames @ 59.994Hz
-- distinct raw frames: 3356/3600 = **93.22%**
-- read/frame-size errors: 0/0
-- same second WinKawaks session as run4: PID `30144`, RAM base `0x8E1FDFC`, mapping `xor3`
-- raw `captures/EFIELD-005R-cross-session-target-60s60.jsonl.gz`
-- `0x00` allocation transitions: **0**
-- `0x24` type-present enter/exit: **16 / 17**
-- U16 BE `0x6D..0x6E` target transitions: **0**
-- slots17..19 carried P1 `0xBE1C` throughout the run when examining target values; high global frame diversity did not produce a retarget event
-
-### Five-run cumulative allocation evidence
-
-Across EFIELD-001..005R there are now **16200 frames / 324000 enemy-object samples** across two WinKawaks sessions. The `0x00` allocation/header byte still has **zero observed transitions**: slots0..16 remain 0 and slots17..19 remain 1 in every captured frame. This strengthens its interpretation as a persistent allocation/object-header layer in the observed runtime configuration, while also showing that passive normal-play sampling is inefficient for obtaining an actual allocation/reuse edge.
-
-### Target evidence after run5
-
-Run5 contributed no new target changes, so the dynamic target sample remains **8/8 known P1/P2/P3 retargets** from EFIELD-002..004. The important negative result is that run5 had 93.22% distinct raw frames yet zero retargets. Raw-frame diversity is therefore not a proxy for target-transition coverage.
-
-### Cross-session semantic replication
-
-`results/efield/CROSS_SESSION_REPLICATION.md` re-tested key semantics in EFIELD-004 and EFIELD-005R, the newer WinKawaks session:
-
-- `0x6C -> 0x73` remained deterministic in both runs: zero ambiguous fine-state mappings.
-- `0x70 -> 0x77` remained deterministic in both runs: zero ambiguous fine-state mappings.
-- `0xB9` remained almost static on stationary/pure-vertical transitions and changed strongly when a horizontal component was present, replicating the horizontal locomotion/walk-phase interpretation.
-- `0xBB` remained almost absent from stationary/pure-vertical changes; on horizontal/diagonal changes its updates were overwhelmingly `-1`, replicating the horizontal countdown/step-timer interpretation.
-- `0xC6/0x3E` showed only the three pairs `00/1C`, `01/FC`, `02/DC` in both new-session runs, motivating an explicit exact-encoding test across the full five-run corpus.
-
-### Automatic decision after run5
-
-Do not blindly queue another generic 60-second burst. Five passive runs have produced no `0x00` allocation transition, and run5 showed that very high raw diversity does not guarantee retarget coverage. Continue offline semantic decomposition and cross-session replication first. A future staged allocation/reuse capture should only be requested if allocation semantics become the highest-value unresolved blocker; it remains separate from Browser/WASM production evidence.
-
-## Current priorities
-
-1. Capture an actual `0x00` allocation transition / slot reuse; current three-run corpus never changed allocation.
-2. Expand `0x6D` retarget sample beyond six while preserving exact event precision.
-3. Determine whether `0xB4/B6` encode instance identity, variant/class metadata, facing/spawn attributes, or another initialization-time property.
-4. Convert the `0x6C/70/72/73/77` attack graph into onset/active/recovery/idle-return phase semantics.
-5. Characterize `0xB9/BB` against velocity sign, step cadence and movement animation cycles.
-6. Continue type-conditioned analysis while controlling for position, instance and stage/time confounding.
-
-No Browser/WASM rule and no production-shadow behavior is changed by this atlas.
-
-
-## Cross-session consolidation after EFIELD-004
-
-EFIELD-004 ran in a fresh WinKawaks process/session, so it is useful as an independent replication rather than only more frames from the original process.
-
-### Allocation/object-header layer
-
-Across EFIELD-001..004 (`12600` frames / `252000` enemy-object samples), `0x00` still produced **zero transitions**. In run4, as in the earlier corpus, slots0..16 stayed `00` and slots17..19 stayed `01` for every frame. The `0x00` field is therefore strengthened as a persistent slot-allocation / occupied-object-header layer in the observed runtime configuration, but an actual allocation/reuse transition is still not captured. `0x24` continues to represent a faster current-type/type-present layer inside those preallocated objects.
-
-### Target pointer across sessions
-
-Run4 added two true U16 target changes, both known P1/P2/P3 retargets. Combined dynamic target evidence is now **8/8 known-player retargets** across EFIELD-002..004 and across two WinKawaks sessions. This strengthens `0x6D..0x6E` as the WinKawaks-local U16 BE target pointer candidate.
-
-A separate lifecycle pass over runs1..3 found 21 type-enter and 21 type-exit boundaries. The target pointer was unchanged across **21/21 enters and 21/21 exits** and can remain a known P1/P2/P3 value while `0x24 == 0`. Target lifetime is therefore not identical to current type-present lifetime; stale/latched target values survive type-zero intervals.
-
-### Coarse attack phase topology
-
-For joint state `(0x6C,0x70,0x72,0x73,0x77)`, boundary enrichment separates stable interior states from rare boundary-like states without assigning visual attack semantics:
-
-- `90,00,88,0B,00`: 94.83% interior; strongest long-dwell interior state in the boundary analysis.
-- `E0,A0,D8,0A,0C`: 84.21% interior and 216 episodes consisted solely of this state; a dominant core/loop state.
-- `40,00,E8,1B,00`: 67.48% interior but common at zero/nonzero crossings; transitional/core-bridge family.
-- `50,00,18,1B,00` and `58,00,30,1B,00`: substantially more boundary-enriched than the dominant core states.
-- `78,78,78,1E,0B` and `70,70,70,1E,0B`: zero interior samples in this corpus and strongly end-boundary enriched; rare boundary-state candidates.
-
-These labels are structural (`interior`, `bridge`, `boundary`) only; they do not claim visual onset/hit/recovery semantics.
-
-### Horizontal locomotion phase fields
-
-Signed coordinate-delta conditioning substantially refines the movement interpretation:
-
-- `0xB9` changes almost never when X is stationary (7/15497 stationary transitions; 1/1157 pure-up; 0/1048 pure-down), but changes on ~45% of pure horizontal transitions and ~77–99% of diagonal transitions. Left/right use nearly the same chains (`04->03->02->01->04`, plus higher cycles). `0xB9` is therefore best described as a **horizontal locomotion / walk-phase counter**, not a direction bit.
-- `0xBB` does not change in the stationary or pure-vertical samples and changes only during transitions with a horizontal component. Of those changes, roughly 86–94% are `-1`. It is therefore best described as a **horizontal movement countdown / step timer**.
-
-### Instance/profile metadata
-
-Episode factorization and replacement-boundary analysis refine `0xB4`/`0xB6`:
-
-- `0xB6` is constant in 266/266 original type episodes but has low type purity (`0.327`), low slot purity (`0.320`) and multiple values even for repeated same-type/same-slot/same-run episodes. It is not a type constant or slot constant.
-- Across frames containing >=2 type-present enemies, simultaneous `0xB6` values were all unique in 8259/8315 frames (99.33%), but collisions exist, so `0xB6` is **not a strict unique ID**. It behaves more like an instance/profile/variant code.
-- `0xB4` is also episode-stable but can differ on same-type replacements; it is not a deterministic facing or spawn-side bit. Initial relative-side correlation is only partial.
-- Episode-level entropy shows `B6` almost determines `B4` (`H(B4|B6)=0.1004`), suggesting `B4` is a coarse binary projection of a finer `B6` profile/instance class.
-- `0xC6` and `0x3E` form an exact deterministic episode-level pair in the current metadata bundle and are worth treating as a linked static-property representation rather than independent unknowns.
-
-### New/updated offline evidence
-
-- `results/efield/PHASE_BOUNDARIES.md`
-- `results/efield/VELOCITY_PHASE.md`
-- `results/efield/METADATA_FACTORIZATION.md`
-- `results/efield/SPAWN_METADATA.md`
-- `results/efield/PROFILE_TUPLES.md`
-- `results/efield/INSTANCE_BUNDLE.md`
-- `results/efield/TARGET_LIFECYCLE.md`
-- `results/efield/RUN4_CORE.md`
-
-### Next passive run
-
-`EFIELD-005R-cross-session-target-60s60` is queued with no operator gate. `EFIELD-005-cross-session-target-60s60` was rejected by schema validation before execution because its capture parameters were placed at the wrong JSON level; no game capture or memory operation occurred for the rejected task. EFIELD-005R uses the validated Collector v1 `parameters` shape. Its main purpose is to expand the exact target-pointer sample beyond eight retargets and replicate the type/attack/movement atlas in the new session, while still watching opportunistically for a rare real `0x00` allocation/reuse edge.
-
-
-## Seven-capture consolidation
-
-A direct all-run pass now covers seven independent EFIELD raw captures: EFIELD-001, 002, 003, 004, 005, 005R and 006.
-
-### Core lifecycle totals
-
-Across **23,400 frames / 468,000 enemy-object samples**:
-
-- `0x00` allocation/object-header transitions: **0**.
-- Physical slots `0..16` remained `0x00` for all 23,400 frames each.
-- Physical slots `17..19` remained `0x01` for all 23,400 frames each.
-- `0x24` current-type/type-present boundaries: **74 zero->nonzero enters + 74 nonzero->zero exits**.
-- U16 BE `0x6D..0x6E` target transitions: **8**.
-- All target transitions are between known player addresses P1/P2/P3: **8/8**.
-
-The absence of any `0x00` edge is now replicated over two WinKawaks process sessions and 468k object samples. It strengthens the interpretation of `0x00` as a persistent slot-allocation / occupied-object-header layer in the observed runtime configuration, but still does not prove a general semantic ACTIVE rule because no real allocation/reuse edge has been captured.
-
-### Target is independent of type-presence lifecycle
-
-The eight observed target transitions are not explainable as ordinary type enter/exit events:
-
-- six of eight retargets occurred while `0x24` type stayed exactly unchanged across the transition frame;
-- the remaining two occurred with nonzero-type -> nonzero-type changes (`0x07->0x10` and `0x1B->0x09`), not zero/nonzero lifecycle edges;
-- no observed target change coincided with a type-present enter or exit boundary.
-
-Together with the earlier boundary analysis showing the target pointer remains latched across type-zero intervals, this supports treating `0x6D..0x6E` as an independently maintained WinKawaks-local player-target pointer field rather than a derivative of `0x24`.
-
-### Exact redundant encoding: `0xC6` / `0x3E`
-
-Do not confuse offset `0xC6` with attack-neighborhood offset `0x6C`.
-
-Across all seven captures and **60,271 type-present samples**, the relation
-
-`0x3E = (0x1C - 0x20 * 0xC6) mod 256`
-
-holds for **60,271 / 60,271 samples with zero mismatches**. Only three pairs were observed:
-
-- `C6=00 -> 3E=1C`
-- `C6=01 -> 3E=FC`
-- `C6=02 -> 3E=DC`
-
-This is replicated across both WinKawaks sessions and across every observed nonzero type. `0x3E` should therefore be treated as a deterministic encoded mirror/projection of `0xC6`, not as an independent unknown field for future ranking.
-
-### New evidence files
-
+- `results/efield/RUN_FOCUS.md`
 - `results/efield/ALL_RUN_CORE.md`
 - `results/efield/NEW_SESSION_CORE.md`
 - `results/efield/CROSS_SESSION_REPLICATION.md`
-- `results/efield/C6_3E_ENCODING.md`
+- `results/efield/FULL_EPISODE_STABILITY.md`
+- `results/efield/INSTANCE_BUNDLE.md`
+- `results/efield/METADATA_FACTORIZATION.md`
+- `results/efield/PROFILE_TUPLES.md`
+- `results/efield/PHASE_BOUNDARIES.md`
+- `results/efield/VELOCITY_PHASE.md`
+- `results/efield/TIMER_SEMANTICS.md`
+- `results/efield/ATTACK_TIMER_PHASE.md`
+- `results/efield/NEXT_POINTER.md`
+- `results/efield/TARGET_LAYERS.md`
+- `results/efield/RETARGET_LEAD.md`
+- `results/efield/SELECTOR_PRECISION.md`
+- `results/efield/PLAYER_ASSOC_GEOMETRY.md`
+- `results/efield/PROXIMITY_HYSTERESIS.md`
 
-This section supersedes older temporary run-count wording in the report. No Browser/WASM equivalence or production-rule promotion is implied.
+## Current priorities
+
+1. Expand same-type `C6` switch coverage and test a quantitative proximity/hysteresis threshold model.
+2. Determine whether `0x3D..0x3E` / `C6` is specifically nearest-X association, navigation focus, collision/player-link state, or another spatial player-reference layer.
+3. Decode the `0x2F..0x32` + `0x34` executor more deeply: record size, loop/branch structure, and relation to `0x6C/70/72/73/77` attack phases.
+4. Convert structural attack phase families into stronger onset/core/termination semantics without assuming visual meaning not present in raw evidence.
+5. Continue B6/profile factorization against type, spawn, stage, slot and player-association context.
+6. Keep opportunistically watching for a real `0x00` allocation/reuse edge, but do not treat passive failure to observe one as a blocker for other field mapping.
+
+No Browser/WASM offset equivalence, WOF-045 progression, production-shadow modification, or game-memory write is implied by this atlas.
