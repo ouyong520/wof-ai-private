@@ -5,88 +5,63 @@
 项目：Project A — Browser / MAME / gstyphoon.js Future Danger
 
 ## 当前阶段
-selector / dispatcher / descriptor 已解决。当前只做 Future Danger 规则扩展、跨 type 泛化和 forward prospective validation。
+selector / dispatcher / descriptor 已解决。当前重点是：扩大 Future Danger coverage、跨 enemy type 泛化、跨房间 forward prospective 验证。
 
-## Ground truth / exclusions
+## Ground truth
 - enemy `+0x7E` authoritative target；P1/P2/P3 = 0/4/8
-- `enemy+0x70 U16 0->nonzero` 仅 ACTIVE-start convention，不是 exact hitbox/damage onset
+- `enemy+0x70 U16 0->nonzero` = ACTIVE-start convention，不是 exact hitbox/damage onset
 - T16 exact B4 = production-shadow
-- broad T16 FAST/MID 已否定
-- broad T30_FAST 已降级
-- absDx130 不是 hitbox/range
-- T16 4840 divergence 不是 production
-- retrospective lag correlation 不能冒充 forward predictor
+- T20 B0->B255 -> A5136 = production-shadow-candidate，coarse early warning
+- T33/T34 TM6 -> A3232 = type-specific production-shadow-candidates
+- D867BA / D8811E TM6 -> A3232 = descriptor-family prospective
+- T24 exact TM2 / T23 B0 = prospective pending coverage
 
-## WOF-037 — latest completed
-身份严格通过：`WOF-037 / WOF-AI-PRIVATE / wof-future-danger-t20-t23-hybrid-prospective-validator-v37 / marker`；readOnly=true；ramWrites=0。
-运行 120002.3ms / 10ms；40039 enemy samples；140 ACTIVE edges。
+## WOF-037 completed evidence
+120002.3ms/10ms；40039 samples；140 ACTIVE edges。
 
-### T20 A5136 — promoted to production-shadow-candidate
-Forward rule：`T20_5136_B0_TO_B255_700`
-- 6 signals / 6 evaluable
-- 6 strict / 0 jitter / 0 late / 0 hard miss
-- expected A5136 = 6/6
-- target stable = 6/6
-- side stable = 6/6
-- LEFT1 / RIGHT5
-- lead 418.6, 458.6, 530.1, 647.8, 670.1, 680.1ms
+`T20_5136_B0_TO_B255_700`：6/6 strict，expected A5136 6/6，target 6/6，side 6/6，LEFT1 RIGHT5，lead 418.6..680.1ms。
+=> production-shadow-candidate；不把宽 lead 称精确 countdown；不从 absDx 推 timing boundary。
 
-=> 独立 prospective PASS，可升 `production-shadow-candidate`。
-=> 由于 lead 418.6..680.1ms 较宽，只定义为 **coarse early warning**，不称精确 countdown。
-=> entry absDx 182..306 与 lead 不呈稳定单调关系，禁止生成 distance threshold。
+WOF-037 fallback 还在新 type 上看到旧 descriptor 结构复现：
+- T9 `FE867BA/NX85ECE/BODY2872/V100000/A4/B2/TM6/P6C2784`：3 retrospective ~100ms -> A3232
+- T11 `FE8811E/NX879E2/.../TM6`：2 retrospective ~100ms -> A3232
+与历史 T33/T34 一致，但 T9/T11 仍需 forward prospective。
 
-### T23/T20 A4792 narrow rules
-WOF-037 中：
-- T23 B0 entry = 0 entries
-- T20 TM6->TM5 = 0 entries
-- T20 TM3->TM2 = 0 entries
-不是 hard miss，也不是 falsification；只是本轮 exact entry 没出现。优先级下降。
-
-### 3232 descriptor-family discovery
-WOF-037 fallback mining：
-
-#### Family 867BA / 85ECE
-Current T9 exact state：
-`S2/A4/B2 | BODY2872 | FE867BA | NX85ECE | V100000 | TM6 | P6C2784`
-3 retrospective ~100ms samples -> A3232；lead 99.8..100.6ms；target 3/3；side 2/3 stable。
-
-Historical relation：T33 candidate 使用相同 descriptor/body/value/action/b2/payload + TM6，WOF-032 prospective 5/5 attack3232。
-
-#### Family 8811E / 879E2
-Current T11 exact state：
-`S2/A4/B2 | BODY2872 | FE8811E | NX879E2 | V100000 | TM6 | P6C2784`
-2 retrospective ~100ms samples -> A3232；lead 99.6..100.8ms；target/side 2/2。
-
-Historical relation：T34 candidate 使用相同 descriptor/body/value/action/b2/payload + TM6，WOF-032 prospective 3/3 attack3232。
-
-=> 现在的假设是 **descriptor family 可能比 enemy type 更基础**。但 WOF-037 当前证据对 T9/T11 仍是 retrospective discovery，所以必须 WOF-038 live-forward 验证。
-
-## Current next
+## Current next — WOF-039 multiroom batch
 ```text
-resume = wof-resume-dispatch-selector-v48
-nextCopyId = WOF-038
-nextScript = wof_future_danger_descriptor_family_validator_v38.js
-nextMarker = === WOF FUTURE DANGER DESCRIPTOR FAMILY VALIDATOR V38 JSON ===
+resume = wof-resume-dispatch-selector-v49
+nextCopyId = WOF-039
+nextScript = wof_future_danger_multiroom_batch_v39.js
+nextMarker = === WOF FUTURE DANGER MULTIROOM BATCH V39 JSON ===
 ```
 
-## WOF-038 rules
-- `T16_6432_B4_40` — production-shadow opportunistic
-- `T20_5136_B0_TO_B255_700` — production-shadow-candidate reconfirmation
-- `D867BA_3232_TM6_120` — type-agnostic descriptor-family prospective
-- `D8811E_3232_TM6_120` — type-agnostic descriptor-family prospective
-- T23 B0 prospective retained opportunistically
-- four T24 exact TM2 prospective rules retained opportunistically
+### Why WOF-039
+单房120秒经常因房间 enemy type 不同而 coverage=0。WOF-039 把 WOF-038 嵌入最多5个不同 live room Worker，同时保留每房边界，再自动合并。
 
-Descriptor-family rules只在 live forward **首次进入 exact TM6 state** 时 arm；不限制 enemy type。输出 `entryTypeCounts`，用于直接检查跨 T9/T11/T33/T34 等 type 的泛化。
+### Batch protocol
+- 同一条 WOF-039 命令分别贴到 4~5 个 `gstyphoon.js` Worker；不是4~5条不同脚本。
+- 第一个 Worker 建 batch；其余 Worker 必须在45秒 join window内加入；最多5房。
+- 每房独立跑 embedded WOF-038 120秒。
+- Same-origin IndexedDB 保存 per-room result；最终一个 Worker自动输出一份 merged WOF-039 JSON。
+- 输出包含每房 player-count histogram / presence changes / enemy-type composition / authoritative target distribution。
+- 目前没有被证明的正式 scene/stage RAM address，所以 `contextTimeline` 只是场景上下文 fingerprint，不称 scene ID。
+- aggregate ruleStats 附带 `roomsWithSignal / roomsWithRawMatch / perRoom / entryTypeCounts`；必须先看 per-room 再作跨房间结论。
+- 房间中途关闭不会污染其他房；deadline 后在 merged result 中标为 interrupted。
 
-同时保留 fallback terminal + 50/100/150/250/500ms mining，避免新房间无固定规则 coverage 时白跑；fallback 仍是 discovery/correlation。
+### Embedded WOF-038 targets
+- `D867BA_3232_TM6_120` type-agnostic forward entry
+- `D8811E_3232_TM6_120` type-agnostic forward entry
+- `T20_5136_B0_TO_B255_700` reconfirmation
+- opportunistic T16/T23/four T24 exact candidates
+- fallback terminal/fixed-lag mining remains discovery only
 
-## Do not redo / do not revive
+## Do not redo / revive
 - P1/P2/P3 identity / +0x7E selector / player table / dispatcher44 / descriptor consumer
 - broad T16 FAST/MID
 - broad T30_FAST
-- absDx130 hitbox/range
+- absDx130 or T20 absDx as hitbox/range/timing threshold
 - T16 4840 divergence
 - ambiguous T24 TM3/TM4
-- persistent-state retrospective lag = fixed-time warning
-- distance threshold from WOF-037 T20 A5136 entryAbsDx
+- persistent-state retrospective lag as fixed-time warning
+- retrospective mining as prospective proof
+- arbitrary scene ID without proven RAM field
