@@ -1,0 +1,46 @@
+name: EFIELD executor atlas refresh
+
+on:
+  push:
+    paths:
+      - '.github/workflows/efield-atlas-executor-refresh.yml'
+      - 'tools/efield_atlas_executor_refresh.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Patch atlas additively
+        run: python tools/efield_atlas_executor_refresh.py
+      - name: Commit atlas refresh
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$(git status --porcelain -- reports/EFIELD_WIN_KAWAKS_ENEMY_FIELD_ATLAS.md)" ]]; then
+            echo 'Atlas already up to date.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reports/EFIELD_WIN_KAWAKS_ENEMY_FIELD_ATLAS.md
+          git commit -m 'EFIELD: consolidate script-record executor evidence'
+          branch="${GITHUB_REF_NAME:-main}"
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin "$branch"
+            git rebase "origin/$branch"
+            if git push origin "HEAD:$branch"; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
