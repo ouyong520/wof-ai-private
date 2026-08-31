@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/efield-atlas-cross-session-refresh.yml'
       - 'tools/efield_atlas_cross_session_refresh.py'
+      - 'tools/efield_atlas_run5_refresh.py'
   workflow_dispatch:
 
 permissions:
@@ -21,7 +22,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Patch atlas additively
-        run: python tools/efield_atlas_cross_session_refresh.py
+        shell: bash
+        run: |
+          python tools/efield_atlas_cross_session_refresh.py
+          python tools/efield_atlas_run5_refresh.py
       - name: Commit atlas refresh
         shell: bash
         run: |
@@ -33,6 +37,6 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add reports/EFIELD_WIN_KAWAKS_ENEMY_FIELD_ATLAS.md
-          git commit -m 'EFIELD: consolidate run4 cross-session field evidence'
+          git commit -m 'EFIELD: consolidate run5 and cross-session field evidence'
           git pull --rebase origin "${GITHUB_REF_NAME:-main}"
           git push
