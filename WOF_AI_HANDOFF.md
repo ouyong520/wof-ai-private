@@ -6,18 +6,6 @@
 
 > 与 `ouyong520/wof-winkawaks-bridge` 完全分开。
 
-## 本地采集器路由
-
-本项目现在可以把 `ouyong520/wof-winkawaks-bridge` 作为独立的本地高速证据采集器，但不得把两边运行时字段直接混为同一命名空间。
-
-固定路由协议见：
-
-```text
-COLLECTOR_ROUTING.md
-```
-
-简则：找字段、diff、transition、大量高频 raw RAM 时优先 WinKawaks Collector；真实在线房、多房/1P2P3P coverage、Browser Worker/WASM 语义和正式规则升级前的 prospective proof 仍以 Browser/Web 为准。WinKawaks 发现若要升级成生产规则，最终必须回 Browser/Web 验证。
-
 ## 强制协议
 - 回传先校验 `copyId/project/version/marker/readOnly/ramWrites`。
 - RAM 默认只读，`ramWrites=0`。
@@ -28,80 +16,93 @@ COLLECTOR_ROUTING.md
 - P1/P2/P3 `0xFFBE1C / 0xFFBEFC / 0xFFBFDC`
 - enemy pool `0xFFC0BC`, stride `0xE0`, 20 slots
 - enemy authoritative target `+0x7E=0/4/8 -> P1/P2/P3`
-- selector、player table、dispatcher44 incoming edges、descriptor consumer `0x247C` 已解决
-- `enemy+0x70 U16 0->nonzero` 仅 ACTIVE-start convention，不是 exact hitbox/damage onset
+- selector / player table / dispatcher44 / descriptor consumer `0x247C` 已解决
+- `enemy+0x70 U16 0->nonzero` = ACTIVE-start convention，不是 exact hitbox/damage onset
 
-## WOF-040 — 已完成 5 房 batch
-身份严格通过：`WOF-040 / WOF-AI-PRIVATE / wof-future-danger-multiroom-coordinator-v40 / marker`，`readOnly=true`，`ramWrites=0`。
+## WOF-041 — 已完成 5 房 batch
+身份严格通过：`WOF-041 / WOF-AI-PRIVATE / wof-future-danger-multiroom-coordinator-v41 / marker`，`readOnly=true`，`ramWrites=0`。
 
-Batch `b-f998189b-ff0`：
+Batch `b-281d582f-3a0`：
 - joined 5 / complete 5 / error 0 / interrupted 0
-- 59991 polls
-- 198105 enemy samples
-- 1002 ACTIVE edges
-- 111 signals
-- 109 strict + 1 jitter + 1 real-late + 0 hard miss
-- multiroom workflow 已证明能收 3P、纯2P(P2+P3)、纯1P(P2)。aggregate player-count samples = `[0P49,1P808,2P538,3P1017]`。
+- 59937 polls
+- 191524 enemy samples
+- 1166 ACTIVE edges
+- 232 signals
+- 229 strict + 2 jitter + 0 real-late + 1 watcher hard-miss
+- player-count samples `[0P1,1P0,2P865,3P1559]`；本轮主要是2P/3P。1P workflow 已由 WOF-040 证明。
 
-### D8811E descriptor family -> A3232
-`D8811E_3232_TM6_120`：24/24 strict<=120ms；A3232=24/24；target=24/24；side=24/24；lead 98.8..112.4ms。
+### T16 exact B4 danger
+`T16_B4_DANGER_40`：172/172 在40ms内进入 ACTIVE danger；target/side=172/172；attack identity = A6432 170 + A4832 1 + A4840 1。
 
-跨 type：`T37=1,T11=10,T34=13`；P1/P2/P3、LEFT/RIGHT 都覆盖；跨3房。
-
-结论：升为 **type-agnostic production-shadow**。
-
-### D867BA descriptor family -> A3232
-WOF-040：33/33 都最终 A3232，target/side 33/33；31 strict<=120ms，1 jitter=121ms，1 clean real-late=200ms，0 hard miss。
-
-跨 type：`T36=3,T9=10,T33=20`；P1/P2/P3、LEFT/RIGHT 全覆盖；跨4房。
-
-结论：规则本身强，但 120ms horizon 太窄。升为 **production-shadow-candidate**，下一轮用 220ms audit horizon。200ms 只是观测到的较慢样本，不得从 absDx/距离制造 timing law。
-
-### T16 exact B4
-WOF-040：54/54 都在40ms内进入 ACTIVE danger，target/side=54/54；但攻击 identity 为 A6432=53、A4832=1。WOF-039 另有1次 A4840。
-
-结论：T16 exact B4 是 **imminent-danger production-shadow**，不是“100% exclusive A6432”。A6432 继续作为 specificity audit。
+结论：继续是 **imminent-danger production-shadow**。A6432 只作 specificity audit，禁止 exclusive 语义。
 
 ### T20 B0->B255 -> A5136
-WOF-040 有 T20/A5136 activity，但 exact B0->B255 transition entry=0，所以没有新的 forward 样本，也没有负面证据。
+`T20_5136_B0_TO_B255_850`：28 signals；27 strict，1 watcher hard-miss；被解析的27次全部 A5136/target/side=27/27，lead 409.4..799.9ms。
 
-历史 WOF-039 23/23 A5136/target/side，lead442.1..780.8ms；下一轮 audit horizon 调到850ms，仍称 coarse early warning，不称 countdown/因果边界。
+同一个 hard-miss 所在房的 same-cycle miner 对 B255 signature 记录了14个 A5136 cycle，其中 first-lead 最大 1190.4ms，且 target/side 14/14 稳定。结合该房 watcher=14 signals，这个 hard-miss 更像1100ms tail过短，而不是明确 false positive。
 
-### T24/T23 correction
-WOF-040 有很强 T24 coverage：T24 samples=6024，A5440=19，A5424=16；但旧四条 T24 exact prospective rule 全部 `rawMatch=0 / transitionEntry=0`。
+下一轮只把 audit horizon/tail 放宽到 **1250/1500ms**；仍称 coarse early warning，不称 countdown/因果边界。
 
-同时 retrospective `fingerprintTop` 又能在约100ms看到旧 TM2 signature（A5424候选6次，A5440候选5次）。这正说明固定 lag 可能抓到前一攻击周期/非当前 attack-zero 链，不能当 forward proof。
+### D867BA descriptor family -> A3232
+`D867BA_3232_TM6_220`：10/10 strict<=220ms；A3232/target/side=10/10；lead100.1..200ms；本轮 type=T33。
 
-因此：旧 T24 fixed-lag TM2/TM3/TM4 全部降为 retrospective/correlation only。T23 同理继续等待真正 same-cycle evidence。
+结合 WOF-040 已有跨 `T36/T9/T33` 的33/33 expected attack/target/side 证据，现升为 **type-agnostic production-shadow**。
 
-## Current next — WOF-041
+### D8811E descriptor family -> A3232
+`D8811E_3232_TM6_120`：22/22 最终 A3232/target/side；20 strict<=120ms + 2 jitter 120.1/120.9ms；0 late / 0 miss；types `T11=6,T34=16`。
+
+继续 **production-shadow**。下一轮 audit horizon 调到135ms，只为吸收边界 jitter，不代表因果阈值。
+
+### T24 — WOF-041 发现真正 same-cycle 前驱
+旧四条 fixed-lag 来源 T24 rule 再次 `rawMatch=0 / transitionEntry=0`，即使本轮 T24 samples=9198、A5440=23、A5424=21。因此旧 BODY5424/5440 fixed-lag 规则继续退役。
+
+same-cycle attack-zero miner 找到两条新的、真实位于当前攻击周期中的状态：
+
+1. A5440 prospective candidate
+   - `S2/A2/B4|BODY7512|FE8AF46|NX8A6D0|V180001|TM3|P6C0`
+   - 两房各8 cycle，共16
+   - first lead 49.0..59.6ms
+   - target/side=16/16
+
+2. A5424 prospective candidate
+   - `S2/A2/B4|BODY7520|FE8AF6C|NX8A6E4|V180001|TM4|P6C0`
+   - 两房各8 cycle，共16
+   - first lead 49.5..70.3ms
+   - target/side=16/16
+
+这两条与旧 fixed-lag BODY5424/5440 signature 不同，WOF-042 将直接做 forward prospective entry 验证。
+
+### T23
+same-cycle A4792 当前只得到单房4-cycle 证据，状态持续时间长，target/side rate约0.75；暂不升 prospective rule。
+
+## Current next — WOF-042
 ```text
-resume = wof-resume-dispatch-selector-v51
-nextCopyId = WOF-041
-nextScript = wof_future_danger_multiroom_coordinator_v41.js
-nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V41 JSON ===
+resume = wof-resume-dispatch-selector-v52
+nextCopyId = WOF-042
+nextScript = wof_future_danger_multiroom_coordinator_v42.js
+nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V42 JSON ===
+embedded = WOF-042R / wof_future_danger_cycle_validator_v42r.js
 ```
 
-### WOF-041 目的
-继续使用已经验证成功的 dual-mode multiroom workflow，但 embedded validator 改成 `WOF-041R`：
-- D8811E 按 production-shadow 继续独立复核。
-- D867BA 用220ms horizon 复核。
-- T16 改成 imminent-danger 语义；A6432 只作为 specificity audit。
-- T20 horizon=850ms，仍 coarse early warning。
-- 新增 `cyclePrecursorTop`：只统计 **enemy+0x70==0 且位于同一个之后真正 0->nonzero ACTIVE 的 cycle** 中出现过的状态。
-- 这条 same-cycle attack-zero 约束专门用来淘汰 fixed-lag 污染，并为 T24/T23 找真正前驱状态。
+### WOF-042 目的
+- 直接 prospective 验证新 T24：
+  - `T24_5440_CYCLE_BODY7512_TM3_80`
+  - `T24_5424_CYCLE_BODY7520_TM4_90`
+- D867 status=production-shadow，220ms复核。
+- D881 production-shadow，audit horizon=135ms。
+- T16 imminent-danger 继续复核。
+- T20 audit horizon=1250ms、tail=1500ms；仍 coarse warning。
+- 继续 `cyclePrecursorTop`，用于 T23/其他 type 的同周期前驱发现。
 
-### WOF-041 操作
-- 在最多5个 live `gstyphoon.js` Worker 分别运行同一条 WOF-041；无短 join window；1P/2P/3P 都可。
-- 每房约120秒。
-- 所有想收的房间结束后切到 `top`，再运行同一条 WOF-041；若仍有活房会拒绝过早 finalize，否则只下载一份 `WOF-041_<batchId>.json`。
+### 操作
+- 最多5个 live `gstyphoon.js` Worker 运行同一条 WOF-042；每房约120秒。
+- 所有房结束后切 `top`，再运行同一条；若仍有活房则拒绝 finalize，否则只下载一份 `WOF-042_<batchId>.json`。
 
 ## 禁止误判
-- broad T16 FAST/MID ❌
-- broad T30_FAST ❌
-- absDx130 / 距离 = hitbox或timing threshold ❌
+- broad T16 FAST/MID / broad T30_FAST ❌
+- absDx/距离 = hitbox或timing threshold ❌
 - T16 B4 = 100% exclusive A6432 ❌
-- T20 850ms / D867 220ms = causal boundary ❌
+- T20 1250ms / D867 220ms / D881 135ms = causal boundary ❌
 - retrospective fixed-lag fingerprint = forward predictor ❌
-- 旧 T24 fixed-lag TM2/TM3/TM4 直接复活 ❌
+- 旧 T24 BODY5424/5440 fixed-lag rule 复活 ❌
 - 未证明 RAM field 就声称精确 scene/stage ID ❌
