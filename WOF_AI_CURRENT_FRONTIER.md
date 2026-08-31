@@ -26,74 +26,74 @@
 - absDx130：仅旧 diagnostic split，不是 hitbox/range。
 - T16 4840 divergence：discovery-only。
 
-## WOF-033 lesson
-固定 validator 在 T24/T18/T21/T30-heavy 房间里 291 ACTIVE edges 但所有 fixed exact match=0。结论是 coverage problem，不是 T16/T33/T34 rule failure。因此切换 coverage-adaptive mining。
+## WOF-034 discovery
+WOF-034 adaptive mining 抓到 150 ACTIVE edges，并在 T24 上发现四条高质量 exact ~100ms TM2 fingerprints：
+- `T24 S2/A2/B4 BODY5424 FE8AEEC NX8A6C6 V180001 TM2 P6C0` → eventual A5440，5/5 near100ms，target/side stable，LEFT+RIGHT。
+- `T24 S2/A2/B4 BODY5440 FE8AF28 NX8A6DA V180001 TM2 P6C0` → eventual A5424，5/5 near100ms，target/side stable，LEFT+RIGHT。
+- `BODY5440 FE8AF28 NX8A756 V100001 TM2` → A5424，4/4 near100ms，RIGHT-only discovery。
+- `BODY5424 FE8AEEC NX8A76A V100001 TM2` → A5440，4/4 near100ms，RIGHT-only discovery。
 
-## WOF-034 — latest completed run
-结果身份严格通过：
+这些仍是 discovery/correlation evidence。部分 T24 TM3/TM4 exact states 会同时出现在 eventual A5424/A5440 前，不能作为 attack-identity production rule。
+
+## WOF-035 — latest completed run
+身份严格通过：
 ```text
-copyId=WOF-034
+copyId=WOF-035
 project=WOF-AI-PRIVATE
-version=wof-future-danger-adaptive-terminal-miner-v34
-marker==== WOF FUTURE DANGER ADAPTIVE TERMINAL MINER V34 JSON ===
+version=wof-future-danger-t24-exact-prospective-validator-v35
+marker==== WOF FUTURE DANGER T24 EXACT PROSPECTIVE VALIDATOR V35 JSON ===
 readOnly=true
 ramWrites=0
 ```
 
-运行：120000.5ms / 10ms；enemySamples=28271；ACTIVE edges=150。
-主要 type samples：T19 5041, T31 2537, T12 3057, T24 5685, T18 3276, T7 2807, T9 2096, T11 2744, T10 1028。
-T24 attack coverage：A4704=13, A5440=13, A5424=9, A4712=6。
+运行：120001.4ms / 10ms；enemySamples=48326；ACTIVE edges=194。
+main type samples：T23 993, T20 2221, T7 11684, T30 9773, T16 4453, T22 4453, T28 4453, T10 5561, T9 4735。
+**T24 samples=0**。
+因此四条 T24 exact candidates 均 rawMatchSamples=0、transitionEntries=0、signals=0、evaluable=0。
+结论：WOF-035 对 T24 candidates **没有任何正/负证据**；不能因为 0 signals 降级候选。
 
-### T24 strongest discovery fingerprints
-#### Candidate A — expected 5440
-```text
-T24
-attack=0
-state99=2 action2A=2 b2B=4
-BODY5424 FE8AEEC NX8A6C6 V180001 TM2 P6C0
-```
-WOF-034 100ms fingerprint：5/5 eventual A5440；lead sampling约98.8..100.0ms；target/side stable 5/5；包含 LEFT+RIGHT。
+值得利用的当前房间 attack coverage：
+- T16|A6432 = 22，T16|A4832 = 2
+- T30|A6200 = 10，T30|A2536 = 18，T30|A2528 = 6
+- T7|A2536 = 25，T7|A2528 = 12
+- T9|A3232 = 15，T10|A3232 = 17
+- 另有 T22/T28 多种攻击
 
-#### Candidate B — expected 5424
-```text
-T24
-attack=0
-state99=2 action2A=2 b2B=4
-BODY5440 FE8AF28 NX8A6DA V180001 TM2 P6C0
-```
-WOF-034 100ms fingerprint：5/5 eventual A5424；约99.1..100.1ms；target/side stable 5/5；包含 LEFT+RIGHT。
-
-#### Candidate C — expected 5424
-```text
-BODY5440 FE8AF28 NX8A756 V100001 TM2
-```
-4/4 discovery near100ms；当前仅 RIGHT coverage。
-
-#### Candidate D — expected 5440
-```text
-BODY5424 FE8AEEC NX8A76A V100001 TM2
-```
-4/4 discovery near100ms；当前仅 RIGHT coverage。
-
-### Important ambiguity correction
-不要把 WOF-034 中所有漂亮的 T24 TM3/TM4 countdown 直接提升。交叉查看 activeEdgeEvents 后发现，部分完全相同的 exact state 会同时出现在 eventual A5424 和 A5440 前，只是 lead 不同。例如部分 V180001 / V100001 TM3 状态具有 attack identity ambiguity。因此 WOF-035 只验证上面四条更早、在 WOF-034 sampled fingerprints 中保持单一 eventual attack 的 exact TM2 fingerprints。
+## Engineering correction after WOF-035
+固定等 T24 再次造成 120 秒规则 coverage=0，虽然 active edges 很多。因此下一轮不再只等一个 type。恢复 adaptive miner，同时把所有已知高价值规则作为 opportunistic validators 嵌入。
 
 ## Current next
 ```text
-resume version = wof-resume-dispatch-selector-v45
-nextCopyId = WOF-035
-nextScript = wof_future_danger_t24_exact_prospective_validator_v35.js
-nextMarker = === WOF FUTURE DANGER T24 EXACT PROSPECTIVE VALIDATOR V35 JSON ===
+resume version = wof-resume-dispatch-selector-v46
+nextCopyId = WOF-036
+nextScript = wof_future_danger_adaptive_terminal_miner_v36.js
+nextMarker = === WOF FUTURE DANGER ADAPTIVE TERMINAL MINER V36 JSON ===
 ```
 
-WOF-035 parameters：120s / 10ms / horizon 140ms / jitter 15ms / tail 400ms。
-必须输出每条 rule 的 signals/evaluable/strict/jitter/realLate/hardMiss/censored/expectedAttackRate/targetSameRate/sideStableRate/lead distribution/side coverage。
+### WOF-036 design
+120s / 10ms。
+Opportunistic validators：
+- T16 exact B4 production-shadow
+- T33/T34 TM6 production-shadow-candidates
+- 四条 T24 exact ~100ms prospective candidates
 
-只有独立 prospective 通过后才能升级 production-shadow。
+同时对所有真实 ACTIVE edge mining：
+- last attack=0 terminal fingerprint
+- 20/50/100/150/250/500ms pre-ACTIVE fingerprints
+- recent pre-ACTIVE transition chain
+- type + actual attack 聚合
+- target stability / side stability
+
+因此即使当前房间继续没有 T24，也能从 T7/T30/T16/T22/T28/T10/T9/T23/T20 得到有效 evidence。尤其当前 T16 A6432 coverage 很强，可顺带继续验证 exact B4。
+
+## Evidence policy
+- WOF-035 zero T24 coverage ≠ T24 rule failure。
+- WOF-036 新挖出的 signature 仍只是 discovery/correlation evidence，不是 causal proof。
+- 新候选必须另写 prospective validator，检查 strict / jitter / late / hard miss / expected attack / target stability / side stability 后才能升 production-shadow。
 
 ## Exclusions / do not redo
 - 不重做 P1/P2/P3 identity、enemy+0x7E selector、player table、dispatcher 44 edges、descriptor consumer、Focus Multiroom、0x0080F2。
 - 不称 +0x70 为 exact hitbox/damage onset。
 - 不恢复 broad T16 FAST/MID、broad T30_FAST、absDx130 hitbox/range、T16 4840 divergence。
-- 不把 WOF-034 mined fingerprint 当 causal proof；它是 discovery/correlation evidence。
+- 不把 mined fingerprint 直接当 causal proof。
 - 不把 ambiguous T24 TM3/TM4 states 当 attack identity rule。
