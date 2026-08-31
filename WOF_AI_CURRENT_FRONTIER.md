@@ -5,63 +5,58 @@
 项目：Project A — Browser / MAME / gstyphoon.js Future Danger
 
 ## 当前阶段
-selector / dispatcher / descriptor 已解决。当前重点：Future Danger 规则扩展、跨 enemy type 泛化、跨房间 forward prospective 验证，以及可靠的多房间采集工作流。
+selector / dispatcher / descriptor 已解决。当前重点：把已验证的 descriptor-family 规则固化成 production shadow，并用 same-cycle attack-zero mining 扩大 T24/T23 等 Future Danger coverage。
 
-## WOF-039 completed
-严格身份通过，readOnly=true，ramWrites=0。
+## WOF-040 completed
+严格身份通过：`WOF-040 / WOF-AI-PRIVATE / wof-future-danger-multiroom-coordinator-v40 / marker`，`readOnly=true`，`ramWrites=0`。
 
-Batch `b-cab8bed7-fd3`：3 joined / 3 complete / 0 error / 0 interrupted；105571 enemy samples；515 ACTIVE edges；58 signals；55 strict；3 late；0 hard miss。
+Batch `b-f998189b-ff0`：5 joined / 5 complete / 0 error / 0 interrupted；59991 polls；198105 enemy samples；1002 ACTIVE edges；111 signals；109 strict；1 jitter；1 late；0 hard miss。
 
-这 3 个有效房间全部是 3P。尝试加入的 2P 房被 v39 的 45 秒 join window 拒绝，因此当前 batch **没有 2P coverage**。
+多房间 workflow 已验证：包含3P、纯2P(P2+P3)、纯1P(P2)。aggregate player-count samples `[49,808,538,1017]` 对应0P/1P/2P/3P采样。
+
+### D8811E -> A3232
+24/24 strict<=120ms；A3232/target/side=24/24；lead98.8..112.4ms；types `T37=1,T11=10,T34=13`；P1/P2/P3、LEFT/RIGHT 全覆盖；跨3房。
+
+=> **production-shadow**。
+
+### D867BA -> A3232
+33/33 A3232/target/side；31 strict<=120ms +1 jitter121ms +1 clean late200ms；0 hard miss；types `T36=3,T9=10,T33=20`；P1/P2/P3、LEFT/RIGHT；跨4房。
+
+=> **production-shadow-candidate**。下一轮 audit horizon=220ms；200ms 不是距离/因果 timing law。
+
+### T16 exact B4
+54/54 在40ms内进入 ACTIVE danger；target/side54/54；attack=A6432 53 + A4832 1。WOF-039 另有A4840 1。
+
+=> **imminent-danger production-shadow**；禁止 exclusive A6432 语义。
 
 ### T20 A5136
-`T20_5136_B0_TO_B255_700`：23/23 eventual A5136；target23/23；side23/23；20 strict<=700ms + 3 late（729.9,740.9,780.8ms）；0 hard miss；lead442.1..780.8ms；P1=11,P2=4,P3=8。
+WOF-040 exact B0->B255 entry=0；no new evidence，不是 failure。历史 WOF-039 23/23 expected attack/target/side，lead442.1..780.8ms。
 
-=> 继续是强 coarse early warning。700ms horizon 太紧，但不能把新的 800ms 当作因果 threshold。
+=> coarse production-shadow-candidate；下一轮 audit horizon=850ms。
 
-### D867BA A3232 family
-`D867BA_3232_TM6_120`：6/6 strict；A3232/target/side 6/6；lead90.2..120ms；types T9=5,T36=1；跨2房。
+### T24/T23
+WOF-040 T24 samples=6024，A5440=19，A5424=16，但旧四条 exact rule rawMatch/entry 全0；与此同时 retrospective fingerprintTop 在100ms又复现旧TM2 signatures（6、5次）。
 
-=> 直接证明 descriptor family 可跨新 enemy type forward 泛化；结合历史 T33 5/5，升为 type-agnostic `production-shadow-candidate`。
+=> 这些旧 fixed-lag T24 候选不能 forward promotion；最可能的问题是固定 lag 可落到前一攻击周期。必须改用 **same-cycle + attack==0** 的链路证据。
 
-### D8811E A3232 family
-`D8811E_3232_TM6_120`：3/3 strict；A3232/target/side 3/3；lead99.6..119.3ms；type T11=3。
-
-=> 结合历史 T34 3/3，升为 type-agnostic `production-shadow-candidate`。
-
-### T16 B4
-26/26 在40ms内进入 ACTIVE danger，target/side26/26；但 attack counts = A6432 25 + A4840 1。
-
-=> 保留 imminent-danger production shadow，但取消“B4 必然 A6432”的 exclusive 语义。
-
-### T23/T24
-本 batch exact entry=0；no coverage，不是 falsification。
-
-## WOF-039 transport defect
-规则证据有效，但 v39 workflow 不再使用：45秒 join window 会丢掉后来加入的房间；Worker 没有 `document`，不能可靠负责下载；自动猜 batch 完结也不合适。
-
-## Current next — WOF-040
+## Current next — WOF-041
 ```text
-resume = wof-resume-dispatch-selector-v50
-nextCopyId = WOF-040
-nextScript = wof_future_danger_multiroom_coordinator_v40.js
-nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V40 JSON ===
+resume = wof-resume-dispatch-selector-v51
+nextCopyId = WOF-041
+nextScript = wof_future_danger_multiroom_coordinator_v41.js
+nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V41 JSON ===
 ```
 
-### WOF-040 protocol
-- **同一条脚本，双模式**。
-- 在 live `gstyphoon.js` Worker 运行：加入 active batch 并独立采120秒。
-- 无45秒 join window；1P/2P/3P 均允许；最多5房。
-- 每房保存到 same-origin IndexedDB v2，保留 roomId / player presence / enemy types / `+0x7E` target context。
-- 房间关闭后 heartbeat 停止。
-- 所有想收的房间完成后切到 **top**，再运行同一条 WOF-040：
-  - 有活跃房间则拒绝提前 finalize。
-  - stale room 标 interrupted。
-  - 合并 complete rooms，保留 per-room 明细。
-  - 只下载一份 `WOF-040_<batchId>.json`。
-  - finalize 后下一批自动新建。
-
-Embedded validator 暂时继续使用 WOF-038，以保持与 WOF-039 证据可直接比较；下一步再根据新 batch 决定是否重写 rule pack。
+### WOF-041 protocol
+- 保留 WOF-040 已验证成功的 dual-mode multiroom：Worker=ROOM-COLLECT；top=FINALIZE+下载唯一JSON。
+- 无短 join window；1P/2P/3P；最多5房；每房约120秒。
+- embedded `WOF-041R`：
+  - D8811E status=production-shadow，120ms复核。
+  - D867BA status=production-shadow-candidate，horizon=220ms。
+  - T16 改名/语义为 `T16_B4_DANGER_40`；A6432 expected rate只作 specificity audit。
+  - T20 horizon=850ms，仍 coarse warning。
+  - 并行 `cyclePrecursorTop`：只把同一 enemy slot 中 **+0x70==0 时真实观察到、且同一个 cycle 后来发生0->nonzero ACTIVE** 的状态归因给这次攻击。
+- fixed-lag `fingerprintTop` 继续保留作 retrospective/correlation 对照，但不允许当 prospective proof。
 
 ## Ground truth / exclusions
 - `enemy+0x7E` authoritative target；0/4/8=P1/P2/P3
@@ -69,6 +64,7 @@ Embedded validator 暂时继续使用 WOF-038，以保持与 WOF-039 证据可�
 - 不恢复 broad T16 FAST/MID / broad T30_FAST
 - 不把 absDx 当 hitbox/range/timing threshold
 - 不再声称 T16 B4 exclusive A6432
-- 不把 T20 700ms/800ms 当 causal boundary
-- retrospective lag 不能冒充 prospective proof
+- 不把 T20 850ms / D867 220ms 当 causal boundary
+- 不把 retrospective fixed-lag 当 forward predictor
+- 不复活旧 T24 fixed-lag TM2/TM3/TM4，除非 same-cycle attack-zero evidence 支持
 - 未证明的 RAM field 不能叫 scene/stage ID
