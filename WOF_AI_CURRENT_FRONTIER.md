@@ -1,65 +1,83 @@
 # WOF Future Danger AI — CURRENT FRONTIER
 
-更新时间：2026-08-31  
+更新时间：2026-09-01  
 仓库：`ouyong520/wof-ai-private`
 
 ## 阶段
-底层 selector/dispatcher/descriptor 已解决。当前是 **production-shadow 扩展 + T23 same-cycle sequence discrimination**。
+底层 selector/dispatcher/descriptor 已解决。当前是 **production-shadow audit + T23 ordered sequence discrimination**。
 
-## WOF-046 两批证据
-### Batch A `b-65a0db92-24c`
-- 5 joined / 4 complete / 1 interrupted / 0 error
+## WOF-047
+Batch `b-fbbbc59d-cea`：
+- identity valid
+- 3 joined / 3 complete / 0 error / 0 interrupted
 - readOnly=true / ramWrites=0
-- 47998 polls / 181961 enemy samples / 989 ACTIVE edges
-- 294 signals / 294 strict / 0 hard miss
+- 35996 polls / 113581 enemy samples / 644 ACTIVE edges
+- 144 signals =143 strict +1 jitter /0 late /0 hard miss /0 censored
+- player histogram `[0,0,579,902]` = 0P/1P/2P/3P
+- all3 embedded WOF-047R validations passed
 
-### Batch B `b-b1f1a5a3-92c`
-- 4 joined / 4 complete / 0 interrupted / 0 error
-- readOnly=true / ramWrites=0
-- 48000 polls / 168660 enemy samples / 958 ACTIVE edges
-- 110 signals / 108 strict + 1 jitter + 1 real-late / 0 hard miss
-- player histogram `[0,490,489,983]` = 0P/1P/2P/3P
+## Production audit
+- **T16 B4 imminent danger**：94/94 tail hits =93 strict+1 jitter；A6432=93,A4832=1；target/side94/94；lead9.0..40.5ms。attack 仍不 exclusive。
+- **T20 B0->B255 -> A5136**：本轮没有 coverage；保持 production-shadow-coarse，不作负判断。
+- **D867BA -> A3232**：23/23 strict A3232/target/side，lead98.8..119.5ms；T33/T9；all3 rooms。
+- **D8811E -> A3232**：19/19 strict A3232/target/side，lead99.4..120.4ms；T34。
+- **T24 A5440**：3/3 strict。
+- **T24 A5424**：3/3 strict。
+- **T18 A5440**：1/1 strict。
+- **T18 A5424**：1/1 strict。
 
-## Combined production audit
-- **T16 B4 imminent danger**: 225/225 tail hits = 224 strict +1 jitter; A6432=223, A4840=2; target/side225/225. danger production remains; attack not exclusive.
-- **T20 B0->B255 -> A5136**: 14/14 strict A5136/target/side, lead460.8..700.4ms; production-shadow-coarse.
-- **D867BA TM6 -> A3232**: 16/16 strict A3232/target/side, lead99.1..119.6ms; production-shadow.
-- **D8811E TM6 -> A3232**: 21/21 eventual A3232/target/side;20 strict +1 clean209.5ms real-late,0 miss; production-shadow.
-- **T24 BODY7512/TM3 -> A5440**: 28/28 strict, lead48.5..68.5ms.
-- **T24 BODY7520/TM4 -> A5424**: 34/34 strict, lead59.9..71.8ms.
-- **T18 BODY7512/TM4 -> A5440**: 33/33 strict, lead59.1..78.5ms.
-- **T18 BODY7520/TM4 -> A5424**: 33/33 strict, lead58.2..71.3ms.
+## T23 current
+- old BODY4920/B0 remains retired。
+- WOF-045 short candidate `S0/A6/B4 BODY4976 FE84868 NX83F20 V0 TM5 -> A4792` again rawMatch0/signals0；仍是 zero coverage，不是 failure。
 
-## T23
-旧 BODY4920/B0 继续 retired。
-
-WOF-045 short candidate：
-`S0/A6/B4|BODY4976|FE84868|NX83F20|V0|TM5|P6C0 -> A4792`
-在两个 WOF-046 batch 都 rawMatch0/signals0，因此是 **zero coverage，不是 failure**。
-
-WOF-046 Batch B 有 7379 T23 samples、12 个 T23 A4792 ACTIVE，但 focused 数据显示常见 single-state fingerprint 会跨 attack：
-- `S2/A4/B0 BODY0 FE84A98 NX83D14 TM20` 同时通往 A4792/A4920/A5848；A4792 long-lead branch targetSame 0/4。
-- `S0/A4/B2 BODY4936 FE84060 NX83C60 TM1` 同时出现在 A4792 与 A4920。
-
-=> 单一 T23 state 不足以区分 attack branch；下一步改做 ordered transition sequence。
-
-## Current next — WOF-047
+### Ordered traces
+WOF-047 `t23CycleTraces` 在唯一 T23 房间成功记录8个 resolved cycles：
 ```text
-resume = wof-resume-dispatch-selector-v57
-nextCopyId = WOF-047
-nextScript = wof_future_danger_multiroom_coordinator_v47.js
-nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V47 JSON ===
-embedded = WOF-047R
+A4792 = 3
+A4920 = 3
+A5888 = 2
+```
+0 dropped。
+
+当前最重要结论：**单一 terminal state 仍不足，late ordered tail 才可能区分 branch。**
+
+示例：
+- A5888 一个 tail3：`S0/A8/B2 BODY4936 -> S0/A2/B0 BODY4936 -> S0/A6/B4 BODY4936`。
+- 但第一个 `S0/A8/B2 BODY4936` 本身也出现在 A4792 cycle，因此必须用 order。
+- A4920 已看到至少3种不同 final branch。
+- A4792 三个 cycle 也有三种不同 late tail；当前没有 universal A4792 short sequence。
+
+因此本轮不 promotion 新 T23 production rule。
+
+## Instrumentation correction
+WOF-047 tracer 在 target 恰好于 ACTIVE-edge poll 改变时，会有 `targetStable=false` 但 `retargets=[]`。原因是 observer 只在 attack==0 时运行。
+
+WOF-048R 已修：active-edge target change 会追加 `retargets[].atActiveEdge=true`。
+
+## Current next — WOF-048
+```text
+resume = wof-resume-dispatch-selector-v58
+nextCopyId = WOF-048
+nextScript = wof_future_danger_multiroom_coordinator_v48.js
+nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V48 JSON ===
+embedded = WOF-048R
 ```
 
-### WOF-047 protocol
+### WOF-048 protocol
 - Worker=collect / top=finalize+one JSON
-- fresh IndexedDB v9
-- production audits continue
-- previous T23 short candidate audit continues
-- new `t23CycleTraces` captures up to120 resolved T23 cycles/room
-- each trace preserves up to48 ordered distinct states + first/last lead + target/side/retargets + tail1/tail2/tail3
-- traces are discovery only; next prospective rule must be built from discriminating sequence evidence
+- fresh IndexedDB v10
+- all existing production audits continue
+- T23 ordered traces continue
+- active-edge retarget logging fixed
+- new `t23SequenceSummary` by attack:
+  - timer-normalized `TM*` families
+  - final-family counts
+  - tail2/tail3 counts
+  - transition pair counts
+  - transition triple counts
+- summary remains discovery only; build prospective sequence validator only after repeated attack-specific discriminator evidence
+
+Detailed report: `reports/WOF-047_ANALYSIS.md`
 
 ## Exclusions
 - +0x70 ≠ exact hitbox/damage onset
@@ -69,5 +87,5 @@ embedded = WOF-047R
 - T20 1250ms / D867220 / D881135 ≠ causal boundary
 - retired fixed-lag T24 BODY5424/5440 不复活
 - old T23 BODY4920/B0 不复活
-- WOF-046 short T23 rawMatch0 不算失败
-- ambiguous T23 single-state 不直接 promotion
+- zero coverage 不等于 failure
+- 当前8条 T23 trace 不足以 promotion
