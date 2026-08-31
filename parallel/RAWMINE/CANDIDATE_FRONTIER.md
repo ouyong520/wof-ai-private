@@ -8,12 +8,12 @@ RAWMINE is a **candidate screener / evidence analyzer**, not a semantic owner. G
 
 ## Corpus / automated evidence contract
 
-Current screen consumes 11 retained raw runs:
+Current screen consumes **12 retained raw runs**:
 
 - 7 EFIELD runs
-- 4 GEO runs
+- 5 GEO runs, including `GEO-0008-p1-depth-only-5s60-20260831-2115Z`
 
-The bridge pipeline automatically emits for all 23 objects and all `0x00..0xDF` offsets:
+The bridge pipeline emits for all 23 objects and all `0x00..0xDF` offsets:
 
 1. change count / frequency;
 2. zero->nonzero and nonzero->zero counts;
@@ -30,7 +30,7 @@ Authoritative bridge outputs:
 - `results/rawmine/candidate_screen_summary.json`
 - `results/rawmine/candidate_screen_summary.md`
 
-Current ranking revision: `v5-owner-sync-through-efield-round009-action-neighborhood`.
+Current ranking revision: `v7-owner-sync-plus-geo-depth-manipulation-guard`.
 
 ## GEO — P1 X screen
 
@@ -41,123 +41,110 @@ Anchor events: **815**.
 | Rank | Offset | Score | Evidence | Key control |
 |---:|---:|---:|---|---|
 | 1 | `+0x04` | 0.990552 | `STRONG_CANDIDATE` | horizontal recall 1.000000; precision 1.000000; vertical/Z-only recall 0 |
-| 2 | `+0x9C` | 0.961743 | `STRONG_CANDIDATE` | horizontal recall 0.952147; vertical/Z-only recall 0.015723 |
-| 3 | `+0x0C` | 0.690209 | `MODERATE_CANDIDATE` | vertical/Z-only recall 0.927673, weak discriminator |
-| 4 | `+0x48` | 0.656759 | `MODERATE_CANDIDATE` | vertical/Z-only recall 0.921384 |
+| 2 | `+0x9C` | 0.961746 | `STRONG_CANDIDATE` | horizontal recall 0.952147; vertical/Z-only recall 0.015723 |
+| 3 | `+0x0C` | 0.690209 | `MODERATE_CANDIDATE` | vertical/Z-only recall 0.927673 |
+| 4 | `+0x48` | 0.656761 | `MODERATE_CANDIDATE` | vertical/Z-only recall 0.921384 |
 | 5 | `+0x0B` | 0.655153 | `MODERATE_CANDIDATE` | sparse 12 changes; precision 1.0; vertical/Z-only recall 0 |
 | 6 | `+0x16` | 0.650429 | `INSUFFICIENT_COVERAGE` | one candidate event |
 | 7 | `+0x11` | 0.636286 | `MODERATE_CANDIDATE` | vertical/Z-only recall 0.811321 |
 | 8 | `+0xA3` | 0.620018 | `MODERATE_CANDIDATE` | sparse cache-family behavior |
-| 9 | `+0x47` | 0.573754 | `WEAK_CANDIDATE` | sparse; best lag -1 |
-| 10 | `+0x4F` | 0.569726 | `WEAK_CANDIDATE` | horizontal recall 0.204908 |
+| 9 | `+0x47` | 0.573755 | `WEAK_CANDIDATE` | sparse; best lag -1 |
+| 10 | `+0x4F` | 0.569728 | `WEAK_CANDIDATE` | horizontal recall 0.204908 |
 
 RAWMINE only records that `+0x04` is the strongest single-offset discriminator under the GEO-owned anchor and `+0x0B` is a sparse highly specific companion. GEO remains the semantic owner.
 
 ## GEO — P1 floor/depth Y screen
 
-Anchor supplied by GEO: `U8(+0x08)` changes.
+The original retained natural corpus still has only **1** `+0x08` anchor change and therefore remains insufficient for owner-independent ranking.
 
-Existing RAWMINE corpus contains only **1 P1 anchor event**, so every numerical rank remains `INSUFFICIENT_COVERAGE`:
+The owner then supplied a dedicated controlled task:
 
-`+0x16, +0x08, +0x06, +0x1B, +0x00, +0x14, +0x04, +0x98, +0x07, +0x90`.
+`GEO-0008-p1-depth-only-5s60-20260831-2115Z`
 
-This is a coverage statement only. RAWMINE does not use a one-event ranking to validate or reject GEO's Y hypothesis.
+RAWMINE added a manipulation-validity guard on top of collector health. The raw is mechanically healthy and its orthogonal controls are clean:
 
-## EFIELD — lifecycle / execution-boundary residual screen
+- frames / transitions: `300 / 299`
+- reconstructed X (`+0x04/+0x0B`) changes: `0`
+- reconstructed Z (`+0x0C/+0x11`) changes: `0`
+- X/Z control validity: `PASS`
 
-EFIELD has closed the owner question: in the retained corpus no byte-level direct active/inactive gate is better supported than owner-confirmed `+0x24` type-present. RAWMINE therefore scopes already resolved/rejected structures out and reports only residual boundary-companion evidence.
+But the intended P1 floor/depth manipulation is absent from player-object evidence:
 
-Top 10 unresolved residual offsets:
+- `+0x08` changes: `0`
+- no byte reaches all of: `>=5` P1 changes, `>=0.80` P1-specificity, `<=0.05` untouched-P2/P3 change rate
+- `+0x7F` is dynamic but is similarly dynamic in untouched P2/P3, so it is not a P1-specific controlled candidate
 
-| Rank | Offset | Score | Evidence | Balanced boundary coverage | Replacement coverage |
-|---:|---:|---:|---|---:|---:|
-| 1 | `+0x36` | 0.560762 | `WEAK_CANDIDATE` | 0.140437 | 0.044341 |
-| 2 | `+0xA2` | 0.555361 | `WEAK_CANDIDATE` | 0.575396 | 0.424222 |
-| 3 | `+0x08` | 0.553734 | `WEAK_CANDIDATE` | 0.562721 | 0.450033 |
-| 4 | `+0x14` | 0.533003 | `WEAK_CANDIDATE` | 0.391659 | 0.348114 |
-| 5 | `+0x0D` | 0.532336 | `WEAK_CANDIDATE` | 0.780632 | 0.861681 |
-| 6 | `+0xBA` | 0.513066 | `WEAK_CANDIDATE` | 0.023406 | 0.005956 |
-| 7 | `+0xD1` | 0.511290 | `WEAK_CANDIDATE` | 0.027027 | 0.012574 |
-| 8 | `+0xAA` | 0.500802 | `WEAK_CANDIDATE` | 0.132405 | 0.078094 |
-| 9 | `+0x19` | 0.487723 | `WEAK_CANDIDATE` | 0.023406 | 0.020516 |
-| 10 | `+0xB7` | 0.467850 | `WEAK_CANDIDATE` | 0.046812 | 0.042356 |
+Automated verdict:
 
-No residual candidate reopens the owner-closed direct-gate hypothesis.
+`CONTROLLED_RAW_NO_P1_DEPTH_MANIPULATION_EVIDENCE`
 
-## EFIELD — retarget precursor residual screen
+This is **not negative evidence against `+0x08`** and not support for `+0x7F`. It means the first controlled scene failed to create a discriminative P1 depth trajectory.
 
-EFIELD has also closed the current universal pre-commit precursor question: existing raw supports no selective universal pre-commit signal. RAWMINE now excludes owner-resolved/rejected live-target, stored-association, split-reference, synchronization, executor, same-frame companion and locomotion fields before ranking residuals.
+A single narrow retry is already queued:
 
-Top 10 residual offsets:
+`RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z`
 
-| Rank | Offset | Score | Evidence | Adjusted pre-target purity | Prior <=600 | Prior >=30 | +/-2 commit |
-|---:|---:|---:|---|---:|---:|---:|---:|
-| 1 | `+0xB0` | 0.849496 | `STRONG_CANDIDATE` | 0.666667 | 1.000000 | 1.000000 | 0 |
-| 2 | `+0xD3` | 0.848681 | `STRONG_CANDIDATE` | 1.000000 | 1.000000 | 0.833333 | 0.166667 |
-| 3 | `+0xC7` | 0.848611 | `STRONG_CANDIDATE` | 0.666667 | 1.000000 | 1.000000 | 0 |
-| 4 | `+0xA6` | 0.847978 | `STRONG_CANDIDATE` | 0.666667 | 1.000000 | 1.000000 | 0 |
-| 5 | `+0xAA` | 0.831968 | `STRONG_CANDIDATE` | 0.625000 | 1.000000 | 1.000000 | 0 |
-| 6 | `+0x08` | 0.812610 | `STRONG_CANDIDATE` | 0.600000 | 1.000000 | 1.000000 | 0 |
-| 7 | `+0xA2` | 0.812589 | `STRONG_CANDIDATE` | 0.600000 | 1.000000 | 1.000000 | 0 |
-| 8 | `+0xC0` | 0.807401 | `STRONG_CANDIDATE` | 0.833333 | 0.833333 | 0.833333 | 0 |
-| 9 | `+0x41` | 0.798589 | `STRONG_CANDIDATE` | 0.500000 | 1.000000 | 1.000000 | 0 |
-| 10 | `+0x7E` | 0.797935 | `STRONG_CANDIDATE` | 0.666667 | 1.000000 | 0.666667 | 0 |
+It requires visible repeated P1 UP/DOWN traversal in an open walkable area, P2/P3 untouched, no LEFT/RIGHT/jump/attack, with the same X/Z contamination guards. The bridge consumes this retry automatically when its raw arrives.
 
-These scores mainly express persistent pre-state association in a tiny six-event same-type retarget set. They are follow-up candidates only and do not contradict EFIELD's closed result that no universal selective precursor is established.
+## EFIELD — owner-bounded residual screens
 
-## EFIELD — executor transition screen
+EFIELD has completed the current bounded high-value field-mapping phase. RAWMINE therefore keeps all EFIELD screens evidence-only and does **not** request generic capture.
 
-Anchor supplied by EFIELD: same-type logical `U32BE(+0x2F..+0x32)` transitions after masking `0x001C0000`; exact logical `+0x0A` sequence steps are scored separately. Known cursor/dwell/control and confirmed fine/coarse projection bytes are excluded.
+### Lifecycle / execution-boundary residual
 
-Top 10:
+Owner question remains closed: no byte-level direct active/inactive gate is better supported than owner-confirmed `+0x24`. Current unresolved residual Top 10 remain weak:
 
-| Rank | Offset | Score | Evidence | Cursor exact recall | +0x0A recall | +/-2 recall |
-|---:|---:|---:|---|---:|---:|---:|
-| 1 | `+0x14` | 0.820887 | `STRONG_CANDIDATE` | 0.962268 | 0.973398 | 0.970753 |
-| 2 | `+0x42` | 0.737803 | `MODERATE_CANDIDATE` | 0.979419 | 0.975249 | 0.987362 |
-| 3 | `+0x72` | 0.594821 | `MODERATE_CANDIDATE` | 0.612565 | 0.621559 | 0.628092 |
-| 4 | `+0x1B` | 0.589484 | `MODERATE_CANDIDATE` | 0.619968 | 0.573676 | 0.644340 |
-| 5 | `+0x37` | 0.428125 | `WEAK_CANDIDATE` | 0.275862 | 0.328013 | 0.284347 |
-| 6 | `+0x36` | 0.393155 | `WEAK_CANDIDATE` | 0.288319 | 0.254916 | 0.295541 |
-| 7 | `+0x04` | 0.373897 | `WEAK_CANDIDATE` | 0.344467 | 0.352533 | 0.389240 |
-| 8 | `+0x9C` | 0.370214 | `WEAK_CANDIDATE` | 0.343564 | 0.339116 | 0.389059 |
-| 9 | `+0x71` | 0.364088 | `WEAK_CANDIDATE` | 0.210146 | 0.201018 | 0.220979 |
-| 10 | `+0x09` | 0.357545 | `WEAK_CANDIDATE` | 0.317927 | 0.326162 | 0.340495 |
+`+0x36, +0xA2, +0x08, +0x14, +0x0D, +0xBA, +0xD1, +0xAA, +0x19, +0xB7`.
 
-This is coupling evidence only. It does not assign executor semantics to any unresolved offset.
+No residual candidate reopens the direct-gate hypothesis.
 
-## EFIELD — action/state-neighborhood screen
+### Retarget precursor residual
 
-Current owner-bounded question concerned `+0x2D`, `+0x2E`, `+0x37` without inventing attack-stage semantics. RAWMINE uses only owner-confirmed phase projections as the event anchor: same-type frames where any of `+0x6C/+0x70/+0x73/+0x77` changes, with same-type non-transition frames as controls. The anchor intentionally excludes unresolved `+0x72` to avoid circularity.
+Owner question remains closed: no selective universal pre-commit signal is established in the current corpus. High residual scores are dominated by persistent pre-state association under a tiny same-type event set and are not universal-precursor proof.
 
-Top 10:
+Current Top 10:
 
-| Rank | Offset | Score | Evidence | Exact phase recall | Candidate precision | Control rate | Lift |
-|---:|---:|---:|---|---:|---:|---:|---:|
-| 1 | `+0x72` | 0.942900 | `STRONG_CANDIDATE` | 0.969118 | 0.788466 | 0.00179130 | 541.012x |
-| 2 | `+0x14` | 0.773813 | `MODERATE_CANDIDATE` | 0.964706 | 0.471739 | 0.03711075 | 25.995x |
-| 3 | `+0x1B` | 0.720564 | `MODERATE_CANDIDATE` | 0.717353 | 0.571864 | 0.01802160 | 39.805x |
-| 4 | `+0x37` | 0.690211 | `MODERATE_CANDIDATE` | 0.448824 | 0.796867 | 0.00003619 | 12402.565x |
-| 5 | `+0x36` | 0.645758 | `MODERATE_CANDIDATE` | 0.412941 | 0.700949 | 0.00360070 | 114.684x |
-| 6 | `+0x71` | 0.642964 | `MODERATE_CANDIDATE` | 0.342353 | 0.836207 | 0 | very high / zero-control denominator |
-| 7 | `+0x42` | 0.607922 | `MODERATE_CANDIDATE` | 0.968824 | 0.071343 | 0.61280692 | 1.581x |
-| 8 | `+0xCE` | 0.527360 | `WEAK_CANDIDATE` | 0.121765 | 0.799228 | 0.00025332 | 480.684x |
-| 9 | `+0x6A` | 0.517619 | `WEAK_CANDIDATE` | 0.115000 | 0.765166 | 0.00057901 | 198.616x |
-| 10 | `+0xC9` | 0.513613 | `WEAK_CANDIDATE` | 0.092353 | 0.805128 | 0.00019903 | 464.006x |
+`+0xB0, +0xD3, +0xC7, +0xA6, +0xAA, +0x08, +0xA2, +0xC0, +0x41, +0x7E`.
 
-Owner-requested spotlight under the same neutral score:
+### Executor transition
 
-- `+0x72`: rank 1, `STRONG_CANDIDATE`;
-- `+0x37`: rank 4, `MODERATE_CANDIDATE`;
-- `+0x2E`: rank 17, `WEAK_CANDIDATE`;
-- `+0x2D`: rank 27, `WEAK_CANDIDATE`.
+Owner-supplied logical cursor transition anchor remains evidence-only. Current Top 10:
 
-This does not conflict with EFIELD Round 010, which keeps `+0x2D/+0x2E/+0x37` candidate-level on broader structural evidence and explicitly refuses value-level gameplay semantics. The RAWMINE ranking asks a narrower question: exact coupling to confirmed phase-transition frames.
+`+0x14, +0x42, +0x72, +0x1B, +0x37, +0x36, +0x04, +0x9C, +0x71, +0x09`.
 
-## Current owner state / stop condition
+No unresolved byte is semantically renamed by RAWMINE.
 
-EFIELD has completed its current bounded high-value field-mapping phase. Its remaining unknowns are explicitly not generic-capture work. RAWMINE therefore does not enqueue more EFIELD raw merely to improve statistics.
+### Action/state neighborhood
 
-For existing raw, RAWMINE's required automatic evidence contract is implemented and current owner-scoped Top 10 screens are regenerated automatically by the bridge workflow. Future eligible GEO/EFIELD/RAWMINE captures trigger the same pipeline.
+Anchor: same-type frames where any owner-confirmed phase projection `+0x6C/+0x70/+0x73/+0x77` changes. `+0x72` is intentionally excluded from the anchor to avoid circularity.
 
-GEO P1 Y remains the only priority question here that is still coverage-limited in the retained RAWMINE corpus. RAWMINE will consume a future owner-provided discriminative capture automatically; it will not infer semantic confirmation from the present one-event set.
+Current Top 10:
+
+1. `+0x72` — 0.942900 `STRONG_CANDIDATE`
+2. `+0x14` — 0.773813 `MODERATE_CANDIDATE`
+3. `+0x1B` — 0.720564 `MODERATE_CANDIDATE`
+4. `+0x37` — 0.690211 `MODERATE_CANDIDATE`
+5. `+0x36` — 0.645758 `MODERATE_CANDIDATE`
+6. `+0x71` — 0.642964 `MODERATE_CANDIDATE`
+7. `+0x42` — 0.607922 `MODERATE_CANDIDATE`
+8. `+0xCE` — 0.527360 `WEAK_CANDIDATE`
+9. `+0x6A` — 0.517619 `WEAK_CANDIDATE`
+10. `+0xC9` — 0.513613 `WEAK_CANDIDATE`
+
+Owner spotlight under this exact narrow screen:
+
+- `+0x72`: rank 1
+- `+0x37`: rank 4
+- `+0x2E`: rank 17
+- `+0x2D`: rank 27
+
+This does not override EFIELD owner-level `STRONG_CANDIDATE` classifications for `+0x2D/+0x2E/+0x37/+0x72` on broader structural evidence.
+
+## Current stop / continuation condition
+
+- EFIELD: no generic acquisition justified; current bounded phase is complete.
+- GEO P1 X: existing owner anchor is already well screened; no RAWMINE-owned semantic promotion.
+- GEO P1 Y/depth: first controlled raw is bounded as **ineffective manipulation**, not as a field verdict.
+- Active RAWMINE acquisition: only `RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z`.
+
+No second parallel retry or generic capture should be queued while that operator-gated task is active. Once it completes, the bridge pipeline automatically reruns all neutral evidence and the controlled manipulation guard, after which RAWMINE either hands a valid ranked candidate set back to GEO or records another explicit coverage failure without inventing semantics.
