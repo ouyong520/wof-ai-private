@@ -20,8 +20,11 @@ const top=(m,n=40)=>Object.entries(m).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(
 const summary={totalCycles:0,byAttack:{}};
 for(const tr of (base.t23CycleTraces||[])){
   const attack=String(tr.activeAttack??'unknown');
-  const s=summary.byAttack[attack]||(summary.byAttack[attack]={cycles:0,startedMidCycle:0,targetStable:0,sideStable:0,finalFamily:{},tail2Family:{},tail3Family:{},transitions:{},triples:{}});
+  const s=summary.byAttack[attack]||(summary.byAttack[attack]={cycles:0,startedMidCycle:0,targetStable:0,sideStable:0,finalExact:{},tail2Exact:{},tail3Exact:{},finalFamily:{},tail2Family:{},tail3Family:{},transitions:{},triples:{}});
   s.cycles++;summary.totalCycles++;if(tr.startedMidCycle)s.startedMidCycle++;if(tr.targetStable)s.targetStable++;if(tr.sideStable)s.sideStable++;
+  const exact=(tr.states||[]).map(st=>String(st.signature||'')).filter(Boolean);
+  const exact1=exact.at(-1)||null,exact2=exact.slice(-2),exact3=exact.slice(-3);
+  add(s.finalExact,exact1);if(exact2.length===2)add(s.tail2Exact,exact2.join(' -> '));if(exact3.length===3)add(s.tail3Exact,exact3.join(' -> '));
   const seq=[];
   for(const st of (tr.states||[])){const f=family(st.signature);if(!seq.length||seq[seq.length-1]!==f)seq.push(f);}
   tr.familyTail1=seq.at(-1)||null;tr.familyTail2=seq.slice(-2);tr.familyTail3=seq.slice(-3);
@@ -32,12 +35,13 @@ for(const tr of (base.t23CycleTraces||[])){
 for(const s of Object.values(summary.byAttack)){
   s.targetStableRate=s.cycles?+(s.targetStable/s.cycles).toFixed(3):null;
   s.sideStableRate=s.cycles?+(s.sideStable/s.cycles).toFixed(3):null;
+  s.finalExactTop=top(s.finalExact);s.tail2ExactTop=top(s.tail2Exact);s.tail3ExactTop=top(s.tail3Exact);
   s.finalFamilyTop=top(s.finalFamily);s.tail2FamilyTop=top(s.tail2Family);s.tail3FamilyTop=top(s.tail3Family);s.transitionTop=top(s.transitions,80);s.tripleTop=top(s.triples,80);
-  delete s.finalFamily;delete s.tail2Family;delete s.tail3Family;delete s.transitions;delete s.triples;
+  delete s.finalExact;delete s.tail2Exact;delete s.tail3Exact;delete s.finalFamily;delete s.tail2Family;delete s.tail3Family;delete s.transitions;delete s.triples;
 }
 base.copyId=COPY_ID;base.project=PROJECT;base.version=VERSION;base.expectedMarker=MARKER;base.readOnly=true;base.ramWrites=0;
 base.t23SequenceSummary=summary;
-base.model.t23SequencePolicy='WOF-047 proved ordered T23 traces work. WOF-048 keeps those traces, fixes retarget logging when target changes on the same poll as ACTIVE, and adds timer-normalized family tails plus transition/triple frequency summaries by activeAttack. These summaries are discovery only; do not promote until a discriminator is prospectively validated.';
+base.model.t23SequencePolicy='WOF-047 proved ordered T23 traces work. WOF-048 keeps those traces, fixes retarget logging when target changes on the same poll as ACTIVE, and summarizes BOTH exact timer-bearing tails and timer-normalized TM* families plus transition/triple frequencies by activeAttack. Keep exact timers because WOF-045 TM5 and WOF-047 TM11/TM12 on the BODY4976/A6/B4 branch may discriminate outcomes. All sequence summaries remain discovery only until prospectively validated.';
 self.__WOF_V48R_RESULT=base;
 console.log(MARKER);console.log(JSON.stringify(base,null,2));return base;
 })().catch(e=>{console.error('[WOF-048R] ERROR',e);throw e;});
