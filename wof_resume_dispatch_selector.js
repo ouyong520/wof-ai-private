@@ -2,15 +2,25 @@
 'use strict';
 const RAW='https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/';
 const load=async f=>{const r=await fetch(RAW+f+'?x='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('fetch failed '+r.status+' '+f);return(0,eval)(await r.text());};
+async function ensureWasmModule(){
+  const good=v=>!!(v&&v.HEAPU8 instanceof Uint8Array&&v.HEAPU32 instanceof Uint32Array&&v.HEAPU8.buffer===v.HEAPU32.buffer);
+  if(good(self._0x515056))return self._0x515056;
+  const find=()=>{for(const k of Object.getOwnPropertyNames(self)){let v;try{v=self[k];}catch(_){continue;}if(good(v))return{k,v};}return null;};
+  const until=performance.now()+8000;
+  while(performance.now()<until){const hit=find();if(hit){self._0x515056=hit.v;self.__WOF_MODULE_GLOBAL_KEY=hit.k;console.log('✅ WOF WASM module resolved:',hit.k,'→ _0x515056');return hit.v;}await new Promise(r=>setTimeout(r,50));}
+  throw new Error('WOF WASM module not found in this execution context. Select the gstyphoon.js Worker after the game is running, then rerun the current script.');
+}
+await ensureWasmModule();
 console.log('♻️ WOF resume: independent-cycle signature validation frontier');
 if(!self.__WOF_DISPATCH_INCOMING){await load('wof_dispatch_incoming_edges.js');await WOFDISPIN.run();}
 if(!self.__WOF_ROM_LOC_CACHE)throw new Error('ROM cache missing after resume');
 const current={
- version:'wof-resume-dispatch-selector-v30',
+ version:'wof-resume-dispatch-selector-v31',
  selectorSolved:true,
  selectorField:'enemy+0x7E',
  playerIndexValues:'P1=0 / P2=4 / P3=8',
  selectedPointerCacheCorrection:'enemy+0x6A is supporting selected-player cache only when BE1C/BEFC/BFDC; +0x7E is authoritative target identity.',
+ moduleResolution:'Room changes may expose the same Emscripten Module under a different obfuscated global. Resume now scans the current Worker for the HEAPU8/HEAPU32 module and aliases it to _0x515056 before loading probes.',
  d0Provenance:'0x006A62 MOVEQ #20,D0 -> JSR 0x25C8; 0x25C8 selects type descriptor and 0x247C consumes it.',
  activeAttackField:'enemy+0x70 U16; active start = 0 -> nonzero.',
  xyFields:'object +4/+8 are confirmed X/Y 16.16 fixed-point. Z is still not confirmed.',
