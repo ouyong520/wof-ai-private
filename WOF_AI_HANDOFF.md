@@ -6,6 +6,18 @@
 
 > 与 `ouyong520/wof-winkawaks-bridge` 完全分开。
 
+## 本地采集器路由
+
+本项目现在可以把 `ouyong520/wof-winkawaks-bridge` 作为独立的本地高速证据采集器，但不得把两边运行时字段直接混为同一命名空间。
+
+固定路由协议见：
+
+```text
+COLLECTOR_ROUTING.md
+```
+
+简则：找字段、diff、transition、大量高频 raw RAM 时优先 WinKawaks Collector；真实在线房、多房/1P2P3P coverage、Browser Worker/WASM 语义和正式规则升级前的 prospective proof 仍以 Browser/Web 为准。WinKawaks 发现若要升级成生产规则，最终必须回 Browser/Web 验证。
+
 ## 强制协议
 - 回传先校验 `copyId/project/version/marker/readOnly/ramWrites`。
 - RAM 默认只读，`ramWrites=0`。
