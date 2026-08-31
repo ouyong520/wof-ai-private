@@ -4,11 +4,11 @@ Updated: 2026-09-01
 Lane: `EFIELD-*` only
 Namespace: WinKawaks normalized enemy object, stride `0xE0`
 
-This file is the authoritative EFIELD-lane frontier from this point forward. It is discovery-only, read-only, and does not establish Browser/WASM offset equivalence or modify any Browser production rule.
+This file is the authoritative EFIELD-lane frontier. EFIELD is a WinKawaks-local, read-only discovery lane. Nothing here establishes Browser/WASM numeric offset equivalence or changes any Browser production rule.
 
 ## Operating rule
 
-Each round formally resolves only 1-3 high-value enemy fields. A field must be classified as exactly one of:
+The lane no longer attempts to name the whole `0xE0` object. Each research round resolves only 1–3 high-value fields with exactly one formal status:
 
 - `CONFIRMED`
 - `STRONG_CANDIDATE`
@@ -16,126 +16,158 @@ Each round formally resolves only 1-3 high-value enemy fields. A field must be c
 - `REJECTED`
 - `UNKNOWN`
 
-`CONFIRMED` requires an explicit offset, width, observed value domain, change behavior, repeated evidence across multiple events/slots/runs, and documented counterexamples/limits. Correlation alone is not sufficient for semantic naming.
+`CONFIRMED` requires offset, minimum reasonable width, observed domain, repeated change behavior, cross-event/slot/run evidence, and explicit counterexamples/limits. Correlation alone is not sufficient.
 
-Collector failures caused by fresh RAM/discovery ambiguity are acquisition-environment failures, not negative field evidence. Do not repeatedly enqueue an equivalent failed capture.
+## Corpus boundary
 
-## Round 001 — three fields formally locked
+Current valid retained EFIELD raw corpus:
 
-### 1. `+0x24` — CONFIRMED
+- `EFIELD-001-baseline-30s60`
+- `EFIELD-002-natural-diversity-60s60`
+- `EFIELD-003-passive-retarget-60s60`
+- `EFIELD-004-passive-lifecycle-retarget-60s60`
+- `EFIELD-005-cross-session-target-60s60`
+- `EFIELD-005R-cross-session-target-60s60`
+- `EFIELD-006-cross-session-lifecycle-target-60s60`
 
-**Operational name:** current enemy type-present / lifecycle byte  
-**Width:** `U8`  
-**Observed domain:** `0x00` plus 30 observed nonzero values (31 total values in the seven-run corpus)
+Coverage:
 
-**What is directly established**
+- 23,400 frames
+- 468,000 enemy-object samples
+- 60,271 type-present samples
+- 407,729 type-absent samples
+- 1,604 same-nonzero-type episodes
+- 74 type-enter + 74 type-exit boundaries
+- 8 confirmed live-target changes
+- two WinKawaks process sessions
+- game-memory writes: 0
 
-- Across 23,400 frames / 468,000 enemy-object samples, `+0x24` produced **74 zero->nonzero** and **74 nonzero->zero** lifecycle boundaries.
-- These repeated type-present episodes occur while `+0x00` shows no transition at all, separating current object/type presence from the persistent physical-slot header layer.
-- The behavior repeats across occupied enemy slots and across the retained EFIELD runs/sessions.
-- Nonzero values form the current per-enemy type domain used throughout the existing type-conditioned analysis.
+`EFIELD-007/008/009` failed before sampling because fresh immutable CPS RAM discovery was not uniquely qualified. Those are acquisition-environment failures, not negative field evidence. Do not requeue equivalent generic captures or weaken discovery uniqueness.
 
-**Formal interpretation**
+## Formal field map
 
-`+0x24` is confirmed as the WinKawaks-local **current type-present/lifecycle discriminator**: `0x00` marks absence of a current typed enemy episode in that slot; nonzero marks a current typed enemy episode and carries the current type code.
+### CONFIRMED
 
-**Known limits / counterexamples**
+| Offset(s) | Width | Operational interpretation | Key evidence / limits |
+|---|---:|---|---|
+| `+0x24` | U8 | current type-present / lifecycle discriminator and type code | 74/74 enter + 74/74 exit; perfect active-vs-absent byte separation in current corpus; not Browser ACTIVE/hitbox; nonzero->nonzero replacement exists |
+| `+0x6D..+0x6E` | U16 BE | materialized live player-target pointer | exact domain BE1C/BEFC/BFDC; 8 changes = 8 known retargets; can remain latched through `+0x24==0`; not upstream selector |
+| `+0x34` | U8 | executor record dwell/countdown | 6,737 multi-frame record residences; 99.21% no positive step; terminal values concentrated at 1/2/3; conditional waits/delayed init are documented |
+| `+0xC6` | U8 | stored player-association index | exact 00/01/02 -> P1/P2/P3 association; nearest-X agreement 87.02%; sample-and-hold; separate P1 reset path exists |
+| `+0x3D..+0x3E` | U16 BE | stored player-association pointer | exact BE1C/BEFC/BFDC mapping to C6 across 60,271 samples; distinct from live target globally |
+| `+0xB9` | U8 | horizontal-locomotion cyclic phase counter | ~45% changes on pure horizontal movement, almost none stationary/pure orthogonal-axis; repeated cyclic chains; not direction bit |
+| `+0xBB` | U8 | horizontal-locomotion decrementing step/countdown state | zero changes stationary/pure orthogonal-axis in control pass; moving changes overwhelmingly -1; not universal movement timer |
+| `+0x2F..+0x32` | U32 BE | flagged logical executor record cursor | mask 0x001C0000; 4,323/5,539 logical changes are +0x0A; destination phase holdout 4,818/4,819 accurate on covered; loops/branches normal |
+| `+0x35` | U8 | executor dwell/control-mode byte | domain 00/FF/01/02/04; 1,024 changes; independent of +34 numeric countdown; exact code meanings unresolved |
+| `+0x6C` | U8 | fine executor / attack-associated phase code | 9-value domain; deterministic many-to-one projection to +73; record-driven; no visual hit/startup/recovery naming |
+| `+0x73` | U8 | coarse executor / attack-family phase code | exact 00/0A/0B/1B/1E; deterministic coarse projection of +6C; +74 is zero padding; nonzero is not universal attack-active |
+| `+0x70` | U8 | second fine executor / attack-associated phase code | 10-value domain; deterministic many-to-one projection to +77; strongly attack-side vs movement controls |
+| `+0x77` | U8 | second coarse executor / attack-family phase code | exact 00/0A/0B/0C/14; deterministic projection of +70; +76 is zero neighbor; not attack-active boolean |
+| `+0xB4` | U8 | episode-stable coarse profile/variant metadata bit | 1,604/1,604 episodes constant, zero within changes; binary; 3/11 same-type replacements change it; not unique ID |
+| `+0xB6` | U8 | episode-stable instance/profile initialization code | 1,604/1,604 episodes constant, zero within changes; 34-value domain; 9/11 same-type replacements change it; not unique ID/type code |
+| `+0xCC` | U8 | stored-association nearest-X synchronization checkpoint state | 65 same-type 00->FF entries; 57 already-correct remain, 8 stale C6 values corrected exact frame; post C6 nearest-X 65/65; FF is a latch, not pulse |
+| `+0x6F` + `+0x68` | U8 + U8 split encoding | distinct third player-reference layer | `(6F<<8)|68` is BE1C/BEFC/BFDC on 60,271/60,271 samples; equals association 38.32%, live target 74.62%; role beyond player-reference identity unresolved |
 
-- This is **not** promoted as Browser `ACTIVE` and is not an exact hitbox/damage-active field.
-- A live target pointer can remain latched while `+0x24 == 0`; therefore target lifetime and type-present lifetime differ.
-- Nonzero->nonzero type replacement can occur, so lifecycle cannot be reduced to only zero/nonzero edges when reasoning about object replacement.
-- `+0x00` is explicitly rejected as current enemy-presence ACTIVE in the retained corpus: slots 17..19 stay `1`, slots 0..16 stay `0`, with zero transitions despite the 148 `+0x24` zero/nonzero edges.
+### STRONG_CANDIDATE
 
-**Status:** `CONFIRMED`
+| Offset(s) | Width | Current interpretation | Why not CONFIRMED |
+|---|---:|---|---|
+| `+0x07..+0x0A` | S32 BE candidate | first coordinate-bearing fixed-point block | coherent orthogonal movement axis, but final game-space axis label / minimum packed width / scale lacks independent ground truth |
+| `+0x0B..+0x0E` | S32 BE candidate | second coordinate-bearing fixed-point block | same as above; two-axis independence is strong but X vs floor-depth/Y label not independently locked |
+| `+0x72` | U8 | executor joint-phase payload / companion state | 16-value structured state, attack support 1.0, record-driven; no isolated independent semantic dimension |
+| `+0x2D` | U8 | compact executor/control state | seven-value domain; frame-exact at confirmed C6 sync corrections but low selectivity for any one event |
+| `+0x2E` | U8 | compact executor/control companion state | seven-value domain; changes on confirmed sync corrections but also broad within-episode execution transitions |
+| `+0x37` | U8 | attack/executor-family gate or substate | domain 00/80/02; ~55.6x attack-side selectivity; 80 not a simple attack-on bit; exact mode meaning unresolved |
+| `+0xB0` | U8 | slowly-changing profile/runtime-state byte | 98.50% episodes constant but 29 genuine within-episode changes; immutable initialization hypothesis rejected |
 
----
+### REJECTED hypotheses
 
-### 2. `+0x6D..+0x6E` — CONFIRMED
+| Offset / hypothesis | Verdict reason |
+|---|---|
+| `+0x00` = current enemy active/presence | zero transitions while +24 has 148 zero/nonzero lifecycle edges |
+| separate byte-level active/inactive gate better than +24 | no candidate beats +24; +42 is high-frequency counter-like and +2E misses many lifecycle boundaries |
+| `+0x42` = direct lifecycle gate | changes on every lifecycle edge but also 37,162/58,667 same-type transitions; all 256 values |
+| `+0x2E` = direct lifecycle gate | only 37/74 enters and 32/74 exits change it; broad within-episode state |
+| `+0x6D..+0x6E` = upstream selector | stored association can precede live commit by 57..715 frames |
+| `+0x99` = universal/pre-commit retarget signal | only 5/8 target commits; all observed hits lag 0; unrelated sparse transitions exist |
+| `+0x34` = simple universal frame timer | conditional terminal waits and delayed initialization contradict it |
+| U16 `+0x34..+0x35` = countdown | +34 decrements while +35 is normally unchanged and independently switches modes; no carry/borrow behavior |
+| U16 `+0x37..+0x38` = timer | +38 constant 0x84; +37 is a three-state gate-like byte dominated by 00<->80 |
+| `+0xB0` = immutable instance-init field | 29 within-episode changes across full corpus |
+| C6 / association = live target or universal retarget precursor | equals live only 31.11%; six live commits occur tens/hundreds frames after association is already stable |
+| split `+0x6F/+0x68` = live-target alias | only 74.62% global equality; 20 same-type split-ref changes vs 6 same-type live changes |
 
-**Operational name:** materialized live player-target pointer  
-**Width:** `U16 BE`  
-**Observed domain:** exactly:
+## Proven structural subsystem summary
 
-- `0xBE1C` = P1
-- `0xBEFC` = P2
-- `0xBFDC` = P3
+### Lifecycle
 
-**What is directly established**
+`+0x24` is the best current typed-enemy episode discriminator. No separate byte-level execution-active gate is supported more strongly by the existing corpus.
 
-- Across the retained seven-run corpus there are **8 pointer transitions** and all 8 are known-player retarget events.
-- **6/8** occur while `+0x24` type remains unchanged, directly separating retarget from ordinary lifecycle replacement.
-- The remaining two are nonzero-type->nonzero-type replacement events rather than zero/nonzero lifecycle boundaries.
-- No observed target transition coincides with an ordinary `+0x24` enter/exit edge.
-- On all 8 observed commits, the new `+0x6D..0x6E` value equals the post-frame association pointer at `+0x3D..0x3E`.
-- In six same-type retargets, that association had already been stable for roughly 57, 217, 278, 492, 537 and 715 frames before `+0x6D..0x6E` changed, proving this field is the later materialized target layer rather than the upstream selection source.
+### Player references / target
 
-**Formal interpretation**
+```text
+nearest-X synchronization event
+        |
+        v
++0xCC 00->FF
+        |
+        v
++0xC6 / +0x3D..+0x3E   stored association
 
-`+0x6D..0x6E` is confirmed as the WinKawaks-local **materialized current player-target pointer** among P1/P2/P3.
++0x6F + +0x68            separate split player-reference layer
 
-**Known limits / counterexamples**
++0x6D..+0x6E             materialized live target
+```
 
-- It is not the upstream player-selection field; `+0xC6 / +0x3D..0x3E` can select/associate a player long before the live target commits.
-- The pointer can remain latched through `+0x24 == 0`; do not infer current type presence from it.
-- This does not imply Browser/WASM target offset equivalence; Browser `enemy+0x7E` remains a separate namespace.
-- Only player targets P1/P2/P3 are proven in the retained corpus; no claim is made about any other pointer domain outside observed scenes.
+The three player-reference layers are structurally distinct. Current raw does not reveal a selective universal pre-commit retarget pulse.
 
-**Status:** `CONFIRMED`
+### Executor
 
----
+```text
++0x2F..+0x32  flagged 10-byte logical record cursor
+       |
+       +--> +0x34 dwell/countdown
+       +--> +0x35 dwell/control mode
+       +--> joint phase tuple
+             +0x6C -> +0x73
+             +0x70 -> +0x77
+             +0x72 companion payload
+```
 
-### 3. `+0x34` — CONFIRMED
+The hierarchy is structural only; no value is promoted to hitbox-active, damage onset, startup, recovery, or visual attack frame.
 
-**Operational name:** current script/animation-record dwell countdown  
-**Width:** `U8`  
-**Observed domain:** at least 43 values in the retained corpus; ordinary record countdowns commonly terminate at `1` or `2`, with special waits and delayed-init records extending the domain.
+### Movement
 
-**What is directly established**
+`+0xB9` and `+0xBB` are formally separated from attack/executor phase fields and are specific to the first coordinate-motion axis in existing controls. The two coordinate-bearing fixed-point blocks remain strong candidates until an independent axis-label/scale discriminator exists.
 
-- The neighboring `+0x2F..0x32` U32 BE structure behaves as a flagged logical 10-byte record cursor; after flag masking, **4,323 / 5,539** logical pointer changes are exact `+0x0A` record advances.
-- In **6,737** multi-frame logical-record residences, **6,684 / 6,737 = 99.21%** contain no positive `+0x34` step.
-- Residence terminal values are concentrated at `1` (**4,410** cases), `2` (**1,191**) and `3` (**446**).
-- Before sequential `+0x0A` record advance, `+0x34 <= 2` in about **97.29%** of the original sequential-step pass.
-- Record-local reload ceilings are cross-run stable: for 4,323 sequential arrivals, leave-one-run-out coverage is 4,321/4,323 and only **11/4,321 = 0.25%** of holdout reloads exceed the ceiling learned from the other runs.
-- Multiple repeatable wait records stall at terminal value `1` for tens of frames before branch/advance, proving that reaching the terminal value does not itself force immediate exit.
-- A narrow `0x73=1B` family has **52** repeated residences entering at `+0x34=8`, then loading `9..17` after 1-3 frames before resuming countdown. This is a documented delayed-initialization exception, not a contradiction to the countdown role.
+### Instance/profile metadata
 
-**Formal interpretation**
+`+0xB4` and `+0xB6` are episode-invariant profile dimensions. `+0xB0` is slower profile/runtime state but not immutable.
 
-`+0x34` is confirmed as the WinKawaks-local **record dwell/countdown state** used by the script/animation executor. Ordinary records count it downward toward a small terminal threshold; some records wait at the terminal value and a narrow family initializes dwell after entry.
+## Round reports
 
-**Known limits / counterexamples**
+- `ROUND_002_LIFECYCLE_ACTIVE.md`
+- `ROUND_003_TARGET_ASSOCIATION_AND_RETARGET.md`
+- `ROUND_004_MOVEMENT_COORDINATES.md`
+- `ROUND_005_EXECUTOR_CURSOR_AND_MODE.md`
+- `ROUND_006_COARSE_FINE_ATTACK_PHASE.md`
+- `ROUND_007_SECOND_PHASE_PROJECTION.md`
+- `ROUND_008_INSTANCE_METADATA.md`
+- `ROUND_009_ASSOCIATION_SYNC_AND_THIRD_REFERENCE.md`
+- `ROUND_010_ACTION_CONTROL_RESIDUALS.md`
 
-- It is not a universal wall-clock timer.
-- It does not always load its final dwell value on the exact cursor-arrival frame.
-- `+0x34 == 1` does not guarantee immediate record advance because conditional wait records can hold at `1`.
-- The exact unit/update cadence can exhibit `-1`, `-2`, repeated values, and scene/execution-order effects; the confirmed semantic is record-local countdown/dwell, not "one unit equals one rendered frame".
+Round 001 details are the original `+0x24`, `+0x6D..+0x6E`, `+0x34` lock that established this frontier.
 
-**Status:** `CONFIRMED`
+## Current bounded-phase stop condition
 
-## Rejected / bounded alternatives from this round
+The existing raw corpus has now been mined through all requested high-value priorities: lifecycle, target/retarget, movement/coordinates, timer/countdown/executor, attack/action/state, and instance/profile metadata.
 
-| Offset | Classification | Reason |
-|---|---|---|
-| `+0x00` | `REJECTED` as current enemy ACTIVE/presence | zero transitions while `+0x24` has 74 enter + 74 exit boundaries |
-| `+0x6D..0x6E` as upstream selector | `REJECTED` | association at `+0x3D..0x3E` precedes six same-type target commits by tens to hundreds of frames |
-| `+0x34` as simple universal frame timer | `REJECTED` | terminal waits and delayed initialization are repeatedly observed |
+Do **not** continue generic capture merely to grow the candidate table. Further EFIELD acquisition is justified only when a new concrete question supplies a discriminative scene that can resolve one of the remaining candidate-level ambiguities, principally:
 
-## Next bounded question
+1. independent game-space labeling and minimum packed width/scale for the two coordinate blocks;
+2. exact semantic dimension of `+0x72`;
+3. value-level meanings for `+0x2D`, `+0x2E`, `+0x37`, `+0x35`;
+4. behavioral role of the split third player-reference layer beyond its confirmed P1/P2/P3 identity;
+5. a genuinely selective pre-commit retarget trigger, if one exists.
 
-Priority remains lifecycle first. The next round should answer exactly:
-
-> **Is there a field that represents active/inactive object execution more directly than `+0x24` type-present, and that changes at lifecycle boundaries without conflating type replacement?**
-
-Do not enqueue another generic 60-second capture for this. First mine the existing seven-run corpus around the 74 enter and 74 exit boundaries and rank fields by deterministic before/after transition behavior. Only request a new EFIELD capture if the existing boundary set cannot distinguish the leading field(s).
-
-## Evidence provenance
-
-Read-only historical sources consumed for this frontier:
-
-- `reports/EFIELD_WIN_KAWAKS_ENEMY_FIELD_ATLAS.md`
-- `reports/EFIELD_LATEST_EVIDENCE_20260901.md`
-- `reports/EFIELD_TARGET_EXECUTOR_STATE_MACHINE_20260901.md`
-- bridge `results/efield/*` analyses referenced by those reports
-
-Acquisition status: valid raw corpus remains seven EFIELD captures. EFIELD-007/008/009 failed before sampling due to fresh RAM discovery ambiguity; those failures are acquisition-environment faults and are not field-research failures.
+These are explicit unknowns, not justification for undirected 60-second capture loops.
