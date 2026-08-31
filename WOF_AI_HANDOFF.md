@@ -23,57 +23,74 @@
 - `enemy+0x70 U16 0->nonzero` 仅 ACTIVE-start convention，不是 exact hitbox/damage onset
 
 ## 当前 production / candidates
-- T16 exact terminal B4 -> attack6432 = production-shadow
-- WOF-036 再次 13/13 strict，attack/target/side 全 13/13；entry side LEFT11 + RIGHT2，因此 T16 RIGHT symmetry 已有直接强覆盖
-- T33/T34 TM6 attack3232 = production-shadow-candidates
-- 四条 T24 exact TM2 仍 prospective-candidates；WOF-035/036 均因 T24 coverage=0，没有正负证据
+- T16 exact B4 -> attack6432 = `production-shadow`
+  - WOF-036 再次 13/13 strict；LEFT11 + RIGHT2，RIGHT symmetry 已补强。
+- T20 `B0 -> B255` -> attack5136 = **`production-shadow-candidate`**
+  - WOF-037 独立 forward prospective：6/6 strict；expected attack 6/6；target 6/6；side 6/6；LEFT1 RIGHT5；lead 418.6..680.1ms。
+  - 定义为 **coarse early warning**，不是精确倒计时。
+- T33/T34 TM6 attack3232 = type-specific `production-shadow-candidates`
+- 四条 T24 exact TM2 = prospective-candidates，仍待 coverage
+- T23 A4792 exact B0 = prospective-candidate，WOF-037 本轮无 entry coverage
 
-## WOF-036 最新完成结果
-身份正确：`WOF-036 / WOF-AI-PRIVATE / wof-future-danger-adaptive-terminal-miner-v36 / marker`；readOnly=true；ramWrites=0。
-120004.3ms / 10ms；33569 enemy samples；156 ACTIVE edges。
-主要 type：T7/T9/T16/T30/T20/T44/T23。
+## WOF-037 正确结果
+身份：
+- copyId `WOF-037`
+- project `WOF-AI-PRIVATE`
+- version `wof-future-danger-t20-t23-hybrid-prospective-validator-v37`
+- marker `=== WOF FUTURE DANGER T20 T23 HYBRID PROSPECTIVE VALIDATOR V37 JSON ===`
+- readOnly `true`
+- ramWrites `0`
 
-### T16 reconfirmation
-`T16_6432_B4_40`：13 signals / 13 evaluable / 13 strict / 0 jitter / 0 late / 0 hard miss；attack6432 13/13；target stable 13/13；side stable 13/13；lead 10.2..20.1ms；LEFT11 RIGHT2。
+运行：120002.3ms / 10ms；40039 enemy samples；140 ACTIVE edges。
 
-### 新 discovery：T20 -> A5136
-强 exact state：
-`T20 S2/A4/B255 BODY0 FE839C4 NX82B0A V100000 TM20 P6C0`
-terminal 22；20/50/100/150/250ms retrospective fingerprint 都 22/22，500ms 仍 19/19，target/side 全稳定。
+### T20 -> A5136 forward prospective PASS
+`T20_5136_B0_TO_B255_700`
+- signals 6 / evaluable 6
+- strict 6 / jitter 0 / late 0 / hard miss 0
+- expected attack5136 6/6
+- target stable 6/6
+- side stable 6/6
+- entry sides LEFT1 / RIGHT5
+- leads: 418.6, 458.6, 530.1, 647.8, 670.1, 680.1ms
 
-重要修正：这是 persistent phase，不能因为 100ms lag 中 22/22 就称“固定还有100ms”。真正 forward transition：
-`S2/A4/B0 ... -> S2/A4/B255 ...`
-在 WOF-036 mining 中 17 次 eventual A5136，lead 369.4..659.2ms，target/side 17/17 stable。只能算 discovery/correlation，需 prospective。
+Entry absDx 分别约 305,306,182,252,264,229，和 lead 不呈可信单调关系；禁止据此造 distance threshold。
 
-### 新 discovery：T23 -> A4792
-`T23 S0/A0/B0 BODY4920 FE848E2 NX83C56 V140000 TM1 P6C7904`
-在 ~100ms retrospective bucket 7/7 eventual A4792，target/side 7/7 stable；含 RIGHT 样本。仍需 forward prospective entry validation。
+### WOF-037 零 entry 的规则
+- T23 A4792 exact B0 entry：0
+- T20 A4792 TM6->TM5：0
+- T20 A4792 TM3->TM2：0
+这些不是 hard miss/反证，只是本轮没有出现这些预定义 entry；优先级下降，但不判失败。
 
-### 新 discovery：T20 -> A4792 countdown
-`S0/A6/B4 BODY4976 FE83824 NX82D38 V0 P6C0`
-TM6->TM5 transition 小样本约70..80ms；TM3->TM2 小样本约20..30ms；已有 LEFT+RIGHT discovery coverage。必须 prospective。
+### 新 descriptor-family 发现（仍是 discovery/correlation）
+WOF-037 当前房间出现大量 attack3232：
+- T9 `FE867BA / NX85ECE / BODY2872 / V100000 / A4/B2 / P6C2784 / TM6`：3 个 retrospective ~100ms 样本，eventual A3232；lead约99.8..100.6ms。
+- T11 `FE8811E / NX879E2 / BODY2872 / V100000 / A4/B2 / P6C2784 / TM6`：2 个 retrospective ~100ms 样本，eventual A3232；lead约99.6..100.8ms。
+
+这与历史 T33/T34 的 exact TM6->A3232 prospective candidates 使用同一 descriptor 结构一致，因此下一步不再只写死 enemy type，而是验证 **descriptor family 是否跨 type 泛化**。
 
 ## 当前 frontier
 ```text
-version = wof-resume-dispatch-selector-v47
-nextCopyId = WOF-037
-nextScript = wof_future_danger_t20_t23_hybrid_prospective_validator_v37.js
-nextMarker = === WOF FUTURE DANGER T20 T23 HYBRID PROSPECTIVE VALIDATOR V37 JSON ===
+version = wof-resume-dispatch-selector-v48
+nextCopyId = WOF-038
+nextScript = wof_future_danger_descriptor_family_validator_v38.js
+nextMarker = === WOF FUTURE DANGER DESCRIPTOR FAMILY VALIDATOR V38 JSON ===
 ```
 
-WOF-037 预先定义的 forward rules：
-1. T20 A5136 exact B0->B255 entry，horizon700ms / tail1100ms
-2. T23 A4792 exact BODY4920 B0 state entry，horizon180ms / tail500ms
-3. T20 A4792 exact TM6->TM5，horizon110ms / tail300ms
-4. T20 A4792 exact TM3->TM2，horizon60ms / tail220ms
-并 opportunistically 继续 T16 exact B4。
-
-WOF-037 同时做轻量 adaptive terminal/fixed-lag mining，避免换房间完全白跑；但 fallback mining 仍只是 discovery/correlation。只有 forward prospective ruleStats 可升级规则。
+## WOF-038 目标
+Forward prospective：
+1. `D867BA_3232_TM6_120`：不限制 enemy type，exact descriptor/body/value/action/b2/timer/payload；live 首次进入 TM6 才 arm。
+2. `D8811E_3232_TM6_120`：同上。
+3. 继续独立复验 `T20_5136_B0_TO_B255_700`（现 production-shadow-candidate）。
+4. opportunistic 保留 T16 exact B4、T23 B0、四条 T24 exact TM2。
+5. 输出 `entryTypeCounts`，用于判断 descriptor-family 是否真的跨 T9/T11/T33/T34 等 type 泛化。
+6. 继续 fallback terminal/fixed-lag mining，避免换房间白跑；fallback 永远只算 discovery/correlation。
 
 ## 禁止恢复/误判
 - broad T16 FAST/MID ❌
 - broad T30_FAST ❌
 - absDx130 = hitbox/range ❌
+- 用 T20 A5136 的 absDx 造 timing threshold ❌
 - T16 4840 divergence production ❌
-- retrospective lag fingerprint = fixed-time predictor ❌（尤其 persistent state）
-- WOF-034/036 mining correlation = causal proof ❌
+- retrospective lag fingerprint = fixed-time predictor ❌
+- mined correlation = causal/prospective proof ❌
+- descriptor-family 在 WOF-038 forward prospective 前直接升 production ❌
