@@ -1,6 +1,6 @@
 # WinKawaks P1/P2/P3 人物几何字段地图 — GEO 研究线
 
-> 证据边界：本文仅记录 WinKawaks normalized CPS RAM 的 discovery evidence。不得直接作为 Browser/WASM production 证明，不修改 production-shadow 规则。
+> 证据边界：本文仅记录 WinKawaks normalized CPS RAM 的 discovery evidence。不得直接作为 Browser/WASM production 证明；不修改 production-shadow；不推进 WOF-045；全程只读、无游戏内存写入。
 
 ## 对象布局
 
@@ -9,133 +9,152 @@
 - P3 `P1 + 0x1C0`
 - player stride `0xE0`
 - self-id `+0x7C = 0/4/8`
-- 当前 Collector fresh discovery：唯一 `xor3` 映射
+- Collector fresh discovery：唯一 `xor3` 映射
 
-## 已用动态证据
+## 动态证据集
 
-### GEO-0001
+| 数据集 | 帧数 | 频率/时长 | distinct | 读错误 |
+|---|---:|---|---:|---:|
+| GEO-0001 | 600 | 10 s / 60.002 Hz | 472 | 0 |
+| EFIELD-002（复用） | 3600 | 60 s / 59.993 Hz | 2848 | 0 |
+| GEO-0003 | 600 | 10 s / 59.957 Hz | 507 | 0 |
+| EFIELD-003（复用） | 3600 | 60 s / ~60 Hz | 多动作自然游戏 | 0 |
+| GEO-0004 | 600 | 10 s / 59.926 Hz | 482 | 0 |
 
-- 10 秒 / 60 Hz / 600 帧
-- 472 distinct frames
-- 0 read errors
-- raw: `captures/GEO-0001-dynamic-baseline-20260831-1517Z.jsonl.gz`
-
-### EFIELD-002 复用
-
-另一只读研究线产生的 60 秒自然游戏 raw，因为帧中同样完整保留 P1/P2/P3，所以仅作为本地 discovery 复用：
-
-- 60 秒 / 3600 帧
-- 2848 distinct frames
-- 0 read errors
-- raw: `captures/EFIELD-002-natural-diversity-60s60.jsonl.gz`
-
-### GEO-0003
-
-- 10 秒 / 60 Hz / 600 帧
-- 507 distinct frames
-- 0 read errors
-- P1/P2 均有明显横向和跳跃变化，P3 全程静止，可作为独立复验
-- raw: `captures/GEO-0003-natural-geometry-10s60-20260831-1549Z.jsonl.gz`
+EFIELD 数据仅因为同一 raw frame 完整包含 P1/P2/P3 `0xE0` 对象而被本 GEO 线复用；仍然只是 WinKawaks discovery evidence。
 
 ## 当前字段地图
 
-| WinKawaks relative offset | 当前解释 | 置信度 | 关键证据 |
+| WinKawaks relative offset | 当前解释 | 置信度 | 主要证据 |
 |---|---|---|---|
-| `+0x04..05` | 横向 low/local 分量，疑似 8.8 fixed | 高 | 平滑随横移变化；跨 256 边界时与 `+0x0A..0B` 联动 |
-| `+0x0A..0B` | 横向 page/high 分量 | 高 | P1 `FC→00` 同时 page `0→1`；P2 `01→FE` 同时 page `2→1` |
-| `+0x08..09` | floor Y / depth，疑似 8.8 fixed | 高候选 | P1/P2/P3 在横移/跳跃期间分别稳定在 `0x305C/0x4884/0x602E` |
-| `+0x0C..0D` | Z / 跳跃垂直位移，疑似 8.8 fixed | 高 | 出现清晰上升—峰值—下降轨迹，而 floor Y 保持不变 |
-| `+0x9C..9D` | lagged/render-cache low/local X | 高 | 强跟随 `+0x04..05`；跨页时精确保存上一位置 |
-| `+0xA3` | lagged/cache X page | 高 | GEO-0003 中 P1/P2 `A3[t] == 0B[t-1]` 逐帧 100% 成立 |
-| `+0xA2` | cached/render floor-Y integer component | 中高 | P1/P2/P3 = 48/72/96，恰等于 `+0x08..09` 整数高字节 |
-| `+0x9E` | render/geometry anchor 或 extent 候选 | 低 | GEO-0003 P1/P2/P3 = 30/31/30，移动/跳跃时保持不变；需进一步动作/人物对照 |
-| `+0x47` | current horizontal direction/orientation 候选 | 中高 | 右移前切为 0，左移前切为 255；变化先于实际 X 运动 |
-| `+0x99` | queued/desired horizontal direction 候选 | 中高 | 通常比 `+0x47` 更早切换，再由 `+0x47` 跟进 |
-| `+0x2D` | active-motion 状态候选 | 中高 | 两个独立数据集均表现为 moving≈2 / static≈0，跨 P1/P2/P3 一致 |
-| `+0x35` | complementary moving/static 状态候选 | 中高 | moving 几乎总为 0；static 多为 255；静止 P3 600/600 = 255 |
-| `+0x28` | motion lead/state 候选 | 中 | 2/0 模式与移动相关，但弱于 `+0x2D` |
-| `+0x36` | complementary motion state | 中 | 类似 `+0x35`，P2 一致性较弱 |
-| `+0x67` | timer/counter，非几何 | 中高 | countdown-like，排除几何 |
+| `+0x04..05` | 横向 local/low 坐标，8.8 fixed-point 候选 | 高 | 随横移平滑变化；与 page/high 字段共同跨 256 边界保持连续 |
+| `+0x0A..0B` | 横向 page/high 补充分量 | 高 discovery | P1/P3 local-X 从 `FE/F8 -> 02/00` 跨边界时 `+0x0B 0->1`；早期 facing 假设已撤销 |
+| `+0x08..09` | floor Y / depth，8.8 fixed-point 候选 | 高 | P1/P2/P3 典型值 `0x305C/0x4884/0x602E`；横移和跳跃期间稳定 |
+| `+0x0C..0D` | Z / 跳跃垂直位移 family | 高 | 多个数据集出现上升—峰值—下降轨迹，floor-Y 同时保持稳定；低字节精确语义仍待细化 |
+| `+0x47` | current horizontal direction/orientation 候选 | 中高 | 右移相位偏 `0`、左移偏 `255`；时序上可先于实际 X 运动 |
+| `+0x99` | desired/queued horizontal direction 候选 | 中高 | GEO-0003 中常先于 `+0x47` 切换，再进入实际横移 |
+| `+0x2D` | active-motion 状态候选 | 中高 | 多个独立样本 moving 多为 `2`、static 多为 `0`；并非严格二值，仍按状态 family 处理 |
+| `+0x35` | moving/static complementary 状态候选 | 中高 | moving 几乎总为 `0`，static 多为 `255` |
+| `+0x28/+0x36` | 相关 motion-state family | 中 | 与 `+0x2D/+0x35` 同向，但纯度较弱 |
+| `+0x67` | timer/counter，非几何 | 中高 | countdown-like，排除坐标/尺寸解释 |
 
-## 横坐标组合模型
+## 横坐标 page/local 模型
 
-早期把 `+0x0B/+0xA3` 当 facing 的假设已撤销。
-
-GEO-0003 的跨 256 边界行为支持：
+当前 WinKawaks working model：
 
 ```text
-worldX_px ~= U16BE(+0x0A..0B) * 256 + U16BE(+0x04..05) / 256
+worldX_px ~= U16BE(+0x0A..0x0B) * 256
+            + U16BE(+0x04..0x05) / 256
 ```
 
-在当前样本 `+0x0A=0`、`+0x05=0`，可简化观察为：
+在常见样本 `+0x0A=0`、`+0x05=0` 时，可近似观察为：
 
 ```text
-worldX_integer = (+0x0B << 8) | +0x04
+worldX_integer ~= (+0x0B << 8) | +0x04
 ```
 
-P1 示例：252 → 256；P2 示例：513 → 510，跨页保持连续。
+这用于解释跨 local 0/255 边界的连续性；它尚未等同于最终 screen-X，因为 global camera 仍未锁定。
+
+## Render / cache 块：`+0x90..+0xAF`
+
+EFIELD-003（3600 帧）与 GEO-0004（600 帧）的联合分析把这一区域拆成了“render 位置 + 几何/形态元数据”混合块：
+
+- `+0x9C`：render/local-X integer。运动时通常落后主 `+0x04` 约 1 帧；静止时精确相等。
+- `+0x9D`：当前样本基本为 0，像 local-X 的小数/低位缓存槽。
+- `+0xA2`：精确等于 floor-Y 整数字节 `+0x08`，P1/P2/P3 常见 `48/72/96`。
+- `+0xA3`：与 X page `+0x0B` 高度一致；因此明确不是 facing 位。
+- `+0xA4`：render-Z integer。跳跃时大多数帧跟 `+0x0C`，存在少量 render lag/动画偏差。
+- `+0x9E`：目前最强 body/render extent-or-anchor 候选；不随坐标变化。
+- `+0xAA`：另一条小尺寸/形态元数据候选；不随动作变化。
+
+因此不能把 `0x9C..A4` 当成简单连续坐标拷贝。
+
+## `+0x9E / +0xAA` 五组联合判别
+
+对 GEO-0001、EFIELD-002、GEO-0003、EFIELD-003、GEO-0004 共 9000 帧进行联合检查：
+
+- **所有 15 个 player×capture 组合中，`+0x9E` 帧内 transition 数均为 0。**
+- **所有 15 个组合中，`+0xAA` 帧内 transition 数均为 0。**
+- 同期 `+0x1B`、`+0x70..73` 等动作/body 字段大量变化，证明 `+0x9E/+0xAA` 不是逐动画帧动作状态。
+- `+0x9E` 跨采集可变，见到约 `30..38`：
+  - P1：36 / 31 / 30 / 31 / 31
+  - P2：31 / 34 / 31 / 34 / 32
+  - P3：32 / 38 / 30 / 38 / 38
+- `+0xAA` 极稳定：五组采集中 P1=6、P2=6、P3=5。
+
+当前解释：
+
+- `+0x9E`：**角色/形态级 body extent 或 render anchor**，置信度升为中等；不像当前姿态帧 top/bottom offset。
+- `+0xAA`：**更稳定的小尺寸/形态参数或角色元数据**，中低置信度；还不能确定是 horizontal/depth/vertical 哪一轴。
+
+目前没有证据允许把 `+0x9E` 直接命名为 width/height，也不能把 `+0xAA` 直接命名为某个半径。
 
 ## 方向 / 朝向
 
-目前最强方向字段是 `+0x47/+0x99`，不是 `+0x0B/+0xA3`。
+早期 `+0x0B/+0xA3 = facing` 已被数据否定并撤销。
 
-GEO-0003 的时序：
+当前 strongest pair：
 
 ```text
-P1: +0x99 255→0
- -> +0x47 255→0
- -> X 开始向右移动
-
-P2: +0x99 0→255
- -> +0x47 0→255
- -> X 开始向左移动
++0x99  desired/queued direction candidate
+   -> +0x47 current direction/orientation candidate
+   -> horizontal X movement
 ```
 
-因此工作解释：
-
-- `+0x47`: current horizontal direction/orientation
-- `+0x99`: desired/queued horizontal direction
-- 相对运动证据支持 `0≈right / 255≈left`
-
-但 literal visual facing 仍需一次已知 LEFT/RIGHT 静止场景才能锁死。
+自然运动支持 `0≈right / 255≈left`，但 literal visual facing 仍需一次已知 LEFT/RIGHT 静止控制才能最终锁值。
 
 ## 移动 / 静止
 
-当前优先级：
+优先级：
 
 1. `+0x2D`
 2. `+0x35`
 3. `+0x28/+0x36`
 
-GEO-0003 独立复验：
-
-- P1 `+0x2D`: moving top=2 94.1%，static top=0 86.2%
-- P2 `+0x2D`: moving top=2 96.8%，static top=0 86.2%
-- 静止 P3 `+0x2D=0` 600/600
-- P1/P2 moving 时 `+0x35=0` 100%
-- 静止 P3 `+0x35=255` 600/600
+这些字段与基于 X/Y/Z 变化定义的 motion truth 在 P1/P2/P3 多数据集上重复分离，但仍只作为 WinKawaks 状态候选。
 
 ## Camera / screen 坐标
 
-现有 60 秒 + GEO-0003 均未出现“两个以上玩家同帧具有完全相同的非零 local-X delta”的 clean shared-scroll 片段，因此还没有真正锁定 global camera 字段。
+现有自然样本尚未提供干净的 shared-camera-scroll episode：此前 EFIELD-002/GEO-0003 中没有“两个以上玩家同一帧具有完全相同非零 local-X delta”的可靠公共滚动片段。
 
-当前只证明人物对象自身存在 low/local + page/high 的横坐标结构；不能据此直接宣称 `+0x04` 就是最终 screen-X。
+当前只锁定人物对象自身存在 local-X + page/high 的结构；还没有证明：
 
-## P1/P2/P3 差异
+- 哪个全局字段是 camera-X / camera-Y；
+- `worldX` 到物理 screen-X 的精确转换；
+- camera 滚动时 `+0x9C` 的 render-X 是否已减 camera。
 
-核心几何字段在三个 `0xE0` player object 内相对位置一致。已知差异主要是：
+Browser 历史 camera probe 只能用于实验设计，不能作为 WinKawaks 数值语义证明。
 
-- self-id `+0x7C=0/4/8`
-- floor/depth 当前值不同
-- `+0x1B/+0x6C/+0x72/+0x73` 等存在明显角色/动作特异值
-- `+0x9E` 30/31/30 是当前值得继续研究的静态 geometry-anchor/extent 候选
+## P1/P2/P3 结构差异
+
+核心布局在三个 `0xE0` player object 中相同：
+
+- `+0x7C = 0/4/8` self-id
+- `+0x92 = 0/4/8` 也重复 slot/self selector 形态，非几何
+- `+0x04..05` local-X
+- `+0x0A..0B` X page/high family
+- `+0x08..09` floor/depth
+- `+0x0C..0D` Z family
+- `+0x9C/+0xA2/+0xA3/+0xA4` render position cache family
+
+玩家/角色/形态差异目前集中在 `+0x1B/+0x6C/+0x70..73/+0x9E/+0xAA` 等字段。
+
+## top / bottom / left / right 当前状态
+
+已知坐标 anchor 足以开始构造候选几何，但**边界公式尚未证明**：
+
+- left/right：主 X 已基本锁定，但缺少已知 horizontal extent 的轴向语义；`+0x9E` 与 `+0xAA` 都不能直接认定为 X 半宽。
+- bottom：floor-Y 与 Z 已分离，render-Y/Z 缓存也已找到，但 screen projection 仍缺 camera 关系。
+- top：五组数据没有找到随逐帧动画变化的独立 top-offset 字段；这增加了“top 来自 ROM sprite/frame descriptor 或固定形态参数”的可能性。
+
+现有 Browser descriptor/geometry 脚本主要描述敌人攻击时序和目标相对距离，没有直接提供 player sprite width/height，因此不能拿来直接命名 WinKawaks `+0x9E/+0xAA`。
 
 ## 下一步
 
-1. 继续筛 top/bottom/left/right 的 extent/anchor 字段，优先检查 `+0x9E` 及动作切换时低基数尺寸字段。
-2. 采集包含更多自然动作变化的短 burst，验证 extent 候选是否随姿态变化。
-3. 需要时再做 camera-scroll 专门场景。
-4. literal facing 最终使用已知 LEFT/RIGHT 静止场景锁值。
-5. 后续单独做 left-2P 与 P1/P2/P3 人物结构差异控制。
+1. 优先获取/定位 68000 ROM 字节后静态搜索 player `+0x9E/+0xAA` 的消费者，直接判定轴向和用途。
+2. 若 ROM xref 暂不可用，再做专门 camera-scroll 控制，锁 camera/world/screen 转换。
+3. literal facing 用已知静止 LEFT/RIGHT 场景锁 `+0x47/+0x99` 的视觉方向。
+4. left-2P 与 P1/P2/P3 结构差异用独立控制场景验证。
+5. 在 extent 轴向锁定后再正式给出 top/bottom/left/right 公式。
 
 本报告只属于 GEO 独立研究线，不推进 WOF-045，不作为 Browser production-shadow promotion 证据。
