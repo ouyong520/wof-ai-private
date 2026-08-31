@@ -1,93 +1,64 @@
 # WOF Future Danger AI — CURRENT FRONTIER
 
-更新时间：2026-08-31
+更新时间：2026-08-31  
 仓库：`ouyong520/wof-ai-private`
-项目：Project A — Browser / MAME / gstyphoon.js Future Danger
 
-## 当前阶段
-selector / dispatcher / descriptor 已解决。当前重点：固化 descriptor-family production shadows，并把 same-cycle attack-zero mining 转成真正的 forward prospective T24/T23 规则。
+## 阶段
+底层 selector/dispatcher/descriptor 已解决。当前是 **production-shadow 扩展 + 同周期 forward 验证**。
 
-## WOF-041 completed
-身份严格通过：`WOF-041 / WOF-AI-PRIVATE / wof-future-danger-multiroom-coordinator-v41 / marker`，`readOnly=true`，`ramWrites=0`。
+## WOF-042
+身份严格通过，5/5 complete，0 error，0 interrupted，`readOnly=true`，`ramWrites=0`。  
+59816 polls / 190429 enemy samples / 1018 ACTIVE edges / 93 signals / 92 strict +1 jitter /0 miss。
 
-Batch `b-281d582f-3a0`：5 joined / 5 complete / 0 error / 0 interrupted；59937 polls；191524 enemy samples；1166 ACTIVE edges；232 signals；229 strict；2 jitter；0 late；1 watcher hard-miss。
+player histogram `[0,105,1058,1264]` = 0P/1P/2P/3P。
 
-player-count samples `[1,0,865,1559]` = 0P/1P/2P/3P；本轮主要2P/3P，1P链路已由WOF-040证明。
+## Production set
+- **T16 B4 imminent danger**：56/56 timing hit；但2次在ACTIVE边缘 retarget，所以 danger 强、entry-target lock 不是100%。实时 `+0x7E` 才是目标真值。
+- **T20 B0->B255 -> A5136**：WOF-042 6/6 strict A5136/target/side，lead420.6..580.6ms；结合历史证据升 `production-shadow-coarse`。1250ms 仅 audit window。
+- **D867BA TM6 -> A3232**：14/14 strict，本轮 T9/T33；production-shadow。
+- **D8811E TM6 -> A3232**：6/6 strict at135ms audit；production-shadow。
+- **T24 BODY7512/TM3 S2 -> A5440**：11/11 strict，A5440/target/side11/11，lead49.0..58.2ms，2 rooms；升 production-shadow。
 
-### T16 B4 danger
-172/172 <=40ms ACTIVE danger；target/side172/172；A6432=170，A4832=1，A4840=1。
+## T24 A5424 next
+旧 edge matcher：
+`T24_5424_CYCLE_BODY7520_TM4_90`
+- rawMatch17
+- transitionEntry0
+- signals0
 
-=> **imminent-danger production-shadow**，不允许 exclusive A6432 语义。
+same-cycle evidence：
+- S2 BODY7520/TM4 -> A5424：6 cycles，first lead61.6..71.6ms，target/side6/6
+- S4 BODY7520/TM4 -> A5424：5 cycles，first lead61.5..71.2ms，target/side5/5
 
-### T20 B0->B255 -> A5136
-28 signals；27 strict<=850ms；1 watcher hard-miss；27个已解析全部 A5136/target/side，lead409.4..799.9ms。
-
-same-cycle miner 在 hard-miss 所在房对 B255->A5136 记录14 cycles，firstLead max=1190.4ms，target/side14/14。该房 watcher同样14 signals，因此更像1100ms tail过短。
-
-=> 保持 strong coarse `production-shadow-candidate`；WOF-042 audit horizon=1250ms，tail=1500ms；仍不是 countdown/因果边界。
-
-### D867BA -> A3232
-WOF-041 `D867BA_3232_TM6_220` = 10/10 strict，A3232/target/side10/10，lead100.1..200ms。
-
-结合 WOF-040 的跨 `T36/T9/T33` 33/33 expected attack/target/side evidence：
-
-=> 升 **type-agnostic production-shadow**。
-
-### D8811E -> A3232
-22/22 A3232/target/side；20 strict<=120ms +2 jitter120.1/120.9ms；0 late/miss；types T11=6,T34=16。
-
-=> 保持 **production-shadow**；下一轮 audit horizon=135ms，仅吸收边界 jitter。
-
-## T24 breakthrough — same-cycle real precursors
-旧四条 fixed-lag 来源 T24 rules 再次 rawMatch=0 / transitionEntry=0，即使本轮有 T24 samples9198、A5440=23、A5424=21；旧 BODY5424/5440 rules 继续退役。
-
-same-cycle `+0x70==0` miner 在两个独立房间都找到：
-
-### A5440 candidate
-`S2/A2/B4|BODY7512|FE8AF46|NX8A6D0|V180001|TM3|P6C0`
-- 8+8 = 16 cycles
-- first lead49.0..59.6ms
-- target/side16/16
-
-### A5424 candidate
-`S2/A2/B4|BODY7520|FE8AF6C|NX8A6E4|V180001|TM4|P6C0`
-- 8+8 = 16 cycles
-- first lead49.5..70.3ms
-- target/side16/16
-
-=> 这是与旧 fixed-lag signature 不同的 **current-cycle precursor**。WOF-042 将直接 arm-on-entry 做 prospective 验证。
+=> 不是负面证据，而是 entry detector 看不到“首次观察时已经 held 的状态”。WOF-043 改用 once-per-cycle level arm (`match=base(s)`，cycle id 去重)，并允许 state99=2/4。
 
 ## T23
-A4792 same-cycle 目前只有单房4-cycle evidence；长持久状态，target/side约0.75。暂不 promotion。
+旧 BODY4920/B0 rule 在5116 T23 samples、15 A4792下仍 rawMatch0。退役。继续 same-cycle mining，不再复活旧 fixed-lag 候选。
 
-## Current next — WOF-042
+## Current next — WOF-043
 ```text
-resume = wof-resume-dispatch-selector-v52
-nextCopyId = WOF-042
-nextScript = wof_future_danger_multiroom_coordinator_v42.js
-nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V42 JSON ===
-embedded = WOF-042R / wof_future_danger_cycle_validator_v42r.js
+resume = wof-resume-dispatch-selector-v53
+nextCopyId = WOF-043
+nextScript = wof_future_danger_multiroom_coordinator_v43.js
+nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V43 JSON ===
+embedded = WOF-043R
 ```
 
-### WOF-042 protocol
-- dual-mode multiroom 不变：Worker=ROOM-COLLECT；top=FINALIZE+下载唯一JSON。
-- 无短 join window；最多5房；每房约120秒；fresh IndexedDB v4。
-- embedded WOF-042R：
-  - `T24_5440_CYCLE_BODY7512_TM3_80` prospective
-  - `T24_5424_CYCLE_BODY7520_TM4_90` prospective
-  - D867 production-shadow / 220ms
-  - D881 production-shadow / 135ms audit
-  - T16 imminent-danger
-  - T20 1250ms horizon /1500ms tail coarse audit
-  - 继续 same-cycle `cyclePrecursorTop`
+### WOF-043
+- Worker=collect / top=finalize+one JSON
+- fresh IndexedDB v5
+- T24 A5440 production-shadow
+- T24 A5424 state99 2/4 cycle-level prospective validation
+- T20 coarse shadow
+- D867/D881 shadows
+- T16 retarget audit
+- same-cycle discovery continues
 
-## Ground truth / exclusions
-- `enemy+0x7E` authoritative target；0/4/8=P1/P2/P3
-- `enemy+0x70 U16 0->nonzero` 只是 ACTIVE-start convention
-- 不恢复 broad T16 FAST/MID / broad T30_FAST
-- 不把 absDx 当 hitbox/range/timing threshold
-- 不声称 T16 B4 exclusive A6432
-- 不把 T20 1250ms / D867220 / D881135 当 causal boundary
-- retrospective fixed-lag 不能冒充 prospective proof
-- 不复活旧 T24 BODY5424/5440 fixed-lag rules
-- 未证明的 RAM field 不能叫 scene/stage ID
+## Exclusions
+- +0x70 ≠ exact hitbox/damage onset
+- absDx ≠ causal timing law
+- warning entry target ≠ final lock
+- T16 B4 ≠ exclusive A6432
+- T20 1250ms ≠ countdown boundary
+- retired fixed-lag T24 BODY5424/5440 不复活
+- old T23 BODY4920/B0 不复活
