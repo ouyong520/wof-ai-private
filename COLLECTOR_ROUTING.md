@@ -2,7 +2,7 @@
 
 ## Two authoritative roles
 
-The original WOF project may use two different capture sources. They are complementary and must not be silently merged.
+The original WOF project may use two complementary capture sources. They must not be silently merged.
 
 ### Browser/Web capture
 
@@ -17,11 +17,11 @@ final prospective validation before promoting a rule
 production-context false-positive / false-negative evidence
 ```
 
-Browser/Web remains the authority for claims about Browser/WASM runtime semantics and for final production-context rule validation.
+Browser/Web remains the authority for Browser/WASM runtime semantics and final production-context rule validation.
 
 ### WinKawaks Collector
 
-Use `ouyong520/wof-winkawaks-bridge` when the research question benefits from fast, repeatable, high-frequency local runtime evidence:
+Use `ouyong520/wof-winkawaks-bridge` for fast, repeatable, high-frequency local runtime evidence:
 
 ```text
 raw RAM snapshots
@@ -45,7 +45,7 @@ Need to prove a finding in the real online/browser environment or promote it int
 -> Browser/Web validation.
 ```
 
-A useful standard flow is:
+Standard flow:
 
 ```text
 Browser observation/question
@@ -55,31 +55,46 @@ Browser observation/question
 -> only then promote to production conclusion/rule
 ```
 
-## Collector consumer contract
-
-Stable bridge contract:
+## Frozen Collector v1 consumer contract
 
 ```text
 repo: ouyong520/wof-winkawaks-bridge
-doc: docs/COLLECTOR_V1_CONTRACT.md
-task: tasks/CURRENT_TASK.json
-result: results/collector_task_remote_result_latest.json
+contract: docs/COLLECTOR_V1_CONTRACT.md
+delivery: docs/COLLECTOR_V1_DELIVERY.md
+queue: tasks/queue/<taskId>.json
+status: status/by_task/<taskId>.json
+result: results/by_task/<taskId>.json
+latest compatibility pointer: results/collector_task_remote_result_latest.json
 ```
 
-Supported v1 task actions:
+Supported v1 actions:
 
 ```text
 capture_raw_snapshot
 capture_raw_burst
 ```
 
-Default full raw data remains on the local collector machine. When full frames are genuinely needed by this project, request:
+Multiple AI/research threads may submit tasks concurrently. The local Collector owns one WinKawaks runtime and executes tasks strictly serially; producers must not assume concurrent emulator ownership.
+
+For scene-specific tasks, use an operator gate. The Collector publishes the active waiting task, and the operator prepares that scene before releasing it with `READY_WOF_TASK.bat`. Later queued tasks do not jump ahead.
+
+Consumers must match both `taskId` and `taskBlobSha` before treating a per-task result as belonging to their request.
+
+## Raw retention
+
+Default full raw data remains local:
+
+```text
+diagnostics/latest/collector_task_stream_<taskId>.jsonl
+```
+
+When full frames are genuinely needed by this project, request:
 
 ```json
 "uploadRawStream": true
 ```
 
-and the collector returns a gzip capture under:
+The collector returns:
 
 ```text
 captures/<taskId>.jsonl.gz
@@ -89,7 +104,7 @@ captures/<taskId>.jsonl.gz
 
 Never assume Browser/WASM offsets equal WinKawaks normalized offsets.
 
-Examples already proven in current research:
+Current examples:
 
 ```text
 Browser enemy target selector: +0x7E
@@ -100,18 +115,14 @@ A local WinKawaks discovery may motivate a Browser test, but does not by itself 
 
 ## Runtime operation
 
-The collector itself does not need AI after deployment. On the collector machine:
+Collector runtime does not require AI. When local collection is requested, the operator uses:
 
 ```text
 START_WOF_COLLECTOR.bat
-```
-
-starts the waiting service, and:
-
-```text
+READY_WOF_TASK.bat   # only when the active task requests scene preparation
 STOP_WOF_COLLECTOR.bat
 ```
 
-requests a clean stop.
+The old development-time Codex/Luna watcher is not part of the delivered runtime.
 
-AI/research logic may decide what evidence to request and how to interpret it; the local collector only performs mechanical read-only capture and handoff.
+AI/research logic decides what evidence to request and how to interpret it; the local collector performs only mechanical read-only capture and handoff.
