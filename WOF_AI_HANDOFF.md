@@ -18,6 +18,38 @@
 - selector / player table / dispatcher44 / descriptor consumer `0x247C` 已解决
 - `enemy+0x70 U16 0->nonzero` = ACTIVE-start convention，不是 exact hitbox/damage onset
 
+## WinKawaks Collector v1 — 已交付 / AI 调用入口
+
+本地采集平台已经冻结交付。任何 AI/研究线程在需要本地 WinKawaks 高速 RAM 证据时，必须先读：
+
+```text
+COLLECTOR_ROUTING.md
+```
+
+稳定 bridge：
+
+```text
+repo: ouyong520/wof-winkawaks-bridge
+contract: docs/COLLECTOR_V1_CONTRACT.md
+delivery: docs/COLLECTOR_V1_DELIVERY.md
+queue: tasks/queue/<taskId>.json
+status: status/by_task/<taskId>.json
+result: results/by_task/<taskId>.json
+```
+
+支持：
+
+```text
+capture_raw_snapshot
+capture_raw_burst
+```
+
+AI 需要本地数据时直接向 queue 提交唯一 `taskId` 的只读任务；多个 AI 可同时提交，但 Collector 对一个 WinKawaks 严格串行执行。需要人工摆场景时设置 `operatorGate.required=true`，并明确告诉操作员启动 WinKawaks + `START_WOF_COLLECTOR.bat`、按要求摆场景、再运行 `READY_WOF_TASK.bat`。完整 raw 真正需要回传时设置 `uploadRawStream=true`，否则 raw 默认只留本地。
+
+消费者必须用 `taskId + taskBlobSha` 匹配自己的 `results/by_task/<taskId>.json`；不要依赖 latest 指针判断归属。
+
+本地 Collector 只负责只读采集，不执行 Future Danger/AI 规则。Browser/WASM 与 WinKawaks offset 是不同命名空间；本地发现必须回到 Browser/Web 做生产语境验证后才能升级为正式规则。
+
 ## WOF-044 — completed
 Batch `b-62677eb2-642`：
 - 5 joined / 5 complete / 0 error / 0 interrupted
