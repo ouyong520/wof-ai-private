@@ -77,9 +77,10 @@ Width is U8: the adjacent-byte U16 view creates mixed composite values with the 
 
 ## Field 3 — `+0xB0`
 
+**Operational interpretation:** slowly-changing profile/runtime-state byte
 **Width:** `U8`
 **Observed domain:** `0x70`, `0x80`, `0x90` in the retained full-corpus type-present samples
-**Classification:** `REJECTED` for the hypothesis **immutable per-instance initialization field**
+**Classification:** `STRONG_CANDIDATE`
 
 ### Evidence
 
@@ -90,13 +91,22 @@ Width is U8: the adjacent-byte U16 view creates mixed composite values with the 
 - earlier focused pass likewise contained clear long episodes where `+0xB0` changed one or more times without a type replacement;
 - same-type replacement changes occur on `5/11`, so it also participates in profile variation.
 
-This is enough to retain `+0xB0` as a strong slowly-changing profile/runtime-state candidate, but it fails the stricter claim that its value is fixed at instance creation and held for the whole episode.
+This supports a slowly-changing profile/runtime-state role, but not immutable initialization metadata.
 
-**Status:** `REJECTED` only as immutable instance-initialization field
+### Rejected narrower hypothesis
+
+The hypothesis **immutable per-instance initialization field** is `REJECTED`: genuine within-episode changes occur.
+
+### Known limits
+
+- The exact meaning of `70/80/90` is unresolved.
+- It is not safe to call this an instance ID, type code, fixed profile code, difficulty value, or movement state.
+
+**Status:** `STRONG_CANDIDATE`
 
 ## Round 008 conclusion
 
-`+0xB4` and `+0xB6` are now formally locked as episode-stable profile/variant metadata at different granularities. `+0xB0` is explicitly excluded from that strict immutable category because real within-episode changes exist.
+`+0xB4` and `+0xB6` are formally locked as episode-stable profile/variant metadata at different granularities. `+0xB0` remains a strong slowly-changing profile/runtime-state candidate but is explicitly excluded from the strict immutable category.
 
 ## Next bounded question
 
