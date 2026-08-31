@@ -1,0 +1,42 @@
+(async()=>{
+'use strict';
+const COPY_ID='WOF-025';
+const PROJECT='WOF-AI-PRIVATE';
+const VERSION='wof-future-danger-t16-coverage-jitter-validator-v25';
+const MARKER='=== WOF FUTURE DANGER T16 COVERAGE JITTER VALIDATOR V25 JSON ===';
+console.log(`[${COPY_ID}] ${PROJECT} ${VERSION}`);
+const good=v=>!!(v&&v.HEAPU8 instanceof Uint8Array&&v.HEAPU32 instanceof Uint32Array&&v.HEAPU8.buffer===v.HEAPU32.buffer);
+if(!good(self._0x515056)){
+  const until=performance.now()+8000;let hit=null;
+  while(performance.now()<until&&!hit){for(const k of Object.getOwnPropertyNames(self)){let v;try{v=self[k]}catch(_){continue}if(good(v)){hit={k,v};break}}if(!hit)await new Promise(r=>setTimeout(r,50));}
+  if(!hit)throw new Error(`[${COPY_ID}] WASM module not found. Select the live gstyphoon.js Worker.`);
+  self._0x515056=hit.v;self.__WOF_MODULE_GLOBAL_KEY=hit.k;
+}
+const MOD=self._0x515056,M=MOD.HEAPU8,R=MOD.HEAPU32?.[0x2e39e4>>>2]>>>0;if(!R)throw new Error(`[${COPY_ID}] CPS RAM base missing`);
+const B=a=>M[R+((((a-0xFF0000)&0xffff)^1))]>>>0;
+const U16=a=>((B(a)<<8)|B(a+1))>>>0;
+const U32=a=>(B(a)*0x1000000+B(a+1)*0x10000+B(a+2)*0x100+B(a+3))>>>0;
+const ENEMY=0xFFC0BC,STRIDE=0xE0,SLOTS=20,PLAYERS={0:'P1',4:'P2',8:'P3'};
+function snap(i){const a=ENEMY+i*STRIDE,type=U16(a+0x20);if(type>=47)return null;const fe=U32(a+0x12),nx=U32(a+0x2C);if(!fe&&!nx)return null;const t7=U16(a+0x7E);return{slot:i,type,target7E:t7,target:PLAYERS[t7]||null,state99:B(a+0x99),action2A:B(a+0x2A),b2B:B(a+0x2B),body:U16(a+0x6E),attack:U16(a+0x70),frameEnd:fe,next:nx,value30:U32(a+0x30)};}
+const FAST=new Set(['0/4/2','0/4/4','2/4/2','2/4/4','2/0/0','4/4/2','4/4/4','4/0/0']);
+const RULES=[
+{id:'T16_FAST_100',horizon:100,status:'production-shadow-jitter-review',match:s=>s.type===16&&s.attack===0&&s.body===4856&&s.frameEnd===0x851ae&&s.next===0x84c44&&s.value30===0xffff&&FAST.has(`${s.state99}/${s.action2A}/${s.b2B}`)},
+{id:'T16_MID_250',horizon:250,status:'provisional-high',match:s=>s.type===16&&s.attack===0&&s.body===4856&&s.state99===2&&s.action2A===4&&s.b2B===2&&s.frameEnd===0x85240&&s.next===0x84c3a&&s.value30===0x100000}
+];
+const DURATION=120000,INTERVAL=10,JITTER_TOL=15,TAIL=500,COVERAGE_CHECK=30000,start=performance.now();
+const prev=new Map(),cycle=new Map(),armed=new Map(),watches=[],events=[];let wid=0,firstT16AtMs=null,stoppedForCoverage=false;
+const diag={polls:0,enemySamples:0,type16Samples:0,type16ActiveEdges:0,signals:0,strictHits:0,jitterBandHits:0,realLateHits:0,hardMisses:0,warningExpired:0,retargets:0,copyId:COPY_ID};
+const rawMatchSamples={T16_FAST_100:0,T16_MID_250:0},transitionEntries={T16_FAST_100:0,T16_MID_250:0};
+const rk=(slot,id)=>`${slot}|${id}`,r1=x=>Math.round(x*10)/10;
+function arm(r,s,t){const c=cycle.get(s.slot)||0,k=rk(s.slot,r.id);if(armed.get(k)===c)return;armed.set(k,c);const tuple=`S${s.state99}/A${s.action2A}/B${s.b2B}`;watches.push({id:++wid,rule:r.id,status:r.status,type:16,slot:s.slot,cycle:c,horizon:r.horizon,at:t,tuple,entryTarget7E:s.target7E,entryTarget:s.target,resolved:false,warningExpired:false,outcome:null,leadMs:null,deltaMs:null,activeAttack:null,targetSame:null,retargets:[],censored:false});diag.signals++;events.push({kind:'SIGNAL',rel:r1(t),rule:r.id,slot:s.slot,tuple,target:s.target});console.log(`[WOF V25][${COPY_ID}] SIGNAL ${r.id} ${tuple} slot${s.slot}`);}
+function deadlines(t){for(const w of watches){if(w.resolved)continue;const age=t-w.at;if(!w.warningExpired&&age>w.horizon){w.warningExpired=true;diag.warningExpired++;}if(age>TAIL){w.resolved=true;w.outcome='hardMiss';diag.hardMisses++;events.push({kind:'HARD_MISS',rel:r1(t),rule:w.rule,slot:w.slot,tuple:w.tuple,ageMs:r1(age)});}}}
+function resolveActive(s,t){if(s.type!==16)return;diag.type16ActiveEdges++;for(const w of watches){if(w.resolved||w.slot!==s.slot)continue;const lead=t-w.at;if(lead<0||lead>TAIL)continue;w.resolved=true;w.leadMs=r1(lead);w.deltaMs=r1(lead-w.horizon);w.activeAttack=s.attack;w.targetSame=w.entryTarget7E===s.target7E;w.activeTarget=s.target;if(lead<=w.horizon){w.outcome='strictHit';diag.strictHits++;}else if(lead<=w.horizon+JITTER_TOL){w.outcome='jitterBandHit';diag.jitterBandHits++;}else{w.outcome='realLateHit';diag.realLateHits++;}events.push({kind:w.outcome,rel:r1(t),rule:w.rule,slot:s.slot,tuple:w.tuple,leadMs:w.leadMs,deltaMs:w.deltaMs,attack:s.attack,target:s.target});console.log(`[WOF V25][${COPY_ID}] ${w.outcome} ${w.rule} ${w.tuple} ${w.leadMs}ms attack=${s.attack}`);}cycle.set(s.slot,(cycle.get(s.slot)||0)+1);}
+await new Promise(resolve=>{const id=setInterval(()=>{const t=performance.now()-start;diag.polls++;deadlines(t);for(let i=0;i<SLOTS;i++){const s=snap(i),p=prev.get(i)||null;if(!s){if(p){for(const w of watches)if(!w.resolved&&w.slot===i){w.resolved=true;w.censored=true;w.outcome='censored';}}prev.delete(i);continue;}diag.enemySamples++;if(s.type===16){diag.type16Samples++;if(firstT16AtMs==null)firstT16AtMs=r1(t);}if(p&&p.type!==s.type){for(const w of watches)if(!w.resolved&&w.slot===i){w.resolved=true;w.censored=true;w.outcome='censored';}cycle.set(i,(cycle.get(i)||0)+1);}if(p&&p.attack===0&&s.attack!==0)resolveActive(s,t);if(s.type===16){for(const r of RULES){const m=r.match(s),pm=!!(p&&p.type===16&&r.match(p));if(m)rawMatchSamples[r.id]++;if(m&&!pm){transitionEntries[r.id]++;arm(r,s,t);}}for(const w of watches){if(w.resolved||w.slot!==i)continue;if(w.entryTarget7E!==s.target7E){const last=w.retargets.at(-1)?.to7E??w.entryTarget7E;if(last!==s.target7E){w.retargets.push({rel:r1(t),from7E:last,to7E:s.target7E,from:PLAYERS[last]||null,to:s.target});diag.retargets++;}}}}prev.set(i,s);}if(t>=COVERAGE_CHECK&&diag.type16Samples===0){stoppedForCoverage=true;clearInterval(id);resolve();return;}if(t>=DURATION){clearInterval(id);for(const w of watches)if(!w.resolved){w.resolved=true;w.censored=true;w.outcome='censored';}resolve();}},INTERVAL);});
+const blank=(r,id=r.id)=>({rule:id,status:r.status,horizonMs:r.horizon,jitterToleranceMs:JITTER_TOL,signals:0,evaluable:0,strictHit:0,jitterBandHit:0,realLateHit:0,hardMiss:0,censored:0,strictRate:null,jitterCorrectedRate:null,tailHitRate:null,leads:[],deltas:[],attackCounts:{},targetSame:0,targetTotal:0});
+const ruleStats={},tupleStats={};for(const r of RULES)ruleStats[r.id]=blank(r);
+for(const w of watches){const r=RULES.find(x=>x.id===w.rule),tk=`${w.rule}|${w.tuple}`;if(!tupleStats[tk])tupleStats[tk]=blank(r,tk);for(const q of [ruleStats[w.rule],tupleStats[tk]]){q.signals++;if(w.censored){q.censored++;continue;}q.evaluable++;if(w.outcome==='strictHit')q.strictHit++;else if(w.outcome==='jitterBandHit')q.jitterBandHit++;else if(w.outcome==='realLateHit')q.realLateHit++;else if(w.outcome==='hardMiss')q.hardMiss++;if(w.leadMs!=null){q.leads.push(w.leadMs);q.deltas.push(w.deltaMs);q.attackCounts[String(w.activeAttack)]=(q.attackCounts[String(w.activeAttack)]||0)+1;if(w.targetSame!=null){q.targetTotal++;if(w.targetSame)q.targetSame++;}}}}
+for(const q of [...Object.values(ruleStats),...Object.values(tupleStats)]){q.strictRate=q.evaluable?+(q.strictHit/q.evaluable).toFixed(3):null;q.jitterCorrectedRate=q.evaluable?+((q.strictHit+q.jitterBandHit)/q.evaluable).toFixed(3):null;q.tailHitRate=q.evaluable?+((q.strictHit+q.jitterBandHit+q.realLateHit)/q.evaluable).toFixed(3):null;q.targetSameRate=q.targetTotal?+(q.targetSame/q.targetTotal).toFixed(3):null;q.leads.sort((a,b)=>a-b);q.deltas.sort((a,b)=>a-b);q.attackCounts=Object.entries(q.attackCounts).map(([attack,count])=>({attack:+attack,count})).sort((a,b)=>b.count-a.count);}
+const coverageStatus=stoppedForCoverage?'NO_T16_IN_FIRST_30S':diag.type16Samples>0&&diag.signals===0?'T16_PRESENT_NO_RULE_ENTRY':'T16_RULE_COVERAGE';
+const out={copyId:COPY_ID,project:PROJECT,version:VERSION,expectedMarker:MARKER,readOnly:true,ramWrites:0,durationRequestedMs:DURATION,actualDurationMs:r1(performance.now()-start),intervalMs:INTERVAL,jitterToleranceMs:JITTER_TOL,coverageCheckMs:COVERAGE_CHECK,coverageStatus,firstT16AtMs,model:{purpose:'Resolve T16 FAST/MID 100/250ms boundary behavior at10ms polling without wasting a full run in rooms that contain no T16.',targetPolicy:'live enemy+0x7E authoritative',activeConvention:'enemy+0x70 U16 0->nonzero; not exact damage/hitbox onset'},diagnostics:{...diag,rawMatchSamples,transitionEntries},ruleStats,tupleStats:Object.values(tupleStats).sort((a,b)=>b.signals-a.signals),watches,events:events.slice(-300)};
+self.__WOF_V25_RESULT=out;console.log(MARKER);console.log(JSON.stringify(out,null,2));return out;
+})().catch(e=>{console.error('[WOF-025] ERROR',e);throw e;});
