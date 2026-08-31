@@ -4,48 +4,59 @@
 仓库：`ouyong520/wof-ai-private`
 
 ## 阶段
-底层 selector/dispatcher/descriptor 已解决。当前是 **production-shadow 扩展 + focused same-cycle mining**。
+底层 selector/dispatcher/descriptor 已解决。当前是 **production-shadow 扩展 + focused same-cycle mining + T23 forward validation**。
 
-## WOF-044
+## WOF-045
 身份严格通过：5/5 complete，0 error，0 interrupted，`readOnly=true`，`ramWrites=0`。  
-59988 polls / 211029 enemy samples / 1057 ACTIVE edges / 132 signals / 130 strict / 1 real-late / 1 censored / 0 hard miss。
+59994 polls / 202612 enemy samples / 1025 ACTIVE edges / 137 signals / **137 strict** / 0 miss。
 
-player histogram `[49,0,1412,979]` = 0P/1P/2P/3P；本轮主要2P/3P。
+player histogram `[119,42,1179,1088]` = 0P/1P/2P/3P；本轮包含1P/2P/3P context。
 
 ## Production set
-- **T16 B4 imminent danger**：47/47 timing hit；A6432=46、A4832=1；1次 ACTIVE-edge retarget。danger强，entry-target lock不是100%。
-- **T20 B0->B255 -> A5136**：13/13 strict A5136/target/side，lead410.5..869.5ms；`production-shadow-coarse`。
-- **D867BA TM6 -> A3232**：39/39 strict A3232/target/side；all5 rooms；production-shadow。
-- **D8811E TM6 -> A3232**：14/14 A3232/target/side；13 strict<=135ms +1 clean 209.5ms tail hit；production-shadow，135ms不是因果阈值。
-- **T24 BODY7512/TM3 -> A5440**：9 evaluable/9 strict，另1 end-of-run censored；所有解析结果 A5440/target/side；production-shadow。
-- **T24 BODY7520/TM4 level -> A5424**：9/9 strict A5424/target/side；production-shadow。
+- **T16 B4 imminent danger**：23/23 strict；本轮23次均A6432、target/side23/23。历史非6432/retarget样本仍禁止 exclusive/frozen-target 语义。
+- **T20 B0->B255 -> A5136**：10/10 strict A5136/target/side，lead460.0..1020.1ms；`production-shadow-coarse`。
+- **D867BA TM6 -> A3232**：41/41 strict A3232/target/side；all5 rooms；production-shadow。
+- **D8811E TM6 -> A3232**：14/14 strict A3232/target/side；production-shadow。
+- **T24 BODY7512/TM3 -> A5440**：14/14 strict A5440/target/side；production-shadow。
+- **T24 BODY7520/TM4 level -> A5424**：15/15 strict A5424/target/side；production-shadow。
+- **T18 BODY7512/TM4 -> A5440**：WOF-045 direct forward 10/10 strict、A5440/target/side10/10，lead60.5..70.4ms；结合 WOF-044 discovery9/9，WOF-046 起升 production-shadow。
+- **T18 BODY7520/TM4 -> A5424**：WOF-045 direct forward10/10 strict、A5424/target/side10/10，lead61.5..70.3ms；结合 WOF-044 discovery9/9，WOF-046 起升 production-shadow。
 
-## Focused mining correction
-WOF-044 的 model 声称输出 `cyclePrecursorFocus.T23/T18`，但实际 result 对象没有该字段。故 WOF-044 没有完成 focused T23 capture；这是导出 bug，不是 T23 负证据。
+## Focus exporter fixed
+WOF-045 实际 result 已有 `cyclePrecursorFocus`：两个 T23 房间均有 populated T23 arrays，T18 房间有 populated T18 array。WOF-044 missing-field bug 已解决。
 
-old T23 BODY4920/B0 在3810 T23 samples /15 A4792下仍 rawMatch0，继续 retired。
+## T23
+旧 BODY4920/B0 继续 retired。
 
-## T18 WOF-044 discovery
-Global same-cycle top 找到：
-- `T18 S2/A2/B4 BODY7512 FE8BBB2 NX8B290 V180001 TM4 -> A5440`: 9/9 cycles，first lead60.2..70.5ms，target/side9/9。
-- `T18 S2/A2/B4 BODY7520 FE8BBDE NX8B2A4 V180001 TM4 -> A5424`: 9/9 cycles，first lead60.7..71.1ms，target/side9/9。
+WOF-045 focus miner 找到一个新的短 lead A4792 current-cycle candidate：
+`S0/A6/B4|BODY4976|FE84868|NX83F20|V0|TM5|P6C0`
+- 4/4 cycles -> A4792
+- first lead79.3..89.4ms
+- target/side4/4
 
-=> WOF-045 直接 forward 验证。
+WOF-046 将直接 once-per-zero-cycle level-arm 验证：
+`T23_4792_BODY4976_A6_B4_TM5_LEVEL_100`
+- horizon100ms
+- tail300ms
+- expected A4792
 
-## Current next — WOF-045
+另一个 T23 房间出现不同的长 lead branch（约1.4–2.9s，当前2 cycles），继续 focused mining，不 promotion。
+
+## Current next — WOF-046
 ```text
-resume = wof-resume-dispatch-selector-v55
-nextCopyId = WOF-045
-nextScript = wof_future_danger_multiroom_coordinator_v45.js
-nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V45 JSON ===
-embedded = WOF-045R
+resume = wof-resume-dispatch-selector-v56
+nextCopyId = WOF-046
+nextScript = wof_future_danger_multiroom_coordinator_v46.js
+nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V46 JSON ===
+embedded = WOF-046R
 ```
 
-### WOF-045
+### WOF-046 protocol
 - Worker=collect / top=finalize+one JSON
-- fresh IndexedDB v7
-- independent focused miner 真正输出 `cyclePrecursorFocus.T23/T18`
-- direct T18 A5440/A5424 level-trigger forward validation
+- fresh IndexedDB v8
+- T18 A5440/A5424 rules production-shadow
+- new T23 A4792 TM5 prospective level-trigger validation
+- focused `cyclePrecursorFocus.T23/T18` continues
 - T16/T20/D867/D881/T24 production audit continues
 
 ## Exclusions
@@ -56,4 +67,4 @@ embedded = WOF-045R
 - T20 1250ms / D867220 / D881135 ≠ causal boundary
 - retired fixed-lag T24 BODY5424/5440 不复活
 - old T23 BODY4920/B0 不复活
-- WOF-044 missing focus arrays 不能解释成 T23 无前驱
+- long-lead T23 branch 2 cycles 不 promotion
