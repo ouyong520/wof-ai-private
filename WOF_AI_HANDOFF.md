@@ -18,84 +18,87 @@
 - selector / player table / dispatcher44 / descriptor consumer `0x247C` 已解决
 - `enemy+0x70 U16 0->nonzero` = ACTIVE-start convention，不是 exact hitbox/damage onset
 
-## WOF-042 — completed
-Batch `b-14ce196a-f24`：
+## WOF-043 — completed
+Batch `b-e6844556-f8b`：
 - 5 joined / 5 complete / 0 error / 0 interrupted
 - `readOnly=true / ramWrites=0`
-- 59816 polls / 190429 enemy samples / 1018 ACTIVE edges
-- 93 signals = 92 strict + 1 jitter + 0 late + 0 hard miss
-- player histogram `[0P0,1P105,2P1058,3P1264]`
-- 5/5 embedded WOF-042R identity validations passed
+- 59894 polls / 182907 enemy samples / 889 ACTIVE edges
+- 112 signals = 112 strict + 0 jitter + 0 late + 0 hard miss
+- retargets=0
+- player histogram `[0P18,1P458,2P1465,3P484]`
+- 5/5 embedded WOF-043R identity validations passed
 
 ### T24 BODY7512/TM3 -> A5440
 `T24_5440_CYCLE_BODY7512_TM3_80`
-- 11 signals / 11 strict / 0 miss
-- A5440 = 11/11
-- target = 11/11
-- side = 11/11
-- lead 49.0..58.2ms
-- 2 rooms
+- 18 signals / 18 strict / 0 miss
+- A5440=18/18
+- target=18/18
+- side=18/18
+- lead49.4..58.7ms
+- 3 rooms
+
+=> **production-shadow** confirmed again.
+
+### T24 BODY7520/TM4 -> A5424
+`T24_5424_CYCLE_BODY7520_TM4_S24_LEVEL_90`
+- level visibility rawMatch=36
+- once-per-zero-cycle armed signals=21
+- 21/21 strict
+- A5424=21/21
+- target=21/21
+- side=21/21
+- lead60.8..71.5ms
+- 3 rooms
 
 => **production-shadow**.
 
-### T24 BODY7520/TM4 -> A5424
-`T24_5424_CYCLE_BODY7520_TM4_90`
-- rawMatch=17
-- transitionEntry=0，故旧 arm-on-entry matcher 没有产生 forward watch
-- 但 same-cycle miner 在本轮直接看到：
-  - S2/A2/B4 BODY7520 FE8AF6C NX8A6E4 V180001 TM4：6 cycles，A5424 6/6，first lead61.6..71.6ms，target/side6/6
-  - S4/A2/B4 同 descriptor：5 cycles，A5424 5/5，first lead61.5..71.2ms，target/side5/5
-
-解释：这是 **entry detector blind spot**。状态在首次观察时可能已经 held，因此 `entry(base,s,p)` 不会 arm；不能把 0 signals 当成候选失败。
-
-WOF-043 改成：
-- state99 允许 2/4
-- `match = base(s)` level trigger
-- `arm()` 仍由 existing cycle id 去重，所以每个 zero->ACTIVE cycle 只 arm 一次
-- horizon90 / tail250
-- 直接检验“现在观察到该 held state 是否能 forward 预测 A5424”
+This directly proves the WOF-042 `rawMatch17 / transitionEntry0 / signals0` problem was an entry-detector blind spot, not rule failure. The correct semantics are: state99 2/4 + BODY7520/TM4 held-state visibility, arm once per zero->ACTIVE cycle.
 
 ### T20 B0->B255 -> A5136
-WOF-042：6/6 strict，A5136/target/side=6/6，lead420.6..580.6ms，跨3房。
+`T20_5136_B0_TO_B255_1250`
+- 9/9 strict
+- A5136/target/side=9/9
+- lead458.6..800.2ms
+- 3 rooms
 
-结合 WOF-037/WOF-039/WOF-041 same-cycle evidence，升为 **production-shadow-coarse**。1250ms 是审计窗口，不是 countdown 或因果阈值。
+=> remains **production-shadow-coarse**. 1250ms is audit window only, never countdown/causal threshold.
 
 ### D867BA / D8811E
-- D867BA_3232_TM6_220：14/14 strict，A3232/target/side14/14，types T9/T33，跨4房 => production-shadow。
-- D8811E_3232_TM6_135：6/6 strict，A3232/target/side6/6，types T11/T34，跨3房 => production-shadow。
+- `D867BA_3232_TM6_220`: 35/35 strict，A3232/target=35/35，side=34/35；types T9/T33/T36；all5 rooms => production-shadow.
+- `D8811E_3232_TM6_135`: 9/9 strict，A3232/target/side=9/9；types T34/T37/T11；3 rooms => production-shadow.
 
 ### T16 B4
-56/56 在40ms+jitter范围进入 ACTIVE danger；A6432=54，A4832=2。
-但本轮出现2个 retarget：
-- P1 -> P3 at17.1ms
-- P1 -> P2 at20.3ms
-两次都发生在 ACTIVE 边缘。
+`T16_B4_DANGER_40`：20/20 strict，all A6432 in this batch，target20/20，side19/20，0 retargets。
 
-=> danger timing 规则仍强；但 warning entry 的目标不是100%锁定。生产层必须在决策时实时读 `enemy+0x7E`。
+=> imminent-danger production-shadow remains strong. Historical A4832/A4840 counterexamples remain authoritative, so attack identity is still not exclusive A6432.
 
 ### T23
-旧 `BODY4920/B0` prospective rule 再次 rawMatch=0，即使本轮有5116 T23 samples、15次 A4792。
-=> 旧规则退役；继续从 same-cycle miner 找新前驱，不再围绕旧 fixed-lag signature 打转。
+Old `T23_4792_BODY4920_B0_ENTRY_180` again had `rawMatch=0 / signals=0` despite6490 T23 samples and9 A4792 edges.
 
-## Current next — WOF-043
+=> old rule is now explicitly **retired-no-forward-coverage**. Do not revive it.
+
+The global `cyclePrecursorTop` can be dominated by high-frequency types, so WOF-044 adds dedicated per-room `cyclePrecursorFocus.T23` and `cyclePrecursorFocus.T18` arrays, each derived only from same-cycle attack-zero states that later resolve into 0->nonzero ACTIVE.
+
+## Current next — WOF-044
 ```text
-resume = wof-resume-dispatch-selector-v53
-nextCopyId = WOF-043
-nextScript = wof_future_danger_multiroom_coordinator_v43.js
-nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V43 JSON ===
-embedded = WOF-043R / wof_future_danger_cycle_validator_v43r.js
+resume = wof-resume-dispatch-selector-v54
+nextCopyId = WOF-044
+nextScript = wof_future_danger_multiroom_coordinator_v44.js
+nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V44 JSON ===
+embedded = WOF-044R / wof_future_danger_cycle_validator_v44r.js
 ```
 
-### WOF-043 目的
-- T24 BODY7512/TM3 S2 -> A5440 作为 production-shadow 继续复核。
-- 直接 forward 验证 T24 BODY7520/TM4 state99 2/4 -> A5424 的 **cycle-level trigger**。
-- T20 按 production-shadow-coarse 复核。
-- D867/D881 production-shadow 复核。
-- T16 继续记录 retarget，明确 danger 与 target-lock 是两个不同置信度。
-- same-cycle miner 继续为 T23/其他攻击寻找新候选。
+### WOF-044 目的
+- 两条 T24 规则都按 production-shadow 继续 prospective audit。
+- T20 coarse、D867、D881、T16 继续审计。
+- old T23 BODY4920/B0 标记 retired。
+- 新增 focused same-cycle mining：
+  - `cyclePrecursorFocus.T23`：专门寻找新的 T23 forward precursor。
+  - `cyclePrecursorFocus.T18`：扩大 A5440/A5424 等相邻攻击族覆盖。
+- 不再让低频 type 因 global top100 排名被挤掉。
 
 ### 操作
-最多5个 live `gstyphoon.js` Worker 运行同一条 WOF-043，每房约120秒。全部结束后切 `top` 再运行同一条，生成唯一 `WOF-043_<batchId>.json`。
+最多5个 live `gstyphoon.js` Worker 运行同一条 WOF-044，每房约120秒。全部结束后切 `top` 再运行同一条，生成唯一 `WOF-044_<batchId>.json`。
 
 ## 禁止误判
 - broad T16 FAST/MID / broad T30_FAST ❌
@@ -104,4 +107,4 @@ embedded = WOF-043R / wof_future_danger_cycle_validator_v43r.js
 - T16 B4 = 100% exclusive A6432 ❌
 - T20 1250ms / D867220 / D881135 = causal boundary ❌
 - retired fixed-lag T24 BODY5424/5440 复活 ❌
-- 旧 T23 BODY4920/B0 继续作为 prospective candidate ❌
+- old T23 BODY4920/B0 prospective 复活 ❌
