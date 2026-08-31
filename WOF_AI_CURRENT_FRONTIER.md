@@ -4,72 +4,62 @@
 仓库：`ouyong520/wof-ai-private`
 
 ## 阶段
-底层 selector/dispatcher/descriptor 已解决。当前是 **production-shadow 扩展 + focused same-cycle mining + T23 forward validation**。
+底层 selector/dispatcher/descriptor 已解决。当前是 **production-shadow 扩展 + T23 same-cycle sequence discrimination**。
 
-## 并行研究状态
-项目级并行协议已启用，见 `PARALLEL_RESEARCH.md`。当前允许以下研究线与 Browser/Web 主线同时推进：
+## WOF-046 两批证据
+### Batch A `b-65a0db92-24c`
+- 5 joined / 4 complete / 1 interrupted / 0 error
+- readOnly=true / ramWrites=0
+- 47998 polls / 181961 enemy samples / 989 ACTIVE edges
+- 294 signals / 294 strict / 0 hard miss
 
-```text
-MAINLINE  = 当前 WOF 主线（本文件 Current next）
-GEO-*     = WinKawaks 人物几何/坐标
-EFIELD-*  = WinKawaks enemy 0xE0 字段地图
-RAWMINE-* = WinKawaks raw diff/transition/offset ranking
-```
+### Batch B `b-b1f1a5a3-92c`
+- 4 joined / 4 complete / 0 interrupted / 0 error
+- readOnly=true / ramWrites=0
+- 48000 polls / 168660 enemy samples / 958 ACTIVE edges
+- 110 signals / 108 strict + 1 jitter + 1 real-late / 0 hard miss
+- player histogram `[0,490,489,983]` = 0P/1P/2P/3P
 
-并行线不得修改或推进主线 coordinator/validator、不得改变 production-shadow 规则。多个 AI 可并发提交 Collector task，但同一个 WinKawaks capture 由 Collector 严格串行执行。本地发现只能作为 discovery evidence，进入生产结论前仍需 Browser/Web prospective validation。
-
-## WOF-045
-身份严格通过：5/5 complete，0 error，0 interrupted，`readOnly=true`，`ramWrites=0`。  
-59994 polls / 202612 enemy samples / 1025 ACTIVE edges / 137 signals / **137 strict** / 0 miss。
-
-player histogram `[119,42,1179,1088]` = 0P/1P/2P/3P；本轮包含1P/2P/3P context。
-
-## Production set
-- **T16 B4 imminent danger**：23/23 strict；本轮23次均A6432、target/side23/23。历史非6432/retarget样本仍禁止 exclusive/frozen-target 语义。
-- **T20 B0->B255 -> A5136**：10/10 strict A5136/target/side，lead460.0..1020.1ms；`production-shadow-coarse`。
-- **D867BA TM6 -> A3232**：41/41 strict A3232/target/side；all5 rooms；production-shadow。
-- **D8811E TM6 -> A3232**：14/14 strict A3232/target/side；production-shadow。
-- **T24 BODY7512/TM3 -> A5440**：14/14 strict A5440/target/side；production-shadow。
-- **T24 BODY7520/TM4 level -> A5424**：15/15 strict A5424/target/side；production-shadow。
-- **T18 BODY7512/TM4 -> A5440**：WOF-045 direct forward 10/10 strict、A5440/target/side10/10，lead60.5..70.4ms；结合 WOF-044 discovery9/9，WOF-046 起升 production-shadow。
-- **T18 BODY7520/TM4 -> A5424**：WOF-045 direct forward10/10 strict、A5424/target/side10/10，lead61.5..70.3ms；结合 WOF-044 discovery9/9，WOF-046 起升 production-shadow。
-
-## Focus exporter fixed
-WOF-045 实际 result 已有 `cyclePrecursorFocus`：两个 T23 房间均有 populated T23 arrays，T18 房间有 populated T18 array。WOF-044 missing-field bug 已解决。
+## Combined production audit
+- **T16 B4 imminent danger**: 225/225 tail hits = 224 strict +1 jitter; A6432=223, A4840=2; target/side225/225. danger production remains; attack not exclusive.
+- **T20 B0->B255 -> A5136**: 14/14 strict A5136/target/side, lead460.8..700.4ms; production-shadow-coarse.
+- **D867BA TM6 -> A3232**: 16/16 strict A3232/target/side, lead99.1..119.6ms; production-shadow.
+- **D8811E TM6 -> A3232**: 21/21 eventual A3232/target/side;20 strict +1 clean209.5ms real-late,0 miss; production-shadow.
+- **T24 BODY7512/TM3 -> A5440**: 28/28 strict, lead48.5..68.5ms.
+- **T24 BODY7520/TM4 -> A5424**: 34/34 strict, lead59.9..71.8ms.
+- **T18 BODY7512/TM4 -> A5440**: 33/33 strict, lead59.1..78.5ms.
+- **T18 BODY7520/TM4 -> A5424**: 33/33 strict, lead58.2..71.3ms.
 
 ## T23
 旧 BODY4920/B0 继续 retired。
 
-WOF-045 focus miner 找到一个新的短 lead A4792 current-cycle candidate：
-`S0/A6/B4|BODY4976|FE84868|NX83F20|V0|TM5|P6C0`
-- 4/4 cycles -> A4792
-- first lead79.3..89.4ms
-- target/side4/4
+WOF-045 short candidate：
+`S0/A6/B4|BODY4976|FE84868|NX83F20|V0|TM5|P6C0 -> A4792`
+在两个 WOF-046 batch 都 rawMatch0/signals0，因此是 **zero coverage，不是 failure**。
 
-WOF-046 将直接 once-per-zero-cycle level-arm 验证：
-`T23_4792_BODY4976_A6_B4_TM5_LEVEL_100`
-- horizon100ms
-- tail300ms
-- expected A4792
+WOF-046 Batch B 有 7379 T23 samples、12 个 T23 A4792 ACTIVE，但 focused 数据显示常见 single-state fingerprint 会跨 attack：
+- `S2/A4/B0 BODY0 FE84A98 NX83D14 TM20` 同时通往 A4792/A4920/A5848；A4792 long-lead branch targetSame 0/4。
+- `S0/A4/B2 BODY4936 FE84060 NX83C60 TM1` 同时出现在 A4792 与 A4920。
 
-另一个 T23 房间出现不同的长 lead branch（约1.4–2.9s，当前2 cycles），继续 focused mining，不 promotion。
+=> 单一 T23 state 不足以区分 attack branch；下一步改做 ordered transition sequence。
 
-## Current next — WOF-046
+## Current next — WOF-047
 ```text
-resume = wof-resume-dispatch-selector-v56
-nextCopyId = WOF-046
-nextScript = wof_future_danger_multiroom_coordinator_v46.js
-nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V46 JSON ===
-embedded = WOF-046R
+resume = wof-resume-dispatch-selector-v57
+nextCopyId = WOF-047
+nextScript = wof_future_danger_multiroom_coordinator_v47.js
+nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V47 JSON ===
+embedded = WOF-047R
 ```
 
-### WOF-046 protocol
+### WOF-047 protocol
 - Worker=collect / top=finalize+one JSON
-- fresh IndexedDB v8
-- T18 A5440/A5424 rules production-shadow
-- new T23 A4792 TM5 prospective level-trigger validation
-- focused `cyclePrecursorFocus.T23/T18` continues
-- T16/T20/D867/D881/T24 production audit continues
+- fresh IndexedDB v9
+- production audits continue
+- previous T23 short candidate audit continues
+- new `t23CycleTraces` captures up to120 resolved T23 cycles/room
+- each trace preserves up to48 ordered distinct states + first/last lead + target/side/retargets + tail1/tail2/tail3
+- traces are discovery only; next prospective rule must be built from discriminating sequence evidence
 
 ## Exclusions
 - +0x70 ≠ exact hitbox/damage onset
@@ -79,4 +69,5 @@ embedded = WOF-046R
 - T20 1250ms / D867220 / D881135 ≠ causal boundary
 - retired fixed-lag T24 BODY5424/5440 不复活
 - old T23 BODY4920/B0 不复活
-- long-lead T23 branch 2 cycles 不 promotion
+- WOF-046 short T23 rawMatch0 不算失败
+- ambiguous T23 single-state 不直接 promotion
