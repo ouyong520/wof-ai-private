@@ -52,11 +52,11 @@ The first malformed version of EFIELD-005 was rejected by Collector schema valid
 | `0x28` | U8 | sparse; retarget-associated but far more changes than true retargets | sparse transition/pulse state; not target identity |
 | `0x2D` | U8 | broad action/reset dynamics | action/reset-state candidate |
 | `0x2E` | U8 | broad state dynamics | broad action/state candidate |
-| `0x2F..0x32` | **U32 BE candidate** | 178 values, 5540 changes; `+0x0A` exactly 3006 times; repeated `-0x32` loops and `+0x4000A`/bank-like steps | **script/animation record pointer / progression address candidate** |
-| `0x34` | **U8** | 43 values; 31,920 changes; pointer-stable changes are overwhelmingly `-1/-2`; at pointer changes it reloads upward 4967 times | **script/animation duration or frame-countdown candidate** |
+| `0x2F..0x32` | **flagged U32 BE cursor candidate** | masking `0x001C0000` collapses many raw flag jumps into logical `+0x0A`; 4323/5539 logical pointer changes are `+0x0A`; repeated logical `-0x32` loops remain | **10-byte script/animation record cursor with embedded flag bits candidate** |
+| `0x34` | **U8** | pointer-stable changes overwhelmingly `-1/-2`; before logical `+0x0A` cursor steps, `0x34<=2` in 4206/4323 = 97.29% and `<=1` in 75.99%; then usually reloads upward | **current 10-byte record countdown/dwell timer candidate** |
 | `0x37` | **U8** | values `00/80/02`; 1528 changes, heavily attack-associated; `0x38` is constant `0x84` | attack-associated gate/flag/substate; **not supported as a U16 timer** |
 | `0x3D..0x3E` | **U16 BE** | values exactly `BE1C/BEFC/BFDC`; deterministic relation with `0xC6` | **player-association/proximity pointer candidate**, separate from live target |
-| `0x65` | U8 | changes at all original retarget events but many unrelated changes | retarget-associated trigger/substate, not identity |
+| `0x65` | U8 | seven-run retarget pass: exact same-frame on 6/8; any change within +/-3 frames on 7/8; 401 total changes | optional retarget-associated trigger/substate, not identity and not universal |
 | `0x68` | U8 | strong player-reference relation; near retargets often reaches destination low byte before or at live commit | player-reference mirror/association byte candidate |
 | `0x6C` | **U8** | fine state deterministically projects to coarse `0x73` in current corpus | **fine attack substate/phase candidate** |
 | `0x6D..0x6E` | **U16 BE** | only P1 `BE1C`, P2 `BEFC`, P3 `BFDC`; 8 changes and all 8 are true known-player retargets | **strong live/materialized player-target pointer candidate** |
@@ -67,6 +67,7 @@ The first malformed version of EFIELD-005 was rejected by Collector schema valid
 | `0x74` | U8 | constant zero in current type-present corpus | padding/zero neighbor to `0x73` |
 | `0x77` | U8 | deterministic coarse projection of `0x70` | attack-neighborhood coarse state candidate |
 | `0x81` | historical reference | no current semantic promotion | unknown/reference only |
+| `0x99` | U8 | binary `00/FF`; only 17 total changes across seven captures; 5/8 retargets changed it same-frame; no lagged misses and no deterministic target-side or horizontal-velocity mapping | sparse internal mode/flag candidate enriched at some retargets; **not target identity and not simple facing/target-side** |
 | `0x9C` | U8 | high-frequency state; strong +1-frame relation with `0x04` | pipelined/high-frequency state candidate |
 | `0xA2` | U8 | X payload equality peaks with a +1-frame relation | one-frame-delayed/latched X-coordinate mirror/history candidate |
 | `0xB0` | U8 | mostly episode-stable but changes at some replacements | slowly-changing instance/profile property candidate |
@@ -318,9 +319,46 @@ Additional deterministic/co-change structure:
 - target transitions 0
 - read/frame errors 0/0
 
-### EFIELD-007-passive-proximity-association-60s60 — queued
+### EFIELD-007-passive-proximity-association-60s60 — FAILED PRE-CAPTURE
 
-Purpose: expand the sparse same-type `C6` proximity-association switch sample, measure proximity hysteresis/crossings, preserve separation from live target `0x6D..0x6E`, and replicate the script-pointer/countdown model. No operator gate is required.
+- no raw capture was produced
+- failure occurred during fresh immutable CPS RAM discovery before sampling
+- Collector error: `Fresh immutable CPS RAM discovery is not uniquely qualified`
+- read-only contract remained intact; no game-memory write occurred
+- do not auto-retry this exact collection while discovery remains ambiguous; continue offline analysis until runtime discovery is uniquely qualified again
+
+
+
+## Script-record executor: `0x2F..0x32` + `0x34`
+
+Seven-capture pointer/countdown analysis substantially strengthens the executor model.
+
+The raw U32 field at `0x2F..0x32` contains address-like progression plus flag-like bits in the `0x30` byte. Masking `0x001C0000` removes the observed `04/08/10/18`-class embedded bits and turns many apparent large jumps into ordinary sequential steps:
+
+- raw `+0x0A`: 3006
+- raw `+0x4000A`: 762
+- raw `-0x3FFF6`: 488
+- after masking, logical `+0x0A`: **4323/5539 = 78.05% of logical pointer changes**
+- logical `-0x32`: 352; this is exactly `-50`, consistent with a five-record backward loop if the record stride is 10 bytes
+
+The countdown relation is equally strong:
+
+- on logical `+0x0A` steps, previous `0x34 <= 1`: **3285/4323 = 75.99%**
+- previous `0x34 <= 2`: **4206/4323 = 97.29%**
+- previous `0x34 <= 3`: **98.64%**
+- when the logical pointer remains stable and `0x34` changes, the dominant deltas are `-1` (19,928) and `-2` (6,372)
+- after a sequential pointer step, `0x34` usually reloads to a larger duration value
+
+Current structural model:
+
+1. `0x2F..0x32` = **logical 10-byte script/animation-record cursor plus embedded flag bits**.
+2. `0x34` = **current record dwell/countdown timer**.
+3. logical `+0x0A` = sequential record advance.
+4. logical negative/sparse non-`+0x0A` deltas = loop/branch/script-switch candidates.
+
+This remains a dynamic structural interpretation. It does not yet identify record opcode semantics or claim Browser/WASM address equivalence.
+
+Evidence: `results/efield/NEXT_POINTER.md`, `results/efield/TIMER_SEMANTICS.md`, `results/efield/ATTACK_TIMERS.md`, `results/efield/POINTER_RECORD_MASK.md`.
 
 ## High-value evidence outputs
 
