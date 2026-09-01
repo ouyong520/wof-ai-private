@@ -8,6 +8,26 @@ on:
   workflow_dispatch:
 
 jobs:
+  orchestrator-contract:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Compile orchestrator
+        run: python -m py_compile parallel/REGRESSION_ORCH/orchestrator.py parallel/REGRESSION_ORCH/runner.py parallel/REGRESSION_ORCH/tests/test_orchestrator.py parallel/REGRESSION_ORCH/tests/test_runner.py
+
+      - name: Run orchestrator self-tests
+        run: |
+          python parallel/REGRESSION_ORCH/tests/test_orchestrator.py
+          python parallel/REGRESSION_ORCH/tests/test_runner.py
+
   windows-offline-regression:
     runs-on: windows-latest
     timeout-minutes: 20
@@ -33,11 +53,11 @@ jobs:
           python -m pip install --disable-pip-version-check -r parallel/PYLAUNCH/requirements.txt
           python -m pip install --disable-pip-version-check -r parallel/WOF052L_RECORDER/requirements.txt
 
-      - name: Compile orchestrator
-        run: python -m py_compile parallel/REGRESSION_ORCH/orchestrator.py parallel/REGRESSION_ORCH/tests/test_orchestrator.py
+      - name: Compile safe runner
+        run: python -m py_compile parallel/REGRESSION_ORCH/orchestrator.py parallel/REGRESSION_ORCH/runner.py
 
       - name: Run full offline regression
-        run: python parallel/REGRESSION_ORCH/orchestrator.py --repo-root . --ci
+        run: python parallel/REGRESSION_ORCH/runner.py --repo-root . --ci
 
       - name: Upload regression summary and logs
         if: always()
