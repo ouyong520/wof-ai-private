@@ -61,10 +61,6 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Recorder dependency
-        shell: pwsh
-        run: python -m pip install --disable-pip-version-check -r parallel/WOF052L_RECORDER/requirements.txt
-
       - name: Real CMD UTF-8 Chinese output smoke
         shell: cmd
         run: |
@@ -87,10 +83,10 @@ jobs:
           python -m py_compile parallel/WOF052L_RECORDER/owner_zh_cn.py
           python -m py_compile parallel/OPTOOLKIT/owner_zh_cn.py
 
-      - name: WOF-052L Chinese self-test on Windows
+      - name: WOF-052L actual Chinese CMD self-test on Windows
         working-directory: parallel/WOF052L_RECORDER
-        shell: pwsh
-        run: python owner_zh_cn.py --self-test
+        shell: cmd
+        run: call RUN_WOF052L_RECORDER.cmd --self-test
 
       - name: Operator Toolkit Chinese smoke tests on Windows
         shell: pwsh
