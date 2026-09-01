@@ -59,9 +59,9 @@ let hudWaitCount=0;
 let hudTimer=0;
 const gameSurfaceReady=()=>{
   try{
-    const c=window.I_GF1TC&&window.I_GF1TC.I_V_2dContext?.canvas;
-    const gl=window.I_GF1TC?.I_V_WebGL;
-    return !!(c&&gl);
+    const canvas=window.I_GF1TC;
+    const gl=window.I_fdC8Q;
+    return !!(canvas&&gl&&typeof gl.drawArrays==='function');
   }catch(_){return false;}
 };
 
