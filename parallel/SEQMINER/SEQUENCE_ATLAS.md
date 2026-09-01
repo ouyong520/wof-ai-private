@@ -208,11 +208,11 @@ These examples prove the mechanism is reachable by both priority types; they do 
 
 The apparent loaded-value purity of `record+type+B6` is not promoted: 48 such groups contain 44 singletons, so the 0.942 in-sample concentration is dominated by sparse memorization.
 
-### v3 representation correction
+### v3 representation correction and event-boundary guard
 
 The 52/52 `+0x35` coincidence exposes an important compression boundary: because `+0x35` belongs to the core state, the positive `+0x34` load may occur exactly when the old core state ends and a new one begins. A reload list attached only to one compressed state can therefore miss the canonical delayed-load edge.
 
-v3 records every **zero-prefix positive timer reload** independently of compressed-state boundaries and emits four feature families:
+v3 records every **positive timer reload that lies inside the selected zero-prefix** independently of compressed-state boundaries and emits four feature families:
 
 ```text
 timer34_reload_exact
@@ -221,7 +221,9 @@ cross_core_reload_exact
 cross_core_reload_norm
 ```
 
-Each edge preserves pre/post core, cursor, mode35, phase, timer42, exact timer values, record-normalized timer buckets, reload magnitude family and any timer1 hold immediately before the reload. The future nonzero event frame is excluded from these predictor features.
+Each edge preserves pre/post core, cursor, mode35, phase, timer42, exact timer values, record-normalized timer buckets, reload magnitude family and any timer1 hold immediately before the reload. The future nonzero event frame and all post-event frames are excluded from predictor features.
+
+This distinction matters for the 52 delayed-`1B` examples: default structural proxy mode ends the prefix when `+0x73` first becomes nonzero, so those reloads occur **after** the proxy event and are not used as default-mode predictors. They become eligible sequence features only under a future independently proven exact-attack event definition that remains zero until after the reload. The retained 52-event set therefore validates the need for a cross-state representation, not a default-proxy prediction claim.
 
 ## `+0x35` independent branch progression
 
@@ -269,6 +271,17 @@ Raw-derived residence examples show both use the executor machinery:
 
 These do **not** map local values to Browser A4704/A4712/A4792/A4920/A5888. They only establish retained local coverage and ordered timer diversity.
 
+## Exact local attack-descriptor audit
+
+The bridge's current attack-themed reports remain structurally anchored rather than move-valued:
+
+- `ATTACK_CYCLE.md` defines an attack episode as a contiguous `+0x73 != 0` run.
+- `MOVE_ATTACK.md` reports 2,391 "attack-field transition events" and shows `+0x6C/+0x73` as perfectly attack-selective under that phase-transition anchor.
+- the retained EFIELD summary contains no `activeAttack` field and no literal `0x1260` value corresponding to Browser A4704.
+- the passive `ACTIVE_STATE.md` uses type-present lifecycle activity, not Browser semantic attack ACTIVE.
+
+Therefore no current local field is relabeled as an exact move/attack descriptor merely because it is attack-associated.
+
 ## Browser-labelled ordered evidence
 
 ### T18
@@ -305,9 +318,9 @@ The first state also occurs in A4792, directly proving that order adds informati
 
 ## Ranking policy
 
-Rank upward with same-cycle support, outcome purity, independent captures, authoritative scene labels when they truly exist, multiple targets, timer-normalized stability, delayed-reload/terminal-hold stability, and ability to split a known ambiguous anchor.
+Rank upward with same-cycle support, outcome purity, independent captures, authoritative scene labels when they truly exist, multiple targets, timer-normalized stability, prefix-valid delayed-reload/terminal-hold stability, and ability to split a known ambiguous anchor.
 
-Rank downward for one-cycle purity, one-capture-only support, exact-timer brittleness, sparse record/type/profile memorization, target/profile confounding, capture filename masquerading as a scene, repeated loop visits masquerading as independent support, or structural `+0x73` proxy being treated as an exact attack.
+Rank downward for one-cycle purity, one-capture-only support, exact-timer brittleness, sparse record/type/profile memorization, target/profile confounding, capture filename masquerading as a scene, repeated loop visits masquerading as independent support, post-event leakage, or structural `+0x73` proxy being treated as an exact attack.
 
 ## Current boundary
 
