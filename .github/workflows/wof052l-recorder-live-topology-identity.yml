@@ -1,0 +1,51 @@
+name: WOF052L Recorder Live Topology Identity
+
+on:
+  push:
+    paths:
+      - 'parallel/WOF052L_RECORDER/**'
+      - 'parallel/WOF052L_RECORDER_QA_HARDENING/**'
+      - '.github/workflows/wof052l-recorder-live-topology-identity.yml'
+  workflow_dispatch:
+
+jobs:
+  windows-regression:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Recorder dependency
+        run: python -m pip install --disable-pip-version-check -r parallel/WOF052L_RECORDER/requirements.txt
+
+      - name: Compile Recorder production and regression files
+        run: >-
+          python -m py_compile
+          parallel/WOF052L_RECORDER/discovery_v2_sync.py
+          parallel/WOF052L_RECORDER/discovery_v2_sync_base.py
+          parallel/WOF052L_RECORDER/hardening_v2.py
+          parallel/WOF052L_RECORDER/hardening_v2_base.py
+          parallel/WOF052L_RECORDER/recorder.py
+          parallel/WOF052L_RECORDER/fleet_recorder.py
+          parallel/WOF052L_RECORDER/test_discovery_v2_sync.py
+          parallel/WOF052L_RECORDER/test_fleet_recorder.py
+          parallel/WOF052L_RECORDER/test_live_topology_identity_fix.py
+          parallel/WOF052L_RECORDER_QA_HARDENING/test_adversarial_hardening.py
+
+      - name: Run existing Discovery V2 regression
+        run: python parallel/WOF052L_RECORDER/test_discovery_v2_sync.py
+
+      - name: Run existing fleet regression
+        run: python parallel/WOF052L_RECORDER/test_fleet_recorder.py
+
+      - name: Run live topology and identity fix regression
+        run: python parallel/WOF052L_RECORDER/test_live_topology_identity_fix.py
+
+      - name: Re-run independent QA adversarial suite
+        run: python parallel/WOF052L_RECORDER_QA_HARDENING/test_adversarial_hardening.py
