@@ -1,86 +1,87 @@
 # WOF Future Danger AI — Active Priorities
 
-Updated: 2026-09-01 — RC2 rejected / RC3 identity+lifecycle correction
+Updated: 2026-09-01 — RC3 candidate complete / fresh QA next
 
-## P0 — One-shot World 921031 identity binding
+## P0 — Fresh independent Alpha RC3 QA
 
-The owner's real Browser probe positively matched the canonical `wof / Warriors of Fate (World 921031)` main-program SHA-1 pair and reproduced the historical live `+0x34` dispatch delta.
+RC3 implementation is complete and has reached its stop condition.
 
-The old `wofr1 / World 921002` project label is no longer accepted as the support identity for this Browser lineage.
+Candidate evidence:
+- `product/alpha/ALPHA_RC3_REPORT.md`
+- product regression: PASS
+- supported Browser lineage: `wof / Warriors of Fate (World 921031)`
+- exact full 1 MiB CPU-logical SHA-256: `5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`
+- user-facing production rules intentionally reduced to two stateless current-level T18 rules
+- F1-F4 history-derived candidates quarantined
 
-Owner action:
-- run `parallel/PM/wof_runtime_identity_921031_probe.js` once through the one-line loader in `OWNER_ACTIONS.md`;
-- return the JSON;
-- exact repeated full 1 MiB CPU-logical SHA-256 becomes the golden Alpha identity.
+Fresh QA bootstrap:
+- `parallel/PM/ALPHA_RC3_QA_START_PROMPT.md`
 
-## P0 — Alpha RC3 implementation after/while digest is bound
+RC3 implementation thread should now be closed and must not self-certify release readiness.
+QA may write only under `parallel/ALPHAQA_RC3/**` and must not modify `product/alpha/**`.
 
-RC2 produced useful fixes but PM rejected the candidate on two remaining blockers documented in:
-- `parallel/PM/RC2_REVIEW_BLOCKERS.md`
+## P1 — Local WinKawaks ROM identity
 
-Fresh implementation bootstrap:
-- `parallel/PM/ALPHA_RC3_FIX_START_PROMPT.md`
+Support lane: `parallel/LOCALROM/**`.
 
-RC3 must:
-1. replace sparse vector/dispatch acceptance with exact full-program SHA-256 identity for the actual 921031 Browser lineage;
-2. remove stale `wofr1 / World 921002` positive labels from the supported Alpha path;
-3. implement the ALPHALIFE conservative continuity policy exactly;
-4. quarantine history-derived F1-F4 user-facing rules while no positive enemy instance continuity exists;
-5. keep F5/F6 only as hold-only current-state warnings;
-6. preserve RC2 session isolation, multi-threat HUD, legacy-HUD teardown, read-only/no-input and bootstrap work.
+Current retained evidence strongly indicates local WinKawaks is `wofr1 / World 921002` from the live emulator title, while Browser is proven `wof / World 921031`.
+Cryptographic local proof is not yet complete.
 
-Only the fresh RC3 implementation owner may edit `product/alpha/**` in that stage.
+The lane has reduced this to one read-only local ROM hash probe. No gameplay/recollection is needed.
 
-## P1 — Fresh independent QA after RC3
+This does not block RC3 QA or Alpha Browser release, because local WinKawaks remains discovery-only and Browser production proof is authoritative.
 
-Do not use the RC2 thread's self-run independent harness as the final fresh QA stage.
+## P1 — Runtime speed / timing consistency audit
 
-After RC3 is complete, open a new QA thread. It must independently verify:
-- full-digest 921031 positive identity;
-- wrong/missing/pending digest fail-closed;
-- no sparse-fingerprint fallback;
-- quarantined history rules cannot warn across hidden same-type replacement;
-- F5/F6 current-level warnings clear immediately on nonmatch;
-- cross-tab isolation;
-- all simultaneous warnings shown;
-- legacy HUD teardown;
-- bootstrap/install path;
-- read-only/no-input;
-- live target/side and UNKNOWN silence.
+Support lane: `parallel/RUNTIMESPEED/**`.
 
-Only after no P0/P1 remains should owner Browser acceptance begin.
+Goal: determine whether WinKawaks is actually simulating faster, Browser is slower, or the perceived difference is frame pacing/input/render latency.
 
-## P2 — Alpha real Browser acceptance
+This does not block RC3 QA unless the audit discovers that Browser lead-time labels themselves were measured incorrectly.
+Do not numerically equate local Collector wall-clock sampling with Browser warning milliseconds without proof.
 
-One short owner acceptance run only after fresh RC3 QA passes.
+## BETA SUPPORT — Player-anchored warning HUD
+
+Bootstrap exists:
+- `parallel/PM/PLAYER_ANCHORED_HUD_START_PROMPT.md`
+
+No `parallel/HUDANCHOR/**` execution result is currently present on GitHub, so this lane has not yet produced a handoff.
+It may run in parallel because it writes only `parallel/HUDANCHOR/**` and must not modify Alpha.
+
+## P2 — One real Browser acceptance after fresh QA
+
+Only if RC3 fresh independent QA returns:
+
+`PASS — READY FOR ONE REAL BROWSER ACCEPTANCE`
+
+Then perform one bounded real Browser acceptance for bootstrap/worker interception, exact 921031 hash acceptance, HUD/WebGL behavior, session isolation/reload pairing, and runtime overhead.
 
 ## P2 — MAINLINE WOF-052 after Alpha release gate
 
-Ordered T18 discrimination remains valuable and is not cancelled, but it does not block the narrow Alpha because BODY4728 is excluded.
-
-## BETA — player-anchored warning placement
-
-Stable screen-space warning above the threatened P1/P2/P3 character remains a Beta product task. It requires a proven Browser camera/screen transform; fixed HUD is the safe Alpha fallback.
+Ordered T18 discrimination remains valuable but is not an Alpha blocker because BODY4728-specific attack promotion remains excluded.
 
 ## PARK / COMPLETE
 
-- RC2 implementation — completed candidate, rejected by PM review; do not revive old thread.
-- Runtime Identity audit — method/probe defined; PM now owns final 921031 binding.
-- Enemy Lifecycle audit — conservative implementation policy complete.
-- Normal-user Bootstrap audit — implementation recommendation complete.
-- COVERAGE — complete; human recap required: NO.
-- SEQMINER — current retained-corpus ordered information exhausted; no recapture requested.
+- Alpha RC3 implementation — COMPLETE CANDIDATE; close thread.
+- Alpha RC2 — completed/rejected; do not revive.
+- Runtime Identity audit — Browser identity fully bound to World 921031.
+- Enemy Lifecycle audit — conservative policy consumed by RC3.
+- Normal-user Bootstrap audit — recommendation consumed by RC2/RC3.
+- COVERAGE — complete.
+- SEQMINER — retained corpus exhausted; no recap requested.
 - BASECAP/GEO/EFIELD/RAWMINE/SWEEPATLAS — closed or on-demand only.
 
 ## Explicit stops
 
-- STOP final Alpha Browser acceptance before RC3 + fresh QA.
-- STOP forcing the owner to switch ROM to 921002 to satisfy stale prose.
-- STOP sparse vector/dispatch fingerprints as final build identity.
-- STOP history-derived user warnings without positive enemy episode continuity.
-- STOP broad collection / generic field research.
-- STOP speculative rule promotion.
+- STOP modifying RC3 from the completed RC3 implementation thread.
+- STOP final Alpha Browser acceptance before fresh RC3 QA.
+- STOP treating local WinKawaks title alone as cryptographic ROM proof.
+- STOP assuming WinKawaks wall-clock Collector Hz equals game simulation speed.
+- STOP broad collection / speculative production-rule promotion.
 
 ## Current fastest path
 
-**one 921031 read-only digest probe -> fresh RC3 fix -> fresh independent QA -> one Browser acceptance -> Alpha release.**
+**fresh RC3 independent QA -> one bounded Browser acceptance -> Alpha release**
+
+Parallel support that need not delay this path:
+**Local ROM identity + Runtime Speed audit + Beta HUD Anchor research**.
