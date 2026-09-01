@@ -36,12 +36,22 @@
 - WOF-052L room / merged：`wof-052l-recorder-v1`
 - WOF-052L Browser Fleet merged：`wof-052l-fleet-supervisor-v1`
 - Browser Fleet status：`wof-browser-fleet-v1`
-- Operator Toolkit Regression / Diagnostics：`wof-windows-operator-toolkit-v1`
+- Operator Toolkit Regression / Diagnostics：支持当前 `wof-windows-operator-toolkit-v2-cn`，并通过 `run.py` 兼容后续 `wof-windows-operator-toolkit-v*` 版本
 - Alpha RC5 regression result
 - Alpha RC5 independent QA result
 - `.log`、Regression stdout/stderr、Diagnostics 文本日志
 
 未知 JSON/schema 不会让整批失败；会以警告记录进摘要，方便以后升级识别器。
+
+## 当前仓库兼容入口
+
+正常 owner 入口统一经过：
+
+```text
+parallel\EVIDENCE_INGESTOR\run.py
+```
+
+`run.py` 只负责当前仓库版本兼容，再复用 `ingestor.py` 核心整理逻辑。这样 Operator Toolkit 从 v1 升到当前 v2-cn 后，不会把正常 Regression / Diagnostics 误报成“未知版本”。
 
 ## 自动检查
 
@@ -84,13 +94,27 @@ Toolkit 菜单 8 和双击 CMD 默认都会生成 ZIP。ZIP 包含：
 
 ## 命令行
 
+当前仓库推荐：
+
 ```bat
-python parallel\EVIDENCE_INGESTOR\ingestor.py
-python parallel\EVIDENCE_INGESTOR\ingestor.py --package
-python parallel\EVIDENCE_INGESTOR\ingestor.py --root D:\Some\WOF_RESULTS --package
+python parallel\EVIDENCE_INGESTOR\run.py
+python parallel\EVIDENCE_INGESTOR\run.py --package
+python parallel\EVIDENCE_INGESTOR\run.py --root D:\Some\WOF_RESULTS --package
 ```
 
-也支持 `WOF_RESULTS_DIR` 环境变量，Operator Toolkit 与独立入口因此使用同一个结果根目录。
+核心实现仍位于 `ingestor.py`。也支持 `WOF_RESULTS_DIR` 环境变量，Operator Toolkit 与独立入口因此使用同一个结果根目录。
+
+## 离线回归
+
+```bat
+python -m unittest discover -s parallel\EVIDENCE_INGESTOR\tests -p test_*.py -v
+```
+
+基础实现已有 13 项 fixture 回归 PASS；当前仓库另外增加 3 项兼容回归，覆盖：
+
+- Toolkit v2-cn Regression 不被误报未知版本；
+- Toolkit v2-cn Diagnostics 不被误报未知版本；
+- 一键 CMD 确认走 `run.py` 当前兼容入口。
 
 ## 最小 Windows proof
 
