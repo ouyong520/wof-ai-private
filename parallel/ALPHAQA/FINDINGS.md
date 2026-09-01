@@ -215,6 +215,48 @@ Requirements:
 
 ---
 
+## ALPHAQA-006 — P1 — legacy research WOFHUD is hidden, not disposed, before Alpha HUD takeover
+
+**Status:** OPEN
+
+**Affected:**
+
+- `product/alpha/wof_alpha_hud.js`
+- legacy `wof_canvas_hud.js` coexistence / reload path
+- R7 research-runtime isolation and R8 interference/reload safety
+
+### Reproduction
+
+The Alpha HUD currently does:
+
+```js
+try{window.WOFHUD?.hide?.();}catch(_){}
+```
+
+but does not call the legacy research HUD's teardown. The current project `wof_canvas_hud.js` installs a capture-phase keyboard listener for F6/F8/F9 and a BroadcastChannel, and its `dispose()` is what removes that listener, closes the channel, and releases its owned GL resources.
+
+Deterministic browser sequence:
+
+1. Load the current research `wof_canvas_hud.js` in the top page.
+2. Confirm `window.WOFHUD` exists.
+3. Load the Alpha RC1 top-page loader.
+4. Alpha hides the research HUD but leaves `window.WOFHUD` alive.
+5. Press F6/F8/F9. The hidden research HUD listener still runs and calls `preventDefault()` / changes its hidden state; its BroadcastChannel and owned resources also remain resident.
+
+The Alpha WebGL callback takeover prevents the hidden research HUD from drawing, but it does not remove the old event listener or other research-runtime resources.
+
+### Impact
+
+A user/owner who previously used the project's research HUD in the same page does not get a clean release-runtime boundary. Research code remains live during Alpha and can intercept keyboard events or retain unnecessary runtime resources. This is exactly the R7/R8 class the Alpha isolation/reload gate is meant to eliminate.
+
+### Minimal required fix
+
+Before Alpha takes over the HUD bridge, fully tear down a recognized legacy project `WOFHUD` via its safe `dispose()`/equivalent release path rather than only hiding it. Preserve the persistent native WebGL bridge, but remove the legacy HUD's keyboard listener, BroadcastChannel consumer, and Alpha-unowned overlay resources.
+
+Add a regression/browser fixture that starts with a mock/real legacy `WOFHUD`, installs Alpha, and proves the legacy HUD teardown ran and no legacy key handler remains active.
+
+---
+
 ## Non-blocking / pending real-Browser checks
 
 These are not currently recorded as code defects, but still require real-Browser acceptance after the blockers above are fixed:
