@@ -1,0 +1,8 @@
+{
+  "stageId": "UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_HEARTBEAT_FIX_V1",
+  "status": "ACTIVE",
+  "claimedBy": "ChatGPT",
+  "scope": "parallel/LIVE_PROOF_BUNDLE/**",
+  "note": "Fresh Recorder authority heartbeat fix per UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_HEARTBEAT_FIX_START_PROMPT.md",
+  "startCommit": "b565af5d490182fb155c7fcc4ad47a2dc3445ce5"
+}
