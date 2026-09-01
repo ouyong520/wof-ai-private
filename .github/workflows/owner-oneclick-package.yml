@@ -44,7 +44,7 @@ jobs:
           New-Item -ItemType Directory -Path $env:LOCALAPPDATA -Force | Out-Null
           $entryName = 'WOF_' + [char]0x4E00 + [char]0x952E + [char]0x5DE5 + [char]0x5177 + '.cmd'
           $entry = Join-Path (Get-Location) $entryName
-          $cmdLine = 'call "' + $entry + '" -UpdateOnly'
+          $cmdLine = 'call "' + $entry + '" --update-only'
           cmd.exe /d /c $cmdLine
           if ($LASTEXITCODE -ne 0) { throw ('fresh install failed: ' + $LASTEXITCODE) }
 
@@ -95,23 +95,30 @@ jobs:
 
           if (Get-ChildItem -LiteralPath (Join-Path $root 'releases') -Directory -Filter '*.staging-*') { throw 'staging directory remained after successful fresh install' }
 
-      - name: Smoke-start installed Chinese Windows proof
+      - name: Smoke-start installed Chinese Windows proof execution path
         shell: powershell
         run: |
           $cn = [string]([char]0x4E2D) + [char]0x6587
           $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Fresh Path\Local App Data')
           $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
           $release = Join-Path $root 'releases\2026.09.01.5'
-          $proofCmd = Join-Path $release 'parallel\PYLAUNCH\RUN_WINDOWS_PROOF.cmd'
-          $cmdLine = 'chcp 65001 >nul & call "' + $proofCmd + '"'
-          cmd.exe /d /c $cmdLine
-          if ($LASTEXITCODE -ne 0) { throw ('Chinese Windows proof did not start: ' + $LASTEXITCODE) }
-          $status = Join-Path $release 'parallel\PYLAUNCH\WINDOWS_PROOF_STATUS.json'
+          $pyDir = Join-Path $release 'parallel\PYLAUNCH'
+          $launcher = Join-Path $pyDir 'launcher.py'
+          $venvPython = Join-Path $root 'venv\Scripts\python.exe'
+          $status = Join-Path $pyDir 'WINDOWS_PROOF_STATUS.json'
+          if (-not (Test-Path -LiteralPath $venvPython)) { throw 'packaged Python venv missing' }
+          Remove-Item -LiteralPath $status -Force -ErrorAction SilentlyContinue
+          Push-Location $pyDir
+          try {
+            & $venvPython $launcher --no-tray --once --attach-only --proof-json $status
+            if ($LASTEXITCODE -ne 0) { throw ('installed proof execution failed: ' + $LASTEXITCODE) }
+          } finally {
+            Pop-Location
+          }
           if (-not (Test-Path -LiteralPath $status)) { throw 'WINDOWS_PROOF_STATUS.json was not created' }
           $proof = Get-Content -LiteralPath $status -Raw -Encoding UTF8 | ConvertFrom-Json
           if ($proof.readOnly -ne $true -or [int]$proof.ramWrites -ne 0 -or $proof.inputInjection -ne $false) { throw 'proof safety flags changed' }
           if (-not $proof.ownerSummaryZh -or -not $proof.checksZh) { throw 'Chinese proof summary/checks missing' }
-          Get-Process pythonw -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 
       - name: Update from previous package and preserve last-known-good
         shell: powershell
@@ -127,7 +134,7 @@ jobs:
 
           $entryName = 'WOF_' + [char]0x4E00 + [char]0x952E + [char]0x5DE5 + [char]0x5177 + '.cmd'
           $entry = Join-Path (Get-Location) $entryName
-          $cmdLine = 'call "' + $entry + '" -UpdateOnly'
+          $cmdLine = 'call "' + $entry + '" --update-only'
           cmd.exe /d /c $cmdLine
           if ($LASTEXITCODE -ne 0) { throw ('update from previous package failed: ' + $LASTEXITCODE) }
 
@@ -147,7 +154,7 @@ jobs:
           $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Upgrade Path\Local App Data')
           $entryName = 'WOF_' + [char]0x4E00 + [char]0x952E + [char]0x5DE5 + [char]0x5177 + '.cmd'
           $entry = Join-Path (Get-Location) $entryName
-          $cmdLine = 'call "' + $entry + '" -UpdateOnly'
+          $cmdLine = 'call "' + $entry + '" --update-only'
           cmd.exe /d /c $cmdLine
           if ($LASTEXITCODE -ne 0) { throw ('second updater run failed: ' + $LASTEXITCODE) }
           $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
