@@ -1,6 +1,8 @@
 @echo off
 setlocal EnableExtensions
 chcp 65001 >nul 2>&1
+set "PYTHONUTF8=1"
+set "PYTHONIOENCODING=utf-8"
 title WOF 中文工具箱
 
 for %%I in ("%~dp0.") do set "ROOT=%%~fI"
@@ -28,6 +30,7 @@ if defined LOCALAPPDATA (
 )
 set "VENV_PY=%VENV%\Scripts\python.exe"
 set "PYBOOT="
+set "PIPLOG=%TEMP%\WOF_TOOLKIT_PIP.log"
 
 if exist "%VENV_PY%" goto :deps
 where py >nul 2>&1
@@ -45,25 +48,26 @@ pause
 exit /b 1
 
 :mkvenv
-echo 正在准备 WOF Python 环境...
+echo 正在准备 WOF Python 环境……
 %PYBOOT% -m venv "%VENV%"
 if errorlevel 1 goto :venv_fail
 
 :deps
-"%VENV_PY%" -m pip install --disable-pip-version-check -q -r "%ROOT%\parallel\PYLAUNCH\requirements.txt"
+echo 正在检查/更新 WOF Python 依赖……
+"%VENV_PY%" -m pip install --disable-pip-version-check -q -r "%ROOT%\parallel\PYLAUNCH\requirements.txt" >"%PIPLOG%" 2>&1
 if errorlevel 1 goto :deps_fail
 if exist "%ROOT%\parallel\WOF052L_RECORDER\requirements.txt" (
-  "%VENV_PY%" -m pip install --disable-pip-version-check -q -r "%ROOT%\parallel\WOF052L_RECORDER\requirements.txt"
+  "%VENV_PY%" -m pip install --disable-pip-version-check -q -r "%ROOT%\parallel\WOF052L_RECORDER\requirements.txt" >>"%PIPLOG%" 2>&1
   if errorlevel 1 goto :deps_fail
 )
 
 cd /d "%ROOT%"
-"%VENV_PY%" "%ROOT%\parallel\OPTOOLKIT\toolkit.py" --root "%ROOT%"
+"%VENV_PY%" "%ROOT%\parallel\OPTOOLKIT\owner_zh_cn.py" --root "%ROOT%"
 set "RC=%ERRORLEVEL%"
 if not "%RC%"=="0" (
   echo.
   echo WOF 工具箱已退出，错误代码：%RC%
-  echo 游戏本身没有受到影响。
+  echo 游戏本身没有受到影响，也没有进行游戏内存写入或输入注入。
   pause
 )
 exit /b %RC%
@@ -86,5 +90,6 @@ exit /b 3
 echo.
 echo Python 依赖准备失败，请检查网络后重新双击 WOF_一键工具.cmd。
 echo 旧版本工具和游戏本身没有受到影响。
+echo 技术详情已保存：%PIPLOG%
 pause
 exit /b 4
