@@ -1,54 +1,65 @@
-# WOF Alpha RC3 — Owner Browser Acceptance Steps
+# WOF Alpha Browser Acceptance V2 — 用户操作
 
-## Do not start yet unless QA gate is open
+## 现在不要运行
 
-Run this only after fresh independent RC3 QA says exactly:
+当前状态：
 
-`PASS — READY FOR ONE REAL BROWSER ACCEPTANCE`
+**验收准备已完成，正在等待 Safe Transport Integration。**
 
-At the time this support package was prepared, QA was still blocked by P1 `ALPHAQA-RC3-001`; therefore there is currently **no owner Browser action to perform**.
+只有当集成阶段明确写出：
 
-## One-time setup
+`INTEGRATION IMPLEMENTED — READY FOR BOUNDED REAL BROWSER ACCEPTANCE`
 
-Have both userscripts enabled for the real Browser WOF page:
+才执行下面的一次真人验收。
 
-1. normal product userscript: `product/alpha/wof_alpha_bootstrap.user.js`;
-2. support-only helper: `parallel/ALPHAACCEPT/wof_alpha_acceptance.user.js`.
+## 未来最终操作
 
-No Worker Console script paste is part of this flow.
+集成完成后，用户只需要：
 
-## Final acceptance operation after QA PASS
+1. 用中文 Launcher / Toolkit 启动 WOF。
+2. 正常进入一个房间，确认游戏现在可以正常移动、攻击、继续游玩。
+3. 点击一次：
+   **“当前房间可以正常操作，开始验收”**
+4. 之后不要打开 DevTools，也不要切 Worker Console，不要粘贴 JS。工具会自动完成 current pair、identity、stale/diag、rebind、旧 generation/nonce 拒绝和安全状态检查。
+5. 最后只保留工具生成的一个 JSON。
 
-1. Open/refresh the real WOF game page normally and let the game reach its ordinary running screen.
-2. In the small **WOF Alpha RC3 Acceptance** panel, click **Run RC3 Browser Acceptance** once.
-3. Allow the one auxiliary same-origin game tab/window if the browser asks about a popup. Do not play or manipulate DevTools during the short run.
-4. The helper automatically checks the primary page, opens the auxiliary page, verifies independent pairing, reloads the auxiliary page once, verifies the new pairing, closes it, and writes one final JSON result into the primary-page panel.
+不需要为了验收故意寻找稀有攻击。已经批准的 T18 条件如果自然出现，工具会自动记录；没有出现时不会因此判定基础设施失败。
 
-You do **not** need to inspect Console values or provoke a specific enemy attack.
+## 最终 JSON 结果
 
-## What to return to PM
+可能出现：
 
-Return only the final JSON shown by the helper (or its `result` plus JSON if copying the whole object is inconvenient).
+- `PASS — REAL BROWSER ACCEPTANCE V2`
+- `FAIL — REAL BROWSER ACCEPTANCE V2`
+- `INCOMPLETE — REAL BROWSER ACCEPTANCE V2`
+- `BLOCKED — TRANSPORT INTEGRATION NOT READY`
 
-Valid top-level results are:
+如果是 `PASS`，把这个 JSON 交给 QA/PM。PASS 只是 Browser 验收证据，不等于自动发布 Alpha。
 
-- `PASS — REAL BROWSER ACCEPTANCE`
-- `FAIL — REAL BROWSER ACCEPTANCE`
-- `INCOMPLETE — REAL BROWSER ACCEPTANCE`
+如果是 `FAIL`，不要反复重试直到碰巧通过。保留第一次有效失败 JSON，交给 QA/PM。
 
-A PASS means the bounded real-Browser acceptance passed. It does not itself declare Alpha released.
+如果是 `INCOMPLETE`，只处理 JSON 明确指出的环境问题后再跑一次。
 
-## If the helper says INCOMPLETE
+如果是 `BLOCKED`，说明 transport 或离线 gate 还没准备好，不需要用户做额外技术操作。
 
-The JSON will contain a short `failures` array. Typical environmental causes are:
+## 用户不需要做的事情
 
-- popup blocked;
-- helper/product userscript not enabled at document-start;
-- auxiliary page could not load the real game Worker;
-- run started on a page that is not the actual game page.
+- 不开 DevTools；
+- 不选 Worker Console；
+- 不粘贴 JavaScript；
+- 不检查 RAM；
+- 不复制长命令；
+- 不手工比较大量 Console 字段；
+- 不制造攻击研究样本。
 
-Resolve only the named environmental cause and repeat once. Do not switch to the old manual two-console workflow.
+## 安全说明
 
-## If the helper says FAIL
+验收工具本身不写游戏 RAM，不注入键盘/鼠标/手柄输入，不替换 `window.Worker`，不修改游戏速度。
 
-Do not keep retrying until it passes. Preserve the JSON and return it to PM/QA as the Browser evidence for a new product/debug decision.
+最终 JSON 必须保持：
+
+```text
+readOnly=true
+ramWrites=0
+inputInjection=false
+```
