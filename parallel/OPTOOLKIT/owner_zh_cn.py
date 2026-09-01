@@ -155,7 +155,7 @@ class ChineseToolkit(toolkit.Toolkit):
 
     def package(self):
         print("\n[自动整理并打包结果]")
-        entry = self.root / "parallel/EVIDENCE_INGESTOR/ingestor.py"
+        entry = self.root / "parallel/EVIDENCE_INGESTOR/run.py"
         if not entry.is_file():
             print("没有找到自动结果整理器。请先选择 1“更新项目”。")
             return
