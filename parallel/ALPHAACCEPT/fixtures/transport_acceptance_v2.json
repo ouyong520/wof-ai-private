@@ -1,0 +1,195 @@
+{
+  "schema": "wof-alpha-browser-acceptance-fixtures-v2",
+  "transportVersion": "wof-alpha-safe-transport-v1",
+  "productSchema": "wof-alpha-v2",
+  "release": "wof-alpha-rc3",
+  "supportedBuild": "wof / Warriors of Fate (World 921031)",
+  "goldenSha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
+  "identitySignature": "wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8",
+  "staleBoundaryMs": 1500,
+  "allowedRuleIds": [
+    "T18_5440_CYCLE_BODY7512_TM4_LEVEL_90",
+    "T18_5424_CYCLE_BODY7520_TM4_LEVEL_90"
+  ],
+  "pairs": {
+    "initial": {
+      "session": "0123456789abcdef0123456789abcdef",
+      "pairGeneration": 7,
+      "pairNonce": "11111111111111111111111111111111"
+    },
+    "rebound": {
+      "session": "0123456789abcdef0123456789abcdef",
+      "pairGeneration": 8,
+      "pairNonce": "22222222222222222222222222222222"
+    }
+  },
+  "vectors": [
+    {
+      "id": "first-current-pair-empty-state",
+      "kind": "state",
+      "message": {
+        "schema": "wof-alpha-v2",
+        "kind": "state",
+        "release": "wof-alpha-rc3",
+        "transportVersion": "wof-alpha-safe-transport-v1",
+        "session": "0123456789abcdef0123456789abcdef",
+        "pairGeneration": 7,
+        "pairNonce": "11111111111111111111111111111111",
+        "seq": 1,
+        "identitySignature": "wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8",
+        "readOnly": true,
+        "ramWrites": 0,
+        "inputInjection": false,
+        "warnings": []
+      },
+      "expect": {"currentPair": true, "authoritative": true, "hudMayPair": true}
+    },
+    {
+      "id": "current-pair-approved-warning",
+      "kind": "state",
+      "message": {
+        "schema": "wof-alpha-v2",
+        "kind": "state",
+        "release": "wof-alpha-rc3",
+        "transportVersion": "wof-alpha-safe-transport-v1",
+        "session": "0123456789abcdef0123456789abcdef",
+        "pairGeneration": 7,
+        "pairNonce": "11111111111111111111111111111111",
+        "seq": 2,
+        "identitySignature": "wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8",
+        "readOnly": true,
+        "ramWrites": 0,
+        "inputInjection": false,
+        "warnings": [{
+          "ruleId": "T18_5440_CYCLE_BODY7512_TM4_LEVEL_90",
+          "publication": "hold-only-current-level",
+          "evidence": "fresh-current-sample",
+          "target": "P1",
+          "target7E": 0,
+          "sourceSide": "LEFT",
+          "threatSide": "RIGHT",
+          "slot": 0,
+          "type": 18
+        }]
+      },
+      "expect": {"currentPair": true, "authoritative": true, "warningValid": true}
+    },
+    {
+      "id": "old-generation-state-rejected",
+      "kind": "state",
+      "evaluateAgainstPair": "rebound",
+      "message": {
+        "schema": "wof-alpha-v2",
+        "kind": "state",
+        "release": "wof-alpha-rc3",
+        "transportVersion": "wof-alpha-safe-transport-v1",
+        "session": "0123456789abcdef0123456789abcdef",
+        "pairGeneration": 7,
+        "pairNonce": "11111111111111111111111111111111",
+        "seq": 999,
+        "identitySignature": "wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8",
+        "readOnly": true,
+        "ramWrites": 0,
+        "inputInjection": false,
+        "warnings": []
+      },
+      "expect": {"currentPair": false, "authoritative": false, "mustNotClearOrCreate": true}
+    },
+    {
+      "id": "old-generation-diag-rejected",
+      "kind": "diag",
+      "evaluateAgainstPair": "rebound",
+      "message": {
+        "schema": "wof-alpha-v2",
+        "kind": "diag",
+        "release": "wof-alpha-rc3",
+        "transportVersion": "wof-alpha-safe-transport-v1",
+        "session": "0123456789abcdef0123456789abcdef",
+        "pairGeneration": 7,
+        "pairNonce": "11111111111111111111111111111111",
+        "status": "DISABLED",
+        "code": "acceptance-old-pair-probe",
+        "reason": "support-only old-pair rejection fixture",
+        "readOnly": true,
+        "ramWrites": 0,
+        "inputInjection": false
+      },
+      "expect": {"currentPair": false, "authoritative": false, "mustNotClearOrCreate": true}
+    },
+    {
+      "id": "wrong-nonce-state-rejected",
+      "kind": "state",
+      "evaluateAgainstPair": "rebound",
+      "message": {
+        "schema": "wof-alpha-v2",
+        "kind": "state",
+        "release": "wof-alpha-rc3",
+        "transportVersion": "wof-alpha-safe-transport-v1",
+        "session": "0123456789abcdef0123456789abcdef",
+        "pairGeneration": 8,
+        "pairNonce": "33333333333333333333333333333333",
+        "seq": 1000,
+        "identitySignature": "wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8",
+        "readOnly": true,
+        "ramWrites": 0,
+        "inputInjection": false,
+        "warnings": []
+      },
+      "expect": {"currentPair": false, "authoritative": false, "mustNotClearOrCreate": true}
+    },
+    {
+      "id": "wrong-nonce-diag-rejected",
+      "kind": "diag",
+      "evaluateAgainstPair": "rebound",
+      "message": {
+        "schema": "wof-alpha-v2",
+        "kind": "diag",
+        "release": "wof-alpha-rc3",
+        "transportVersion": "wof-alpha-safe-transport-v1",
+        "session": "0123456789abcdef0123456789abcdef",
+        "pairGeneration": 8,
+        "pairNonce": "33333333333333333333333333333333",
+        "status": "DISABLED",
+        "code": "acceptance-wrong-nonce-probe",
+        "reason": "support-only wrong-nonce rejection fixture",
+        "readOnly": true,
+        "ramWrites": 0,
+        "inputInjection": false
+      },
+      "expect": {"currentPair": false, "authoritative": false, "mustNotClearOrCreate": true}
+    },
+    {
+      "id": "current-pair-diag-immediate-clear",
+      "kind": "diag",
+      "evaluateAgainstPair": "rebound",
+      "message": {
+        "schema": "wof-alpha-v2",
+        "kind": "diag",
+        "release": "wof-alpha-rc3",
+        "transportVersion": "wof-alpha-safe-transport-v1",
+        "session": "0123456789abcdef0123456789abcdef",
+        "pairGeneration": 8,
+        "pairNonce": "22222222222222222222222222222222",
+        "status": "DISABLED",
+        "code": "acceptance-current-diag-probe",
+        "reason": "support-only current-pair diagnostic fixture",
+        "readOnly": true,
+        "ramWrites": 0,
+        "inputInjection": false
+      },
+      "expect": {"currentPair": true, "authoritative": true, "immediateClear": true, "mustNotWaitForStaleMs": 1500}
+    }
+  ],
+  "timingVectors": [
+    {"id": "fresh-at-1500", "ageMs": 1500, "expectFresh": true},
+    {"id": "silent-at-1501", "ageMs": 1501, "expectFresh": false}
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false,
+    "gameRamWriteFixture": false,
+    "gameplayInputFixture": false
+  }
+}
