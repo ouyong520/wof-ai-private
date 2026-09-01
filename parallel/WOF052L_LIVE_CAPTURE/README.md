@@ -11,7 +11,7 @@
 流程：
 
 1. 自动准备 Python 环境；
-2. 自动做 Recorder discovery-v2 硬预检；
+2. 自动安装并硬预检 Recorder Discovery V2；
 3. 第一次选择 JSON 保存目录，以后自动记住；
 4. 输入 `1 / 5 / 10`，默认 `10`；
 5. 自动启动互相隔离的 Browser Fleet；
@@ -27,17 +27,18 @@
 
 长采集入口不会因为 Browser Fleet 能打开 10 个窗口就宣布可采。
 
-启动前必须确认当前 `parallel/WOF052L_RECORDER/recorder.py` 已具备：
+入口会先加载 `parallel/WOF052L_RECORDER/discovery_v2_sync.py`，对 Recorder runtime 执行 `install(recorder)`，然后确认：
 
 - exact World 921031 SHA-256 gate；
-- `Target.setAutoAttach`；
-- related target / iframe -> Worker discovery-v2；
-- 只读 CDP allowlist；
+- `Target.setAutoAttach` 已进入只读 CDP allowlist；
+- page / related target / iframe -> Worker Discovery V2 已安装；
 - 无 `Input.*`；
 - 无 `Runtime.callFunctionOn`；
 - 无 `Page.addScriptToEvaluateOnNewDocument`。
 
-如果 Recorder 仍是旧的顶层 `Target.getTargets -> type=worker + gstyphoon URL` 路径，入口会在启动任何长采之前退出，并明确显示 discovery-v2 blocker。
+Recorder 默认 Windows 入口也已通过 `owner_v2_zh_cn.py` 安装同一 Discovery V2；本长采集入口仍显式安装一次，避免未来入口路由变化导致长采集退回旧 Worker 发现逻辑。
+
+如果 Discovery V2 缺失或安全门槛异常，入口会在启动任何长采之前退出并显示精确 blocker，避免用户白跑长采。
 
 ## 多房间隔离
 
@@ -47,9 +48,11 @@
 - 每个实例独立 localhost CDP port；
 - 每个 endpoint 独立 RecorderManager；
 - 一个 endpoint 掉线不影响其他 endpoint；
-- Worker reload/replacement 只重置该房间；
+- Worker reload/replacement 或 Worker CDP error 只完成该房间，其他房间继续；
 - 新 Worker/房间可以在运行中加入；
 - per-room / checkpoint / child merged / fleet merged 自动保存。
+
+Browser Fleet 自己的 Worker 状态仅是 cheap indicator；是否真正进入采集以 Recorder 的 WASM / heap / exact World 921031 准入为准。
 
 ## 自动分析
 
