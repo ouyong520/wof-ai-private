@@ -1,0 +1,116 @@
+{
+  "version": "wof-sweepatlas-v1",
+  "updated": "2026-09-01",
+  "namespace": "WinKawaks-local-discovery-only",
+  "productionPromotion": false,
+  "browserOffsetEquivalenceAssumed": false,
+  "stageSceneWaveLabelsAvailable": false,
+  "coverage": {
+    "efieldRuns": 7,
+    "frames": 23400,
+    "enemySlotSamples": 468000,
+    "typePresentSamples": 60271,
+    "distinctNonzeroTypes": 31,
+    "typeEpisodes": 1604,
+    "typeEnterTransitions": 74,
+    "typeExitTransitions": 74,
+    "knownPlayerTargetTransitions": 8,
+    "attackAssociatedEpisodes": 271
+  },
+  "typeAnchor": {
+    "offset": "0x24",
+    "width": "U8",
+    "episodeDefinition": "contiguous same nonzero 0x24 value in one physical enemy slot"
+  },
+  "typePopulation": [
+    {"type":"T1","valueHex":"0x01","samples":173},
+    {"type":"T2","valueHex":"0x02","samples":408},
+    {"type":"T3","valueHex":"0x03","samples":160},
+    {"type":"T4","valueHex":"0x04","samples":300},
+    {"type":"T5","valueHex":"0x05","samples":495},
+    {"type":"T6","valueHex":"0x06","samples":354},
+    {"type":"T7","valueHex":"0x07","samples":2670},
+    {"type":"T8","valueHex":"0x08","samples":7293},
+    {"type":"T9","valueHex":"0x09","samples":2894},
+    {"type":"T10","valueHex":"0x0A","samples":645},
+    {"type":"T11","valueHex":"0x0B","samples":1102},
+    {"type":"T12","valueHex":"0x0C","samples":469},
+    {"type":"T13","valueHex":"0x0D","samples":470},
+    {"type":"T14","valueHex":"0x0E","samples":411},
+    {"type":"T15","valueHex":"0x0F","samples":187},
+    {"type":"T16","valueHex":"0x10","samples":9210},
+    {"type":"T17","valueHex":"0x11","samples":2002},
+    {"type":"T18","valueHex":"0x12","samples":528},
+    {"type":"T19","valueHex":"0x13","samples":1013},
+    {"type":"T20","valueHex":"0x14","samples":686},
+    {"type":"T21","valueHex":"0x15","samples":2285},
+    {"type":"T22","valueHex":"0x16","samples":2309},
+    {"type":"T23","valueHex":"0x17","samples":2140},
+    {"type":"T24","valueHex":"0x18","samples":12866},
+    {"type":"T25","valueHex":"0x19","samples":6807},
+    {"type":"T26","valueHex":"0x1A","samples":1060},
+    {"type":"T27","valueHex":"0x1B","samples":591},
+    {"type":"T28","valueHex":"0x1C","samples":188},
+    {"type":"T29","valueHex":"0x1D","samples":272},
+    {"type":"T30","valueHex":"0x1E","samples":133},
+    {"type":"T31","valueHex":"0x1F","samples":150}
+  ],
+  "priorityQuestions": {
+    "T23": {"valueHex":"0x17","observed":true,"samples":2140,"stage":null,"scene":null,"wave":null,"locationVerdict":"OBSERVED_IN_UNLABELED_EFIELD_CORPUS"},
+    "T18": {"valueHex":"0x12","observed":true,"samples":528,"stage":null,"scene":null,"wave":null,"locationVerdict":"OBSERVED_IN_UNLABELED_EFIELD_CORPUS"},
+    "T16": {"valueHex":"0x10","observed":true,"samples":9210,"stage":null,"scene":null,"wave":null,"locationVerdict":"OBSERVED_IN_UNLABELED_EFIELD_CORPUS","specificEvents":[
+      {"capture":"EFIELD-003-passive-retarget-60s60","frame":1827,"slot":17,"event":"target P3 -> P2","typeBefore":"T16","typeAfter":"T16"},
+      {"capture":"EFIELD-004-passive-lifecycle-retarget-60s60","frame":2961,"slot":17,"event":"replacement/retarget P3 -> P1","typeBefore":"T7","typeAfter":"T16"}
+    ]},
+    "T20": {"valueHex":"0x14","observed":true,"samples":686,"stage":null,"scene":null,"wave":null,"locationVerdict":"OBSERVED_IN_UNLABELED_EFIELD_CORPUS"}
+  },
+  "targetEvents": [
+    {"capture":"EFIELD-002-natural-diversity-60s60","frame":2167,"slot":19,"from":"P3","to":"P1","typeBefore":"T22","typeAfter":"T22"},
+    {"capture":"EFIELD-002-natural-diversity-60s60","frame":3155,"slot":17,"from":"P1","to":"P3","typeBefore":"T24","typeAfter":"T24"},
+    {"capture":"EFIELD-002-natural-diversity-60s60","frame":3416,"slot":18,"from":"P1","to":"P3","typeBefore":"T25","typeAfter":"T25"},
+    {"capture":"EFIELD-003-passive-retarget-60s60","frame":492,"slot":17,"from":"P1","to":"P3","typeBefore":"T11","typeAfter":"T11"},
+    {"capture":"EFIELD-003-passive-retarget-60s60","frame":1827,"slot":17,"from":"P3","to":"P2","typeBefore":"T16","typeAfter":"T16"},
+    {"capture":"EFIELD-003-passive-retarget-60s60","frame":3322,"slot":19,"from":"P3","to":"P1","typeBefore":"T9","typeAfter":"T9"},
+    {"capture":"EFIELD-004-passive-lifecycle-retarget-60s60","frame":2961,"slot":17,"from":"P3","to":"P1","typeBefore":"T7","typeAfter":"T16"},
+    {"capture":"EFIELD-004-passive-lifecycle-retarget-60s60","frame":2961,"slot":18,"from":"P2","to":"P1","typeBefore":"T27","typeAfter":"T9"}
+  ],
+  "attackAssociatedAtlas": {
+    "warning": "structural executor phases only; not exact move IDs and not Browser ACTIVE",
+    "episodeAnchor": "contiguous 0x73 != 0 while 0x24 != 0",
+    "episodes": 271,
+    "medianDwellFrames": 31,
+    "meanDwellFrames": 58.934,
+    "maxDwellFrames": 345,
+    "fields": [
+      {"offset":"0x73","role":"coarse attack-associated executor family","values":["0x00","0x0A","0x0B","0x1B","0x1E"]},
+      {"offset":"0x6C","role":"fine executor subphase feeding 0x73","values":["0x00","0x40","0x48","0x50","0x58","0x70","0x78","0x90","0xE0"]},
+      {"offset":"0x77","role":"second attack-associated phase family","values":["0x00","0x0A","0x0B","0x0C","0x14"]},
+      {"offset":"0x70","role":"upstream phase paired with 0x77","values":["0x00","0x10","0x28","0x58","0x70","0x78","0x80","0xA0","0xD8","0xF8"]}
+    ],
+    "topJointStates_6C_70_72_73_77": [
+      {"state":"E0,A0,D8,0A,0C","frames":10640},
+      {"state":"40,00,E8,1B,00","frames":2660},
+      {"state":"E0,00,38,0A,00","frames":1242},
+      {"state":"00,00,00,00,00","frames":1086},
+      {"state":"00,80,00,00,0B","frames":1032},
+      {"state":"00,D8,00,00,14","frames":990}
+    ]
+  },
+  "stageSceneWaveIndex": [],
+  "reverseSceneIndex": {},
+  "bossMapping": {
+    "status": "UNRESOLVED_NO_HUMAN_BOSS_LABELS_IN_RETAINED_CORPUS",
+    "mappings": []
+  },
+  "sceneSpecificAttacks": {
+    "status": "UNRESOLVED_NO_AUTHORITATIVE_SCENE_LABELS",
+    "items": []
+  },
+  "limitations": [
+    "No BASECAP-SWEEP-* task/result/raw series is present in the current GitHub repositories.",
+    "Natural EFIELD tasks do not carry stage/scene/wave labels.",
+    "Visible enemy composition cannot be reconstructed as human on-screen names from unlabeled raw alone.",
+    "The gzip bodies were not directly reparsed in this connector session; raw-derived counters are consumed from retained bridge analyses after identity-chain validation.",
+    "No WinKawaks numeric offset is promoted to Browser/WASM production truth."
+  ]
+}
