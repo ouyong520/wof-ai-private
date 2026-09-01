@@ -88,7 +88,8 @@ function stableWarningsHash(warnings){
 
 async function install(scope,binding){
   if(!validBinding(binding))throw new Error('正式传输绑定无效');
-  try{scope.__WOF_ALPHA_REAL_TRANSPORT?.stop?.('reinstall');}catch(_){}
+  const previous=scope.__WOF_ALPHA_REAL_TRANSPORT;
+  if(previous&&typeof previous.stop==='function'&&previous.stop('reinstall')!==true)throw new Error('旧 observer 未安全停止');
   const gate=createTickAuthorityGate(binding);
   const core=await ensureCore(scope);
   const mod=await findModule(scope);
@@ -149,12 +150,12 @@ async function install(scope,binding){
   timer=setInterval(beginTick,10);
   beginTick();
   const runtime={
-    version:TRANSPORT,release:RELEASE,running:true,identity,...SAFETY,
+    version:TRANSPORT,release:RELEASE,running:true,identitySignature:IDENTITY_SIGNATURE,identity,...SAFETY,
     stop(){
       if(!running&&gate.status().active===false)return true;
       running=false;runtime.running=false;try{clearInterval(timer);}catch(_){};gate.revoke();try{engine.reset();}catch(_){};try{bc.close();}catch(_){};return true;
     },
-    status(){return{version:TRANSPORT,release:RELEASE,running:running&&gate.status().active,identity,...SAFETY,polls,lastError,...gate.status()};}
+    status(){return{version:TRANSPORT,release:RELEASE,running:running&&gate.status().active,identitySignature:IDENTITY_SIGNATURE,identity,...SAFETY,polls,lastError,...gate.status()};}
   };
   scope.__WOF_ALPHA_REAL_TRANSPORT=runtime;
   return runtime.status();
