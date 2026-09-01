@@ -12,7 +12,7 @@ The harness executes the current repository regression adapters/public Discovery
 
 - Browser Fleet;
 - PYLAUNCH;
-- WOF-052L Recorder hardened V2 owner path;
+- WOF-052L Recorder hardened public Chinese owner path;
 - Prospective Validator hardened V2 path.
 
 It normalizes the outcome into a per-scenario matrix with exactly three states:
@@ -48,6 +48,11 @@ It normalizes the outcome into a per-scenario matrix with exactly three states:
 19. one-room failure isolation;
 20. advisory Fleet vs authoritative role difference.
 
+`run_current_head.py` layers current public-entrypoint and independent adversarial QA gates on top of that matrix. In particular:
+
+- Recorder is not allowed to pass merely because internal helpers pass: the public `RUN_WOF052L_RECORDER.cmd -> owner_zh_cn.py` route must install both `discovery_v2_sync` and `hardening_v2`;
+- the current independent PYLAUNCH `parentFrameId` adversarial fixture is executed and attached to the direct-worker-fallback matrix cell, so a newly discovered regression cannot be hidden by an older green suite.
+
 ## Safety invariants
 
 Every run also checks the component regression safety surfaces and a narrow production-source mutation scan for:
@@ -67,7 +72,13 @@ Observing an already-existing `blob:` / `data:` Worker is allowed. Creating/repl
 
 ## Run
 
-From repository root:
+Canonical current-HEAD command from repository root:
+
+```text
+python parallel/DISCOVERY_V2_CONFORMANCE/run_current_head.py
+```
+
+The lower-level static matrix runner remains available as:
 
 ```text
 python parallel/DISCOVERY_V2_CONFORMANCE/run_conformance.py
@@ -78,7 +89,9 @@ Outputs:
 - `parallel/DISCOVERY_V2_CONFORMANCE/RESULT.json` — machine-readable current-HEAD result;
 - `parallel/DISCOVERY_V2_CONFORMANCE/SUMMARY_ZH_CN.md` — Simplified Chinese summary.
 
-The runner fingerprints current component source files, records the git HEAD, caches no live Browser state, and returns non-zero when a required fixture probe or safety invariant fails.
+The runner fingerprints current component source files, records the git HEAD, caches no live Browser state, and returns non-zero when a required fixture probe, public entrypoint gate, or safety invariant fails.
+
+A non-zero exit means **current component conformance drift exists**; it does not mean the harness itself failed to become usable. `RESULT.json` keeps `harnessReady` and `conformanceReady` separate so a real FAIL is never rewritten as PASS just to satisfy the harness-stage stop condition.
 
 Harness declaration self-test:
 
@@ -91,7 +104,7 @@ python test_harness.py
 
 - Browser Fleet: advisory `cheap-indicator-only`; exact World 921031 identity is deliberately `NOT_CHECKED` / non-authoritative.
 - PYLAUNCH: authoritative single-selection proof; more than one exact supported pair fails closed.
-- Recorder: evidence admission may keep independent rooms, but the same exact Worker associated with multiple pages must admit none of those relations.
+- Recorder: evidence admission may keep independent rooms, but the same exact Worker associated with multiple pages must admit none of those relations; its public owner path must actually install the hardened adapter.
 - Prospective Validator: same cross-page fail-closed relation rule; discovery diagnostics remain `discovery-only` and never become prospective evidence.
 
 No component implementation is modified by this harness lane.
