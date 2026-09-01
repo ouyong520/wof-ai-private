@@ -25,7 +25,6 @@ RECORDER_ADMISSION_MARKERS = (
 )
 FATAL_RECORDER_MARKERS = (
     "WOF-052L é‡‡é›†å™¨æ²¡æœ‰æ­£å¸¸å®Œæˆ",
-    "å·²å®‰å…¨æ‹’ç»é‡‡é›†",
 )
 REPOSITORY_READINESS = {
     "pylaunch": "FIX READY â€” one real Windows proof remains",
@@ -218,13 +217,10 @@ def build_status(
     live_pass = auto_ready and playability == "CONFIRMED"
     if live_pass:
         result = "PASS"
-        summary = "çœŸäººçŸ­éªŒè¯é€šè¿‡ï¼šå·²å…·å¤‡ 10 æˆ¿é—´é•¿é‡‡é›†æ¡ä»¶ã€‚ä¸ä¼šè‡ªåŠ¨å¼€å§‹é•¿é‡‡é›†ã€‚"
+        summary = "çœŸäººçŸ¬éªŒè¯é€šè¿‡ï¼šå·²å…·å¤… 10 æˆ¿é—´é•¿é‡‡é›æ¡ä»¶ã€‚ä¸ä¼šè‡ªåŠ¨å¼€å§‹é•¿é‡‡é›†ã€‚"
     elif blockers:
         result = "BLOCKED"
-        summary = "çœŸäººçŸ­éªŒè¯æœªå®Œæˆï¼›å·²ä¿ç•™æ‰€æœ‰å·²å–å¾—è¯æ®ã€‚è¯·åªè¿”å›è¿™ä¸ª JSON æˆ–çŠ¶æ€çª—å£æˆªå›¾ã€‚"
-    else:
-        result = "WAITING"
-        summary = "æ­£åœ¨ç­‰å¾… WOF é¡µé¢ / Worker / WASM / World 921031 / Recorder å‡†å…¥ã€‚æ¸¸æˆæœ¬èº«ä¸å—å½±å“ã€‚"
+        summary = "çœŸäººçŸ­éªŒè¯æœªå®Œæˆï¼›å·²ä¿ç•™æ‰€æœ‰å·²å–å¾—è¯æ®ã€‚è¯·åªè¿”å›è¿™ä¸ª JSON æˆ–çŠ¶æ€çª—å£æˆªå›¾ã€‚" ¢VÇ6S ¢&W7VÇBÒ%t•D”är ¢7VÖÖ'’Ò.jÚ>YÊzØ[èRtôbš^™Ú"òv÷&¶W"òt4Òòv÷&ÆB“#3ò&V6÷&FW"XxnXZ^8.k‹hˆşiÊÎ‹ª¾KˆŞXù~[ÛY8Ş8""
     return {
         "schema": SCHEMA,
         "runId": run_id,
@@ -266,7 +262,7 @@ def build_status(
         "ownerSummaryZh": summary,
         "ownerReturn": {
             "json": str(run_dir / "UNIFIED_LIVE_PROOF_STATUS.json"),
-            "alternative": "ä¸€å¼ åŒ…å«æœ€ç»ˆä¸­æ–‡çŠ¶æ€çš„æˆªå›¾",
+            "alternative": "ä¸€å¼ åŒ…å«æœ€ç»ˆä¸­æ–‡çŠ¶æ€çš„æˆªå›½",
         },
     }
 
@@ -350,6 +346,7 @@ def run_live(project_root: Path) -> int:
     playability = "NOT_READY"
     launcher_proc: subprocess.Popen[str] | None = None
     recorder_proc: subprocess.Popen[str] | None = None
+    terminal_payload: dict[str, Any] | None = None
 
     class UnifiedProofFleetManager(ChineseFleetManager):
         def _profile_for(self, instance_id: int) -> Path:
@@ -391,9 +388,9 @@ def run_live(project_root: Path) -> int:
     print()
     print("============================================================")
     print("  WOF ç»Ÿä¸€ Windows çœŸäººçŸ­éªŒè¯")
-    print("============================================================")
-    print("åªè¯»æ¨¡å¼ï¼šå¼€å¯ï½œæ¸¸æˆå†…å­˜å†™å…¥ï¼š0ï½œæ¸¸æˆè¾“å…¥æ³¨å…¥ï¼šæ— ")
-    print("ä¸éœ€è¦ DevToolsï¼Œä¸éœ€è¦ Worker Consoleï¼Œä¸éœ€è¦ç²˜è´´ JavaScriptã€‚")
+    print("===========================================================")
+    print("åªè¯»æ¨¡å¼ï¼šå¼€å¯è€‹æ¸¸æˆå†…å­˜å†™å…¥ï¼š0ï½œæ¸¸æˆè¾“å…¥æ³¨å…¥ï¼šæ— ")
+    print("ä¸éœ€è¦ DevToolsï¼Œä¸éœ€è¦ Worker Consoleï¼Œä¸éœ€è¦ç°˜è´´æ–’ JavaScriptã€‚")
     print()
     persist("STARTING")
 
@@ -404,7 +401,7 @@ def run_live(project_root: Path) -> int:
         persist("BROWSER_STARTED")
 
         launcher_cmd = [
-            sys.executable,
+            sys.executable, "-u",
             str(pylaunch_dir / "launcher.py"),
             "--fleet-instance", "1",
             "--fleet-manifest", str(manifest_path),
@@ -412,7 +409,7 @@ def run_live(project_root: Path) -> int:
             "--proof-json", str(pylaunch_proof_path),
         ]
         recorder_cmd = [
-            sys.executable,
+            sys.executable, "-u",
             str(recorder_dir / "owner_v2_zh_cn.py"),
             "--output-dir", str(recorder_output),
             "--fleet-manifest", str(manifest_path),
@@ -484,14 +481,14 @@ def run_live(project_root: Path) -> int:
                 playability = "CONFIRMED" if answer in {"y", "yes", "æ˜¯", "æ­£å¸¸"} else "FAILED"
                 if playability == "FAILED":
                     blockers.append("Owner ç¡®è®¤æ¸¸æˆå½“å‰ä¸èƒ½æ­£å¸¸è¿è¡Œã€‚")
-                payload = persist("COMPLETE" if playability == "CONFIRMED" else "BLOCKED")
+                terminal_payload = persist("COMPLETE" if playability == "CONFIRMED" else "BLOCKED")
                 break
 
             if blockers:
                 print()
                 print()
                 print("å‘ç°çœŸäººçŸ­éªŒè¯é˜»æ–­ï¼›å…¶ä»–å·²å–å¾—è¯æ®å·²ç»å†™å…¥æ€» JSONã€‚")
-                persist("BLOCKED")
+                terminal_payload = persist("BLOCKED")
                 break
             time.sleep(0.5)
 
@@ -499,13 +496,13 @@ def run_live(project_root: Path) -> int:
         print()
         print("å·²åœæ­¢çœŸäººçŸ­éªŒè¯ï¼›å½“å‰å·²å–å¾—è¯æ®ä¼šä¿ç•™ã€‚")
         blockers.append("Owner ä¸­æ­¢äº†æœ¬æ¬¡çœŸäººçŸ­éªŒè¯ã€‚")
-        persist("INTERRUPTED")
+        terminal_payload = persist("INTERRUPTED")
     except Exception as exc:
         print()
         print("ç»Ÿä¸€çœŸäººéªŒè¯æ²¡æœ‰æ­£å¸¸å®Œæˆï¼Œä½†æ¸¸æˆæ ¸å¿ƒæœªè¢«ä¿®æ”¹ã€‚")
         print(f"æŠ€æœ¯è¯¦æƒ…ï¼š{exc}")
         blockers.append(f"ç»Ÿä¸€å…¥å£å¼‚å¸¸ï¼š{exc}")
-        persist("BLOCKED")
+        terminal_payload = persist("BLOCKED")
     finally:
         stop_child(recorder_proc)
         stop_child(launcher_proc)
@@ -515,7 +512,14 @@ def run_live(project_root: Path) -> int:
         except Exception:
             pass
 
-    final = persist("COMPLETE" if playability == "CONFIRMED" and not blockers else "BLOCKED")
+    final = terminal_payload or persist("COMPLETE" if playability == "CONFIRMED" and not blockers else "BLOCKED")
+    # Cleanup closes the dedicated browser, so never recompute live evidence from the
+    # post-cleanup Fleet manifest. Re-write the terminal snapshot captured before cleanup.
+    atomic_write_json(status_path, final)
+    try:
+        shutil.copy2(status_path, stable_latest)
+    except OSError:
+        pass
     print()
     print("============================================================")
     if final["overallResult"] == "PASS":
@@ -529,31 +533,20 @@ def run_live(project_root: Path) -> int:
     print("ä½ æœ€ç»ˆåªéœ€è¦è¿”å›è¿™ä¸ª JSONï¼Œæˆ–è€…å‘ä¸€å¼ æœ€ç»ˆçŠ¶æ€æˆªå›¾ã€‚")
     try:
         if os.name == "nt":
-            os.startfile(run_dir)  # type: ignore[attr-defined]
-    except Exception:
-        pass
-    return 0 if final["overallResult"] == "PASS" else 2
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="WOF ç»Ÿä¸€ Windows çœŸäººçŸ­éªŒè¯")
-    parser.add_argument("--project-root", required=True)
-    return parser.parse_args()
-
-def main() -> int:
-    args = parse_args()
-    project_root = Path(args.project_root).expanduser().resolve()
-    required = [
-        project_root / "parallel" / "PYLAUNCH" / "launcher.py",
-        project_root / "parallel" / "BROWSER_FLEET" / "fleet_owner_zh_cn.py",
-        project_root / "parallel" / "WOF052L_RECORDER" / "owner_v2_zh_cn.py",
-    ]
-    missing = [str(path) for path in required if not path.is_file()]
-    if missing:
-        print("ç»Ÿä¸€çœŸäººéªŒè¯ç¼ºå°‘å¿…è¦å·¥å…·æ–‡ä»¶ã€‚")
-        for path in missing:
-            print(f"ç¼ºå¤±ï¼š{path}")
-        return 3
-    return run_live(project_root)
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+            os.startfile(run_diŠHÈ\NˆYÛ›Ü™VØ]‹YYš[™YBˆ^Ù\^Ù\[Û‚ˆ\ÜÂˆ™]\›ˆYˆš[˜[È›İ™\˜[™\İ[—HOH”TÔÈˆ[ÙH‚‚™Yˆ\œÙWØ\™ÜÊ
+HOˆ\™Ü\œÙK“˜[Y\ÜXÙN‚ˆ\œÙ\ˆH\™Ü\œÙK\™İ[Y[\œÙ\Š\ØÜš\[ÛH•ÓÑˆ9îçù. Ú[™İÜÈ9ç'ù.®¹çëzj£:+àHŠBˆ\œÙ\‹˜YØ\™İ[Y[
+‹K\›Ú™Xİ\›Ûİ‹™\]Z\™YUYJBˆ™]\›ˆ\œÙ\‹œ\œÙWØ\™ÜÊ
+B‚™YˆXZ[Š
+HOˆ[‚ˆ\™ÜÈH\œÙWØ\™ÜÊ
+Bˆ›Ú™XİÜ›ÛİH]
+\™ÜËœ›Ú™XİÜ›Ûİ
+K™^[™\Ù\Š
+Kœ™\ÛÛ™J
+Bˆ™\]Z\™YHÂˆ›Ú™XİÜ›ÛİÈœ\˜[[ˆÈ”SUSÒˆÈ›][˜Ú\‹œH‹ˆ›Ú™XİÜ›ÛİÈœ\˜[[ˆÈ”“ÕÔÑT—Ñ“QUˆÈ™›Y]ÛİÛ™\—ŞšØÛ‹œH‹ˆ›Ú™XİÜ›ÛİÈœ\˜[[ˆÈ•ÓÑŒL“Ô‘PÓÔ‘TˆˆÈ›İÛ™\—İŒ—ŞšØÛ‹œH‹ˆBˆZ\ÜÚ[™ÈHÜİŠ]
+H›Üˆ][ˆ™\]Z\™YYˆ›İ]š\×Ùš[J
+WBˆYˆZ\ÜÚ[™Î‚ˆš[
+¹îçù. 9ç'ù.®ºj£:+àyï.¹l$yoáz) yméyamù¥¡ù.í¸à ˆŠBˆ›Üˆ][ˆZ\ÜÚ[™Î‚ˆš[
+ˆ¹ï.¹i,{ï&Ü]HŠBˆ™]\›ˆÂˆ™]\›ˆ[—Û]™J›Ú™XİÜ›Ûİ
+B‚šYˆ×Û˜[YW×ÈOH—×ÛXZ[—×È‚ˆ˜Z\ÙHŞ\İ[Q^]
+XZ[Š
+JB
