@@ -16,6 +16,14 @@ SESSION_SCHEMA = "wof-prospective-session-v1"
 RECORDER_SCHEMA = "wof-052l-recorder-v1"
 ALLOWED_SEQUENCE_KINDS = {"tail2": 2, "pair": 2, "tail3": 3, "triple": 3}
 ALLOWED_OPS = {"eq", "ne", "in", "not_in", "lt", "lte", "gt", "gte", "exists"}
+SUPPORTED_GATES = {
+    "minProspectiveSignals",
+    "minProspectiveRooms",
+    "requireZeroHardMiss",
+    "minDistinctTargets",
+    "minObservedTypes",
+    "requireLifecycleReset",
+}
 
 _SIGNATURE_RE = re.compile(
     r"^S(?P<state99>\d+)/A(?P<action2A>\d+)/B(?P<b2B>\d+)\|BODY(?P<body>\d+)"
@@ -26,6 +34,11 @@ _SIGNATURE_RE = re.compile(
 
 class ValidationError(ValueError):
     pass
+
+
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise ValidationError(message)
 
 
 def load_json(path: str | Path) -> Any:
@@ -103,9 +116,15 @@ def started_after_freeze(started_at: Any, session: dict[str, Any] | None) -> boo
     return bool(started and frozen and started >= frozen)
 
 
-def _require(condition: bool, message: str) -> None:
-    if not condition:
-        raise ValidationError(message)
+def _validate_predicates(predicates: Any, label: str) -> None:
+    _require(isinstance(predicates, list), f"{label} must be a list")
+    for idx, pred in enumerate(predicates):
+        _require(isinstance(pred, dict), f"{label}[{idx}] must be an object")
+        _require(isinstance(pred.get("path"), str) and pred["path"], f"{label}[{idx}].path is required")
+        op = pred.get("op", "eq")
+        _require(op in ALLOWED_OPS, f"{label}[{idx}] unsupported op {op}")
+        if op != "exists":
+            _require("value" in pred, f"{label}[{idx}].value is required for op {op}")
 
 
 def validate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
@@ -123,17 +142,15 @@ def validate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         kind = sequence.get("kind")
         _require(kind in ALLOWED_SEQUENCE_KINDS, f"unsupported sequence kind: {kind}")
         states = sequence.get("states")
-        _require(isinstance(states, list) and len(states) == ALLOWED_SEQUENCE_KINDS[kind],
-                 f"{kind} requires {ALLOWED_SEQUENCE_KINDS[kind]} states")
+        _require(isinstance(states, list) and len(states) == ALLOWED_SEQUENCE_KINDS[kind], f"{kind} requires {ALLOWED_SEQUENCE_KINDS[kind]} states")
         for idx, matcher in enumerate(states):
             _require(isinstance(matcher, dict), f"sequence.states[{idx}] must be an object")
-            _require(any(k in matcher for k in ("signature", "family", "predicates")),
-                     f"sequence.states[{idx}] needs signature, family, or predicates")
+            _require(any(k in matcher for k in ("signature", "family", "predicates")), f"sequence.states[{idx}] needs signature, family, or predicates")
+            _validate_predicates(matcher.get("predicates") or [], f"sequence.states[{idx}].predicates")
     _validate_predicates(predicates, "rule.currentPredicates")
     outcome = manifest.get("outcome") or {}
     expected = outcome.get("expectedAttacks") or []
-    _require(isinstance(expected, list) and expected and all(isinstance(x, int) for x in expected),
-             "outcome.expectedAttacks must be a non-empty integer list")
+    _require(isinstance(expected, list) and expected and all(isinstance(x, int) for x in expected), "outcome.expectedAttacks must be a non-empty integer list")
     windows = manifest.get("windows") or {}
     strict = float(windows.get("strictMaxMs", 150))
     jitter = float(windows.get("jitterMaxMs", max(strict, 220)))
@@ -143,18 +160,11 @@ def validate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     identity = manifest.get("identity") or {}
     if identity:
         _require(identity.get("world") in (None, "Warriors of Fate (World 921031)"), "unsupported identity.world")
+    gate = manifest.get("gate") or {}
+    _require(isinstance(gate, dict), "gate must be an object")
+    unknown = sorted(set(gate) - SUPPORTED_GATES)
+    _require(not unknown, "unsupported conservative gate(s): " + ", ".join(unknown))
     return manifest
-
-
-def _validate_predicates(predicates: Any, label: str) -> None:
-    _require(isinstance(predicates, list), f"{label} must be a list")
-    for idx, pred in enumerate(predicates):
-        _require(isinstance(pred, dict), f"{label}[{idx}] must be an object")
-        _require(isinstance(pred.get("path"), str) and pred["path"], f"{label}[{idx}].path is required")
-        op = pred.get("op", "eq")
-        _require(op in ALLOWED_OPS, f"{label}[{idx}] unsupported op {op}")
-        if op != "exists":
-            _require("value" in pred, f"{label}[{idx}].value is required for op {op}")
 
 
 def get_path(obj: Any, path: str) -> Any:
@@ -199,16 +209,10 @@ def normalize_state(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def state_match(state: dict[str, Any], matcher: dict[str, Any]) -> bool:
-    if "signature" in matcher and state.get("signature") != matcher["signature"]:
-        return False
-    if "family" in matcher and state.get("family") != matcher["family"]:
-        return False
+    if "signature" in matcher and state.get("signature") != matcher["signature"]: return False
+    if "family" in matcher and state.get("family") != matcher["family"]: return False
     predicates = matcher.get("predicates") or []
-    if predicates:
-        _validate_predicates(predicates, "sequence state predicates")
-        if not all_predicates(state, predicates):
-            return False
-    return True
+    return all_predicates(state, predicates) if predicates else True
 
 
 def trace_matches(trace: dict[str, Any], manifest: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
@@ -226,8 +230,7 @@ def trace_matches(trace: dict[str, Any], manifest: dict[str, Any]) -> tuple[bool
         n = ALLOWED_SEQUENCE_KINDS[sequence["kind"]]
         tail = states[-n:]
         sequence_ok = len(tail) == n and all(state_match(state, matcher) for state, matcher in zip(tail, sequence["states"]))
-        if sequence_ok:
-            matched_states = tail
+        if sequence_ok: matched_states = tail
     return sequence_ok and current_ok, {
         "sequenceMatched": sequence_ok,
         "currentPredicatesMatched": current_ok,
@@ -237,22 +240,13 @@ def trace_matches(trace: dict[str, Any], manifest: dict[str, Any]) -> tuple[bool
 
 
 def classify_trace(trace: dict[str, Any], manifest: dict[str, Any]) -> str:
-    if trace.get("hardMissReason") or trace.get("category") == "hardMiss":
-        return "hardMiss"
-    if trace.get("censored") is True or trace.get("activeAttack") is None:
-        return "censored"
+    if trace.get("hardMissReason") or trace.get("category") == "hardMiss": return "hardMiss"
+    if trace.get("censored") is True or trace.get("activeAttack") is None: return "censored"
     expected = set(manifest["outcome"]["expectedAttacks"])
     attack = int(trace["activeAttack"])
-    if attack not in expected:
-        return "hardMiss"
-    lead = trace.get("leadMs")
-    if lead is None:
-        lead = trace.get("candidateLastLeadMs")
-    if lead is None:
-        lead = trace.get("signalLeadMs")
-    if lead is None:
-        lead = 0.0
-    lead = float(lead)
+    if attack not in expected: return "hardMiss"
+    lead = trace.get("leadMs", trace.get("candidateLastLeadMs", trace.get("signalLeadMs", 0.0)))
+    lead = float(0.0 if lead is None else lead)
     windows = manifest.get("windows") or {}
     strict = float(windows.get("strictMaxMs", 150))
     jitter = float(windows.get("jitterMaxMs", max(strict, 220)))
@@ -269,195 +263,143 @@ def _trace_room(trace: dict[str, Any], fallback: str) -> str:
 
 def recorder_traces(payload: dict[str, Any], source: str, session: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     traces: list[dict[str, Any]] = []
-    if isinstance(payload.get("t18CandidateEvidence"), list):
-        traces.extend(x for x in payload["t18CandidateEvidence"] if isinstance(x, dict))
-    if isinstance(payload.get("t23SequenceEvidence"), list):
-        traces.extend(x for x in payload["t23SequenceEvidence"] if isinstance(x, dict))
+    if isinstance(payload.get("t18CandidateEvidence"), list): traces.extend(x for x in payload["t18CandidateEvidence"] if isinstance(x, dict))
+    if isinstance(payload.get("t23SequenceEvidence"), list): traces.extend(x for x in payload["t23SequenceEvidence"] if isinstance(x, dict))
     if isinstance(payload.get("t18"), dict):
         traces.extend(x for x in payload["t18"].get("candidateTraces", []) if isinstance(x, dict))
         traces.extend(x for x in payload["t18"].get("otherTraces", []) if isinstance(x, dict))
-    if isinstance(payload.get("t23"), dict):
-        traces.extend(x for x in payload["t23"].get("traces", []) if isinstance(x, dict))
-    if isinstance(payload.get("t23SequenceSummary"), dict) and not traces:
-        # Summary-only files cannot be re-evaluated safely.
-        return []
+    if isinstance(payload.get("t23"), dict): traces.extend(x for x in payload["t23"].get("traces", []) if isinstance(x, dict))
+    if isinstance(payload.get("t23SequenceSummary"), dict) and not traces: return []
     room = str(payload.get("roomId") or payload.get("runId") or source)
-    room_started = {
-        str(r.get("roomId")): r.get("startedAt")
-        for r in (payload.get("rooms") or []) if isinstance(r, dict) and r.get("roomId")
-    }
+    room_started = {str(r.get("roomId")): r.get("startedAt") for r in (payload.get("rooms") or []) if isinstance(r, dict) and r.get("roomId")}
     root_started = payload.get("startedAt")
     out = []
     for tr in traces:
-        item = dict(tr)
-        item.setdefault("roomId", room)
+        item = dict(tr); item.setdefault("roomId", room)
         started_at = room_started.get(str(item.get("roomId"))) or root_started
         item["evidenceClass"] = "prospective" if started_after_freeze(started_at, session) else "discovery"
-        item["prospectiveStartedAt"] = started_at
-        item.setdefault("source", source)
-        out.append(item)
+        item["prospectiveStartedAt"] = started_at; item.setdefault("source", source); out.append(item)
     return out
 
 
 def unified_traces(payload: dict[str, Any], source: str, session: dict[str, Any] | None = None) -> list[dict[str, Any]]:
-    rows = payload.get("traces") or []
-    out = []
-    default_class = payload.get("evidenceClass")
-    root_started = payload.get("startedAt") or payload.get("capturedAt")
-    for tr in rows:
-        if not isinstance(tr, dict):
-            continue
-        item = dict(tr)
-        item.setdefault("roomId", payload.get("roomId") or payload.get("runId") or source)
-        if session is not None:
-            item["evidenceClass"] = "prospective" if started_after_freeze(item.get("startedAt") or root_started, session) else "discovery"
-        else:
-            item.setdefault("evidenceClass", default_class or "discovery")
-        item.setdefault("source", source)
-        out.append(item)
+    out = []; default_class = payload.get("evidenceClass"); root_started = payload.get("startedAt") or payload.get("capturedAt")
+    for tr in payload.get("traces") or []:
+        if not isinstance(tr, dict): continue
+        item = dict(tr); item.setdefault("roomId", payload.get("roomId") or payload.get("runId") or source)
+        if session is not None: item["evidenceClass"] = "prospective" if started_after_freeze(item.get("startedAt") or root_started, session) else "discovery"
+        else: item.setdefault("evidenceClass", default_class or "discovery")
+        item.setdefault("source", source); out.append(item)
     return out
 
 
 def load_traces(paths: Iterable[str | Path], session: dict[str, Any] | None = None) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    traces: list[dict[str, Any]] = []
-    sources: list[dict[str, Any]] = []
+    traces: list[dict[str, Any]] = []; sources: list[dict[str, Any]] = []
     for raw_path in paths:
-        path = Path(raw_path)
-        payload = load_json(path)
-        if not isinstance(payload, dict):
-            raise ValidationError(f"{path}: corpus root must be object")
+        path = Path(raw_path); payload = load_json(path)
+        if not isinstance(payload, dict): raise ValidationError(f"{path}: corpus root must be object")
         schema = payload.get("schema")
-        if schema == CORPUS_SCHEMA:
-            rows = unified_traces(payload, str(path), session)
-            adapter = CORPUS_SCHEMA
-        elif schema == RECORDER_SCHEMA:
-            rows = recorder_traces(payload, str(path), session)
-            adapter = RECORDER_SCHEMA
-        else:
-            raise ValidationError(f"{path}: unsupported corpus schema {schema!r}")
-        traces.extend(rows)
-        sources.append({"path": str(path), "schema": schema, "adapter": adapter, "traces": len(rows)})
+        if schema == CORPUS_SCHEMA: rows = unified_traces(payload, str(path), session); adapter = CORPUS_SCHEMA
+        elif schema == RECORDER_SCHEMA: rows = recorder_traces(payload, str(path), session); adapter = RECORDER_SCHEMA
+        else: raise ValidationError(f"{path}: unsupported corpus schema {schema!r}")
+        traces.extend(rows); sources.append({"path": str(path), "schema": schema, "adapter": adapter, "traces": len(rows)})
     return traces, sources
+
+
+def _target_key(trace: dict[str, Any], current: dict[str, Any]) -> str | None:
+    for value in (trace.get("targetStart7E"), trace.get("targetAtActive7E"), current.get("target7E"), trace.get("target"), current.get("target")):
+        if value not in (None, ""): return str(value)
+    return None
+
+
+def _type_key(trace: dict[str, Any], current: dict[str, Any]) -> str | None:
+    for value in (trace.get("type"), current.get("type")):
+        if value not in (None, ""): return str(value)
+    return None
 
 
 def validate(manifest: dict[str, Any], traces: list[dict[str, Any]], sources: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     validate_manifest(manifest)
-    counters: dict[str, Counter[str]] = {"prospective": Counter(), "discovery": Counter()}
-    attack_counts: dict[str, Counter[str]] = {"prospective": Counter(), "discovery": Counter()}
-    room_counts: dict[str, Counter[str]] = {"prospective": Counter(), "discovery": Counter()}
-    evidence_rows: list[dict[str, Any]] = []
-    total_seen = 0
+    counters = {"prospective": Counter(), "discovery": Counter()}
+    attack_counts = {"prospective": Counter(), "discovery": Counter()}
+    room_counts = {"prospective": Counter(), "discovery": Counter()}
+    prospective_targets: set[str] = set(); prospective_types: set[str] = set(); lifecycle_reset_observed = False
+    evidence_rows: list[dict[str, Any]] = []; total_seen = 0
     for index, trace in enumerate(traces):
         total_seen += 1
         evidence_class = str(trace.get("evidenceClass") or "discovery")
-        if evidence_class not in counters:
-            evidence_class = "discovery"
+        if evidence_class not in counters: evidence_class = "discovery"
         matched, detail = trace_matches(trace, manifest)
-        if not matched:
-            continue
+        if not matched: continue
         counters[evidence_class]["signal"] += 1
-        room = _trace_room(trace, f"trace-{index}")
-        room_counts[evidence_class][room] += 1
-        category = classify_trace(trace, manifest)
-        counters[evidence_class][category] += 1
-        attack = trace.get("activeAttack")
-        attack_counts[evidence_class]["A" + str(attack) if attack is not None else "none"] += 1
+        room = _trace_room(trace, f"trace-{index}"); room_counts[evidence_class][room] += 1
+        category = classify_trace(trace, manifest); counters[evidence_class][category] += 1
+        attack = trace.get("activeAttack"); attack_counts[evidence_class]["A" + str(attack) if attack is not None else "none"] += 1
+        current = detail.get("current") if isinstance(detail.get("current"), dict) else {}
+        if evidence_class == "prospective":
+            target_key = _target_key(trace, current)
+            type_key = _type_key(trace, current)
+            if target_key is not None: prospective_targets.add(target_key)
+            if type_key is not None: prospective_types.add(type_key)
+            lifecycle_reset_observed = lifecycle_reset_observed or trace.get("lifecycleReset") is True
         evidence_rows.append({
-            "evidenceClass": evidence_class,
-            "roomId": room,
-            "activeAttack": attack,
-            "category": category,
+            "evidenceClass": evidence_class, "roomId": room, "activeAttack": attack, "category": category,
             "leadMs": trace.get("leadMs", trace.get("candidateLastLeadMs", trace.get("signalLeadMs"))),
-            "targetStable": trace.get("targetStable"),
-            "sideStable": trace.get("sideStable"),
-            "retargets": trace.get("retargets") or [],
-            "source": trace.get("source"),
-            **detail,
+            "targetStable": trace.get("targetStable"), "sideStable": trace.get("sideStable"), "retargets": trace.get("retargets") or [],
+            "target": _target_key(trace, current), "observedType": _type_key(trace, current), "lifecycleReset": trace.get("lifecycleReset") is True,
+            "source": trace.get("source"), **detail,
         })
-    prospective = counters["prospective"]
-    gate = manifest.get("gate") or {}
-    min_signals = int(gate.get("minProspectiveSignals", 1))
-    min_rooms = int(gate.get("minProspectiveRooms", 1))
-    require_zero_hard = bool(gate.get("requireZeroHardMiss", True))
-    pass_gate = (
-        prospective["signal"] >= min_signals
-        and len(room_counts["prospective"]) >= min_rooms
-        and (prospective["hardMiss"] == 0 if require_zero_hard else True)
-    )
-    if prospective["signal"] == 0:
-        verdict = "NO_PROSPECTIVE_EVIDENCE"
-    elif pass_gate:
-        verdict = "PROSPECTIVE_PASS_RESEARCH_ONLY"
-    else:
-        verdict = "PROSPECTIVE_FAIL_OR_INSUFFICIENT"
+    prospective = counters["prospective"]; gate = manifest.get("gate") or {}
+    req_signals = int(gate.get("minProspectiveSignals", 1)); req_rooms = int(gate.get("minProspectiveRooms", 1)); req_zero = bool(gate.get("requireZeroHardMiss", True))
+    req_targets = int(gate.get("minDistinctTargets", 0)); req_types = int(gate.get("minObservedTypes", 0)); req_lifecycle = bool(gate.get("requireLifecycleReset", False))
+    observed = {
+        "minProspectiveSignals": prospective["signal"],
+        "minProspectiveRooms": len(room_counts["prospective"]),
+        "requireZeroHardMiss": prospective["hardMiss"],
+        "minDistinctTargets": len(prospective_targets),
+        "minObservedTypes": len(prospective_types),
+        "requireLifecycleReset": lifecycle_reset_observed,
+    }
+    gate_rows = {
+        "minProspectiveSignals": {"required": req_signals, "observed": observed["minProspectiveSignals"], "passed": observed["minProspectiveSignals"] >= req_signals},
+        "minProspectiveRooms": {"required": req_rooms, "observed": observed["minProspectiveRooms"], "passed": observed["minProspectiveRooms"] >= req_rooms},
+        "requireZeroHardMiss": {"required": req_zero, "observed": observed["requireZeroHardMiss"], "passed": observed["requireZeroHardMiss"] == 0 if req_zero else True},
+        "minDistinctTargets": {"required": req_targets, "observed": observed["minDistinctTargets"], "passed": observed["minDistinctTargets"] >= req_targets},
+        "minObservedTypes": {"required": req_types, "observed": observed["minObservedTypes"], "passed": observed["minObservedTypes"] >= req_types},
+        "requireLifecycleReset": {"required": req_lifecycle, "observed": observed["requireLifecycleReset"], "passed": observed["requireLifecycleReset"] is True if req_lifecycle else True},
+    }
+    pass_gate = all(row["passed"] for row in gate_rows.values())
+    verdict = "NO_PROSPECTIVE_EVIDENCE" if prospective["signal"] == 0 else ("PROSPECTIVE_PASS_RESEARCH_ONLY" if pass_gate else "PROSPECTIVE_FAIL_OR_INSUFFICIENT")
     def packed(cls: str) -> dict[str, Any]:
         c = counters[cls]
-        return {
-            "signal": c["signal"], "strict": c["strict"], "jitter": c["jitter"], "late": c["late"],
-            "hardMiss": c["hardMiss"], "censored": c["censored"],
-            "rooms": len(room_counts[cls]), "roomSignals": dict(room_counts[cls]), "attacks": dict(attack_counts[cls]),
-        }
+        return {"signal": c["signal"], "strict": c["strict"], "jitter": c["jitter"], "late": c["late"], "hardMiss": c["hardMiss"], "censored": c["censored"], "rooms": len(room_counts[cls]), "roomSignals": dict(room_counts[cls]), "attacks": dict(attack_counts[cls])}
     return {
-        "schema": RESULT_SCHEMA,
-        "candidateId": manifest["id"],
-        "promotion": "research-only",
-        "verdict": verdict,
-        "productionPromotionAllowed": False,
-        "counts": {"inputTraces": total_seen, "matchedSignals": len(evidence_rows)},
-        "prospective": packed("prospective"),
-        "discovery": packed("discovery"),
-        "gate": {
-            "minProspectiveSignals": min_signals,
-            "minProspectiveRooms": min_rooms,
-            "requireZeroHardMiss": require_zero_hard,
-            "passed": pass_gate,
-        },
+        "schema": RESULT_SCHEMA, "candidateId": manifest["id"], "promotion": "research-only", "verdict": verdict,
+        "productionPromotionAllowed": False, "counts": {"inputTraces": total_seen, "matchedSignals": len(evidence_rows)},
+        "prospective": packed("prospective"), "discovery": packed("discovery"),
+        "gate": {**gate_rows, "passed": pass_gate, "supported": sorted(SUPPORTED_GATES), "unsupported": []},
         "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False, "windowWorkerReplacement": False},
-        "sources": sources or [],
-        "evidence": evidence_rows,
-        "notes": [
-            "Discovery evidence is reported separately and never satisfies the prospective gate.",
-            "A PASS remains research-only; this framework never promotes a production rule.",
-        ],
+        "sources": sources or [], "evidence": evidence_rows,
+        "notes": ["Discovery evidence is reported separately and never satisfies the prospective gate.", "A PASS remains research-only; this framework never promotes a production rule."],
     }
 
 
 def compact_result(result: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "schema": result["schema"],
-        "candidateId": result["candidateId"],
-        "verdict": result["verdict"],
-        "promotion": result["promotion"],
-        "productionPromotionAllowed": False,
-        "prospective": result["prospective"],
-        "discovery": result["discovery"],
-        "gate": result["gate"],
-        "safety": result["safety"],
-    }
+    return {k: result[k] for k in ("schema", "candidateId", "verdict", "promotion", "prospective", "discovery", "gate", "safety")} | {"productionPromotionAllowed": False}
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="WOF 通用前瞻验证器（只读）")
-    ap.add_argument("manifest", help="候选规则 JSON manifest")
-    ap.add_argument("corpus", nargs="+", help="一个或多个 corpus / WOF-052L JSON")
-    ap.add_argument("--session", help="prospective session JSON；用于严格区分冻结前 discovery 与冻结后 prospective")
-    ap.add_argument("--output", help="完整结果 JSON 保存路径")
-    ap.add_argument("--compact-output", help="紧凑结果 JSON 保存路径")
+    ap.add_argument("manifest"); ap.add_argument("corpus", nargs="+"); ap.add_argument("--session"); ap.add_argument("--output"); ap.add_argument("--compact-output")
     args = ap.parse_args()
     try:
-        manifest = validate_manifest(load_json(args.manifest))
-        session = validate_session(load_json(args.session), manifest) if args.session else None
-        traces, sources = load_traces(args.corpus, session)
-        result = validate(manifest, traces, sources)
+        manifest = validate_manifest(load_json(args.manifest)); session = validate_session(load_json(args.session), manifest) if args.session else None
+        traces, sources = load_traces(args.corpus, session); result = validate(manifest, traces, sources)
     except (OSError, json.JSONDecodeError, ValidationError) as exc:
-        print(f"验证失败：{exc}")
-        return 2
-    text = json.dumps(compact_result(result), ensure_ascii=False, indent=2)
-    print(text)
-    if args.output:
-        Path(args.output).write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    if args.compact_output:
-        Path(args.compact_output).write_text(text + "\n", encoding="utf-8")
+        print(f"验证失败：{exc}"); return 2
+    text = json.dumps(compact_result(result), ensure_ascii=False, indent=2); print(text)
+    if args.output: Path(args.output).write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if args.compact_output: Path(args.compact_output).write_text(text + "\n", encoding="utf-8")
     return 0
 
 
