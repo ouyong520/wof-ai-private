@@ -90,6 +90,14 @@ def choose_primary_payloads(files: list[Path]) -> tuple[list[tuple[Path, dict[st
         }
         if child_ids and child_ids.issubset(set(merged_by_run)):
             continue
+        if child_ids:
+            # Fleet totals/evidence already contain every child. If Fleet must be used because
+            # one or more child merged files are absent, do not also aggregate the available
+            # child merged/room files or counts and T18 evidence would be doubled.
+            selected = [
+                item for item in selected
+                if str(item[1].get("runId") or "") not in child_ids
+            ]
         selected.append(fleet_item)
         missing = sorted(child_ids - set(merged_by_run))
         if missing:
@@ -135,17 +143,20 @@ def ingest_payload(dataset: Dataset, path: Path, payload: dict[str, Any], kind: 
             if isinstance(ph, list):
                 for i in range(min(4, len(ph))):
                     dataset.player_hist[i] += safe_int(ph[i])
+        room_id = payload.get("roomId")
         t18 = payload.get("t18") or {}
         for tr in (t18.get("candidateTraces") or []) if isinstance(t18, dict) else []:
             if isinstance(tr, dict):
-                dataset.add_trace(tr, source, run_id)
+                dataset.add_trace({**tr, "roomId": room_id}, source, run_id)
         t23 = payload.get("t23") or {}
         for tr in (t23.get("traces") or []) if isinstance(t23, dict) else []:
             if isinstance(tr, dict):
-                dataset.add_t23_trace(tr, source, run_id)
-        for edge in payload.get("rareDescriptorAttackEdges") or []:
-            if isinstance(edge, dict):
-                dataset.rare_edges[f"T{edge.get('type')}|{edge.get('preActiveSignature')}->A{edge.get('attack')}"] += 1
+                dataset.add_t23_trace({**tr, "roomId": room_id}, source, run_id)
+        rare_map = diag.get("rareDescriptorAttack") if isinstance(diag, dict) else None
+        if not isinstance(rare_map, dict) or not rare_map:
+            for edge in payload.get("rareDescriptorAttackEdges") or []:
+                if isinstance(edge, dict):
+                    dataset.rare_edges[f"T{edge.get('type')}|{edge.get('preActiveSignature')}->A{edge.get('attack')}"] += 1
         return
 
     counts = payload.get("counts") or {}
@@ -183,16 +194,19 @@ def ingest_payload(dataset: Dataset, path: Path, payload: dict[str, Any], kind: 
 def ingest_room_supplement(dataset: Dataset, path: Path, payload: dict[str, Any]) -> None:
     source = str(path)
     run_id = payload.get("runId")
+    room_id = payload.get("roomId")
     t23 = payload.get("t23") or {}
     for tr in (t23.get("traces") or []) if isinstance(t23, dict) else []:
         if isinstance(tr, dict):
-            dataset.add_t23_trace(tr, source, run_id)
+            dataset.add_t23_trace({**tr, "roomId": room_id}, source, run_id)
     diag = payload.get("diagnostics") or {}
-    if isinstance(diag, dict):
-        merge_int_map(dataset.rare_edges, diag.get("rareDescriptorAttack"))
-    for edge in payload.get("rareDescriptorAttackEdges") or []:
-        if isinstance(edge, dict):
-            dataset.rare_edges[f"T{edge.get('type')}|{edge.get('preActiveSignature')}->A{edge.get('attack')}"] += 1
+    rare_map = diag.get("rareDescriptorAttack") if isinstance(diag, dict) else None
+    if isinstance(rare_map, dict) and rare_map:
+        merge_int_map(dataset.rare_edges, rare_map)
+    else:
+        for edge in payload.get("rareDescriptorAttackEdges") or []:
+            if isinstance(edge, dict):
+                dataset.rare_edges[f"T{edge.get('type')}|{edge.get('preActiveSignature')}->A{edge.get('attack')}"] += 1
 
 
 def build_dataset(paths: list[str]) -> Dataset:
@@ -201,17 +215,24 @@ def build_dataset(paths: list[str]) -> Dataset:
     dataset = Dataset()
     dataset.notes.extend(warnings)
     selected_paths = {str(path).lower() for path, _, _ in selected}
-    selected_merged_runs = {
+    covered_runs = {
         str(payload.get("runId")) for _, payload, kind in selected
         if kind == "merged" and payload.get("runId")
     }
+    for _, payload, kind in selected:
+        if kind == "fleet":
+            covered_runs.update(
+                str(row.get("runId"))
+                for row in (payload.get("childRuns") or [])
+                if isinstance(row, dict) and row.get("runId")
+            )
     for path, payload, kind in selected:
         ingest_payload(dataset, path, payload, kind)
     for path in files:
         if str(path).lower() in selected_paths:
             continue
         payload = load_json(path)
-        if payload and payload_kind(payload) == "room" and str(payload.get("runId") or "") in selected_merged_runs:
+        if payload and payload_kind(payload) == "room" and str(payload.get("runId") or "") in covered_runs:
             ingest_room_supplement(dataset, path, payload)
     if not selected:
         dataset.notes.append("没有找到可识别的 WOF-052L per-room / merged / fleet merged JSON。")
