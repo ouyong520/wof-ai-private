@@ -49,10 +49,21 @@ def evaluate_trace(trace: list[dict[str, Any]], *, projection_reference: dict[st
         reasons.append("invalid resize/fullscreen mapping")
 
     cameras = [s["camera"] for s in trace if isinstance(s.get("camera"), dict)]
-    addresses = [str(c.get("address")) for c in cameras if c.get("address")]
-    camera_stable = bool(addresses) and len(set(addresses)) == 1
-    scores = [float(c["proofScore"]) for c in cameras if _num(c.get("proofScore")) is not None]
+    # Camera ranking is cumulative and may legitimately swap during warm-up. Proof
+    # therefore uses a bounded tail and requires one dominant high-confidence address.
+    tail_n = min(12, len(cameras))
+    camera_tail = cameras[-tail_n:] if tail_n else []
+    tail_addresses = [str(c.get("address")) for c in camera_tail if c.get("address")]
+    camera_address = None
+    camera_dominance = 0.0
+    if tail_addresses:
+        counts = {a: tail_addresses.count(a) for a in set(tail_addresses)}
+        camera_address, dominant_count = max(counts.items(), key=lambda row: row[1])
+        camera_dominance = dominant_count / len(tail_addresses)
+    stable_rows = [c for c in camera_tail if str(c.get("address")) == camera_address]
+    scores = [float(c["proofScore"]) for c in stable_rows if _num(c.get("proofScore")) is not None]
     camera_score_median = statistics.median(scores) if scores else 0.0
+    camera_stable = bool(camera_address) and len(tail_addresses) >= 5 and camera_dominance >= 0.8
     camera_confident = camera_stable and len(scores) >= 5 and camera_score_median >= 6.5
     if not camera_stable:
         reasons.append("ambiguous/unstable camera model")
@@ -97,7 +108,7 @@ def evaluate_trace(trace: list[dict[str, Any]], *, projection_reference: dict[st
         if ref_ok and ref_model in model_scores:
             chosen = str(ref_model)
             ref_camera = projection_reference.get("cameraAddress")
-            if ref_camera and camera_stable and str(ref_camera).upper() != str(addresses[0]).upper():
+            if ref_camera and camera_stable and str(ref_camera).upper() != str(camera_address).upper():
                 reasons.append("live camera address differs from projection reference")
             if projection_reference.get("absoluteAnchorProven") is not True and len(visual) < 1:
                 reasons.append("absolute above-head anchor not calibrated/proven")
@@ -117,6 +128,8 @@ def evaluate_trace(trace: list[dict[str, Any]], *, projection_reference: dict[st
     if visual:
         s0, ref0 = visual[0]
         p0, c0 = s0.get("player"), s0.get("camera")
+        if isinstance(c0, dict) and camera_address and str(c0.get("address")).upper() != str(camera_address).upper():
+            reasons.append("calibration camera differs from stable camera")
         nx, ny = _num(ref0.get("nativeX")), _num(ref0.get("nativeY"))
         cv = _num(c0.get("value")) if isinstance(c0, dict) else None
         if isinstance(p0, dict) and nx is not None and ny is not None and cv is not None:
@@ -137,7 +150,9 @@ def evaluate_trace(trace: list[dict[str, Any]], *, projection_reference: dict[st
         "cameraStable": camera_stable,
         "cameraConfident": camera_confident,
         "cameraScoreMedian": round(camera_score_median, 4),
-        "cameraAddress": addresses[0] if camera_stable else None,
+        "cameraDominance": round(camera_dominance, 4),
+        "cameraTailSamples": len(tail_addresses),
+        "cameraAddress": camera_address if camera_stable else None,
         "mappingChanged": len(set(mapping_keys)) > 1,
         "mappingValid": mapping_valid,
         "excitation": excitation,
