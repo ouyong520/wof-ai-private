@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "DISCOVERY_V2_CONFORMANCE_HARNESS_V1",
+  "promptPath": "parallel/PM/DISCOVERY_V2_CONFORMANCE_HARNESS_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "018c25584b599f04201f95948d653aff16e8f496",
+  "startedAtUtc": "2026-09-01T13:42:29Z"
+}
