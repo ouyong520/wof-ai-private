@@ -1,109 +1,108 @@
 # WOF Future Danger AI — Release Readiness
 
-Updated: 2026-09-01 — RC5 startup repair accepted; real Windows proof now exposes a PYLAUNCH Worker-discovery blocker
+Updated: 2026-09-01 — post completed-wave PM audit
 
-## Alpha — **BLOCKED / PYLAUNCH REAL WORKER DISCOVERY FIX REQUIRED**
+## Alpha — **BLOCKED / REPOSITORY-SIDE DISCOVERY + LIVE-PROOF HARDENING REQUIRED**
 
-Confirmed PASS:
+The former RC5 room-entry blocker remains closed.
+
+Confirmed retained PASS:
 - RC4 product regression;
 - fresh RC4 independent QA;
 - RC5 product regression;
 - owner real-Browser room entry with RC5 enabled;
-- fresh independent RC5 room-entry repair QA.
+- fresh independent RC5 room-entry repair QA;
+- real Windows Chrome/CDP connection;
+- base game remains playable while attached;
+- read-only / ramWrites=0 / no gameplay input injection in the prior real proof.
 
-RC5 verdict remains:
+## Important correction to older release status
 
-**PASS — RC5 ROOM-ENTRY REPAIR QA**
+The old file treated PYLAUNCH Worker discovery as the sole immediate blocker.
 
-The former P0 `Alpha prevents room entry` is fully closed.
+That is now outdated.
 
-## New real Windows evidence
+PYLAUNCH's first Discovery V2 fix made real progress, but later independent/cross-component review found additional repository-side blockers and drift that should be closed **before** asking the Owner for another real run.
 
-The owner ran the PYLAUNCH one-click proof against real Chrome 151 and a real WOF room.
+## Current gate status
 
-Confirmed:
-- Browser/CDP connected successfully;
-- game can enter and run normally;
-- `read_only=true`;
-- `ram_writes=0`;
-- `input_injection=false`.
-
-Failed:
-- WOF page discovery;
-- native game Worker discovery;
-- WASM/heap discovery;
-- World 921031 acceptance.
-
-Exact diagnostic:
-
-`identity_reason = "no gstyphoon worker target"`
-
-Therefore the current P0 is no longer "proof not yet run". It is a concrete **real Chromium/WOF target-discovery defect in PYLAUNCH**.
-
-## Gate status
-
-| Gate | Status |
+| Gate | Current PM judgment |
 |---|---|
-| RC4 product regression | PASS |
-| Fresh RC4 independent QA | PASS |
-| RC5 product regression | PASS |
-| Real host room entry with RC5 | PASS |
-| Fresh RC5 room-entry QA | PASS |
-| Python Launcher foundation | DONE |
-| Chrome/CDP real Windows connection | PASS |
-| Game remains playable while Launcher attached | PASS |
-| Real WOF page/native Worker discovery | **FAIL / CURRENT P0** |
-| Real WASM/heap discovery | BLOCKED ON WORKER DISCOVERY |
-| Real World 921031 proof | BLOCKED ON WORKER DISCOVERY |
-| Safe Transport Integration Contract | READY |
-| Alpha transport implementation | BLOCKED ON PYLAUNCH FIX + PROOF |
+| RC5 room-entry safety | PASS / CLOSED |
+| Browser Fleet Discovery V2 repository implementation | PASS / CLOSED FOR NOW |
+| PYLAUNCH Discovery V2 base fix | LOCAL PASS, **P1 HARDENING REQUIRED** |
+| WOF-052L Recorder Discovery V2 | **P0/P1 HARDENING REQUIRED** |
+| Prospective Validator Discovery V2 | LOCAL PASS, **P0/P1 HARDENING REQUIRED** |
+| Discovery V2 cross-component audit | COMPLETE / useful blockers identified |
+| Unified Windows Live Proof bundle | **BLOCKED P1 — fail-closed aggregation** |
+| Regression Orchestrator core | READY, later Discovery V2 coverage refresh required |
+| Alpha Safe Transport contract | READY |
+| Alpha Safe Transport mock harness | READY / 67 of 67 |
+| Alpha Acceptance V2 prep | READY / WAITING TRANSPORT |
+| Real unified Windows/WOF proof | PAUSED — repository hardening first |
+| Alpha Safe Transport implementation | WAITING CURRENT DISCOVERY/LIVE-PROOF REPOSITORY GATES |
 | Integrated Browser acceptance | PAUSED |
 | Alpha release | BLOCKED |
 
-## Current transport route
+## Current P0/P1 blockers
 
-Intended route remains:
+### P0 — Recorder cross-page shared-Worker evidence ownership
+Evidence admission must never choose page/room ownership by scan order when one exact supported Worker is related to multiple pages.
 
-`Python/EXE Launcher -> localhost Chrome/Edge CDP -> already-native WOF Worker -> WASM/heap -> exact World 921031 identity`
+### P0 — Prospective cross-page shared-Worker evidence ownership
+Same principle for prospective evidence admission; ambiguous relations must admit none/censor current evidence safely.
 
-The architecture is still preferred because the game stayed playable and the localhost CDP connection itself succeeded. The immediate repair is target discovery/association, not a return to Worker replacement or page-start interception.
+### P1 — Prospective conservative gate enforcement
+Final prospective verdict must actually execute manifest-declared target/type/lifecycle gates, not merely document them.
 
-## Required sequence
+### P1 — PYLAUNCH endpoint/URL/direct-association drift
+Close before next authoritative Owner proof.
 
-1. fresh PYLAUNCH Worker-discovery fix;
-2. one new minimal real Windows proof reaches Browser/page/Worker/WASM/World/read-only simultaneously while game remains playable;
-3. fresh Alpha safe transport integration implementation using the already-written contract;
-4. integrated regression PASS;
-5. bounded real Browser acceptance for actual detector/HUD/warnings;
-6. PM Alpha release decision.
+### P1 — Unified Proof false PASS risk
+Fresh QA proved retained fatal/blocker or stale child success can still reach final PASS. Must fail closed before any Owner run.
 
-## Acceleration tool status
+## Release sequence — optimized to minimize Owner work
 
-Repository-side implementation reached stop condition for:
-- Browser Fleet Manager — READY, live proof pending;
-- WOF-052L Recorder — READY, live proof pending;
-- Operator Toolkit V1 — READY;
-- Safe Transport Integration Prep/Contract — READY.
+1. close the current Recorder / Prospective / PYLAUNCH / Unified Proof repository P0/P1 stages;
+2. fresh Discovery V2 cross-component retest;
+3. global regression/conformance/preflight refresh against the new blobs;
+4. PM decides how much Alpha Safe Transport implementation and mock/independent QA can be completed **before** any real Owner run;
+5. refresh the one-click live-proof package once after the stack stabilizes;
+6. only if an intrinsically real-runtime fact remains, perform one bounded real Windows/WOF run that proves as many remaining gates as possible;
+7. finish integrated transport QA and bounded real Browser warning/HUD acceptance;
+8. PM Alpha release decision.
 
-Owner-facing Simplified Chinese pass and one-click download/bootstrap are now separate acceleration stages.
+## WOF-052L / Beta / zero-damage direction
 
-## Retained safety requirements
+The final product goal is not the recorder itself.
 
-Must remain true through the PYLAUNCH fix and later integration:
-- exact `wof / World 921031` full-program SHA-256 authority;
-- only two current-level T18 production rules;
-- F1-F4 quarantined;
-- same-type replacement safety;
-- session isolation;
-- multi-warning HUD;
-- runtime diag immediate warning invalidation;
-- target/side/UNKNOWN safety;
-- read-only / no gameplay input injection for Alpha;
-- WebGL restoration;
-- base game continues when transport cannot attach;
-- no `window.Worker` replacement / Blob Worker interception;
-- no native Chrome process-memory hook.
+After a trustworthy Alpha warning product exists:
+- WOF-052L long capture supplies broader natural attack evidence;
+- ordered-sequence analysis resolves ambiguous states;
+- fresh prospective validation expands reliable warning coverage;
+- Beta then moves toward geometry/threat fusion and Safe Path;
+- later stages target progressively lower damage and eventually stable 0-damage clear capability.
 
-## Current release judgment
+Do not spend Owner hours on long capture until short runtime/admission gates and fresh QA are clean.
 
-**Alpha is not releasable yet. The startup compatibility problem is solved; the current concrete blocker is that PYLAUNCH connects to real Chrome but does not yet discover the real WOF runtime Worker topology.**
+## Safety requirements retained
+
+Must remain true:
+- exact supported World identity authority;
+- validated production rules only;
+- ambiguous/unsupported evidence fails closed;
+- session/room/Worker isolation;
+- live target/side safety;
+- UNKNOWN silent;
+- read-only Alpha;
+- ramWrites=0;
+- no gameplay input injection in warning mode;
+- no `window.Worker` replacement/wrap;
+- base game fail-open;
+- no automatic production promotion from discovery/prospective research.
+
+## Owner action
+
+**NO.**
+
+There are still repository-side P0/P1 fixes that must be completed before another real test is justified.
