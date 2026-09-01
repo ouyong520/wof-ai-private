@@ -2,7 +2,16 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "DISCOVERY_V2_CONFORMANCE_HARNESS_V1",
   "promptPath": "parallel/PM/DISCOVERY_V2_CONFORMANCE_HARNESS_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "018c25584b599f04201f95948d653aff16e8f496",
-  "startedAtUtc": "2026-09-01T13:42:29Z"
+  "startedAtUtc": "2026-09-01T13:42:29Z",
+  "completedAtUtc": "2026-09-01T14:01:30Z",
+  "resultPath": "parallel/DISCOVERY_V2_CONFORMANCE/RESULT.json",
+  "summaryPath": "parallel/DISCOVERY_V2_CONFORMANCE/SUMMARY_ZH_CN.md",
+  "canonicalRunner": "parallel/DISCOVERY_V2_CONFORMANCE/run_current_head.py",
+  "resultCommit": "70b0059d91710d172fd63f9fb77da0d37567700a",
+  "stopCondition": "DISCOVERY V2 CONFORMANCE HARNESS READY",
+  "conformanceReady": false,
+  "currentDrift": "PYLAUNCH P1-DIRECT-PARENTFRAMEID-AUTHORITY-NOT-REACHABLE",
+  "ownerActionRequired": false
 }
