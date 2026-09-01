@@ -1,71 +1,73 @@
-# MINIMAL RECAP PLAN
+# MINIMAL RECAP PLAN — normalized refresh
 
 Snapshot: `2026-09-01`
 
 ## Decision
 
-**Human recap required: NO**
+**human recap required: NO**
 
-- selected scenes: **none**
-- selected waves: **none**
 - new Collector tasks created by COVERAGE: **0**
-- current minimum physical recap set: **∅**
+- selected stage/scene/wave: **none**
+- selected physical recap set: **∅**
 
-This is an intentional result, not a failure to plan.
+## Why the optimal set is still empty
 
-## Why the optimum is currently the empty set
+After ingesting SWEEPATLAS and SEQMINER and normalizing enemy type identity, several apparent gaps disappear:
 
-The largest unresolved cells in COVERAGE are not proven physical-data shortages. They are:
+- local T23 is not missing: **T23 (0x17) = 2,140 samples**;
+- SEQMINER is not absent;
+- T18/T23 both have retained local ordered-sequence examples;
+- BASECAP/GEO/EFIELD/RAWMINE all explicitly stop generic collection.
 
-1. authoritative stage / scene / wave labels — `LABEL_UNKNOWN`;
-2. boss / ordinary classification — `LABEL_UNKNOWN`;
-3. semantic ACTIVE-cycle definition/count — `LABEL_UNKNOWN`;
-4. per-Txx lifecycle / attack / target / scene cross-tabs — `LABEL_UNKNOWN`;
-5. ordered sequence-family output — `LABEL_UNKNOWN` because SEQMINER is absent;
-6. low-density Txx and one rare structural family, whose useful scene incidence is not yet known.
+The remaining important gaps are:
 
-Without an authoritative scene-to-gap incidence matrix, choosing “three scenes” would be guesswork and would violate the rule against assigning scenes from raw numerics.
+- per-type lifecycle / target-dwell / executor cross-tabs — **ANALYSIS**;
+- stage/scene/wave, boss/name, semantic ACTIVE, exact local move — **LABEL**;
+- T18 ordered split and broader production proof — **BROWSER**.
 
-The existing corpus already contains 28 mechanically successful gameplay raws with complete task/status/result/raw provenance, while GEO and RAWMINE owner lanes do not call for a generic resweep.
+None of those is solved efficiently by inventing a broad local replay.
 
-## Set-cover formulation to use once labels exist
+## The one real physical absence
 
-Candidate unit: a specific authoritative `(stage, scene, wave, player-config)` capture opportunity.
+There is no authoritative labeled full-game `BASECAP-SWEEP-*` series in GitHub.
 
-A candidate's coverage set may include:
-- one or more LOW/MISSING Txx;
-- P1/P2/P3 target evidence;
-- rare structural attack/executor families;
-- boss or ordinary enemy class;
-- left/right/depth/camera geometry diversity;
-- ordered sequence families;
-- any still-missing semantic label that can be directly observed.
+That is a genuine missing labeled corpus for a future full breadth denominator. It does **not** yet satisfy the recap policy because COVERAGE cannot name one bounded authoritative scene that:
 
-Optimization order:
+1. is required for current Product/Beta/v1;
+2. cannot be answered from retained raw;
+3. closes a specific known high-value cell;
+4. has bounded low operator cost.
 
-1. minimize number of human-entered scenes;
-2. then minimize total capture seconds;
-3. maximize number of independent gaps closed by each selected scene;
-4. prefer candidates that simultaneously add Txx + target + attack/sequence + boss/ordinary + geometry diversity;
-5. penalize weak labels, uncontrolled geometry, or known confounds;
-6. never choose a broad game resweep when a smaller equivalent cover exists.
+A full-game replay would be broad, expensive, and contrary to the current PM stop policy.
 
-## Recompute gates
+## Reopen conditions
 
-Re-run the set-cover decision when at least one of these becomes available:
+Only reconsider human WinKawaks recap if a future PM/Product decision identifies one concrete missing condition, for example:
 
-- `parallel/SWEEPATLAS/**`;
-- `parallel/SEQMINER/**`;
-- an authoritative stage/scene/wave/boss label table;
-- new EFIELD/RAWMINE results that materialize per-Txx cross-tabs;
-- new bridge task/status/result/raw artifacts.
+- a specific normalized type that must be supported for Beta and cannot be found in any retained raw;
+- a specific scene/wave with an authoritative label required for a release denominator;
+- a specific exact local outcome discriminator that existing retained raw cannot contain;
+- a bounded condition where one short capture closes several release-critical cells.
 
-## What does *not* trigger recap by itself
+When that happens, COVERAGE must report exactly one minimal request with:
 
-- a Txx having fewer than 500 samples;
-- T23 having zero samples in the current EFIELD corpus;
-- a flat/confounded historical geometry run;
-- a rare `+0x73` value without a semantic scene/attack label;
-- absence of a Browser production-shadow proof.
+- authoritative stage/scene/wave or reproducible condition;
+- normalized type(s);
+- reason;
+- required player configuration;
+- duration / Hz;
+- gaps closed;
+- why retained raw cannot answer it.
 
-When a future recomputation produces a nonempty minimal scene set, COVERAGE should report exactly: stage, wave, reason, duration, and the gaps closed by that one acquisition. At this snapshot there is no defensible nonempty set to report.
+## What does not reopen recap
+
+- a normalized type having fewer than 500 samples;
+- a Browser room not containing T23/T24;
+- a rare structural executor value;
+- a historical confounded run already superseded by canonical evidence;
+- absence of a semantic label that cannot be inferred from raw;
+- need for Browser prospective validation.
+
+## Final
+
+**human recap required: NO**
