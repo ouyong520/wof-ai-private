@@ -6,11 +6,10 @@
 
 ## 最简单用法
 
-Windows 上双击：
+二选一即可：
 
-```text
-parallel\EVIDENCE_INGESTOR\RUN_EVIDENCE_INGESTOR.cmd
-```
+1. 双击根目录 `WOF_TOOLKIT.cmd`，选择 **8 自动整理并打包结果**。
+2. 或直接双击 `parallel\EVIDENCE_INGESTOR\RUN_EVIDENCE_INGESTOR.cmd`。
 
 默认扫描：
 
@@ -74,7 +73,7 @@ parallel\EVIDENCE_INGESTOR\RUN_EVIDENCE_INGESTOR.cmd
 
 ## 单个结果包
 
-双击 CMD 默认同时生成 ZIP。ZIP 包含：
+Toolkit 菜单 8 和双击 CMD 默认都会生成 ZIP。ZIP 包含：
 
 - `SUMMARY.json`
 - `结果汇总.txt`
@@ -91,15 +90,15 @@ python parallel\EVIDENCE_INGESTOR\ingestor.py --package
 python parallel\EVIDENCE_INGESTOR\ingestor.py --root D:\Some\WOF_RESULTS --package
 ```
 
-也支持 `WOF_RESULTS_DIR` 环境变量，便于 Operator Toolkit 复用同一个结果根目录。
+也支持 `WOF_RESULTS_DIR` 环境变量，Operator Toolkit 与独立入口因此使用同一个结果根目录。
 
 ## 最小 Windows proof
 
 只需要一次真人 Windows 验证：
 
 1. 保持现有 `%USERPROFILE%\Documents\WOF_RESULTS` 不动。
-2. 双击 `RUN_EVIDENCE_INGESTOR.cmd`。
+2. 双击 `WOF_TOOLKIT.cmd`，选择 `8`；或直接双击 `RUN_EVIDENCE_INGESTOR.cmd`。
 3. 确认出现“WOF 自动结果整理完成”。
-4. 打开提示的 `_自动整理\<时间>\`，只需把 `SUMMARY.json` 或 ZIP 结果包交给 ChatGPT。
+4. 打开 `_自动整理\<时间>\`，以后只需把 `SUMMARY.json` 或 ZIP 结果包交给 ChatGPT。
 
 不需要 DevTools，不需要 Worker Console，不需要粘 JavaScript，也不需要进入游戏执行任何输入。
