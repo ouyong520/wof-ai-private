@@ -16,14 +16,19 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 HERE = Path(__file__).resolve().parent
 PYLAUNCH_DIR = HERE.parent / "PYLAUNCH"
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
 if str(PYLAUNCH_DIR) not in sys.path:
     sys.path.insert(0, str(PYLAUNCH_DIR))
 
 from wof_launcher.browser import find_browser, probe_endpoint
+from wof_launcher.cdp import CdpClient
 from wof_launcher.fleet import FLEET_MANIFEST_VERSION, default_fleet_root, default_manifest_path
+from fleet_discovery_v2 import discover_fleet_status
 
 
 DEFAULT_BASE_PORT = 9323
@@ -43,7 +48,7 @@ def atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
 
 
 def http_json(url: str, timeout: float = 0.8) -> Any:
-    request = urllib.request.Request(url, headers={"User-Agent": "WOF-Browser-Fleet/0.1"})
+    request = urllib.request.Request(url, headers={"User-Agent": "WOF-Browser-Fleet/0.2"})
     with urllib.request.urlopen(request, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8"))
 
@@ -84,6 +89,22 @@ def validate_count(value: int) -> int:
     if value < 1 or value > MAX_FLEET:
         raise ValueError(f"fleet size must be 1..{MAX_FLEET}")
     return value
+
+
+def endpoint_matches_runtime(runtime_port: int, endpoint: Any) -> bool:
+    if str(getattr(endpoint, "host", "")) != "127.0.0.1":
+        return False
+    try:
+        if int(getattr(endpoint, "port", -1)) != runtime_port:
+            return False
+    except (TypeError, ValueError):
+        return False
+    try:
+        parsed = urlparse(str(getattr(endpoint, "websocket_url", "")))
+        ws_port = parsed.port
+    except ValueError:
+        return False
+    return parsed.scheme in {"ws", "wss"} and parsed.hostname in {"127.0.0.1", "localhost", "::1"} and ws_port == runtime_port
 
 
 @dataclass
@@ -143,6 +164,9 @@ class InstanceRuntime:
     page_count: int = 0
     worker_ok: bool = False
     worker_count: int = 0
+    worker_discovery_path: str | None = None
+    related_topology_count: int = 0
+    worker_detail: str | None = None
     last_error: str | None = None
 
     @property
@@ -276,46 +300,60 @@ class FleetManager:
                 self.refresh_status()
                 self.write_manifest()
 
+    @staticmethod
+    def _reset_discovery(runtime: InstanceRuntime) -> None:
+        runtime.page_ok = False
+        runtime.page_count = 0
+        runtime.worker_ok = False
+        runtime.worker_count = 0
+        runtime.worker_discovery_path = None
+        runtime.related_topology_count = 0
+        runtime.worker_detail = None
+
+    def _refresh_runtime(self, runtime: InstanceRuntime) -> None:
+        self._reset_discovery(runtime)
+        endpoint = probe_endpoint("127.0.0.1", runtime.port)
+        runtime.browser_ok = endpoint is not None
+        runtime.browser_name = endpoint.browser if endpoint else None
+        if not endpoint:
+            if runtime.process is not None and runtime.process.poll() is not None:
+                runtime.last_error = f"browser exited ({runtime.process.returncode})"
+            else:
+                runtime.last_error = "CDP endpoint unavailable"
+            return
+        if not endpoint_matches_runtime(runtime.port, endpoint):
+            runtime.last_error = "CDP websocket endpoint crossed fleet port boundary"
+            return
+
+        client: CdpClient | None = None
+        try:
+            client = CdpClient(endpoint.websocket_url, timeout=1.5)
+            client.connect()
+            status = discover_fleet_status(client, settle_seconds=0.24)
+            runtime.page_ok = status.page_ok
+            runtime.page_count = status.page_count
+            runtime.worker_ok = status.worker_ok
+            runtime.worker_count = status.worker_count
+            runtime.worker_discovery_path = status.path
+            runtime.related_topology_count = status.topology_count
+            runtime.worker_detail = status.reason
+            runtime.last_error = None
+        except Exception as exc:
+            runtime.last_error = f"worker discovery unavailable: {exc}"
+        finally:
+            if client:
+                try:
+                    client.close()
+                except Exception:
+                    pass
+
     def refresh_status(self) -> None:
         for runtime in self.instances.values():
-            endpoint = probe_endpoint("127.0.0.1", runtime.port)
-            runtime.browser_ok = endpoint is not None
-            runtime.browser_name = endpoint.browser if endpoint else None
-            runtime.page_ok = False
-            runtime.page_count = 0
-            runtime.worker_ok = False
-            runtime.worker_count = 0
-            if not endpoint:
-                if runtime.process is not None and runtime.process.poll() is not None:
-                    runtime.last_error = f"browser exited ({runtime.process.returncode})"
-                continue
             try:
-                targets = http_json(f"{endpoint.http_base}/json/list")
-            except (OSError, ValueError, urllib.error.URLError) as exc:
-                runtime.last_error = f"target list unavailable: {exc}"
-                continue
-            if not isinstance(targets, list):
-                runtime.last_error = "target list malformed"
-                continue
-            pages = [
-                item
-                for item in targets
-                if isinstance(item, dict)
-                and item.get("type") == "page"
-                and str(item.get("url") or "") not in {"", "about:blank"}
-            ]
-            workers = [
-                item
-                for item in targets
-                if isinstance(item, dict)
-                and item.get("type") in {"worker", "shared_worker"}
-                and "gstyphoon" in str(item.get("url") or "").lower()
-            ]
-            runtime.page_count = len(pages)
-            runtime.page_ok = bool(pages)
-            runtime.worker_count = len(workers)
-            runtime.worker_ok = bool(workers)
-            runtime.last_error = None
+                self._refresh_runtime(runtime)
+            except Exception as exc:
+                self._reset_discovery(runtime)
+                runtime.last_error = f"instance status refresh failed: {exc}"
 
     def restart(self, instance_id: int) -> None:
         runtime = self.instances.get(instance_id)
@@ -350,8 +388,7 @@ class FleetManager:
                     except Exception:
                         pass
         runtime.browser_ok = False
-        runtime.page_ok = False
-        runtime.worker_ok = False
+        self._reset_discovery(runtime)
         self.write_manifest()
 
     def stop_all(self) -> None:
@@ -386,6 +423,11 @@ class FleetManager:
                         "pageCount": runtime.page_count,
                         "worker": "OK" if runtime.worker_ok else "WAIT",
                         "workerCount": runtime.worker_count,
+                        "workerDiscovery": runtime.worker_discovery_path,
+                        "relatedTopologyCount": runtime.related_topology_count,
+                        "workerIndicatorOnly": True,
+                        "world921031Identity": "NOT_CHECKED",
+                        "detail": runtime.worker_detail,
                         "error": runtime.last_error,
                     },
                 }
@@ -400,6 +442,8 @@ class FleetManager:
                 "ramWrites": 0,
                 "inputInjection": False,
                 "windowWorkerReplacement": False,
+                "workerStatusAuthority": "cheap-indicator-only",
+                "world921031IdentityAuthoritative": False,
                 "instances": instances,
             },
         )
@@ -412,6 +456,7 @@ class FleetManager:
         print(f"Browser exe: {self.browser_executable or 'auto'}")
         print(f"Manifest: {self.manifest_path}")
         print("READ ONLY / RAM writes: 0 / input injection: NO / window.Worker replacement: NO")
+        print("Worker status is a cheap discovery indicator only; PYLAUNCH World 921031 proof remains authoritative.")
         print("-" * 86)
         print(f"{'#':>2} {'PORT':>5} {'BROWSER':>10} {'PAGE':>6} {'WORKER':>7} {'PID':>7} PROFILE")
         for runtime in sorted(self.instances.values(), key=lambda item: item.instance_id):
