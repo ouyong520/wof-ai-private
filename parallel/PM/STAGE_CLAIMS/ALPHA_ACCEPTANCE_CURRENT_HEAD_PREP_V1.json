@@ -2,7 +2,12 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP_V1",
   "promptPath": "parallel/PM/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "2f1778ac51b5ecd8d36810379fc8442551fc40c6",
-  "startedAtUtc": "2026-09-01T16:08:00Z"
+  "startedAtUtc": "2026-09-01T16:08:00Z",
+  "resultPath": "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/prep_result.json",
+  "resultCommit": "83f88ec00f4f14368d0f1cd7ced7810ce22ceb82",
+  "currentHeadAuditCommit": "83f88ec00f4f14368d0f1cd7ced7810ce22ceb82",
+  "stopCondition": "ALPHA CURRENT-HEAD ACCEPTANCE PREP READY — WAITING RELEASE GATES",
+  "ownerActionRequired": false
 }
