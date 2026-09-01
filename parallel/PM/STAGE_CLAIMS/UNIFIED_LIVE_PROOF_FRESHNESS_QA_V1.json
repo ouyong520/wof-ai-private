@@ -2,7 +2,13 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "UNIFIED_LIVE_PROOF_FRESHNESS_QA_V1",
   "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_FRESHNESS_QA_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "c1347a4a6cc5c1da97c77e733c617f294263080e",
-  "startedAtUtc": "2026-09-01T14:37:00Z"
+  "startedAtUtc": "2026-09-01T14:37:00Z",
+  "finishedAtUtc": "2026-09-01T14:43:00Z",
+  "resultPath": "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.md",
+  "resultJsonPath": "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.json",
+  "resultCommit": "a0b567eb4be3bb5212c935c213d6d97db07cfc1d",
+  "blockerSeverity": "P1",
+  "blocker": "arbitrary Recorder stdout can refresh stale admission authority"
 }
