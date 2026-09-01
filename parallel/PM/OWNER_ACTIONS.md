@@ -1,66 +1,65 @@
 # WOF Future Danger AI — Owner Actions
 
-Updated: 2026-09-01 — RC3 QA blocked on one P1; open fresh RC4 fix
+Updated: 2026-09-01 — RC4 candidate PASS / open fresh RC4 QA
 
 ## Current owner action required: YES — thread management only
 
-Fresh independent RC3 QA is complete and found one concrete P1:
+RC4 product fix has reached its stop condition.
 
-`ALPHAQA-RC3-001` — when the paired runtime emits a disable/error diagnostic, the HUD can keep the previous warning visible for up to 1500 ms instead of clearing it immediately.
+Product regression now records:
+- artifact `wof-alpha-rc4`;
+- tests `PASS`;
+- exact World 921031 golden SHA-256 preserved;
+- `runtimeDiagImmediateWarningInvalidation: true`;
+- ordinary 1500 ms no-diag stale behavior unchanged;
+- exactly two T18 current-level production rules;
+- F1-F4 quarantined;
+- read-only/no-input and session safety preserved.
 
-All other major RC3 release gates audited before the stop condition passed.
+## Action O1 — close the RC4 implementation thread
 
-## Action O1 — close completed RC3 QA thread
+Do not ask RC4 engineering to certify itself further.
 
-Do not ask QA to edit `product/alpha/**`.
-It reached stop condition B with a deterministic product blocker.
-
-## Action O2 — open fresh Alpha RC4 Fix thread
+## Action O2 — open a fresh independent RC4 QA thread
 
 Use:
 
-`parallel/PM/ALPHA_RC4_FIX_START_PROMPT.md`
+`parallel/PM/ALPHA_RC4_QA_START_PROMPT.md`
 
-RC4 is intentionally tiny:
-- fix immediate warning invalidation on accepted runtime disable/error diagnostic;
-- add regression;
-- preserve World 921031 SHA-256 identity;
-- preserve two-rule stateless T18 scope and F1-F4 quarantine;
-- preserve session isolation, multi-warning HUD, bootstrap, legacy teardown, target/side, UNKNOWN, read-only/no-input.
+QA must not modify `product/alpha/**`.
+It must independently prove the old RC3 blocker is closed and recheck the preserved release gates.
 
-Do not expand attack research or Beta scope.
+Required final verdict:
+- `PASS — READY FOR ONE REAL BROWSER ACCEPTANCE`, or
+- a concrete `BLOCKED — P0/P1`.
 
-## Completed support threads to close/park
+## After QA PASS
 
-### Browser Acceptance Prep
+The Browser Acceptance Prep stage is already complete under `parallel/ALPHAACCEPT/**`.
+Do not create another acceptance-prep thread.
+Once QA passes, use the prepared one-refresh + one-button flow and return the single acceptance JSON.
 
-Preparation is complete under `parallel/ALPHAACCEPT/**`.
-Do not run final acceptance yet. After a future QA PASS, the prepared user operation is already one refresh + one button + one result JSON.
+## Non-blocking support
 
-### HUD Anchor Proof Tooling
+### Runtime Speed
 
-Tooling/handoff artifacts are prepared. Human Browser projection proof is Beta-support and does not block Alpha.
+Probe tooling is ready. The remaining owner work is one paired local/Browser measurement; this does not block Alpha.
 
-### Runtime Speed Probe Tooling
+### Local ROM identity
 
-If this tooling thread is still active, let it continue independently. It does not block RC4 or Alpha.
-If it has not yet published `parallel/RUNTIMESPEED_PROBE/**`, do not duplicate the thread.
+One read-only local hash command remains; this does not block Browser Alpha.
 
-## Optional non-blocking owner probes — not required now
+### HUD Anchor
 
-- Local ROM hash command: proves local World 921002 vs Browser World 921031.
-- Runtime speed paired measurement: once tooling is ready.
-- HUD Anchor Browser projection proof: Beta only.
-
-Do not spend owner time on these before RC4 is running unless convenient.
+One Browser projection proof remains for Beta; not an Alpha prerequisite.
 
 ## Do not do yet
 
-- Do not run final Alpha Browser acceptance.
-- Do not revive RC3 implementation or RC3 QA as a fix thread.
+- Do not run final Browser acceptance before RC4 QA PASS.
+- Do not revive RC3/RC4 implementation threads after their stage stop.
 - Do not restart WOF-052 as an Alpha blocker.
-- Do not perform broad collection.
+- Do not perform broad recollection.
 
 ## Next PM trigger
 
-After RC4 publishes a candidate, PM will close that implementation stage and open a fresh independent RC4 QA stage.
+After fresh RC4 QA writes its verdict, PM will either open a new fix stage for a concrete P0/P1 or authorize the already-prepared one-click Browser acceptance.
