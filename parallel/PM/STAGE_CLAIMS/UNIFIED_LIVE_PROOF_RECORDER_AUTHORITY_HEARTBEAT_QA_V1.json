@@ -2,7 +2,13 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_HEARTBEAT_QA_V1",
   "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_HEARTBEAT_QA_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "0fb7660b0cb2bd9f3460dc872766bf19ac1d42fa",
-  "startedAtUtc": "2026-09-01T15:38:17Z"
+  "startedAtUtc": "2026-09-01T15:38:17Z",
+  "completedAtUtc": "2026-09-01T15:45:28Z",
+  "resultPath": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_HEARTBEAT/RESULT.md",
+  "resultCommit": "df9d037c506361c98fba409ec3c6b1ea430d2f81",
+  "machineResultPath": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_HEARTBEAT/RESULT.json",
+  "machineResultCommit": "867dd5a7fdc7e4f7aa9d3cf558d4d5ff66ae72c4",
+  "blocker": "P1 stale prior-generation Recorder heartbeat/admission replay is not generation-bound and can revive authority"
 }
