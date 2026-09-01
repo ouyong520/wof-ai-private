@@ -7,6 +7,7 @@ cd /d "%~dp0"
 title WOF-052L 自动多房间采集器
 
 set "PYEXE="
+set "PIPLOG=.venv\pip_install.log"
 where py >nul 2>nul && set "PYEXE=py -3"
 if not defined PYEXE (
   where python >nul 2>nul && set "PYEXE=python"
@@ -29,7 +30,7 @@ if not exist ".venv\Scripts\python.exe" (
 ".venv\Scripts\python.exe" -c "import websocket" >nul 2>nul
 if errorlevel 1 (
   echo 首次使用：正在安装浏览器连接依赖 websocket-client……
-  ".venv\Scripts\python.exe" -m pip install --disable-pip-version-check -r requirements.txt
+  ".venv\Scripts\python.exe" -m pip install --disable-pip-version-check -q -r requirements.txt >"%PIPLOG%" 2>&1
   if errorlevel 1 goto :fail
 )
 
@@ -52,5 +53,6 @@ echo.
 echo WOF-052L 初始环境准备失败。
 echo 游戏和浏览器没有被修改。
 echo 请检查 Python/pip 和网络连接后重新双击本文件。
+if exist "%PIPLOG%" echo 技术详情已保存：%CD%\%PIPLOG%
 pause
 exit /b 1
