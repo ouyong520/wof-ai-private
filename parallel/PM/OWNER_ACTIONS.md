@@ -1,46 +1,53 @@
 # WOF Future Danger AI — Owner Actions
 
-Updated: 2026-09-01 — RC5 room-entry test passed; next work is safe transport proof + fresh QA
+Updated: 2026-09-01 — RC5 QA PASS; only one minimal PYLAUNCH Windows proof is required now
 
-## Current owner action required: YES — open fresh stages, but do not perform more Alpha Browser tests yet
+## Current owner action required: YES — one double-click proof
 
-The RC5 room-entry retest is complete:
-- RC5 enabled;
-- Acceptance Helper disabled;
-- game can enter normally;
-- no HUD/warnings because no safe live-Worker transport is paired.
+RC5 independent QA is complete and passed. Do not repeat RC5 room-entry testing and do not run Browser Acceptance yet.
 
-Do not repeat the RC5 room-entry test and do not run full Browser acceptance yet.
+The only immediate owner action is the real Windows proof for the Python Launcher.
 
-## Fresh stage A — Python Launcher Windows proof
+## Exact operation
 
-Use:
-- `parallel/PM/PYTHON_LAUNCHER_WINDOWS_PROOF_START_PROMPT.md`
+1. update the local `wof-ai-private` repository to latest;
+2. open:
+   `parallel\PYLAUNCH\`
+3. double-click exactly:
+   `RUN_WINDOWS_PROOF.cmd`
+4. use the Chrome/Edge window opened by the launcher;
+5. enter one normal WOF room exactly as usual;
+6. do not open DevTools and do not paste JavaScript;
+7. confirm the room remains normally playable.
 
-The foundation implementation already exists under `parallel/PYLAUNCH/**`. This stage should first reduce the live Windows proof to the simplest safe owner operation, then ask for exactly one proof.
+The proof tooling continuously writes:
+- `parallel\PYLAUNCH\WINDOWS_PROOF_STATUS.json`
 
-## Fresh stage B — RC5 independent QA
+## Pass condition
 
-Use:
-- `parallel/PM/ALPHA_RC5_QA_RETEST_START_PROMPT.md`
+All must be true simultaneously:
+- Browser: OK
+- WOF page: OK
+- Worker: OK
+- WASM / heap: OK
+- World 921031: OK
+- READ ONLY / RAM writes: 0
+- room remains normally playable
 
-This is read-only QA. It must not modify `product/alpha/**`.
+If PASS, report only:
 
-## Fresh stage C — WOF-052L tooling (optional parallel research)
+`PASS — PYLAUNCH WINDOWS PROOF`
 
-PM approved a long event-filtered capture instead of repeating blind 120-second rooms.
+If it does not PASS, provide only:
 
-Use:
-- `parallel/PM/WOF_052L_LONG_CAPTURE_START_PROMPT.md`
+`parallel\PYLAUNCH\WINDOWS_PROOF_STATUS.json`
 
-Do not start the one-hour human capture until that tooling stage explicitly says READY.
+No Console/Worker selection, gameplay capture, RAM collection, frame counting, or extra diagnostics are required.
 
-## Current game-script state
+## Other active lanes
 
-- RC5 Safe Bootstrap may remain installed.
-- Browser Acceptance Loader should remain disabled until Browser acceptance is re-authorized.
-- No more Worker-console/manual JavaScript work is required for the Alpha product path.
+WOF-052L automatic multi-room recorder, Browser Fleet Manager, and Safe Transport Integration Prep may continue independently. Do not perform extra human tests for them unless their own fresh stage reaches an explicit owner gate.
 
-## Next PM trigger
+## After PYLAUNCH PASS
 
-Return when any fresh stage reports a stop condition or asks for one precise owner action. PM will reassess the whole project before authorizing the next human test.
+PM will authorize a fresh Alpha transport-integration implementation stage. Do not reopen an old Alpha engineering thread.
