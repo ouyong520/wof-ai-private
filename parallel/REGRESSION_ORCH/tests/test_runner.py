@@ -49,6 +49,23 @@ class RegressionRunnerTests(unittest.TestCase):
         finally:
             runner._CORE_DISCOVER_CANDIDATES = original
 
+    def test_discovery_v2_safety_candidate_is_conservative(self) -> None:
+        self.assertTrue(
+            runner.is_discovery_v2_safety_candidate(
+                "parallel/DISCOVERY_V2_CONFORMANCE/test_harness.py"
+            )
+        )
+        self.assertTrue(
+            runner.is_discovery_v2_safety_candidate(
+                "parallel/PYLAUNCH_QA_DISCOVERY_V2_HARDENING/test_adversarial_parent_frame.py"
+            )
+        )
+        self.assertFalse(
+            runner.is_discovery_v2_safety_candidate(
+                "parallel/WOF052L_ENDURANCE_SIM/test_endurance_sim.py"
+            )
+        )
+
     def test_current_manifest_satisfies_discovery_v2_contract(self) -> None:
         manifest = runner.core.load_manifest(HERE / "manifest.json")
         self.assertEqual([], runner.validate_discovery_v2_manifest(manifest))
@@ -97,6 +114,40 @@ class RegressionRunnerTests(unittest.TestCase):
                 )
         finally:
             runner.core.discover_candidates = original_discover
+
+    def test_final_rescan_promotes_discovery_v2_qa_outside_guard(self) -> None:
+        manifest = runner.core.load_manifest(HERE / "manifest.json")
+        discovery_qa = (
+            "parallel/PYLAUNCH_QA_DISCOVERY_V2_HARDENING/"
+            "test_adversarial_parent_frame.py"
+        )
+        ordinary_outside = "parallel/WOF052L_ENDURANCE_SIM/test_endurance_sim.py"
+        original_guard = runner._CORE_BUILD_ALLOWLIST_GUARD
+        try:
+            runner._CORE_BUILD_ALLOWLIST_GUARD = lambda root, _manifest: (
+                {
+                    "id": "allowlist_guard",
+                    "nameZh": "测试 Allowlist 安全门",
+                    "status": "PASS",
+                    "durationSeconds": 0.0,
+                    "safetyCritical": True,
+                    "platformOptional": False,
+                    "reasonZh": None,
+                    "log": None,
+                    "commands": [],
+                    "failedCommands": [],
+                    "unallowlisted": [],
+                },
+                [discovery_qa, ordinary_outside],
+            )
+            guard, outside = runner.build_allowlist_guard(Path("."), manifest)
+            self.assertEqual("BLOCKED", guard["status"])
+            self.assertIn(discovery_qa, guard["unallowlisted"])
+            self.assertEqual([discovery_qa], guard["promotedDiscoveryV2SafetyTests"])
+            self.assertNotIn(discovery_qa, outside)
+            self.assertIn(ordinary_outside, outside)
+        finally:
+            runner._CORE_BUILD_ALLOWLIST_GUARD = original_guard
 
     def test_final_rescan_ignores_generated_dependency_test(self) -> None:
         with tempfile.TemporaryDirectory() as td:
