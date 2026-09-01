@@ -1,8 +1,14 @@
 {
-  "version": "seqminer-candidates-v2",
+  "version": "seqminer-candidates-v3",
   "updated": "2026-09-01",
   "productionPromotion": false,
   "evidenceNamespace": "mixed-explicitly-labelled",
+  "supportContract": {
+    "unit": "unique_resolved_cycle",
+    "loopVisitsDoNotIncreaseConfidence": true,
+    "captureFilenameIsExplicitScene": false,
+    "featureContract": "parallel/SEQMINER/FEATURE_CONTRACT.json"
+  },
   "corpusStatus": {
     "sweepAtlasVisible": true,
     "sweepAtlasFullSweepSeriesPresent": false,
@@ -102,6 +108,31 @@
     },
     {
       "rank": 6,
+      "id": "WK-DELAYED-1B-CROSS-STATE-TIMER34-RELOAD",
+      "namespace": "WinKawaks-local",
+      "evidenceClass": "discovery_correlation",
+      "knownEvidence": {
+        "delayed1BResidences": 52,
+        "entryTimer34": 8,
+        "loadedValueRange": "9..17",
+        "loadFrameOffsetRange": "1..3",
+        "mode35ChangedAtReload": "52/52",
+        "timer42ChangedAtReload": "52/52",
+        "localT18Examples": 1,
+        "localT23Examples": 1
+      },
+      "reason": "the positive timer load can coincide with the mode35 transition that defines a new compressed core state, so literal TM or state-local reload history is incomplete",
+      "minerSupport": [
+        "timer34_reload_exact",
+        "timer34_reload_norm",
+        "cross_core_reload_exact",
+        "cross_core_reload_norm"
+      ],
+      "goal": "when an exact local attack label exists, test whether pre/post core plus reload magnitude/normalization splits eventual attack branches",
+      "browserProductionRule": false
+    },
+    {
+      "rank": 7,
       "id": "WK-TERMINAL-TIMER1-HOLD-FAMILY",
       "namespace": "WinKawaks-local",
       "evidenceClass": "discovery_correlation",
@@ -117,7 +148,7 @@
       "browserProductionRule": false
     },
     {
-      "rank": 7,
+      "rank": 8,
       "id": "WK-MODE35-TRANSITION-CONTEXT",
       "namespace": "WinKawaks-local",
       "evidenceClass": "discovery_correlation",
@@ -134,7 +165,7 @@
       "browserProductionRule": false
     },
     {
-      "rank": 8,
+      "rank": 9,
       "id": "WK-LOOP-RESET-NODES",
       "namespace": "WinKawaks-local",
       "evidenceClass": "discovery_correlation",
@@ -152,7 +183,7 @@
       "id": "ALL-GAME-EXACT-ATTACK-SEQUENCE-ATLAS",
       "reason": "SWEEPATLAS exists but explicitly reports fullSweepSeriesPresent=false and stageSceneWaveLabelsAvailable=false; no separately proven WinKawaks-local exact move/attack field exists",
       "notJustificationForRecapture": true,
-      "automaticNextAction": "rerun seqminer.py v2 over retained raw when labeled sweep data or exact local attack labels become available"
+      "automaticNextAction": "rerun seqminer.py v3 over retained raw when labeled sweep data or exact local attack labels become available"
     }
   ]
 }
