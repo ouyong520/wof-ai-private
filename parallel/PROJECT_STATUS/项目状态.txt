@@ -1,0 +1,60 @@
+WOF 项目状态
+
+快照时间：2026-09-01 20:20 +08:00
+仓库 HEAD：6a3bfb108197
+
+当前 P0
+- PYLAUNCH 真实 Chrome Worker 自动发现修复：进行中
+- 已知真实证据：Chrome/CDP 可连接、游戏可正常运行、readOnly=true、ramWrites=0，但 WOF page / gstyphoon Worker / WASM / World 921031 尚未被 Launcher 自动发现。
+
+当前 P1
+- Owner one-click package/bootstrap：近期实现和 Windows 验证提交已经明显推进到 v2026.09.01.4，但 PM 总控仍把它列为 P1 fresh stage，因此状态标记为 NEEDS_PM_REVIEW，不自动宣布完成。
+
+已完成 / 仓库侧 READY
+- RC5 独立 QA：PASS / CLOSED
+- Browser Fleet：仓库侧 READY / 等待组合真人 proof
+- WOF-052L Recorder：READY / 等待真实 Worker discovery proof
+- Operator Toolkit core：READY
+- Owner Tools 简体中文 UX：PASS
+- Evidence Auto-Ingestor：REPOSITORY READY
+- Safe Transport Integration Contract：READY
+- Project Status Scanner：REPOSITORY-SIDE READY
+
+当前 BLOCKED
+- Alpha Safe Transport 实际实现：BLOCKED，等待 PYLAUNCH Worker/WASM/World proof 通过。
+- Alpha Browser acceptance / release：PAUSED / BLOCKED，不能跳过 transport proof 和 integrated regression。
+
+项目所有者当前真人操作：NO
+说明：不要重新进入游戏，也不要重跑旧 PYLAUNCH proof。当前需要继续工程修复/仓库侧 fresh stages，而不是再次真人 Browser 操作。
+
+PM Fresh Stage 调度：YES
+- parallel/PM/PYLAUNCH_WORKER_DISCOVERY_FIX_START_PROMPT.md
+- parallel/PM/TOOLS_CHINESE_UX_PASS_START_PROMPT.md（结果已 PASS，PM 应收口而不是重做）
+- parallel/PM/OWNER_ONECLICK_PACKAGE_START_PROMPT.md（近期实现领先于 PM 摘要，需读最终 RESULT 后收口）
+
+下一阶段
+1. 完成 PYLAUNCH Worker-discovery fix
+2. 只做一次新的最小真人 Windows proof
+3. Alpha Safe Transport Integration implementation
+4. Integrated regression PASS
+5. Bounded Browser acceptance
+6. PM Alpha release decision
+
+重复工作风险
+- PYLAUNCH_WORKER_DISCOVERY_FIX <-> WORKER_SURFACE：都涉及 Worker discovery/topology。WORKER_SURFACE 必须保持只读审计/诊断，不修改 PYLAUNCH；PYLAUNCH lane 独占真正修复。
+
+旧阶段误开风险
+- RC5 independent QA 已 PASS/CLOSED，不要重新打开。
+- 旧 PYLAUNCH proof 已经提供足够失败证据，在 fix READY 前不要重复跑旧 proof。
+
+PM 复核：NEEDS_PM_REVIEW
+- Owner one-click 最近的 v2026.09.01.3/v2026.09.01.4 实现/Windows 验证明显领先于 ACTIVE_PRIORITIES 的旧描述。
+- Owner Tools Chinese UX 已有权威 PASS 结果，但 ACTIVE_PRIORITIES 仍写 fresh UX pass required。
+- Worker Surface audit 与 PYLAUNCH repair 有主题交叉，需要保持 scope 隔离。
+
+安全边界
+- Scanner 只读仓库
+- 不修改 product/alpha/**
+- 不修改 PYLAUNCH / Recorder / Fleet 实现逻辑
+- 游戏 RAM 写入：0
+- 游戏输入注入：0
