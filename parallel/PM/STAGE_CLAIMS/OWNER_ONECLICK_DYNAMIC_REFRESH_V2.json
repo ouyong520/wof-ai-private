@@ -2,8 +2,11 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "OWNER_ONECLICK_DYNAMIC_REFRESH_V2",
   "promptPath": "parallel/PM/OWNER_ONECLICK_DYNAMIC_REFRESH_V2_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "1be09d7f14e18d5aaa3721dff74df5df02a94063",
   "startedAtUtc": "2026-09-01T15:17:00Z",
-  "resultPath": "parallel/OWNER_ONECLICK/RESULT.md"
+  "resultPath": "parallel/OWNER_ONECLICK/RESULT.md",
+  "resultCommit": "33a077002f7c45e237d8dfe66ad4baf66b8b0f32",
+  "completedAtUtc": "2026-09-01T15:39:16Z",
+  "stopCondition": "OWNER ONECLICK DYNAMIC REFRESH V2 READY — CURRENT SNAPSHOT + UTF-8 PACKAGE VERIFIED"
 }
