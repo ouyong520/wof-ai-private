@@ -113,7 +113,7 @@ Same logical cursor spans materially different phase families.
 
 Conclusion: `logicalCursor` alone is not a complete state identifier. `cursorFlags` is mandatory core context.
 
-## E. Loop/reset branch nodes
+## E. Loop/reset branch nodes and confidence rule
 
 Three records are overwhelmingly branch/reset rather than sequential:
 
@@ -130,7 +130,14 @@ Examples:
 02005ED6 -> 02005EA4   # -0x32 loop reset, 80
 ```
 
-The same phase family can recur on different loop iterations. SEQMINER v2 therefore counts a signature only once per cycle for confidence while preserving the full repeated path in cycle output.
+The same phase family can recur on different loop iterations. SEQMINER v3 therefore separates:
+
+```text
+attack_distribution       = one support unit per anchor per resolved cycle
+raw_occurrence_distribution = all repeated visits retained diagnostically
+```
+
+A loop cannot manufacture independent confidence.
 
 ## F. Conditional-wait family
 
@@ -153,9 +160,67 @@ versus
 same cursor/state/TM1 + long conditional hold
 ```
 
-v2 records exact terminal hold frames plus normalized hold buckets.
+v3 records exact terminal hold frames plus normalized hold buckets.
 
-## G. Mode35 branch axis
+## G. Delayed `1B` cross-state timer reload branch
+
+Retained EFIELD analysis contains 52 `+0x73=1B` residences that begin at `+0x34=8` and load upward shortly afterward.
+
+Key structure:
+
+```text
+first reload offset: 1..3 frames
+loaded +0x34: 9..17
+entry (6C,70,72,77): 40,00,E8,00
++0x35 changes at reload: 52/52
++0x42 changes at reload: 52/52
+```
+
+Main destination records:
+
+```text
+02008E68  10
+02008DE2  10
+02008D98   9
+020060D2   8
+02006088   8
+02006158   7
+```
+
+Priority-type examples exist for local T18 and T23, but there is no exact local attack label attached to those events.
+
+### Why this is a branch feature rather than a timer value
+
+`+0x35` is part of the compressed core state. Because it changes on all 52 delayed reload frames, the `+0x34` positive load may occur **across** a core-state boundary. A state-local timer history alone can therefore lose the edge.
+
+SEQMINER v3 explicitly represents:
+
+```text
+coreFrom -> coreTo
+cursorFrom -> cursorTo
+mode35From -> mode35To
+phaseFrom -> phaseTo
+34 from -> to
+42 from -> to
+exact reload magnitude
+record-normalized reload family
+preceding TM1 hold
+```
+
+with feature families:
+
+```text
+timer34_reload_exact
+timer34_reload_norm
+cross_core_reload_exact
+cross_core_reload_norm
+```
+
+Only zero-prefix reloads are predictor features; the future event frame is excluded.
+
+Evidence class: `discovery_correlation` until exact local move labels exist.
+
+## H. Mode35 branch axis
 
 Notable transitions:
 
@@ -178,7 +243,7 @@ Useful alignments:
 
 Mode35 progression remains separate from timer34.
 
-## H. Structural phase branches
+## I. Structural phase branches
 
 Frequent compressed path:
 
@@ -212,7 +277,7 @@ count 38.
 
 Rare boundary-only families `78,78,78,1E,0B` and `70,70,70,1E,0B` had no interior samples in retained boundary analysis.
 
-## I. Context dimensions that must not be collapsed
+## J. Context dimensions that must not be collapsed
 
 Every candidate evaluation preserves or stratifies by:
 
@@ -220,6 +285,7 @@ Every candidate evaluation preserves or stratifies by:
 - cursor + embedded flags;
 - exact and normalized timer path;
 - terminal TM1 hold duration;
+- same-core and cross-core positive timer reload edges;
 - mode35/gate37;
 - full phase tuple;
 - live target `+0x6D..+0x6E`;
@@ -227,8 +293,10 @@ Every candidate evaluation preserves or stratifies by:
 - split player reference `+0x6F/+0x68`;
 - synchronization checkpoint `+0xCC`;
 - profile `+0xB0/+0xB4/+0xB6`;
-- capture, true scene label when available, slot/episode;
+- capture, explicit scene label when available, slot/episode;
 - target changes including the event edge.
+
+Capture filenames are provenance fallback only and never count as authoritative scene evidence.
 
 ## Promotion boundary
 
