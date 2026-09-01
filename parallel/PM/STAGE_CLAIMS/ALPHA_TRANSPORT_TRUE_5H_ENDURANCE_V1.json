@@ -2,7 +2,12 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_V1",
   "promptPath": "parallel/PM/ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "d289e6f81a1a38c652e464fdf1b56d13236ee67a",
-  "startedAtUtc": "2026-09-01T15:39:57Z"
+  "startedAtUtc": "2026-09-01T15:39:57Z",
+  "completedAtUtc": "2026-09-01T16:16:41.600Z",
+  "verdict": "BLOCKED — ALPHA TRANSPORT TRUE 5H ENDURANCE DID NOT SATISFY SUCCESS STOP",
+  "resultPath": "parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/RESULT.md",
+  "summaryPath": "parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/final-summary.json",
+  "resultCommit": "0456d452dcea84bde84df297ff1bee0992203aed"
 }
