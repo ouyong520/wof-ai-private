@@ -2,7 +2,17 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "HUDANCHOR_PLAYER_FOLLOW_CONFIDENCE_FAILCLOSED_FIX_V1",
   "promptPath": "parallel/PM/HUDANCHOR_PLAYER_FOLLOW_CONFIDENCE_FAILCLOSED_FIX_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "6e453a467608430e1c9610511df458ab3c62505b",
-  "startedAtUtc": "2026-09-01T15:39:00Z"
+  "startedAtUtc": "2026-09-01T15:39:00Z",
+  "completedAtUtc": "2026-09-01T15:49:10Z",
+  "resultPath": "parallel/HUDANCHOR_PLAYER_FOLLOW/RESULT.md",
+  "resultCommit": "8ba292655e82c007ae4e1c45497ef61746aca6d2",
+  "implementationCommits": [
+    "250f8cb7715b6c9c2acb69e855cb06b62ce94576",
+    "8a0d79e2da9f5661b2183a325d6c9a9c4b8a92d1"
+  ],
+  "sourceBlob": "e36e80fdad7bcf7f73485f9093aa9014428c86b1",
+  "regressionBlob": "1efcac65e9cc5598358c86e968a6b148d9e970a2",
+  "stopCondition": "HUDANCHOR PLAYER-FOLLOW CONFIDENCE FAIL-CLOSED FIX READY — READY FOR FRESH QA + LONG-STRESS V2"
 }
