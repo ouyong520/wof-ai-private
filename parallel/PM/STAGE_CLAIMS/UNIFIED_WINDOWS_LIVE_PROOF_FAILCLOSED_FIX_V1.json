@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "UNIFIED_WINDOWS_LIVE_PROOF_FAILCLOSED_FIX_V1",
+  "promptPath": "parallel/PM/UNIFIED_WINDOWS_LIVE_PROOF_FAILCLOSED_FIX_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "700eaa5bf36bce8ff49bd877e6532da964c2b896",
+  "startedAtUtc": "2026-09-01T13:32:30Z"
+}
