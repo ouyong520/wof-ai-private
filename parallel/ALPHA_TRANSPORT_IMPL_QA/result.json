@@ -1,0 +1,48 @@
+{
+  "schema": "wof-alpha-transport-reference-independent-qa-v1",
+  "stageId": "ALPHA_TRANSPORT_REFERENCE_QA_V1",
+  "status": "BLOCKED",
+  "blockerId": "STALE_INFLIGHT_COMPLETION_RELABELED_AFTER_REBIND",
+  "source": {
+    "referenceRuntimeBlob": "3b767c12843f2b3f0768c6026c7a54ada6c02d94",
+    "workerRuntimeBlob": "48bb83eab82af4a83eed5c2a8619f7fe1936e58f",
+    "pageAuthorityBlob": "5e53bd2ad40823a8768802df0a1c5431adb19ee9",
+    "constantsBlob": "a29cb3ad714598e2e6aeeed64acc9e3eca8b221e",
+    "frozenVectorsBlob": "5a0cbe2ccfcf7eb6e875552f56748f736722c14d"
+  },
+  "case": "stale-inflight-completion-after-rebind",
+  "expected": {
+    "staleOldGenerationCompletionAcceptedByPair2": false,
+    "visibleWarningsOnPair2": 0,
+    "freshPair2TickRemainsAuthoritative": true
+  },
+  "observed": {
+    "leakedPairGeneration": 2,
+    "leakedPairNonce": "22222222222222222222222222222222",
+    "acceptedByNewPair": true,
+    "visibleWarningsOnPair2": 1,
+    "workerInFlightAfterStaleCompletion": false,
+    "freshCompletionError": "no detector tick in flight"
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "contractConflict": [
+    "Worker replacement/reload resets old authority immediately",
+    "reconnect/rebind cannot revive an old generation",
+    "one detector tick in-flight with missed intervals skipped",
+    "target retarget/stale warning cannot survive onto another player/session"
+  ],
+  "regression67": {
+    "previousReferenceResult": "67/67 PASS",
+    "freshRerun": "NOT RUN — adversarial blocker reached first, which is a stop condition"
+  },
+  "requiredFreshFixOwnership": {
+    "owner": "fresh ALPHA_TRANSPORT_IMPL fix stage",
+    "scope": "parallel/ALPHA_TRANSPORT_IMPL/**",
+    "requiredBehavior": "Each detector tick completion must carry/capture immutable runtimeEpoch + session + pairGeneration + pairNonce (or an equivalent unique tick token). finishTick must reject a completion unless its captured token still matches the currently authoritative runtime/pair, and a stale completion must not consume the current generation's in-flight slot. Add regression coverage for an old unresolved tick completing after reinstall/rebind while a new tick is already in flight."
+  },
+  "ownerAction": "NO"
+}
