@@ -1,39 +1,46 @@
 # WOF Future Danger AI — Owner Actions
 
-Updated: 2026-09-01 — RC5 candidate ready / owner room-entry retest next
+Updated: 2026-09-01 — RC5 room-entry test passed; next work is safe transport proof + fresh QA
 
-## Current owner action required: YES — one minimal RC5 Browser retest
+## Current owner action required: YES — open fresh stages, but do not perform more Alpha Browser tests yet
 
-RC5 engineering is complete for this stage.
+The RC5 room-entry retest is complete:
+- RC5 enabled;
+- Acceptance Helper disabled;
+- game can enter normally;
+- no HUD/warnings because no safe live-Worker transport is paired.
 
-Authoritative result:
-- `product/alpha/ALPHA_RC5_REPORT.md`
-- full product regression: PASS
-- current bootstrap: `WOF Future Danger Alpha RC5 Safe Bootstrap`
-- RC5 no longer replaces/wraps `window.Worker`, creates no Blob Worker, and leaves native game Worker construction untouched.
+Do not repeat the RC5 room-entry test and do not run full Browser acceptance yet.
 
-## Action O1 — update the installed Alpha userscript to RC5
+## Fresh stage A — Python Launcher Windows proof
 
-Use the current repository file:
-- `product/alpha/wof_alpha_bootstrap.user.js`
+Use:
+- `parallel/PM/PYTHON_LAUNCHER_WINDOWS_PROOF_START_PROMPT.md`
 
-Keep Browser Acceptance Helper disabled for this retest.
+The foundation implementation already exists under `parallel/PYLAUNCH/**`. This stage should first reduce the live Windows proof to the simplest safe owner operation, then ask for exactly one proof.
 
-## Action O2 — one question only
+## Fresh stage B — RC5 independent QA
 
-1. close all current WOF game tabs;
-2. enable only the RC5 Alpha userscript;
-3. reopen/refresh the normal WOF game page;
-4. try to enter one normal room;
-5. report only: `RC5 能进房` or `RC5 还是不能进房`.
+Use:
+- `parallel/PM/ALPHA_RC5_QA_RETEST_START_PROMPT.md`
 
-No Console, Worker selection, attack triggering, warning test, multi-tab test, ROM identity recheck, or JSON collection is required.
+This is read-only QA. It must not modify `product/alpha/**`.
 
-## Decision after result
+## Fresh stage C — WOF-052L tooling (optional parallel research)
 
-- If `RC5 能进房`: close the P0 room-entry blocker, close RC5 engineering stage, then open a fresh independent RC5 QA/retest stage before resuming full Browser acceptance.
-- If `RC5 还是不能进房`: preserve the observation and open a fresh targeted real-host bootstrap diagnostic/fix stage; do not revive the completed RC5 thread.
+PM approved a long event-filtered capture instead of repeating blind 120-second rooms.
 
-## Other lanes
+Use:
+- `parallel/PM/WOF_052L_LONG_CAPTURE_START_PROMPT.md`
 
-WOF-052 evening capture and Python Launcher foundation may continue independently. They are not substitutes for this Alpha release gate.
+Do not start the one-hour human capture until that tooling stage explicitly says READY.
+
+## Current game-script state
+
+- RC5 Safe Bootstrap may remain installed.
+- Browser Acceptance Loader should remain disabled until Browser acceptance is re-authorized.
+- No more Worker-console/manual JavaScript work is required for the Alpha product path.
+
+## Next PM trigger
+
+Return when any fresh stage reports a stop condition or asks for one precise owner action. PM will reassess the whole project before authorizing the next human test.
