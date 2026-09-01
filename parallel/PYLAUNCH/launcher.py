@@ -1,0 +1,84 @@
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import threading
+import time
+from pathlib import Path
+
+from wof_launcher.monitor import LauncherMonitor
+from wof_launcher.state import StatusStore
+from wof_launcher.tray import TrayApp
+
+
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="WOF Future Danger Python Launcher Foundation (READ ONLY)")
+    p.add_argument("--host", default="127.0.0.1")
+    p.add_argument("--port", type=int, default=9223)
+    p.add_argument("--browser", choices=["auto", "chrome", "edge"], default="auto")
+    p.add_argument("--browser-path")
+    p.add_argument("--profile-dir")
+    p.add_argument("--game-url")
+    p.add_argument("--attach-only", action="store_true", help="Do not start a browser; attach only to an existing CDP endpoint")
+    p.add_argument("--no-tray", action="store_true", help="CLI diagnostics mode")
+    p.add_argument("--once", action="store_true", help="With --no-tray, print one status snapshot and exit")
+    return p.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    status = StatusStore()
+    stop = threading.Event()
+    tray_holder: dict[str, TrayApp] = {}
+
+    def request_stop() -> None:
+        stop.set()
+        monitor.stop()
+
+    monitor = LauncherMonitor(
+        status,
+        host=args.host,
+        port=args.port,
+        browser_preference=args.browser,
+        browser_path=args.browser_path,
+        profile_dir=Path(args.profile_dir).expanduser() if args.profile_dir else None,
+        game_url=args.game_url,
+        auto_launch_browser=not args.attach_only,
+        on_change=lambda: tray_holder.get("tray") and tray_holder["tray"].refresh(),
+    )
+    monitor.start()
+
+    if args.no_tray:
+        try:
+            last = None
+            while not stop.is_set():
+                snap = status.get().snapshot()
+                encoded = json.dumps(snap, sort_keys=True)
+                if encoded != last:
+                    print(json.dumps(snap, indent=2, ensure_ascii=False), flush=True)
+                    last = encoded
+                if args.once and snap["state"] in {"CONNECTED", "WAITING_WOF", "ERROR"}:
+                    break
+                time.sleep(1)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            request_stop()
+        return 0
+
+    try:
+        tray = TrayApp(status, reconnect=monitor.reconnect, open_game=monitor.open_game, quit_app=request_stop)
+        tray_holder["tray"] = tray
+        tray.run()
+    except ImportError as exc:
+        print(f"Tray dependency missing ({exc}); run pip install -r requirements.txt or use --no-tray", file=sys.stderr)
+        request_stop()
+        return 2
+    finally:
+        request_stop()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
