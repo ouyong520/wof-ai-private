@@ -1,0 +1,77 @@
+WOF Beta Prospective Manifest 清单
+更新：2026-09-01
+状态：BETA PROSPECTIVE MANIFEST SET READY
+Promotion：research-only；禁止自动 production promotion
+身份：Warriors of Fate (World 921031)
+SHA-256：5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62
+
+【已编译，可冻结后做 prospective validation】
+1. T24 (0x18) BODY7520/TM4 -> A5424
+   manifest: T24_5424_CYCLE_BODY7520_TM4_S24_LEVEL_90.json
+   证据：WOF-046/047/049 合计 58/58 expected attack
+   形式：完整 current-level predicate；每个 zero-attack cycle 只武装一次
+   gate：>=10 fresh evaluable signals，>=2 rooms，0 hard miss
+
+2. T24 (0x18) BODY7512/TM3 -> A5440
+   manifest: T24_5440_CYCLE_BODY7512_TM3_80.json
+   证据：WOF-046/047/049 合计 50/50 expected attack
+   形式：完整 current-level predicate；每个 zero-attack cycle 只武装一次
+   gate：>=10 fresh evaluable signals，>=2 rooms，0 hard miss
+
+3. D867BA -> A3232
+   manifest: D867BA_3232_TM6_220.json
+   证据：WOF-046/047/049/050/051 合计 80/80
+   形式：current-level-first；跨 type descriptor family
+   gate：>=12 signals，>=2 targets，>=2 Browser types（自然覆盖允许时）
+   注意：lifecycle-safe production promotion 仍单独受阻
+
+4. D8811E -> A3232
+   manifest: D8811E_3232_TM6_135.json
+   证据：68/68 expected attack；保留一条 clean real-late tail
+   形式：current-level-first
+   gate：>=12 signals，>=2 targets
+   注意：135ms 是 audit horizon，不是因果边界；lifecycle promotion 仍受阻
+
+5. T20 (0x14) B0 -> B255 -> A5136
+   manifest: T20_5136_B0_TO_B255_1250.json
+   证据：27/27 expected attack
+   形式：严格 ordered pair/history；不可退化成 unordered membership
+   gate：>=8 signals，>=2 rooms
+   注意：session/Worker/lifecycle boundary 必须重置 history；same-type replacement 风险仍阻止自动 production
+
+6. T16 (0x10) B4 IMMINENT DANGER
+   manifest: T16_B4_DANGER_40.json
+   证据：520 个 positive danger outcomes
+   形式：current-level-first
+   observed ACTIVE：A6432、A4840、A4832
+   gate：>=30 signals，>=2 rooms/targets
+   注意：这是“即将危险”，不是 A6432-exclusive attack predictor
+
+7. T23 (0x17) A5888 BODY4936 ordered tail3
+   manifest: T23_A5888_BODY4936_TAIL3.json
+   path：S0/A8/B2 BODY4936 -> S0/A2/B0 BODY4936 -> S0/A6/B4 BODY4936
+   expectedAttacks=[5888]
+   gate：>=3 fresh prospective signals，优先 >=2 rooms/targets
+   注意：当前来源仍是 discovery；manifest 必须先 freeze，之后的新证据才算 prospective
+
+【NOT_READY；未生成 specific manifest】
+8. T18 (0x12) BODY4728 post-anchor A4704/A4712 split
+   原因：WOF-051 同一 anchor 已前瞻命中 A4704 与 A4712；WOF-052 没有新增 T18 candidate coverage，也没有 ordered discriminator。
+   缺口：先得到 >=2 unique resolved discovery cycles 支持同一 post-anchor discriminator，再冻结最短 branch。
+   约束：没有生成任何 A4704/A4712-specific manifest。
+
+9. T23 (0x17) A4920 branch family
+   原因：WOF-047 三个 A4920 cycles 跨多个 BODY family，没有重复稳定的 frozen ordered branch。
+   缺口：同一 branch >=2 unique discovery cycles。
+
+10. T23 (0x17) A4792 branch set
+    原因：A4792 已明确 multi-branch，且有 ACTIVE-edge retarget complexity。
+    缺口：每个 branch >=2 unique discovery cycles，保留 target evolution 后才能 freeze。
+
+【明确排除】
+- 已 production 的两条 Alpha T18 current-level rules：只作 regression/example，不进 Beta discovery queue。
+- WOF-045 T23 BODY4976/A6/B4/TM5 单状态候选：被 ordered evidence 取代。
+- WinKawaks 本地 cursor/flag/timer/loop 结构：没有独立证明的 exact local attack semantic，不能编成 Browser attack manifest。
+- 不新增采集，不修改 product/alpha/**，不自动跑真人 Browser。
+
+停止条件：BETA PROSPECTIVE MANIFEST SET READY
