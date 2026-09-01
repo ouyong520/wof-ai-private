@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 import queue
 import threading
+import time
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 import websocket
 
@@ -13,6 +14,8 @@ READ_ONLY_METHODS = {
     "Target.getTargets",
     "Target.attachToTarget",
     "Target.detachFromTarget",
+    # Discovery/attachment state only. These do not write game/WASM memory or inject input.
+    "Target.setAutoAttach",
     "Runtime.enable",
     "Runtime.evaluate",
 }
@@ -23,7 +26,7 @@ class CdpError(RuntimeError):
 
 
 class CdpClient:
-    """Tiny browser-level CDP client with an explicit foundation-stage method allowlist."""
+    """Tiny browser-level CDP client with an explicit read-only game policy."""
 
     def __init__(self, websocket_url: str, timeout: float = 5.0) -> None:
         self.websocket_url = websocket_url
@@ -35,6 +38,9 @@ class CdpClient:
         self._pending: dict[int, queue.Queue[dict[str, Any]]] = {}
         self._pending_lock = threading.Lock()
         self._closed = threading.Event()
+        self._event_cv = threading.Condition()
+        self._event_seq = 0
+        self._events: list[tuple[int, dict[str, Any]]] = []
 
     def connect(self) -> None:
         if self._ws is not None:
@@ -58,6 +64,8 @@ class CdpClient:
             self._pending.clear()
         for q in pending:
             q.put({"error": {"message": "CDP connection closed"}})
+        with self._event_cv:
+            self._event_cv.notify_all()
 
     def _receiver(self) -> None:
         assert self._ws is not None
@@ -80,7 +88,45 @@ class CdpClient:
                     q = self._pending.pop(message_id, None)
                 if q is not None:
                     q.put(message)
+                continue
+            if isinstance(message.get("method"), str):
+                with self._event_cv:
+                    self._event_seq += 1
+                    self._events.append((self._event_seq, message))
+                    if len(self._events) > 512:
+                        del self._events[: len(self._events) - 512]
+                    self._event_cv.notify_all()
         self._closed.set()
+        with self._event_cv:
+            self._event_cv.notify_all()
+
+    def event_cursor(self) -> int:
+        with self._event_cv:
+            return self._event_seq
+
+    def wait_for_events(
+        self,
+        cursor: int,
+        *,
+        timeout: float,
+        predicate: Callable[[dict[str, Any]], bool] | None = None,
+    ) -> tuple[int, list[dict[str, Any]]]:
+        deadline = time.monotonic() + max(0.0, timeout)
+        found: list[dict[str, Any]] = []
+        newest = cursor
+        with self._event_cv:
+            while True:
+                rows = [(seq, msg) for seq, msg in self._events if seq > cursor]
+                if rows:
+                    newest = max(seq for seq, _ in rows)
+                    found = [msg for _, msg in rows if predicate is None or predicate(msg)]
+                    if found:
+                        return newest, found
+                    cursor = newest
+                remaining = deadline - time.monotonic()
+                if remaining <= 0 or self._closed.is_set():
+                    return newest, found
+                self._event_cv.wait(remaining)
 
     def request(
         self,
@@ -91,7 +137,7 @@ class CdpClient:
         timeout: float | None = None,
     ) -> dict[str, Any]:
         if method not in READ_ONLY_METHODS:
-            raise CdpError(f"foundation read-only policy blocks CDP method: {method}")
+            raise CdpError(f"read-only policy blocks CDP method: {method}")
         if self._ws is None or self._closed.is_set():
             raise CdpError("CDP is not connected")
         with self._id_lock:

@@ -15,107 +15,62 @@ from wof_launcher.tray import TrayApp
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="WOF Future Danger Python Launcher Foundation (READ ONLY)")
-    p.add_argument("--host", default="127.0.0.1")
-    p.add_argument("--port", type=int, default=9223)
-    p.add_argument("--browser", choices=["auto", "chrome", "edge"], default="auto")
-    p.add_argument("--browser-path")
-    p.add_argument("--profile-dir")
-    p.add_argument("--game-url")
-    p.add_argument("--attach-only", action="store_true", help="Do not start a browser; attach only to an existing CDP endpoint")
-    p.add_argument("--no-tray", action="store_true", help="CLI diagnostics mode")
-    p.add_argument("--once", action="store_true", help="With --no-tray, print one status snapshot and exit")
-    p.add_argument("--proof-json", help="Continuously write a compact read-only Windows proof JSON snapshot")
-    fleet = p.add_mutually_exclusive_group()
-    fleet.add_argument("--fleet-auto", action="store_true", help="Attach to the first live Browser Fleet instance")
-    fleet.add_argument("--fleet-instance", type=int, help="Attach to one numbered live Browser Fleet instance")
-    p.add_argument("--fleet-manifest", help="Optional Browser Fleet instances.json path")
+    p = argparse.ArgumentParser(description="WOF Future Danger Python Launcher（只读模式）")
+    p.add_argument("--host", default="127.0.0.1"); p.add_argument("--port", type=int, default=9223)
+    p.add_argument("--browser", choices=["auto", "chrome", "edge"], default="auto"); p.add_argument("--browser-path"); p.add_argument("--profile-dir"); p.add_argument("--game-url")
+    p.add_argument("--attach-only", action="store_true", help="仅连接现有本机 CDP 浏览器，不自动启动浏览器")
+    p.add_argument("--no-tray", action="store_true", help="命令行诊断模式，不显示托盘图标")
+    p.add_argument("--once", action="store_true", help="与 --no-tray 一起使用：输出一次状态后退出")
+    p.add_argument("--proof-json", help="持续写入只读 Windows 真人验证 JSON")
+    fleet = p.add_mutually_exclusive_group(); fleet.add_argument("--fleet-auto", action="store_true", help="自动连接第一个在线 Browser Fleet 实例"); fleet.add_argument("--fleet-instance", type=int, help="连接指定编号的 Browser Fleet 实例")
+    p.add_argument("--fleet-manifest", help="可选：Browser Fleet instances.json 路径")
     return p.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     if args.fleet_auto or args.fleet_instance is not None:
-        selected = select_fleet_instance(
-            Path(args.fleet_manifest).expanduser() if args.fleet_manifest else None,
-            instance_id=args.fleet_instance,
-            live_only=True,
-        )
+        selected = select_fleet_instance(Path(args.fleet_manifest).expanduser() if args.fleet_manifest else None, instance_id=args.fleet_instance, live_only=True)
         if selected is None:
-            which = f"#{args.fleet_instance}" if args.fleet_instance is not None else "any live instance"
-            print(f"Browser Fleet {which} not found; game/browser is unaffected", file=sys.stderr)
-            return 3
-        args.host = selected.host
-        args.port = selected.port
-        args.attach_only = True
-        if not args.profile_dir:
-            args.profile_dir = str(selected.profile_dir)
+            which = f"#{args.fleet_instance}" if args.fleet_instance is not None else "任意在线实例"
+            print(f"未找到 Browser Fleet {which}。游戏和浏览器本身没有受到影响。", file=sys.stderr); return 3
+        args.host = selected.host; args.port = selected.port; args.attach_only = True
+        if not args.profile_dir: args.profile_dir = str(selected.profile_dir)
 
-    status = StatusStore()
-    stop = threading.Event()
-    tray_holder: dict[str, TrayApp] = {}
+    status = StatusStore(); stop = threading.Event(); tray_holder: dict[str, TrayApp] = {}
     proof_path = Path(args.proof_json).expanduser().resolve() if args.proof_json else None
 
     def publish_status() -> None:
         if proof_path:
-            try:
-                write_proof_json(proof_path, status.get().snapshot())
-            except OSError:
-                # Diagnostics export must never interfere with browser/game attachment.
-                pass
+            try: write_proof_json(proof_path, status.get().snapshot())
+            except OSError: pass
         tray = tray_holder.get("tray")
-        if tray:
-            tray.refresh()
+        if tray: tray.refresh()
 
     def request_stop() -> None:
-        stop.set()
-        monitor.stop()
+        stop.set(); monitor.stop()
 
-    monitor = LauncherMonitor(
-        status,
-        host=args.host,
-        port=args.port,
-        browser_preference=args.browser,
-        browser_path=args.browser_path,
-        profile_dir=Path(args.profile_dir).expanduser() if args.profile_dir else None,
-        game_url=args.game_url,
-        auto_launch_browser=not args.attach_only,
-        on_change=publish_status,
-    )
-    publish_status()
-    monitor.start()
+    monitor = LauncherMonitor(status, host=args.host, port=args.port, browser_preference=args.browser, browser_path=args.browser_path, profile_dir=Path(args.profile_dir).expanduser() if args.profile_dir else None, game_url=args.game_url, auto_launch_browser=not args.attach_only, on_change=publish_status)
+    publish_status(); monitor.start()
 
     if args.no_tray:
         try:
             last = None
             while not stop.is_set():
-                snap = status.get().snapshot()
-                encoded = json.dumps(snap, sort_keys=True)
-                if encoded != last:
-                    print(json.dumps(snap, indent=2, ensure_ascii=False), flush=True)
-                    last = encoded
-                if args.once and snap["state"] in {"CONNECTED", "WAITING_WOF", "ERROR"}:
-                    break
+                snap = status.get().snapshot(); encoded = json.dumps(snap, sort_keys=True)
+                if encoded != last: print(json.dumps(snap, indent=2, ensure_ascii=False), flush=True); last = encoded
+                if args.once and snap["state"] in {"CONNECTED", "WAITING_WOF", "ERROR"}: break
                 time.sleep(1)
-        except KeyboardInterrupt:
-            pass
-        finally:
-            publish_status()
-            request_stop()
+        except KeyboardInterrupt: pass
+        finally: publish_status(); request_stop()
         return 0
 
     try:
-        tray = TrayApp(status, reconnect=monitor.reconnect, open_game=monitor.open_game, quit_app=request_stop)
-        tray_holder["tray"] = tray
-        tray.run()
+        tray = TrayApp(status, reconnect=monitor.reconnect, open_game=monitor.open_game, quit_app=request_stop); tray_holder["tray"] = tray; tray.run()
     except ImportError as exc:
-        print(f"Tray dependency missing ({exc}); run pip install -r requirements.txt or use --no-tray", file=sys.stderr)
-        publish_status()
-        request_stop()
-        return 2
-    finally:
-        publish_status()
-        request_stop()
+        print(f"缺少托盘依赖（{exc}）。请运行 pip install -r requirements.txt，或使用 --no-tray。游戏本身没有受到影响。", file=sys.stderr)
+        publish_status(); request_stop(); return 2
+    finally: publish_status(); request_stop()
     return 0
 
 
