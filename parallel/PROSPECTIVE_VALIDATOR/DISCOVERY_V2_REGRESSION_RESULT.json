@@ -1,0 +1,60 @@
+{
+  "schema": "wof-prospective-validator-discovery-v2-regression-v1",
+  "updatedAt": "2026-09-01",
+  "status": "PASS",
+  "stopCondition": "PROSPECTIVE VALIDATOR DISCOVERY V2 READY",
+  "freshOfflineRegression": {
+    "total": 16,
+    "passed": 16,
+    "failed": 0,
+    "suites": {
+      "test_discovery_v2.py": {
+        "total": 12,
+        "passed": 12
+      },
+      "test_entrypoint_v2.py": {
+        "total": 4,
+        "passed": 4
+      }
+    }
+  },
+  "requiredCoverage": {
+    "directWorker": "PASS",
+    "relatedTargetOnly": "PASS",
+    "iframeToWorker": "PASS",
+    "urlMismatchValidRuntime": "PASS",
+    "wasmNotReadyFailClosed": "PASS",
+    "wrongWorldIdentityFailClosed": "PASS",
+    "ambiguousWorkersFailClosed": "PASS",
+    "workerReplacementReload": "PASS",
+    "twoTenEndpointIsolation": "PASS",
+    "frozenManifestMutationRejection": "COVERED_BY_UNCHANGED_test_validator.py",
+    "preFreezeDiscoveryNotProspective": "COVERED_BY_UNCHANGED_test_validator.py",
+    "readOnlyAllowlistNoGameplayInput": "PASS"
+  },
+  "compileCheck": {
+    "status": "PASS",
+    "files": [
+      "discovery_v2.py",
+      "live_validator_v2.py",
+      "live_validator.py",
+      "test_discovery_v2.py",
+      "test_entrypoint_v2.py"
+    ]
+  },
+  "entrypoints": {
+    "ownerCmd": "live_validator_v2.py",
+    "directLiveValidatorPy": "Discovery V2 compatibility entry",
+    "legacyEngine": "live_validator_core.py (internal only)"
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false,
+    "gameRamWrites": 0,
+    "gameplayInputInjection": false,
+    "productionRuleAutoPromotion": false
+  },
+  "remainingHumanProof": "Merge one bounded Discovery V2 live proof into the first future real prospective candidate session; no separate owner-only discovery run."
+}
