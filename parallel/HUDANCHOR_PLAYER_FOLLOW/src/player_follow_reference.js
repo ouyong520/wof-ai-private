@@ -19,8 +19,8 @@ function ageMs(nowMs, sampleAtMs) {
   return finite(nowMs) && finite(sampleAtMs) ? Math.max(0, nowMs - sampleAtMs) : Infinity;
 }
 
-function confidenceOf(value, fallback = 1) {
-  return finite(value) ? clamp(value, 0, 1) : fallback;
+function confidenceValue(value) {
+  return finite(value) && value >= 0 && value <= 1 ? value : null;
 }
 
 function contentRectOf(drawingBufferState) {
@@ -83,6 +83,10 @@ class PlayerAnchorResolver {
     if (playerAge > this.maxPlayerAgeMs) {
       return failAnchor(player, 'STALE_PLAYER', { ageMs: playerAge, sampleAtMs: playerState.sampleAtMs });
     }
+    const playerConfidence = confidenceValue(playerState.confidence);
+    if (playerConfidence === null) {
+      return failAnchor(player, 'INVALID_PLAYER_CONFIDENCE');
+    }
 
     if (!projectionState || typeof projectionState.projectNative !== 'function' || !projectionState.version) {
       return failAnchor(player, 'INVALID_PROJECTION_STATE');
@@ -94,6 +98,13 @@ class PlayerAnchorResolver {
         projectionVersion: projectionState.version,
         ageMs: projectionAge,
         sampleAtMs: projectionState.sampleAtMs,
+      });
+    }
+    const projectionConfidence = confidenceValue(projectionState.confidence);
+    if (projectionConfidence === null) {
+      return failAnchor(player, 'INVALID_PROJECTION_CONFIDENCE', {
+        source: projectionState.source,
+        projectionVersion: projectionState.version,
       });
     }
 
@@ -111,6 +122,13 @@ class PlayerAnchorResolver {
         projectionVersion: projectionState.version,
         ageMs: bufferAge,
         sampleAtMs: drawingBufferState.sampleAtMs,
+      });
+    }
+    const drawingBufferConfidence = confidenceValue(drawingBufferState.confidence);
+    if (drawingBufferConfidence === null) {
+      return failAnchor(player, 'INVALID_DRAWING_BUFFER_CONFIDENCE', {
+        source: projectionState.source,
+        projectionVersion: projectionState.version,
       });
     }
 
@@ -155,6 +173,13 @@ class PlayerAnchorResolver {
       projected.bodyYNative,
     ].every(finite)) {
       return failAnchor(player, 'PROJECTION_NONFINITE', {
+        source: projectionState.source,
+        projectionVersion: projectionState.version,
+      });
+    }
+    const projectedConfidence = confidenceValue(projected.confidence);
+    if (projectedConfidence === null) {
+      return failAnchor(player, 'INVALID_PROJECTED_CONFIDENCE', {
         source: projectionState.source,
         projectionVersion: projectionState.version,
       });
@@ -223,10 +248,10 @@ class PlayerAnchorResolver {
       sampleAtMs: Math.min(playerState.sampleAtMs, projectionState.sampleAtMs, drawingBufferState.sampleAtMs),
       ageMs: Math.max(playerAge, projectionAge, bufferAge),
       confidence: Math.min(
-        confidenceOf(playerState.confidence),
-        confidenceOf(projectionState.confidence),
-        confidenceOf(drawingBufferState.confidence),
-        confidenceOf(projected.confidence),
+        playerConfidence,
+        projectionConfidence,
+        drawingBufferConfidence,
+        projectedConfidence,
       ),
       reason: null,
       mappingKey,
