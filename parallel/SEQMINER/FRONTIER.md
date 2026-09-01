@@ -3,6 +3,9 @@
 Updated: 2026-09-01  
 State: **current retained-corpus ordered information exhausted; miner v3 ready; no recapture requested**
 
+Authoritative current-corpus completion record: `COMPLETION_20260901.md`  
+Exact local move-label proof audit: `EXACT_ATTACK_DESCRIPTOR_AUDIT.md`
+
 ## Current verdict
 
 Ordered context is mandatory for the unresolved attack-selection frontier.
@@ -29,6 +32,17 @@ The actual blockers are therefore narrow:
 
 No stage/scene labels or exact local attack matrix are fabricated.
 
+## Exact local attack-label audit
+
+Existing attack-themed bridge outputs remain phase/lifecycle anchored rather than move-valued:
+
+- `ATTACK_CYCLE.md` defines its episode as contiguous `+0x73 != 0`;
+- `MOVE_ATTACK.md` ranks bytes by association with those attack-phase transitions;
+- `ACTIVE_STATE.md` uses type-present/lifecycle activity rather than Browser semantic attack ACTIVE;
+- the retained EFIELD summary exposes no named `activeAttack` field.
+
+Consequently, strong attack association for `+0x6C/+0x73/+0x70/+0x72/+0x77/+0x37` or sparse transition-selective candidates does not satisfy exact move-label proof. `EXACT_ATTACK_DESCRIPTOR_AUDIT.md` records the acceptance criteria and the current `UNPROVEN` verdict.
+
 ## Offline structural information exhausted
 
 ### Cursor topology
@@ -54,7 +68,7 @@ SEQMINER preserves:
 - exact start/end/min/max timer profile;
 - record-ceiling normalized timer family;
 - terminal `timer34==1` residence length;
-- positive timer reload edges across compressed-state boundaries.
+- positive timer reload edges across compressed-state boundaries when those edges lie inside the selected event prefix.
 
 The terminal-hold feature matters because `02008D08` / `02005FF8` commonly wait about 32 frames at timer1, `02008BE0` can wait up to 276, and `0200906E` up to 1518.
 
@@ -70,9 +84,15 @@ The EFIELD delayed-dwell analysis contains 52 residences that enter `+0x73=1B` w
 
 Because `+0x35` belongs to SEQMINER's compressed core key, the old state-local reload list could split immediately before the load and fail to encode the cross-state reload edge.
 
-`seqminer.py` v3 now tracks positive `+0x34` loads at cycle-prefix scope in addition to state-local scope. Every reload keeps pre/post core, cursor, mode35, phase tuple, timer42, timer1 hold context, and exact/normalized timer family. Future-event-edge state remains excluded to avoid label leakage.
+`seqminer.py` v3 now tracks positive `+0x34` loads at cycle-prefix scope in addition to state-local scope. Every prefix-valid reload keeps pre/post core, cursor, mode35, phase tuple, timer42, timer1 hold context, and exact/normalized timer family. Future-event-edge state remains excluded to avoid label leakage.
 
-This is a real offline improvement completed without any new capture.
+### Event-boundary correction
+
+The 52 known delayed-`1B` reloads occur after `+0x73` has already become nonzero. Therefore they are **post-event** under default `phase73-structural-proxy` mode and do not contribute predictor support there.
+
+They become eligible only under a future independently proven explicit attack event definition whose attack field remains zero until after the reload. The feature representation is ready for that case; no current predictive claim is made from the 52 events.
+
+This closes both a compression bug and a possible post-event leakage bug without any new capture.
 
 ### Confidence correction
 
@@ -111,7 +131,7 @@ The miner keeps separate live target, stored association, split third reference 
 - saves frame start/end/dwell;
 - saves exact + normalized timer progression;
 - saves terminal TM1 hold duration;
-- captures same-core and cross-core positive timer reload edges;
+- captures same-core and cross-core positive timer reload edges when prefix-valid;
 - captures event-edge target changes but excludes event-edge state from predictor features;
 - counts candidate and branchpoint confidence once per cycle;
 - keeps repeated loop visits only as raw occurrence diagnostics;
@@ -120,7 +140,7 @@ The miner keeps separate live target, stored association, split third reference 
 - separates explicit scene evidence from capture-filename fallback;
 - emits branchpoint and candidate machine-readable outputs.
 
-The stable machine-readable semantics are formalized in `FEATURE_CONTRACT.json`.
+The stable machine-readable semantics are formalized in `FEATURE_CONTRACT.json`, and synthetic regression coverage is in `test_seqminer.py`.
 
 ## Browser prospective queue
 
@@ -155,7 +175,7 @@ zero cycle
 -> pair/triple
 -> exact timer
 -> normalized timer + terminal-hold family
--> cross-state timer reload edges
+-> prefix-valid cross-state timer reload edges
 -> ambiguous anchor branchpoints
 -> eventual exact local attack
 -> cross capture / explicit-scene / target stability
