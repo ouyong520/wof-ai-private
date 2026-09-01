@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "HUDANCHOR_PLAYER_PROJECTION_REVERSE_V1",
+  "promptPath": "parallel/PM/HUDANCHOR_PLAYER_PROJECTION_REVERSE_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "f43593f9471069ff9df7716670fcba9dd6327d8a",
+  "startedAtUtc": "2026-09-01T14:11:19.723117Z"
+}
