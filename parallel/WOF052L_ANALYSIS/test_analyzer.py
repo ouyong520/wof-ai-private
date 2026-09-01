@@ -120,6 +120,82 @@ class AnalyzerTests(unittest.TestCase):
         self.assertEqual(result["t18"]["verdictZh"], "仍不足")
         self.assertEqual(result["t18"]["distribution"], {"A4704": 0, "A4712": 0})
 
+    def test_identical_per_room_traces_remain_room_isolated_and_rare_not_doubled(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            trace = analyzer.synthetic_trace(4704, "S0/A6/B4|BODY4728|FE1|NX2|V3|TM2|P6C4", room="ignored")
+            trace.pop("roomId", None)
+            for idx in (1, 2):
+                room = {
+                    "schema": analyzer.RECORDER_SCHEMA,
+                    "runId": "same-run",
+                    "roomId": f"room-{idx}",
+                    "status": "complete",
+                    "identity": {"sha256": analyzer.WORLD_SHA256},
+                    "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False},
+                    "diagnostics": {
+                        "t18": {"samples": 1, "candidateCycles": 1, "candidateSamples": 1},
+                        "rareDescriptorAttack": {"T18|X->A4704": 2},
+                    },
+                    "t18": {"candidateTraces": [trace]},
+                    "t23": {"traces": []},
+                    "rareDescriptorAttackEdges": [{"type": 18, "preActiveSignature": "X", "attack": 4704}],
+                }
+                (root / f"room-{idx}.json").write_text(json.dumps(room), encoding="utf-8")
+            ds = analyzer.build_dataset([str(root)])
+            self.assertEqual(len(ds.traces), 2)
+            self.assertEqual({tr["roomId"] for tr in ds.traces}, {"room-1", "room-2"})
+            self.assertEqual(ds.rare_edges["T18|X->A4704"], 4)
+
+    def test_partial_fleet_plus_available_child_does_not_double_counts(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            child = {
+                "schema": analyzer.RECORDER_SCHEMA,
+                "runId": "child-1",
+                "status": "complete",
+                "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False},
+                "counts": {"enemySamples": 100},
+                "coverage": {},
+                "t18CandidateEvidence": [],
+                "rooms": [{"roomId": "r1", "identitySha256": analyzer.WORLD_SHA256}],
+            }
+            fleet = {
+                "schema": analyzer.FLEET_SCHEMA,
+                "runId": "fleet-1",
+                "status": "complete",
+                "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False},
+                "counts": {"enemySamples": 200},
+                "t18CandidateEvidence": [],
+                "rooms": [
+                    {"roomId": "r1", "identitySha256": analyzer.WORLD_SHA256},
+                    {"roomId": "r2", "identitySha256": analyzer.WORLD_SHA256},
+                ],
+                "childRuns": [
+                    {"fleetInstanceId": 1, "runId": "child-1"},
+                    {"fleetInstanceId": 2, "runId": "child-2"},
+                ],
+            }
+            (root / "child-1.json").write_text(json.dumps(child), encoding="utf-8")
+            (root / "fleet.json").write_text(json.dumps(fleet), encoding="utf-8")
+            ds = analyzer.build_dataset([str(root)])
+            self.assertEqual(ds.counts["enemySamples"], 200)
+            self.assertEqual(len(ds.inputs), 1)
+            self.assertEqual(ds.inputs[0]["kind"], "fleet")
+
+    def test_missing_safety_metadata_is_a_resolution_blocker(self) -> None:
+        ds = analyzer.Dataset()
+        ds.identity_shas.add(analyzer.WORLD_SHA256)
+        ds.check_safety({}, "missing")
+        sig_a = "S0/A6/B4|BODY4728|FE8b660|NX8b204|Vffff|TM2|P6C4736"
+        sig_b = "S0/A2/B0|BODY4728|FE8b660|NX8b204|Vffff|TM3|P6C4736"
+        for i in range(2):
+            ds.add_trace(analyzer.synthetic_trace(4704, sig_a, room=f"a{i}"), "test")
+            ds.add_trace(analyzer.synthetic_trace(4712, sig_b, room=f"b{i}"), "test")
+        result = analyzer.analyze(ds, min_per_outcome=2, min_sequence_support=2)
+        self.assertEqual(result["t18"]["verdict"], "insufficient")
+        self.assertTrue(result["safety"]["inputSafetyViolations"])
+
 
 if __name__ == "__main__":
     unittest.main()
