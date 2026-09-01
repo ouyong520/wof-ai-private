@@ -2,7 +2,12 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "ALPHA_TRANSPORT_REFERENCE_IMPL_V1",
   "promptPath": "parallel/PM/ALPHA_TRANSPORT_REFERENCE_IMPLEMENTATION_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "06c8ce3c1c7a79ea5a9b331f8f677b05aa3332de",
-  "startedAtUtc": "2026-09-01T13:42:50Z"
+  "startedAtUtc": "2026-09-01T13:42:50Z",
+  "completedAtUtc": "2026-09-01T13:57:10Z",
+  "resultPath": "parallel/ALPHA_TRANSPORT_IMPL/RESULT.md",
+  "machineResultPath": "parallel/ALPHA_TRANSPORT_IMPL/result.json",
+  "resultCommit": "361bb980bca7bf64f17dbb33660fa4a2421c23ec",
+  "stopCondition": "ALPHA TRANSPORT REFERENCE IMPLEMENTATION READY FOR INTEGRATION"
 }
