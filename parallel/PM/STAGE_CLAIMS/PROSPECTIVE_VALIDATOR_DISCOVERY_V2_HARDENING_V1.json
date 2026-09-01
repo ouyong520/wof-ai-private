@@ -2,7 +2,10 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "PROSPECTIVE_VALIDATOR_DISCOVERY_V2_HARDENING_V1",
   "promptPath": "parallel/PM/PROSPECTIVE_VALIDATOR_DISCOVERY_V2_HARDENING_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "7299dbda87653287f06385c687baa7df1adab7b8",
-  "startedAtUtc": "2026-09-01T13:31:00Z"
+  "startedAtUtc": "2026-09-01T13:31:00Z",
+  "resultPath": "parallel/PROSPECTIVE_VALIDATOR/RESULT.md",
+  "resultCommit": "018c25584b599f04201f95948d653aff16e8f496",
+  "completedAtUtc": "2026-09-01T13:39:00Z"
 }
