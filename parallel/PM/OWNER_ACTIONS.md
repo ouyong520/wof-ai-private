@@ -1,65 +1,55 @@
 # WOF Future Danger AI — Owner Actions
 
-Updated: 2026-09-01 — RC4 candidate PASS / open fresh RC4 QA
+Updated: 2026-09-01 — RC4 QA PASS / Browser acceptance authorized
 
-## Current owner action required: YES — thread management only
+## Current owner action required: YES — one real Browser acceptance
 
-RC4 product fix has reached its stop condition.
+Fresh independent RC4 QA has completed with:
 
-Product regression now records:
-- artifact `wof-alpha-rc4`;
-- tests `PASS`;
-- exact World 921031 golden SHA-256 preserved;
-- `runtimeDiagImmediateWarningInvalidation: true`;
-- ordinary 1500 ms no-diag stale behavior unchanged;
-- exactly two T18 current-level production rules;
-- F1-F4 quarantined;
-- read-only/no-input and session safety preserved.
+`PASS — READY FOR ONE REAL BROWSER ACCEPTANCE`
 
-## Action O1 — close the RC4 implementation thread
+No P0/P1 remains from offline/source QA.
+Do not reopen RC4 implementation or QA threads.
 
-Do not ask RC4 engineering to certify itself further.
+## Action O1 — use the prepared Browser acceptance package
 
-## Action O2 — open a fresh independent RC4 QA thread
+Preparation is already complete under:
+- `parallel/ALPHAACCEPT/**`
 
-Use:
+Use both userscripts on the real WOF Browser page:
+1. `product/alpha/wof_alpha_bootstrap.user.js`
+2. `parallel/ALPHAACCEPT/wof_alpha_acceptance.user.js`
 
-`parallel/PM/ALPHA_RC4_QA_START_PROMPT.md`
+Then:
+1. refresh/open the real WOF game normally;
+2. let the game reach its ordinary running screen;
+3. in the acceptance panel click the single Browser acceptance button once;
+4. allow the one auxiliary same-origin tab/window if the browser asks;
+5. do not play, use DevTools, or provoke a rare attack during the short run;
+6. return only the final JSON shown in the panel.
 
-QA must not modify `product/alpha/**`.
-It must independently prove the old RC3 blocker is closed and recheck the preserved release gates.
+Valid results:
+- `PASS — REAL BROWSER ACCEPTANCE`
+- `FAIL — REAL BROWSER ACCEPTANCE`
+- `INCOMPLETE — REAL BROWSER ACCEPTANCE`
 
-Required final verdict:
-- `PASS — READY FOR ONE REAL BROWSER ACCEPTANCE`, or
-- a concrete `BLOCKED — P0/P1`.
+If FAIL, do not keep retrying. Return the JSON.
+If INCOMPLETE, return the JSON first; PM will decide whether it is only environmental.
 
-## After QA PASS
+## Why the helper is still valid for RC4
 
-The Browser Acceptance Prep stage is already complete under `parallel/ALPHAACCEPT/**`.
-Do not create another acceptance-prep thread.
-Once QA passes, use the prepared one-refresh + one-button flow and return the single acceptance JSON.
+RC4 changed the HUD fail-closed behavior/version but preserved the product transport contract used by the helper (`release='wof-alpha-rc3'`, schema/session/channel contract). Fresh RC4 QA is the authority for the diag-invalidation fix; the Browser helper verifies the live host/bootstrap/identity/transport/HUD/WebGL/performance environment.
 
-## Non-blocking support
+## Non-blocking work — not required before acceptance
 
-### Runtime Speed
-
-Probe tooling is ready. The remaining owner work is one paired local/Browser measurement; this does not block Alpha.
-
-### Local ROM identity
-
-One read-only local hash command remains; this does not block Browser Alpha.
-
-### HUD Anchor
-
-One Browser projection proof remains for Beta; not an Alpha prerequisite.
-
-## Do not do yet
-
-- Do not run final Browser acceptance before RC4 QA PASS.
-- Do not revive RC3/RC4 implementation threads after their stage stop.
-- Do not restart WOF-052 as an Alpha blocker.
-- Do not perform broad recollection.
+- Runtime Speed paired measurement.
+- Local WinKawaks ROM hash.
+- HUD Anchor Browser projection proof.
+- WOF-052 remains after the Alpha release gate.
 
 ## Next PM trigger
 
-After fresh RC4 QA writes its verdict, PM will either open a new fix stage for a concrete P0/P1 or authorize the already-prepared one-click Browser acceptance.
+Paste the final Browser acceptance JSON here.
+PM will either:
+- record Alpha Browser acceptance PASS and make the release decision; or
+- route a concrete Browser failure into one fresh fix/debug stage.
