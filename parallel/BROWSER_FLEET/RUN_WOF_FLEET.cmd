@@ -17,18 +17,6 @@ if not defined PYTHON_CMD (
   exit /b 2
 )
 
-set "FLEET_SETTINGS=%LOCALAPPDATA%\WOF Future Danger\Fleet\settings.json"
-if not exist "%FLEET_SETTINGS%" (
-  echo.
-  echo First run only: configure Browser and optional WOF URL.
-  %PYTHON_CMD% fleet_manager.py configure
-  if errorlevel 1 (
-    echo Fleet configuration failed.
-    pause
-    exit /b 2
-  )
-)
-
 echo.
 set "COUNT="
 set /p COUNT=How many WOF Browser windows? [1/5/10, default 10]: 
