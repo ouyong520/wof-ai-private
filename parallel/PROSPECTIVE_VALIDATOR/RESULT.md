@@ -6,13 +6,13 @@
 
 **PROSPECTIVE VALIDATOR DISCOVERY V2 READY**
 
-Prospective Validator 的真人 Browser owner path 已从旧的 `Target.getTargets -> type=worker -> gstyphoon*.js URL` 硬过滤切换到独立 Discovery V2。原 prospective manifest / freeze / evidence / verdict 引擎保持不变。
+Prospective Validator 的真人 Browser live path 已从旧的 `Target.getTargets -> type=worker -> gstyphoon*.js URL` 硬过滤切换到独立 Discovery V2。原 prospective manifest / freeze / evidence / verdict 引擎保持不变。
 
 owner 仍使用：
 
 `RUN_PROSPECTIVE_VALIDATOR.cmd candidate.json`
 
-该入口现在执行 `live_validator_v2.py`。
+该入口现在执行 `live_validator_v2.py`。直接执行 `python live_validator.py ...` 也会进入 Discovery V2，不再存在可直接运行的旧 Worker URL/type discovery path。
 
 ## Discovery V2 delivered
 
@@ -41,17 +41,23 @@ owner 仍使用：
   - discovery diagnostics 只保存在内存 endpoint diagnostics，不写入 prospective corpus；
   - owner-facing 正常状态 / 错误 / PASS path 使用简体中文。
 
+- `live_validator_core.py` + `live_validator.py`
+  - 原 framework/live engine 原样保留在内部 `live_validator_core.py`；
+  - `live_validator.py` 被 V2 import 时只暴露该 core；
+  - `live_validator.py` 被直接执行时转入 `live_validator_v2.main()`；
+  - 因此兼容旧模块名，但不会让真人流程退回旧 discovery。
+
 - `RUN_PROSPECTIVE_VALIDATOR.cmd`
   - 原一键入口保持；
-  - 现在明确显示 Discovery V2；
+  - 明确显示 Discovery V2；
   - 默认 UTF-8 / 简体中文；
   - 调用 `live_validator_v2.py`。
 
 ## Regression
 
-新增 `test_discovery_v2.py`，离线执行结果：**12/12 PASS**。
+Fresh Discovery V2 + live-entry regression：**16/16 PASS**。
 
-覆盖：
+`test_discovery_v2.py` 12/12 PASS：
 
 1. direct worker backward compatibility — PASS；
 2. related-target-only — PASS；
@@ -66,16 +72,31 @@ owner 仍使用：
 11. read-only allowlist excludes gameplay Input / `Runtime.callFunctionOn` — PASS；
 12. Worker URL shape is not identity gate — PASS。
 
-既有 `test_validator.py` 的 repository-side framework regression 保留不变，其中已经覆盖启动提示要求的两个关键边界：
+`test_entrypoint_v2.py` 4/4 PASS：
+
+- direct `live_validator.py` routes to V2 — PASS；
+- owner CMD routes to V2 — PASS；
+- V2 live path 不含旧 `GSTYPHOON_RE.search + type==worker` gate — PASS；
+- Discovery V2 allowlist 含 `Target.setAutoAttach` 且不含 gameplay Input / `Runtime.callFunctionOn` — PASS。
+
+Python compile check：PASS：
+
+- `discovery_v2.py`；
+- `live_validator_v2.py`；
+- `live_validator.py`；
+- `test_discovery_v2.py`；
+- `test_entrypoint_v2.py`。
+
+既有 `test_validator.py` framework regression 未被本线修改，其中已经覆盖启动提示要求的两个关键边界：
 
 - frozen manifest mutation rejection；
 - pre-freeze discovery corpus 不得变 prospective。
 
-因此 Discovery V2 改动没有修改 candidate hashing、session freeze、prospective evidence classification 或 production promotion policy。
+本线没有修改 `validator.py`、candidate hashing、session freeze、prospective evidence classification 或 production promotion policy。
 
 推荐仓库回归命令：
 
-`cd parallel/PROSPECTIVE_VALIDATOR && python -m unittest -v test_validator.py test_discovery_v2.py`
+`cd parallel/PROSPECTIVE_VALIDATOR && python -m unittest -v test_validator.py test_discovery_v2.py test_entrypoint_v2.py`
 
 ## Safety
 
