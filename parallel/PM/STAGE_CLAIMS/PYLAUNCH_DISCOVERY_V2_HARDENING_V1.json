@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "PYLAUNCH_DISCOVERY_V2_HARDENING_V1",
+  "promptPath": "parallel/PM/PYLAUNCH_DISCOVERY_V2_HARDENING_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "default-branch-at-claim",
+  "startedAtUtc": "2026-09-01T13:31:00Z"
+}
