@@ -4,147 +4,89 @@ Updated: 2026-09-01
 Lane: `RAWMINE-*` only
 Evidence class: `WinKawaks-local-discovery-only`
 
-RAWMINE is a **candidate screener / evidence analyzer**, not a semantic owner. GEO/EFIELD own all semantic interpretation and promotion. RAWMINE evidence labels never mean semantic confirmation.
+RAWMINE is a neutral candidate screener / evidence analyzer. GEO and EFIELD own semantic interpretation and promotion. No WinKawaks offset is promoted to Browser production truth here.
 
-## Corpus / automated evidence contract
+## Automated evidence contract
 
-Current screen consumes **12 retained raw runs**:
-
-- 7 EFIELD runs
-- 5 GEO runs, including `GEO-0008-p1-depth-only-5s60-20260831-2115Z`
-
-The bridge pipeline emits for all 23 objects and all `0x00..0xDF` offsets:
+The bridge RAWMINE pipeline provides, across normalized objects and offsets:
 
 1. change count / frequency;
-2. zero->nonzero and nonzero->zero counts;
-3. value domain / unique count / min / max / concentration digest;
-4. neutral `U8 / U16_CANDIDATE / U32_CANDIDATE / UNRESOLVED` minimum-width evidence;
-5. same-frame and neighboring-frame linkage, lag `[-2,+2]`;
-6. transition/event windows;
-7. pair correlation and connected clusters;
-8. owner-question Top 10 candidate rankings.
+2. zero->nonzero and nonzero->zero transitions;
+3. value domains and minimum-reasonable-width evidence;
+4. same-frame and neighboring-frame coupling;
+5. transition/event windows;
+6. pair / cluster correlation;
+7. concrete owner-question Top 10 rankings;
+8. controlled-manipulation guards and attempt history.
 
-Authoritative bridge outputs:
+Authoritative bridge outputs include:
 
 - `results/rawmine/candidate_screen.json`
 - `results/rawmine/candidate_screen_summary.json`
 - `results/rawmine/candidate_screen_summary.md`
+- `results/rawmine/player_slot_depth_long_window.json`
+- `results/rawmine/depth_pair_timing.json`
 
-Current ranking revision: `v7-owner-sync-plus-geo-depth-manipulation-guard`.
+## GEO — P1 X
 
-## GEO — P1 X screen
+Existing owner-conditioned evidence remains unchanged:
 
-Anchor supplied by GEO: changes in `256*U8(+0x0B)+U8(+0x04)`. This is anchor-derived evidence, not independent semantic confirmation.
+- `+0x04` is the strongest single-offset discriminator under the GEO-owned composite-X anchor;
+- `+0x0B` is a sparse, highly specific companion;
+- RAWMINE does not assign final coordinate semantics.
 
-Anchor events: **815**.
+## GEO — P1 floor/depth evidence
 
-| Rank | Offset | Score | Evidence | Key control |
-|---:|---:|---:|---|---|
-| 1 | `+0x04` | 0.990552 | `STRONG_CANDIDATE` | horizontal recall 1.000000; precision 1.000000; vertical/Z-only recall 0 |
-| 2 | `+0x9C` | 0.961746 | `STRONG_CANDIDATE` | horizontal recall 0.952147; vertical/Z-only recall 0.015723 |
-| 3 | `+0x0C` | 0.690209 | `MODERATE_CANDIDATE` | vertical/Z-only recall 0.927673 |
-| 4 | `+0x48` | 0.656761 | `MODERATE_CANDIDATE` | vertical/Z-only recall 0.921384 |
-| 5 | `+0x0B` | 0.655153 | `MODERATE_CANDIDATE` | sparse 12 changes; precision 1.0; vertical/Z-only recall 0 |
-| 6 | `+0x16` | 0.650429 | `INSUFFICIENT_COVERAGE` | one candidate event |
-| 7 | `+0x11` | 0.636286 | `MODERATE_CANDIDATE` | vertical/Z-only recall 0.811321 |
-| 8 | `+0xA3` | 0.620018 | `MODERATE_CANDIDATE` | sparse cache-family behavior |
-| 9 | `+0x47` | 0.573755 | `WEAK_CANDIDATE` | sparse; best lag -1 |
-| 10 | `+0x4F` | 0.569728 | `WEAK_CANDIDATE` | horizontal recall 0.204908 |
+Earlier controlled attempts (`GEO-0008`, `RAWMINE-001`, and short attribution-calibration retries) were mechanically healthy but did not contain a usable controlled depth trajectory. Those failures were coverage failures, not negative evidence against `+0x08`.
 
-RAWMINE only records that `+0x04` is the strongest single-offset discriminator under the GEO-owned anchor and `+0x0B` is a sparse highly specific companion. GEO remains the semantic owner.
+The timing-robust wide-window task:
 
-## GEO — P1 floor/depth Y screen
+`RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z`
 
-The original retained natural corpus still has only **1** `+0x08` anchor change and therefore remains insufficient for owner-independent ranking.
+completed successfully with:
 
-The owner then supplied a dedicated controlled task:
+- 2400 frames / 2399 transitions;
+- ~59.981 Hz;
+- 0 read errors;
+- 0 frame-size errors;
+- read-only contract PASS;
+- P2/P3 untouched as controls.
 
-`GEO-0008-p1-depth-only-5s60-20260831-2115Z`
+The long-window screen found no reconstructed X motion in any player slot, so the optional movement-based slot-attribution guard remained `FAIL`. This prevents RAWMINE from using the missing horizontal segment as independent player-attribution proof. It does **not** erase the depth-manipulation evidence present in the Collector's structurally ordered P1 object.
 
-RAWMINE added a manipulation-validity guard on top of collector health. The raw is mechanically healthy and its orthogonal controls are clean:
+Under P1 object 0, while reconstructed X/Z remained stable:
 
-- frames / transitions: `300 / 299`
-- reconstructed X (`+0x04/+0x0B`) changes: `0`
-- reconstructed Z (`+0x0C/+0x11`) changes: `0`
-- X/Z control validity: `PASS`
+- `+0x08`: 536 changes, P2/P3 control change rate 0, P1 specificity 1.0, bidirectional score 0.955224;
+- `+0xA2`: 536 changes, P2/P3 control change rate 0, P1 specificity 1.0, bidirectional score 0.966418;
+- both have the same observed domain: 63..143 with 81 distinct values;
+- `+0x16`: only 68 changes and a two-value domain {6,7}; its event Jaccard with `+0x08` is only 0.090253, so it is a sparse companion/state discriminator rather than a peer continuous-value candidate under this question.
 
-But the intended P1 floor/depth manipulation is absent from player-object evidence:
+Dedicated pair timing further separates `+0x08` and `+0xA2`:
 
-- `+0x08` changes: `0`
-- no byte reaches all of: `>=5` P1 changes, `>=0.80` P1-specificity, `<=0.05` untouched-P2/P3 change rate
-- `+0x7F` is dynamic but is similarly dynamic in untouched P2/P3, so it is not a P1-specific controlled candidate
+- same-frame change hits: 424 / 536;
+- same-frame event Jaccard: 0.654321;
+- when both change, delta sign agrees 100%;
+- best exact value-copy relationship is `A2[t] == 08[t-1]`;
+- that one-frame trailing copy holds for 2116 / 2399 comparable frames = **0.882034**;
+- same-frame equality is lower at 0.736667.
 
-Automated verdict:
+RAWMINE interpretation: this is strong neutral timing evidence that `+0x08` and `+0xA2` represent the same underlying continuously varying quantity at different temporal stages, with `+0xA2` trailing `+0x08` by one frame in the dominant relationship. This is consistent with GEO's prior live-vs-cache distinction, but RAWMINE does not promote either byte semantically.
 
-`CONTROLLED_RAW_NO_P1_DEPTH_MANIPULATION_EVIDENCE`
+### P1 Y/depth handoff status
 
-This is **not negative evidence against `+0x08`** and not support for `+0x7F`. It means the first controlled scene failed to create a discriminative P1 depth trajectory.
+`READY_FOR_GEO_OWNER_PROMOTION_DECISION`
 
-A single narrow retry is already queued:
+No further RAWMINE capture is justified for this question unless GEO identifies a new concrete ambiguity that cannot be discriminated from the retained 2400-frame raw.
 
-`RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z`
+## EFIELD
 
-It requires visible repeated P1 UP/DOWN traversal in an open walkable area, P2/P3 untouched, no LEFT/RIGHT/jump/attack, with the same X/Z contamination guards. The bridge consumes this retry automatically when its raw arrives.
+EFIELD's bounded high-value mapping phase is complete. RAWMINE keeps the existing residual lifecycle, retarget, executor-transition, and action/state rankings evidence-only and requests no generic EFIELD acquisition.
 
-## EFIELD — owner-bounded residual screens
+## Current lane stop condition
 
-EFIELD has completed the current bounded high-value field-mapping phase. RAWMINE therefore keeps all EFIELD screens evidence-only and does **not** request generic capture.
+- EFIELD: no further RAWMINE acquisition justified.
+- GEO P1 X: already screened; semantic ownership remains GEO.
+- GEO P1 Y/depth: wide-window controlled evidence and `+0x08/+0xA2` timing discriminator are complete and handed back to GEO.
+- Active RAWMINE operator-gated tasks: **none**.
 
-### Lifecycle / execution-boundary residual
-
-Owner question remains closed: no byte-level direct active/inactive gate is better supported than owner-confirmed `+0x24`. Current unresolved residual Top 10 remain weak:
-
-`+0x36, +0xA2, +0x08, +0x14, +0x0D, +0xBA, +0xD1, +0xAA, +0x19, +0xB7`.
-
-No residual candidate reopens the direct-gate hypothesis.
-
-### Retarget precursor residual
-
-Owner question remains closed: no selective universal pre-commit signal is established in the current corpus. High residual scores are dominated by persistent pre-state association under a tiny same-type event set and are not universal-precursor proof.
-
-Current Top 10:
-
-`+0xB0, +0xD3, +0xC7, +0xA6, +0xAA, +0x08, +0xA2, +0xC0, +0x41, +0x7E`.
-
-### Executor transition
-
-Owner-supplied logical cursor transition anchor remains evidence-only. Current Top 10:
-
-`+0x14, +0x42, +0x72, +0x1B, +0x37, +0x36, +0x04, +0x9C, +0x71, +0x09`.
-
-No unresolved byte is semantically renamed by RAWMINE.
-
-### Action/state neighborhood
-
-Anchor: same-type frames where any owner-confirmed phase projection `+0x6C/+0x70/+0x73/+0x77` changes. `+0x72` is intentionally excluded from the anchor to avoid circularity.
-
-Current Top 10:
-
-1. `+0x72` — 0.942900 `STRONG_CANDIDATE`
-2. `+0x14` — 0.773813 `MODERATE_CANDIDATE`
-3. `+0x1B` — 0.720564 `MODERATE_CANDIDATE`
-4. `+0x37` — 0.690211 `MODERATE_CANDIDATE`
-5. `+0x36` — 0.645758 `MODERATE_CANDIDATE`
-6. `+0x71` — 0.642964 `MODERATE_CANDIDATE`
-7. `+0x42` — 0.607922 `MODERATE_CANDIDATE`
-8. `+0xCE` — 0.527360 `WEAK_CANDIDATE`
-9. `+0x6A` — 0.517619 `WEAK_CANDIDATE`
-10. `+0xC9` — 0.513613 `WEAK_CANDIDATE`
-
-Owner spotlight under this exact narrow screen:
-
-- `+0x72`: rank 1
-- `+0x37`: rank 4
-- `+0x2E`: rank 17
-- `+0x2D`: rank 27
-
-This does not override EFIELD owner-level `STRONG_CANDIDATE` classifications for `+0x2D/+0x2E/+0x37/+0x72` on broader structural evidence.
-
-## Current stop / continuation condition
-
-- EFIELD: no generic acquisition justified; current bounded phase is complete.
-- GEO P1 X: existing owner anchor is already well screened; no RAWMINE-owned semantic promotion.
-- GEO P1 Y/depth: first controlled raw is bounded as **ineffective manipulation**, not as a field verdict.
-- Active RAWMINE acquisition: only `RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z`.
-
-No second parallel retry or generic capture should be queued while that operator-gated task is active. Once it completes, the bridge pipeline automatically reruns all neutral evidence and the controlled manipulation guard, after which RAWMINE either hands a valid ranked candidate set back to GEO or records another explicit coverage failure without inventing semantics.
+Current RAWMINE assignment is complete. Future work starts only from a new concrete owner question.
