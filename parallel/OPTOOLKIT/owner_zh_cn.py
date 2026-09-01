@@ -31,7 +31,7 @@ EXACT = {
     "5 Run Regression": "5 运行回归测试",
     "6 Run Live Proof": "6 运行真人 Windows 验证",
     "7 Collect Diagnostics": "7 收集诊断信息",
-    "8 Package Results": "8 打包结果",
+    "8 Package Results": "8 自动整理并打包结果",
     "9 Open Results Folder": "9 打开结果目录",
     "0 Exit": "0 退出",
     "\n[Update Project]": "\n[更新项目]",
@@ -41,7 +41,7 @@ EXACT = {
     "\n[Run Regression]": "\n[运行回归测试]",
     "\n[Run Live Proof]": "\n[运行真人 Windows 验证]",
     "\n[Collect Diagnostics]": "\n[收集诊断信息]",
-    "\n[Package Results]": "\n[打包结果]",
+    "\n[Package Results]": "\n[自动整理并打包结果]",
     "\n[Open Results Folder]": "\n[打开结果目录]",
     "Git was not found. Install Git for Windows, then reopen Toolkit.": "未找到 Git。请安装 Git for Windows，然后重新打开工具箱。",
     "This is not a Git checkout. Open Toolkit from the WOF project folder.": "当前目录不是 Git 项目。请从 WOF 项目目录打开工具箱。",
@@ -131,7 +131,7 @@ def translated_input(prompt: str = ""):
 
 
 class ChineseToolkit(toolkit.Toolkit):
-    """Only changes the owner-facing launch surface; core Toolkit behavior stays in toolkit.py."""
+    """Only changes owner-facing launch/integration surfaces; core Toolkit behavior stays in toolkit.py."""
 
     def component(self, key):
         if key == "recorder":
@@ -152,6 +152,28 @@ class ChineseToolkit(toolkit.Toolkit):
                 print("技术详情：" + detail)
             return
         return super().component(key)
+
+    def package(self):
+        print("\n[自动整理并打包结果]")
+        entry = self.root / "parallel/EVIDENCE_INGESTOR/ingestor.py"
+        if not entry.is_file():
+            print("没有找到自动结果整理器。请先选择 1“更新项目”。")
+            return
+        try:
+            cp = toolkit.run([toolkit.sys.executable, str(entry), "--root", str(self.results), "--package"], entry.parent, 600)
+        except Exception as exc:
+            print("自动结果整理没有完成。原始证据和游戏本身都没有受到影响。")
+            print(f"技术详情：{exc}")
+            return
+        if cp.stdout:
+            print(cp.stdout.rstrip())
+        if cp.returncode in (0, 1):
+            if cp.returncode == 1:
+                print("整理已完成，但发现严重安全或身份异常。请查看生成的“结果汇总.txt”。")
+            return
+        print("自动结果整理没有完成。原始证据和游戏本身都没有受到影响。")
+        if cp.stderr:
+            print("技术详情：" + cp.stderr[-1500:])
 
 
 def main() -> int:
