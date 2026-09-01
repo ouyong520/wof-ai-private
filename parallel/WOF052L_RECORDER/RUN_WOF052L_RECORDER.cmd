@@ -28,7 +28,7 @@ if errorlevel 1 (
   if errorlevel 1 goto :fail
 )
 
-".venv\Scripts\python.exe" recorder.py %*
+".venv\Scripts\python.exe" fleet_recorder.py %*
 set "RC=%ERRORLEVEL%"
 if not "%RC%"=="0" (
   echo.
