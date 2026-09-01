@@ -1,0 +1,39 @@
+{
+  "schema": "wof-unified-windows-live-proof-v1",
+  "updatedAtUtc": "2026-09-01T12:48:00Z",
+  "stage": "REPOSITORY_READY",
+  "repository": {
+    "result": "PASS",
+    "liveProofClaimed": false,
+    "readiness": {
+      "pylaunch": "FIX READY — one real Windows proof remains",
+      "browserFleet": "BROWSER FLEET DISCOVERY V2 READY",
+      "recorder": "WOF-052L DISCOVERY V2 READY",
+      "longCapture": "READY FOR 10-ROOM LONG CAPTURE",
+      "analysis": "READY"
+    },
+    "offlineRegression": {
+      "bundle": "9/9 PASS",
+      "pylaunch": "13/13 PASS",
+      "browserFleet": "15/15 PASS",
+      "recorderDiscoveryV2": "PASS",
+      "analysis": "9/9 PASS"
+    },
+    "stopCondition": "UNIFIED LIVE PROOF READY — ONE OWNER WOF RUN REMAINS"
+  },
+  "live": {
+    "result": "NOT_RUN",
+    "automatedChecksReady": false,
+    "ownerPlayabilityConfirmation": "NOT_RUN",
+    "fleetDiscoveryV2": "PENDING_REAL_WINDOWS_ROOM",
+    "pylaunchAuthoritativeProof": "PENDING_REAL_WINDOWS_ROOM",
+    "recorderDiscoveryV2Admission": "PENDING_REAL_WINDOWS_ROOM",
+    "safety": "PENDING_REAL_WINDOWS_ROOM",
+    "blockers": []
+  },
+  "overallResult": "REPOSITORY_READY",
+  "tenRoomLongCaptureReady": false,
+  "longCaptureAutoStarted": false,
+  "ownerSummaryZh": "仓库侧统一真人短验证入口已准备完成，只剩一次 owner 真实 Windows/WOF 房间运行。",
+  "ownerAction": "双击 RUN_WOF_UNIFIED_LIVE_PROOF.cmd；正常进入一个 WOF 房间；自动项通过后只确认一次游戏是否仍正常运行；最终只返回总 JSON 或截图。"
+}
