@@ -1,5 +1,5 @@
 {
-  "artifact": "wof-alpha-rc1",
+  "artifact": "wof-alpha-rc2",
   "tests": "PASS",
   "productionFixtureSignals": 143,
   "productionFixtureResolved": 143,
@@ -7,16 +7,24 @@
   "excludedCandidateSilent": true,
   "retargetLive": true,
   "unknownSilent": true,
-  "staleCleanup": true,
   "readOnlyStaticAudit": true,
   "noInputInjectionStaticAudit": true,
   "glStateRestoreStaticAudit": true,
+  "independentQaSuite": "wof-alpha-independent-qa-v2",
+  "independentQaStatus": "PASS",
+  "independentQaBlockers": 0,
+  "p0p1Fixes": {
+    "ALPHAQA-001": "PASS: layout-only rejected; Browser ROM executable fingerprint required",
+    "ALPHAQA-002": "PASS: zero-attack descriptor drift clears same-slot same-type watch",
+    "ALPHAQA-003": "PASS: all simultaneous warnings aggregated by target/threat side",
+    "ALPHAQA-004": "PASS: document-start userscript pairs page HUD + target Worker without manual Worker-console selection",
+    "ALPHAQA-005": "PASS: 128-bit per-page session nonce + unique channel + message nonce check",
+    "ALPHAQA-006": "PASS: legacy research WOFHUD.dispose() required before Alpha takeover"
+  },
   "perRule": {
     "T16_B4_DANGER_40": {
       "signals": 98,
       "resolved": 98,
-      "runtimeExpiredWithoutActive": 0,
-      "slotClears": 0,
       "attackDistribution": {
         "4840": 1,
         "6432": 97
@@ -25,8 +33,6 @@
     "T20_5136_B0_TO_B255_1250": {
       "signals": 5,
       "resolved": 5,
-      "runtimeExpiredWithoutActive": 0,
-      "slotClears": 0,
       "attackDistribution": {
         "5136": 5
       }
@@ -34,8 +40,6 @@
     "D867BA_3232_TM6_220": {
       "signals": 10,
       "resolved": 10,
-      "runtimeExpiredWithoutActive": 0,
-      "slotClears": 0,
       "attackDistribution": {
         "3232": 10
       }
@@ -43,8 +47,6 @@
     "D8811E_3232_TM6_135": {
       "signals": 22,
       "resolved": 22,
-      "runtimeExpiredWithoutActive": 0,
-      "slotClears": 0,
       "attackDistribution": {
         "3232": 22
       }
@@ -52,8 +54,6 @@
     "T18_5440_CYCLE_BODY7512_TM4_LEVEL_90": {
       "signals": 4,
       "resolved": 4,
-      "runtimeExpiredWithoutActive": 0,
-      "slotClears": 0,
       "attackDistribution": {
         "5440": 4
       }
@@ -61,8 +61,6 @@
     "T18_5424_CYCLE_BODY7520_TM4_LEVEL_90": {
       "signals": 4,
       "resolved": 4,
-      "runtimeExpiredWithoutActive": 0,
-      "slotClears": 0,
       "attackDistribution": {
         "5424": 4
       }
