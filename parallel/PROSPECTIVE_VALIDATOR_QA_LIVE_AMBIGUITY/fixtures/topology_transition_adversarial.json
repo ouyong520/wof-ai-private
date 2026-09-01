@@ -1,0 +1,49 @@
+{
+  "schema": "wof-prospective-validator-live-ambiguity-fresh-qa-fixture-v1",
+  "id": "fresh-topology-transition-between-admission-cycles",
+  "purpose": "Independently prove that topology may change between scheduled discovery cycles but no prospective admission occurs until a fresh full topology reproof, and an ambiguous affected room is finalized before any later drain/ingest.",
+  "timeline": [
+    {
+      "t": 200.0,
+      "state": "last successful full topology proof",
+      "relations": [
+        ["page-live-a", "worker-shared"],
+        ["page-control", "worker-control"]
+      ]
+    },
+    {
+      "t": 200.125,
+      "state": "topology becomes ambiguous",
+      "relations": [
+        ["page-live-a", "worker-shared"],
+        ["page-live-b", "worker-shared"],
+        ["page-control", "worker-control"]
+      ]
+    },
+    {
+      "t": 200.5,
+      "state": "intermediate poll before next discovery cycle",
+      "expected": {
+        "fullTopologyScan": false,
+        "prospectiveDrainCount": 0,
+        "prospectiveIngestCount": 0,
+        "reason": "no evidence admission exists outside a discovery cycle"
+      }
+    },
+    {
+      "t": 201.01,
+      "state": "next prospective admission cycle",
+      "expected": {
+        "skipPageIds": [],
+        "fullTopologyScan": true,
+        "ambiguousPages": ["page-live-a", "page-live-b"],
+        "affectedRoomFinalizedBeforeDrain": true,
+        "affectedRoomDrainCount": 0,
+        "affectedRoomIngestCount": 0,
+        "unrelatedControlRoomRemainsAdmissible": true,
+        "unrelatedControlRoomDrainCount": 1
+      }
+    }
+  ],
+  "requiredInvariant": "There is no positive-duration audit gap that can admit post-ambiguity evidence: between scans there is no drain, and the next drain is gated by a fresh full scan plus exact (pageTargetId, workerTargetId) reproof."
+}
