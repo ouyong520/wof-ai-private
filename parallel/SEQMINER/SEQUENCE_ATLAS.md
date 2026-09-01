@@ -1,79 +1,159 @@
 # SEQMINER Sequence Atlas
 
-Evidence namespace: **WinKawaks-local discovery unless explicitly marked Browser evidence**.
+Updated: 2026-09-01  
+Evidence namespace: **WinKawaks-local discovery unless explicitly marked Browser evidence**.  
+No entry here is a Browser production rule.
 
-No entry in this file is a Browser production rule.
+## Corpus and coverage
 
-## 1. What the retained data already establishes
-
-The retained seven-run EFIELD corpus supplies a strong executor topology even though it does not yet expose a separately proven WinKawaks-local exact `activeAttack` descriptor.
-
-### Stable executor chain
-
-The strongest reusable ordered state is the combination:
+`parallel/SWEEPATLAS/**` is now present. Its capture index confirms that the retained repository corpus is broad but is **not** the intended labeled full-game sweep:
 
 ```text
-logicalCursor(+0x2F..0x32)
-+ timer34(+0x34)
-+ mode35(+0x35)
-+ gate37(+0x37)
-+ phaseTuple(+0x6C,+0x70,+0x72,+0x73,+0x77)
-+ target(+0x6D..0x6E)
-+ association(+0x3D..0x3E,+0xC6)
-+ profile(+0xB0,+0xB4,+0xB6)
+stageSceneWaveLabelsAvailable = false
+fullSweepSeriesPresent = false
 ```
 
-Sequential logical cursor `+0x0A` destination records predict the destination phase tuple with effectively deterministic cross-run behavior: aggregate leave-one-run-out coverage `4819/4820`, accuracy `4818/4819` on covered events. This makes the cursor chain a better ordered backbone than any isolated phase byte.
+Current natural EFIELD coverage:
 
-### Structural nonzero-phase cycles
+- 7 captures / 2 WinKawaks sessions;
+- 23,400 frames;
+- 468,000 enemy-slot samples;
+- 60,271 type-present samples;
+- all 31 local nonzero types T1..T31;
+- 1,604 same-type episodes;
+- T18: 528 samples;
+- T23: 2,140 samples.
 
-Using only `+0x73 != 0` as a **structural phase proxy**, not semantic attack ACTIVE, the retained phase-boundary analysis contains 508 episodes. Common compressed paths include:
+Local T18/T23 existence is proven. Stage/scene/wave and exact local move labels are not.
 
-| compressed path | count | interpretation |
-|---|---:|---|
-| `E0,A0,D8,0A,0C` | 216 | dominant single-family/core episode |
-| `40,00,E8,1B,00 -> E0,A0,D8,0A,0C -> 40,00,E8,1B,00` | 41 | bridge -> core -> bridge |
-| `E0,00,38,0A,00 -> E0,A0,D8,0A,0C` | 38 | alternate entry -> core |
-| `50,00,18,1B,00` | 28 | short boundary-enriched family |
-| `40,00,E8,1B,00 -> E0,A0,D8,0A,0C -> 40,00,E8,1B,00 -> 48,00,00,1B,00` | 24 | longer terminating bridge branch |
-| `E0,A0,D8,0A,0C -> 40,00,E8,1B,00` | 21 | core -> bridge |
-| `58,00,30,1B,00` | 20 | short boundary-enriched family |
-| `40,00,E8,1B,00 -> E0,A0,D8,0A,0C -> E0,00,38,0A,00` | 17 | core exit into alternate 0A family |
-| `40,00,E8,1B,00 -> E0,A0,D8,0A,0C` | 16 | bridge -> core |
-| `40,00,E8,1B,00 -> E0,A0,D8,0A,0C -> 50,00,18,1B,00` | 14 | branch into boundary-enriched 1B family |
+## Ordered executor topology
 
-The rare tuples `78,78,78,1E,0B` and `70,70,70,1E,0B` had no interior samples in that analysis and are therefore useful **termination/boundary context candidates**, not attack labels.
-
-The most interior-dominant tuple is `90,00,88,0B,00` (`257/271`, 94.83% interior), which is useful for distinguishing a long dwell/core state from a transition edge.
-
-## 2. Timer progression atlas
-
-`+0x34` behaves as a record dwell/countdown and should be represented in two forms.
-
-### Exact timer
-
-Exact timer is retained because some branches can be timing-specific. Pointer-stable changes are dominated by `-1/-2`; pointer transitions normally reload upward.
-
-### Record-normalized timer
-
-For logical `+0x0A` destination arrivals:
-
-- exact record ceiling: `3192/4323 = 73.84%`;
-- within one below ceiling: `4000/4323 = 92.53%`;
-- within two below ceiling: `4090/4323 = 94.61%`.
-
-Leave-one-run-out remains stable, so SEQMINER normalizes timer as:
+The dominant local ordered backbone is:
 
 ```text
-ceilingMinusTimer = recordCeiling(logicalCursor) - timer34
-bucket = 0 | 1 | 2 | 3-5 | 6-10 | 11+
+logical cursor + embedded flag
+-> +0x34 countdown/residence
+-> +0x35 control mode / +0x37 gate
+-> (6C,70,72,73,77) joint phase
+-> branch / +0x0A successor / loop reset
 ```
 
-This specifically prevents one- or two-tick sampling jitter from falsely splitting the same ordered family.
+Across logical `+0x0A` destination events, leave-one-run-out phase prediction has coverage `4819/4820` and accuracy `4818/4819` on covered events. Pair/triple mining should therefore be record-aware rather than byte-state-only.
 
-## 3. Independent timer/mode branch axis
+## Canonical cursor chains
 
-`+0x35` is not redundant with `+0x34`. Its retained transition matrix contains strong state-machine structure:
+High-volume executor loop:
+
+```text
+02008BD6
+-> 02008BE0
+-> 02008BEA
+-> 02008BF4
+-> 02008BFE
+-> 02008C08
+-> 02008C12
+-> 02008BE0
+```
+
+Representative counts:
+
+- `08BD6 -> 08BE0`: 148
+- `08BE0 -> 08BEA`: 170
+- `08BEA -> 08BF4`: 174
+- `08BF4 -> 08BFE`: 156
+- `08BFE -> 08C08`: 151
+- `08C08 -> 08C12`: 132
+- `08C12 -> 08BE0`: 135 (`-0x32` loop reset)
+
+Second recurrent family:
+
+```text
+02005E9A
+-> 02005EA4
+-> 02005EAE
+-> 02005EB8
+-> 02005EC2
+-> 02005ECC
+-> 02005ED6
+-> 02005EA4
+```
+
+The final edge is again a loop reset rather than a sequential advance.
+
+## High-value branch nodes
+
+Retained record-exit analysis separates 128 timed-sequential, 32 branch/mixed and 14 wait/conditional record classes.
+
+| logical record | segments | sequential +10 | branch/other | use |
+|---|---:|---:|---:|---|
+| `02008BE0` | 355 | 199 | 141 | major conditional branch/wait hotspot |
+| `02005EA4` | 232 | 114 | 108 | nearly balanced sequential/branch node |
+| `02008BEA` | 209 | 171 | 35 | mostly sequential with real alternate exits |
+| `02008BD6` | 208 | 173 | 35 | sequential plus flag/context split |
+| `02008C12` | 144 | 0 | 142 | branch/reset node |
+| `02008C52` | 113 | 0 | 107 | branch/reset node |
+| `02005ED6` | 75 | 0 | 75 | branch/reset node |
+
+`02008BE0` also has the visible alternate jump `02008BE0 -> 02009006` 30 times alongside common `02008BE0 -> 02008BEA`.
+
+## Embedded cursor flag is mandatory state context
+
+Logical cursor alone is incomplete at several records.
+
+For `02008BD6`:
+
+- aggregate phase spans `40,00,E8,1B,00`, `E0,00,38,0A,00`, and rare `1E` states;
+- flag `0x100000`: 354/354 -> `E0,00,38,0A,00`;
+- flag `0x140000`: rare `1E` termination family.
+
+For `02005E9A`:
+
+- flag `0x100000`: 210/210 -> `E0,00,38,0A,00`;
+- flag `0x140000`: rare `70/78 ... 1E` family.
+
+SEQMINER v2 therefore includes cursor flags in the core signature.
+
+## Phase-path atlas
+
+Common compressed `(6C,70,72,73,77)` paths:
+
+| path | count |
+|---|---:|
+| `E0,A0,D8,0A,0C` | 216 |
+| `40,00,E8,1B,00 -> E0,A0,D8,0A,0C -> 40,00,E8,1B,00` | 41 |
+| `E0,00,38,0A,00 -> E0,A0,D8,0A,0C` | 38 |
+| `50,00,18,1B,00` | 28 |
+| `40... -> E0... -> 40... -> 48,00,00,1B,00` | 24 |
+| `58,00,30,1B,00` | 20 |
+| `40... -> E0... -> E0,00,38,0A,00` | 17 |
+| `40... -> E0... -> 50,00,18,1B,00` | 14 |
+
+Rare `78,78,78,1E,0B` and `70,70,70,1E,0B` had zero interior samples in boundary analysis and remain termination-context candidates. `90,00,88,0B,00` is the opposite: `257/271 = 94.83%` interior.
+
+## Timer progression and conditional holds
+
+Record-relative arrival normalization:
+
+- ceiling: `3192/4323 = 73.84%`;
+- within one: `4000/4323 = 92.53%`;
+- within two: `4090/4323 = 94.61%`.
+
+Literal `TM1` is not enough because some records wait at 1:
+
+| record | segments | median terminal TM1 hold | max |
+|---|---:|---:|---:|
+| `02008D08` | 22 | 32 | 40 |
+| `02005FF8` | 13 | 32 | 42 |
+| `02008D12` | 22 | 23 | 24 |
+| `02006002` | 13 | 23 | 24 |
+| `02008BE0` | 355 | 2 | 276 |
+| `0200906E` | 46 | 2 | 1518 |
+
+SEQMINER v2 therefore records exact timer start/end/min/max plus `terminalTimer1Frames` and a normalized hold bucket.
+
+## `+0x35` independent branch progression
+
+Transition counts:
 
 - `00->FF`: 353
 - `FF->00`: 237
@@ -84,34 +164,50 @@ This specifically prevents one- or two-tick sampling jitter from falsely splitti
 - `01->FF`: 39
 - `04->00`: 25
 
-A large part of `00->FF` aligns with logical cursor `+0x0A` (`251` events), but many other mode changes encode distinct transitions. Therefore pair/triple mining should include mode35 and not collapse the executor to cursor+timer alone.
+Structural alignment:
 
-`+0x37` (`00/80/02`) is retained as an attack-associated gate/substate candidate and used as another branch-context feature.
+- `00->FF` with logical cursor `+0x0A`: 251;
+- `02->00` with cursor unchanged: 128;
+- `FF->02` frequently accompanies `0A -> 1B`;
+- `01->FF` frequently accompanies `1B -> 0A`.
 
-## 4. Target and reference context
+Mode history stays in pair/triple signatures and is not collapsed into timer34.
 
-The live/materialized target pointer `+0x6D..0x6E` and the sticky proximity/player-association layer `+0x3D..0x3E/+0xC6` must remain separate features.
+## Local T18 / T23 retained examples
 
-A sequence is tagged with:
+SWEEPATLAS proves local T18 (`0x12`) and T23 (`0x17`) are present.
 
-- target at zero-cycle start;
-- target at future event;
-- whether target changed inside the cycle;
-- association index/pointer progression.
+Raw-derived residence examples show both use the executor machinery:
 
-This prevents an apparently attack-specific sequence from actually being a target-transition artifact.
+- T18 example: EFIELD-005 slot19, logical `02008E68`, 15-frame `1B` residence ending timer `1,1`.
+- T23 example: EFIELD-005R slot17, logical `02006158`, 10-frame `1B` residence ending timer `1,1`.
 
-## 5. Browser-labelled ordered evidence used only for validation prioritization
+These do **not** map local values to Browser A4704/A4712/A4792/A4920/A5888. They only establish retained local coverage.
+
+## Browser-labelled ordered evidence
+
+### T18
+
+Shared exact Browser state:
+
+```text
+S0/A4/B2|BODY4728|FE8b660|NX8b204|Vffff|TM1|P6C4736
+```
+
+Prospective outcomes:
+
+```text
+A4704 @ 19.9 ms
+A4712 @ 100.4 ms
+```
+
+Target and side were stable 2/2. The next discriminator must be post-anchor order/context.
 
 ### T23
 
-WOF-047 already contains eight same-cycle zero->ACTIVE traces from one T23 room:
+WOF-047 resolved `A4792=3`, `A4920=3`, `A5888=2`.
 
-- `A4792`: 3
-- `A4920`: 3
-- `A5888`: 2
-
-The strongest direct order lesson is the A5888 tail3:
+A5888 ordered tail example:
 
 ```text
 S0/A8/B2 BODY4936
@@ -120,49 +216,16 @@ S0/A8/B2 BODY4936
 -> A5888
 ```
 
-The first state also occurs on an A4792 cycle, so membership in `S0/A8/B2 BODY4936` is not sufficient; the transition path carries information.
+The first state also occurs in A4792, directly proving that order adds information. A4792 itself has multiple immediate tails, so a branch set is more defensible than one universal fingerprint.
 
-A4792 itself is multi-branch, with three different immediate tails, so SEQMINER must not search for one universal short T23 fingerprint at the expense of branch-specific rules.
+## Ranking policy
 
-### T18 A4704 / A4712
+Rank upward with same-cycle support, outcome purity, independent captures, authoritative scene labels when they truly exist, multiple targets, timer-normalized stability, and ability to split a known ambiguous anchor.
 
-WOF-051 prospectively proved exact-state ambiguity:
+Rank downward for one-cycle purity, one-capture-only support, exact-timer brittleness, target/profile confounding, capture filename masquerading as a scene, or structural `+0x73` proxy being treated as an exact attack.
 
-```text
-S0/A4/B2|BODY4728|FE8b660|NX8b204|Vffff|TM1|P6C4736
-```
+## Current boundary
 
-produced:
+The current corpus is sufficient to exhaust structural order, timer, mode and branch topology, but not to emit a trustworthy all-game `Txx -> exact move-valued activeAttack -> attack-specific pair/triple` matrix because both a labeled full-sweep series and a proven exact local move/attack field are absent.
 
-```text
-A4704 @ 19.9 ms
-A4712 @ 100.4 ms
-```
-
-with target and side stable in both cases. The correct next unit is therefore the ordered context immediately **after** this shared state, plus the preceding tail if the post-state path remains ambiguous.
-
-## 6. What is not yet available on connector-visible main
-
-At this pass, `parallel/SWEEPATLAS/` is absent and no pushed all-game `SWEEP*` retained capture is visible in `wof-winkawaks-bridge/captures/`. Therefore exact all-game attack-labelled pair/triple frequency tables cannot be honestly emitted yet from GitHub-visible raw.
-
-This is a data-availability boundary, not a request for manual transfer. `seqminer.py` is already written to discover and consume retained raw automatically from a checkout/CI environment whenever those files are present.
-
-## 7. Sequence ranking policy
-
-A candidate is ranked upward when all of the following improve:
-
-1. same-cycle support;
-2. purity for one eventual attack;
-3. number of independent captures;
-4. number of scenes;
-5. number of starting targets;
-6. robustness when exact timer is replaced by normalized timer;
-7. ability to split a known ambiguous final/single state.
-
-A candidate is ranked downward when:
-
-- it appears only once;
-- support comes from one capture/scene;
-- it requires exact timer equality but collapses after normalization;
-- its apparent specificity disappears after conditioning on target/profile;
-- it is only an in-sample correlation.
+No recapture is requested. `seqminer.py` v2 is ready to regenerate exact tables automatically when either missing condition is resolved.
