@@ -2,7 +2,10 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "ALPHA_TRANSPORT_REAL_ADAPTER_PREP_V1",
   "promptPath": "parallel/PM/ALPHA_TRANSPORT_REAL_ADAPTER_PREP_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "4557ae4daea0bdcdd204027aeae7e331172808e1",
-  "startedAtUtc": "2026-09-01T14:20:30Z"
+  "startedAtUtc": "2026-09-01T14:20:30Z",
+  "resultPath": "parallel/ALPHA_TRANSPORT_INTEGRATION_PREP/RESULT.md",
+  "resultCommit": "0a8e39eba3520d6f9fbc0d76746f768d2f5ca0b1",
+  "completedAtUtc": "2026-09-01T14:43:30Z"
 }
