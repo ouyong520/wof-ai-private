@@ -1,0 +1,9 @@
+{
+  "name": "wof-hudanchor-player-follow-long-stress",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node long_stress_matrix.js",
+    "stress": "node long_stress_matrix.js"
+  }
+}
