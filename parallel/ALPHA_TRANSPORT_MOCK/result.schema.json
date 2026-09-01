@@ -1,0 +1,18 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"wof-alpha-safe-transport-mock-result-v1",
+  "type":"object",
+  "required":["artifact","generatedAt","mode","status","repositoryStatus","vectorCount","passCount","failCount","safety","results"],
+  "properties":{
+    "artifact":{"const":"wof-alpha-safe-transport-mock-harness-prep-v1"},
+    "generatedAt":{"type":"string"},
+    "mode":{"const":"reference-contract-model"},
+    "status":{"enum":["PASS","FAIL"]},
+    "repositoryStatus":{"type":"string"},
+    "vectorCount":{"const":67},
+    "passCount":{"type":"integer","minimum":0,"maximum":67},
+    "failCount":{"type":"integer","minimum":0,"maximum":67},
+    "safety":{"type":"object","required":["readOnly","ramWrites","inputInjection","workerReplacement","blobRewrite"],"properties":{"readOnly":{"const":true},"ramWrites":{"const":0},"inputInjection":{"const":false},"workerReplacement":{"const":false},"blobRewrite":{"const":false}}},
+    "results":{"type":"array","minItems":67,"maxItems":67,"items":{"type":"object","required":["id","status"],"properties":{"id":{"type":"string"},"status":{"enum":["PASS","FAIL"]}}}}
+  }
+}
