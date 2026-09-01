@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wof-prospective-candidate-v1",
+  "title": "WOF Prospective Candidate Manifest v1",
+  "type": "object",
+  "required": ["schema", "id", "promotion", "rule", "outcome"],
+  "properties": {
+    "schema": {"const": "wof-prospective-candidate-v1"},
+    "id": {"type": "string", "minLength": 1},
+    "promotion": {"const": "research-only"},
+    "identity": {
+      "type": "object",
+      "properties": {
+        "world": {"const": "Warriors of Fate (World 921031)"},
+        "sha256": {"type": "string"}
+      }
+    },
+    "rule": {
+      "type": "object",
+      "properties": {
+        "sequence": {
+          "type": "object",
+          "required": ["kind", "states"],
+          "properties": {
+            "kind": {"enum": ["tail2", "pair", "tail3", "triple"]},
+            "states": {"type": "array", "minItems": 2, "maxItems": 3}
+          }
+        },
+        "currentPredicates": {"type": "array"}
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "required": ["expectedAttacks"],
+      "properties": {"expectedAttacks": {"type": "array", "minItems": 1, "items": {"type": "integer"}}}
+    },
+    "windows": {"type": "object"},
+    "gate": {"type": "object"}
+  }
+}
