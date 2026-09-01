@@ -3,9 +3,11 @@ param(
 )
 
 # Backward compatibility: packaged Toolkit v2 historically calls the stable CMD with
-# "--update-only". Windows PowerShell leaves that GNU-style token in $args instead
-# of binding it to the [switch] above, so normalize it here before doing any work.
-if ($args -contains '--update-only') { $UpdateOnly = $true }
+# "--update-only". Windows PowerShell 5.1 does not reliably bind that GNU-style token
+# to the [switch] above, so also inspect the original process command line.
+if ($args -contains '--update-only' -or [Environment]::CommandLine -match '(?i)(?:^|\s)--update-only(?:\s|$)') {
+    $UpdateOnly = $true
+}
 
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -187,6 +189,8 @@ try {
     $env:WOF_PACKAGE_VERSION = $version
     $env:WOF_TOOLKIT_PYTHON = $venvPython
     $env:WOF_BOOTSTRAP_PATH = Join-Path $releaseDir 'WOF_一键工具.cmd'
+    $env:PYTHONUTF8 = '1'
+    $env:PYTHONIOENCODING = 'utf-8'
 
     Say '工具已准备完成。'
     if ($UpdateOnly) {
@@ -194,10 +198,13 @@ try {
         exit 0
     }
 
-    $toolkit = Join-Path $releaseDir 'WOF_TOOLKIT.cmd'
-    if (-not (Test-Path -LiteralPath $toolkit)) { throw '安装包中缺少 WOF_TOOLKIT.cmd' }
+    # Start the exact same Simplified-Chinese owner surface that WOF_TOOLKIT.cmd
+    # ultimately launches, but do it directly through the prepared venv. This avoids
+    # a second UTF-8 batch parser and is reliable for Chinese/space install paths.
+    $ownerToolkit = Join-Path $releaseDir 'parallel\OPTOOLKIT\owner_zh_cn.py'
+    if (-not (Test-Path -LiteralPath $ownerToolkit)) { throw '安装包中缺少中文 WOF 工具箱入口' }
     Say '正在打开中文 WOF 工具箱...'
-    & $toolkit
+    & $venvPython $ownerToolkit --root $releaseDir
     exit $LASTEXITCODE
 } catch {
     Fail 'WOF 工具准备失败。' $_.Exception.Message 20
