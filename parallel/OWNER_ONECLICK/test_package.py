@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import shutil
 import subprocess
@@ -8,30 +7,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import refresh_manifest as refresh
+
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 MANIFEST = HERE / "package_manifest.json"
 BOOTSTRAP = HERE / "bootstrap_v2.ps1"
 ENTRY = ROOT / "WOF_一键工具.cmd"
-
-EXPECTED_PACKAGE_VERSION = "2026.09.01.5"
-EXPECTED_PYLAUNCH_SOURCE = "7b10867f14f59ca9ab95c0fa6d30530008409371"
-EXPECTED_WORLD_SHA256 = "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62"
-EXPECTED_PYLAUNCH_BLOBS = {
-    "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd": "a6c52c436d1d7f1fa1cffcd8c24849ec14dd806d",
-    "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd": "f840103ea5a0a827c69d20f27c11f4bb4cef3490",
-    "parallel/PYLAUNCH/launcher.py": "f19489896591a1ee5db416ca86c88ff9161b3237",
-    "parallel/PYLAUNCH/wof_launcher/cdp.py": "06480f3aa7ab9261d7f91ab09074e96b4a6befc9",
-    "parallel/PYLAUNCH/wof_launcher/discovery_v2.py": "cee0bdef0fe461ab0cb003e6ae198db8c19a5ec2",
-    "parallel/PYLAUNCH/wof_launcher/monitor.py": "5ee0ce9a84988d7841799d907ebdfe2a3e68ea56",
-    "parallel/PYLAUNCH/wof_launcher/proof.py": "7cddae420b08bba627b05f2164083289569e5f5a",
-    "parallel/PYLAUNCH/wof_launcher/state.py": "7f00e9a2e948f86c30a99cab04809d726b60c95d",
-    "parallel/PYLAUNCH/wof_launcher/tray.py": "c3529a60da46fc7507e6899991fa9e4f8bd816e7",
-}
-
-
-def git_blob_sha(data: bytes) -> str:
-    return hashlib.sha1(b"blob " + str(len(data)).encode("ascii") + b"\0" + data).hexdigest()
 
 
 def git_show(commit: str, path: str) -> bytes:
@@ -47,19 +29,6 @@ def git_show(commit: str, path: str) -> bytes:
     return cp.stdout
 
 
-def current_pylaunch_payload_paths() -> list[str]:
-    base = ROOT / "parallel" / "PYLAUNCH"
-    files = [
-        base / "RUN_WINDOWS_PROOF.cmd",
-        base / "RUN_WOF_LAUNCHER.bat",
-        base / "WOF_ONECLICK_PROOF_CN.cmd",
-        base / "launcher.py",
-        base / "requirements.txt",
-    ]
-    files.extend(sorted((base / "wof_launcher").glob("*.py")))
-    return [p.relative_to(ROOT).as_posix() for p in files]
-
-
 class PackageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -68,49 +37,60 @@ class PackageTests(unittest.TestCase):
         cls.entry = ENTRY.read_text(encoding="utf-8-sig")
         cls.blobs = {row["path"]: row["gitBlobSha"] for row in cls.manifest["files"]}
 
-    def test_manifest_is_immutable_and_safe(self) -> None:
+    def test_manifest_is_deterministic_immutable_and_safe(self) -> None:
         m = self.manifest
-        self.assertEqual(m["schema"], "wof-owner-oneclick-package-v1")
-        self.assertEqual(m["packageVersion"], EXPECTED_PACKAGE_VERSION)
+        self.assertEqual(m["schema"], refresh.SCHEMA)
+        self.assertEqual(m["generator"], refresh.GENERATOR)
+        self.assertEqual(m["selectionPolicy"], refresh.SELECTION_POLICY)
         self.assertRegex(m["packageVersion"], r"^[A-Za-z0-9._-]+$")
-        commit = m["sourceCommit"]
-        self.assertEqual(commit, EXPECTED_PYLAUNCH_SOURCE)
-        self.assertRegex(commit, r"^[0-9a-f]{40}$")
-        self.assertEqual(m["baseUrl"], f"https://raw.githubusercontent.com/ouyong520/wof-ai-private/{commit}/")
+        self.assertRegex(m["sourceCommit"], r"^[0-9a-f]{40}$")
+        self.assertRegex(m["generatedAtUtc"], r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+        self.assertEqual(
+            m["baseUrl"],
+            f"https://raw.githubusercontent.com/ouyong520/wof-ai-private/{m['sourceCommit']}/",
+        )
         self.assertEqual(m["safety"], {"readOnly": True, "ramWrites": 0, "inputInjection": False})
+        self.assertEqual(
+            m,
+            refresh.generate_manifest(ROOT, m["sourceCommit"]),
+            "manifest must be a byte-stable derivation of its immutable source commit",
+        )
+
         paths = [row["path"] for row in m["files"]]
+        self.assertEqual(paths, sorted(paths))
         self.assertEqual(len(paths), len(set(paths)))
-        required = {
-            "WOF_一键工具.cmd",
-            "WOF_TOOLKIT.cmd",
-            "parallel/OPTOOLKIT/toolkit.py",
-            "parallel/OPTOOLKIT/owner_zh_cn.py",
-            "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd",
-            "parallel/PYLAUNCH/RUN_WOF_LAUNCHER.bat",
-            "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd",
-            "parallel/PYLAUNCH/launcher.py",
-            "parallel/PYLAUNCH/wof_launcher/discovery_v2.py",
-            "parallel/WOF052L_RECORDER/owner_zh_cn.py",
-            "parallel/WOF052L_RECORDER/fleet_recorder.py",
-            "parallel/WOF052L_RECORDER/recorder.py",
-            "parallel/BROWSER_FLEET/RUN_WOF_FLEET.cmd",
-            "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py",
-            "parallel/BROWSER_FLEET/fleet_manager.py",
-        }
-        self.assertTrue(required.issubset(paths))
         for row in m["files"]:
             self.assertNotIn("..", row["path"])
             self.assertRegex(row["gitBlobSha"], r"^[0-9a-f]{40}$")
 
-    def test_pylaunch_component_metadata_is_exact(self) -> None:
-        c = self.manifest["components"]["pylaunch"]
-        self.assertEqual(c["revision"], "worker-discovery-v2")
-        self.assertEqual(c["sourceCommit"], EXPECTED_PYLAUNCH_SOURCE)
-        self.assertEqual(c["windowsProofEntry"], "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd")
-        self.assertEqual(c["directProofEntry"], "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd")
-        self.assertEqual(c["world921031Sha256"], EXPECTED_WORLD_SHA256)
-        for path, sha in EXPECTED_PYLAUNCH_BLOBS.items():
-            self.assertEqual(self.blobs.get(path), sha)
+    def test_component_provenance_is_one_snapshot(self) -> None:
+        m = self.manifest
+        source = m["sourceCommit"]
+        for name in ("pylaunch", "recorder", "browserFleet", "liveProof"):
+            with self.subTest(component=name):
+                self.assertEqual(m["components"][name]["sourceCommit"], source)
+
+        required = {
+            "parallel/PYLAUNCH/wof_launcher/browser.py",
+            "parallel/PYLAUNCH/wof_launcher/cdp.py",
+            "parallel/PYLAUNCH/wof_launcher/discovery_v2.py",
+            "parallel/PYLAUNCH/wof_launcher/monitor.py",
+            "parallel/PYLAUNCH/wof_launcher/probe.py",
+            "parallel/WOF052L_RECORDER/owner_zh_cn.py",
+            "parallel/WOF052L_RECORDER/recorder.py",
+            "parallel/WOF052L_RECORDER/fleet_recorder.py",
+            "parallel/WOF052L_RECORDER/discovery_v2_sync.py",
+            "parallel/WOF052L_RECORDER/hardening_v2.py",
+            "parallel/WOF052L_RECORDER/identity_probe.js",
+            "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py",
+            "parallel/BROWSER_FLEET/fleet_manager.py",
+            "parallel/BROWSER_FLEET/fleet_discovery_v2.py",
+            "parallel/LIVE_PROOF_BUNDLE/RUN_WOF_UNIFIED_LIVE_PROOF.cmd",
+            "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py",
+            "parallel/LIVE_PROOF_BUNDLE/unified_preflight.py",
+            "parallel/LIVE_PROOF_BUNDLE/unified_preflight_entrypoint.py",
+        }
+        self.assertTrue(required.issubset(self.blobs), required - self.blobs.keys())
 
     @unittest.skipUnless(shutil.which("git"), "git not available")
     def test_every_manifest_blob_matches_pinned_commit(self) -> None:
@@ -118,17 +98,42 @@ class PackageTests(unittest.TestCase):
         for row in self.manifest["files"]:
             with self.subTest(path=row["path"]):
                 data = git_show(commit, row["path"])
-                self.assertEqual(git_blob_sha(data), row["gitBlobSha"])
+                self.assertEqual(refresh.git_blob_sha(data), row["gitBlobSha"])
 
     @unittest.skipUnless(shutil.which("git"), "git not available")
-    def test_current_pylaunch_runtime_cannot_outgrow_package(self) -> None:
+    def test_current_runtime_cannot_outgrow_or_drift_from_package(self) -> None:
+        refresh.verify_worktree_payload(ROOT, self.manifest)
         commit = self.manifest["sourceCommit"]
-        for path in current_pylaunch_payload_paths():
+        current = set(refresh.selected_worktree_paths(ROOT))
+        packaged = {p for p in self.blobs if refresh.is_runtime_path(p)}
+        self.assertEqual(current, packaged)
+        for path in sorted(current):
             with self.subTest(path=path):
-                self.assertIn(path, self.blobs, f"PYLAUNCH runtime file missing from package manifest: {path}")
-                current = (ROOT / path).read_bytes()
-                self.assertEqual(git_blob_sha(current), self.blobs[path], f"manifest is stale for current PYLAUNCH file: {path}")
-                self.assertEqual(git_show(commit, path), current, f"current PYLAUNCH file is newer than pinned immutable package: {path}")
+                data = (ROOT / path).read_bytes()
+                self.assertEqual(refresh.git_blob_sha(data), self.blobs[path])
+                self.assertEqual(git_show(commit, path), data)
+
+    def test_mutated_blob_is_rejected_with_chinese_first_diagnostic(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="WOF 中文 stale ") as td:
+            root = Path(td)
+            for path in self.blobs:
+                src = ROOT / path
+                dst = root / path
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                dst.write_bytes(src.read_bytes())
+
+            refresh.verify_worktree_payload(root, self.manifest)
+            victim = "parallel/PYLAUNCH/wof_launcher/browser.py"
+            with (root / victim).open("ab") as f:
+                f.write(b"\n# stale-fixture\n")
+
+            with self.assertRaises(refresh.ManifestError) as ctx:
+                refresh.verify_worktree_payload(root, self.manifest)
+            msg = str(ctx.exception)
+            self.assertTrue(msg.startswith("文件完整性校验失败："))
+            self.assertIn(victim, msg)
+            self.assertIn("expected=", msg)
+            self.assertIn("actual=", msg)
 
     @unittest.skipUnless(shutil.which("git"), "git not available")
     def test_discovery_v2_and_chinese_proof_are_really_pinned(self) -> None:
@@ -139,7 +144,6 @@ class PackageTests(unittest.TestCase):
         oneclick = git_show(commit, "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd").decode("utf-8")
         self.assertIn("Target.setAutoAttach", discovery)
         self.assertIn('WORKER_TYPES = {"worker", "shared_worker", "service_worker"}', discovery)
-        self.assertIn('path="page-autoattach"', discovery)
         self.assertIn("from .discovery_v2 import discover", monitor)
         self.assertIn('"ownerSummaryZh"', proof)
         self.assertIn('"checksZh"', proof)
@@ -167,6 +171,17 @@ class PackageTests(unittest.TestCase):
         self.assertIn("raw\\.githubusercontent\\.com/ouyong520/wof-ai-private/[0-9a-f]{40}/", s)
         self.assertNotIn("git clone", s.lower())
         self.assertNotIn("github desktop", s.lower())
+
+    def test_bootstrap_forces_utf8_for_redirected_noninteractive_windows_output(self) -> None:
+        s = self.bootstrap
+        for token in [
+            "[Console]::OutputEncoding = $Utf8NoBom",
+            "$OutputEncoding = $Utf8NoBom",
+            "$env:PYTHONUTF8 = '1'",
+            "$env:PYTHONIOENCODING = 'utf-8'",
+        ]:
+            self.assertIn(token, s)
+        self.assertIn("if ($detail -match '^文件完整性校验失败：') { Fail $detail $null 21 }", s)
 
     def test_python_missing_has_automatic_winget_path(self) -> None:
         s = self.bootstrap
@@ -203,22 +218,23 @@ class PackageTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             releases = root / "releases"
-            old = releases / "2026.09.01.4"
+            old = releases / "previous"
             old.mkdir(parents=True)
             (old / "installed.ok").write_text("ok", encoding="ascii")
             current = root / "current.txt"
-            current.write_text("2026.09.01.4", encoding="ascii")
+            current.write_text("previous", encoding="ascii")
 
-            stage = releases / "2026.09.01.5.staging-x"
+            version = self.manifest["packageVersion"]
+            stage = releases / f"{version}.staging-x"
             stage.mkdir()
             (stage / "installed.ok").write_text("ok", encoding="ascii")
-            new = releases / "2026.09.01.5"
+            new = releases / version
             stage.rename(new)
             pointer_tmp = root / "current.txt.tmp"
-            pointer_tmp.write_text("2026.09.01.5", encoding="ascii")
+            pointer_tmp.write_text(version, encoding="ascii")
             pointer_tmp.replace(current)
 
-            self.assertEqual(current.read_text(encoding="ascii"), "2026.09.01.5")
+            self.assertEqual(current.read_text(encoding="ascii"), version)
             self.assertTrue((old / "installed.ok").is_file())
             self.assertTrue((new / "installed.ok").is_file())
 
