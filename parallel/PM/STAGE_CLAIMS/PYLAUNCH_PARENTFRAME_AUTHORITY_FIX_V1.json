@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "PYLAUNCH_PARENTFRAME_AUTHORITY_FIX_V1",
+  "promptPath": "parallel/PM/PYLAUNCH_PARENTFRAME_AUTHORITY_FIX_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "02a6d28a95111c52a3f697bf02448f034ca527bb",
+  "startedAtUtc": "2026-09-01T14:13:30Z"
+}
