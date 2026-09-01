@@ -16,7 +16,7 @@ Never reuse a task ID or overwrite historical raw.
 
 | Scene | State | Canonical/reuse source |
 | --- | --- | --- |
-| B00 stationary idle | **QUEUED / NOT YET VALID** | `BASECAP-B00-idle-8s60-20260901-0510Z`; awaiting Collector per-task status/result/raw. Do not queue another B00 while this task exists. |
+| B00 stationary idle | **COVERED / VALID** | `BASECAP-B00-idle-8s60-20260901-0510Z`; gated stationary no-input baseline, 480 frames, retained raw. |
 | B10 P1 horizontal-only | **COVERED AS LABELED PHASE** | `RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z`, operator-confirmed first phase: visible repeated RIGHT/LEFT for roughly 15 s; no attack/jump/extra action; P2/P3 untouched. |
 | B11 P1 floor/depth-only | **COVERED** | Same `RAWMINE-005`, operator-confirmed second phase: visible repeated UP/DOWN for roughly 20 s; P2/P3 untouched. GEO treats this as the closing P1 Y/depth run. |
 | B12 facing/minimal displacement | **MISSING** | Old facing task has no retained canonical raw. Do not substitute large horizontal traversal. |
@@ -27,29 +27,35 @@ Never reuse a task ID or overwrite historical raw.
 | B32 target/retarget diversity | **COVERED** | `EFIELD-003`: known-player retargets localized at frames 492, 1827, 3322. |
 | B40 P2/P3 structure replication | **DEFERRED** | Retained P2 GEO raws exist; defer until foundational P1 scene suite is sufficient. |
 
-## Pending Collector task
+## VALID reusable captures
 
 ### BASECAP-B00-idle-8s60-20260901-0510Z
-status: QUEUED / NOT VALID  
-queuePath: `tasks/queue/BASECAP-B00-idle-8s60-20260901-0510Z.json`  
-queueBlobSha: `9743cf0a1762b1d0f595cb2639e1ffe1f8b50bb8`  
-createdAtUtc: `2026-09-01T05:10:40Z`  
-requestedRawPath: `captures/BASECAP-B00-idle-8s60-20260901-0510Z.jsonl.gz`  
-operatorGate: required. Put P1 in a safe no-combat/no-camera-scroll place, leave P2/P3 untouched, run READY, then press no controls for about 8 seconds.  
-durationSeconds: `8.0`  
-hz: `60.0`  
-uploadRawStream: `true`  
+status: VALID  
+rawPath: `captures/BASECAP-B00-idle-8s60-20260901-0510Z.jsonl.gz`  
+capturedAtUtc: `2026-09-01T05:17:05.567887+00:00` (Collector completion timestamp)  
+taskBlobSha: `9743cf0a1762b1d0f595cb2639e1ffe1f8b50bb8`  
+ROM/game/session: WOF WinKawaks local-discovery capture; exact ROM filename/build not separately retained. Collector session: `WinKawaks.exe`, pid `6968`, RAM base `0xB1AFDFC`, mapping `xor3`, fresh discovery `immutable-player-structure-v2`, unique candidate, cached RAM base not used as discovery input.  
+playerOccupancy: P1 intentionally prepared as the controlled/observed player. P2/P3 were explicitly required to remain untouched; exact joined/occupied state is not separately recorded.  
+preCaptureScene: P1 placed in a safe place with no combat and no intentional camera scrolling; P2/P3 untouched.  
+operatorGate: `required=true`; label `BASECAP B00 stationary idle`. Operator had to prepare the scene, run `READY_WOF_TASK.bat`, then provide no gameplay input for about 8 seconds.  
+operatorActionDuringCapture: no movement, attack, jump, or other gameplay controls for about 8 seconds; P2/P3 untouched.  
+durationSeconds: `8.0`; `480` frames  
+hz: target `60.0`; achieved `59.951`  
 layout: P1 + P2 + P3 + 20 enemies; stride `0xE0`; 5152 bytes/frame  
-validationRequiredBeforePromotion: matching `taskId` + `taskBlobSha`, result `PASS`, `writesGameMemory=false`, zero read/frame-size errors, retained gzip raw at the requested path, and acquisition label consistent with the operator gate.  
-notes: per-task status did not yet exist immediately after queue submission. Never duplicate this task ID; never submit a second B00 merely because the Collector has not claimed it yet.
-
-## VALID reusable captures
+intentionalChangedVariables: none at operator-input level; this is a stationary/no-input baseline.  
+intentionalHeldStableVariables: all intentional P1 gameplay controls absent; no intentional combat or camera scroll; P2/P3 untouched.  
+intendedReuseQuestions: B00 idle/no-input baseline; background animation/timer/noise screening; comparison against controlled movement/action captures; GEO/RAWMINE/EFIELD change-frequency baselining.  
+knownConfounders: `distinctRawFrameCount=453` and `stateChangeObserved=true`, so internal animation/timers/enemy/background state still changed despite no operator input; this is expected and must not be mislabeled as a bytewise static frame. Exact stage/room, ROM build, and P2/P3 occupancy are not separately retained. Operator compliance is supported by the gated acquisition instructions, not independent video telemetry.  
+labelSourceEvidence: authoritative queue task `tasks/queue/BASECAP-B00-idle-8s60-20260901-0510Z.json` with matching task blob SHA; authoritative PASS result `results/by_task/BASECAP-B00-idle-8s60-20260901-0510Z.json`; retained raw artifact at the path above. No scene label is inferred from raw numeric values.  
+supersedes: none  
+supersededBy: none  
+notes: result `PASS`; `readOnly=true`; `writesGameMemory=false`; raw uploaded; `readErrors=0`; `frameSizeErrors=0`; original stream bytes `5071909`; original SHA256 `c034bd3444ca6d771dbaeee1fb342117823bae210edfe7903c5d3875f980151a`; compressed bytes `56792`; compressed SHA256 `60c41b513e74af0994cefe4d7e780b6bf28e62e291166db5f228dd8c8dd7a537`; retained content SHA `50973af7f1eae740bac3d8edfc8b939774c0f769`.
 
 ### RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z
 status: VALID  
 rawPath: `captures/RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z.jsonl.gz`  
 capturedAtUtc: `2026-09-01T00:52:23.634810+00:00` (Collector completion timestamp)  
-taskBlobSha: `3d91bb9b77e3618500db9bde8b2145d909d4b441`  
+taskBlobSha: `3d91bb9b77e3618500db9de8b2145d909d4b441`  
 ROM/game/session: WOF WinKawaks local discovery; exact ROM filename/build not separately retained. `WinKawaks.exe`, pid `17292`, RAM base `0xB20FDFC`, mapping `xor3`, fresh discovery `immutable-player-structure-v2`, unique candidate.  
 playerOccupancy: P1 intentionally controlled; P2/P3 explicitly kept untouched. Their joined/occupancy state is not separately retained.  
 preCaptureScene: wide open walkable area where both LEFT/RIGHT and UP/DOWN visibly move the controlled character.  
@@ -104,4 +110,4 @@ notes: `readOnly=true`; `writesGameMemory=false`; raw uploaded; `readErrors=0`; 
 
 ## Next-step rule
 
-Do not queue B12/B13/B20 until the current B00 task is completed or conclusively invalidated. Once B00 produces a matching PASS result and retained raw, validate integrity, promote it here, then choose exactly one next missing scene.
+B00/B10/B11 are covered. Submit exactly one next missing foundational P1 scene at a time. Current next gap: B12 facing/minimal displacement. Do not queue B13 or B20 until B12 is completed or conclusively invalidated.
