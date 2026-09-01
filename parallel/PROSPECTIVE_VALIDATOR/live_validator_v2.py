@@ -19,7 +19,9 @@ from discovery_v2 import (
 )
 from validator import ValidationError, validate_session
 
-AUDIT_LIVE_TOPOLOGY_INTERVAL = 10.0
+# Kept explicit for the independent QA fixture. A positive live-topology audit
+# interval is forbidden: every evidence ingest cycle performs a full audit.
+AUDIT_LIVE_TOPOLOGY_INTERVAL = 0.0
 
 if core.recorder_core is not None:
     install_cdp_event_support(core.recorder_core)
@@ -30,6 +32,7 @@ _REASON_ZH = {
     "worker-closed-or-reloaded": "Worker 已关闭或重建",
     "page-closed-or-reloaded": "页面已关闭或重载",
     "worker-association-ambiguous": "Worker 关联变得不唯一，已安全停止该房间",
+    "worker-association-unverified": "当前 Worker 与页面唯一归属无法重新证明，已安全停止该房间",
     "worker-cdp-error": "Worker CDP 会话已失效",
     "validator-stopped": "验证器已停止",
 }
@@ -120,13 +123,14 @@ class LiveValidatorV2(core.LiveValidator):
         if not room:
             return
         if remote:
+            # Cleanup may stop the in-Worker sampler, but its returned queue is
+            # deliberately discarded. Final evidence may only enter via a
+            # successful full topology audit immediately before drain().
             try:
-                payload = room.session.evaluate(
+                room.session.evaluate(
                     "globalThis.__WOF_PROSPECTIVE_VALIDATOR ? globalThis.__WOF_PROSPECTIVE_VALIDATOR.stop() : null",
                     timeout=5.0,
                 )
-                if isinstance(payload, dict):
-                    self.ingest(room, payload)
             except Exception:
                 pass
         if room.pending:
@@ -156,89 +160,102 @@ class LiveValidatorV2(core.LiveValidator):
                 self.finalize_room(endpoint, tid, "browser-cdp-disconnect", remote=False)
             return
 
-        if now - endpoint.last_discovery >= core.DISCOVERY_INTERVAL:
-            endpoint.last_discovery = now
-            try:
-                targets = endpoint.client.targets()
-            except Exception:
-                for tid in list(endpoint.rooms):
-                    self.finalize_room(endpoint, tid, "browser-cdp-disconnect", remote=False)
-                endpoint.close_client()
-                return
+        # No prospective evidence is drained between discovery cycles. The only
+        # drain path is below, after a fresh full topology scan has positively
+        # re-proved every surviving live (page, Worker) ownership pair.
+        if now - endpoint.last_discovery < core.DISCOVERY_INTERVAL:
+            return
 
-            current_target_ids = {
-                str(target.get("targetId"))
-                for target in targets
-                if isinstance(target, dict) and target.get("targetId")
-            }
-            current_page_ids = {
-                str(target.get("targetId"))
-                for target in targets
-                if isinstance(target, dict) and target.get("type") == "page" and target.get("targetId")
-            }
+        endpoint.last_discovery = now
+        try:
+            targets = endpoint.client.targets()
+        except Exception:
+            for tid in list(endpoint.rooms):
+                self.finalize_room(endpoint, tid, "browser-cdp-disconnect", remote=False)
+            endpoint.close_client()
+            return
+
+        current_target_ids = {
+            str(target.get("targetId"))
+            for target in targets
+            if isinstance(target, dict) and target.get("targetId")
+        }
+        current_page_ids = {
+            str(target.get("targetId"))
+            for target in targets
+            if isinstance(target, dict) and target.get("type") == "page" and target.get("targetId")
+        }
+        for tid, room in list(endpoint.rooms.items()):
+            reason = room_liveness_reason(
+                discovery_path=_room_path(room),
+                target_id=tid,
+                page_id=_room_page_id(room),
+                current_target_ids=current_target_ids,
+                current_page_ids=current_page_ids,
+            )
+            if reason:
+                self.finalize_room(endpoint, tid, reason, remote=False)
+
+        try:
+            candidates, diag = discover_candidates(
+                endpoint.client,
+                targets,
+                session_factory=core.recorder_core.CdpSession,
+                light_probe_js=core.recorder_core.LIGHT_PROBE,
+                identity_probe_js=core.IDENTITY_JS,
+                expected_sha256=core.recorder_core.WORLD_SHA256,
+                skip_page_ids=set(),
+                endpoint_label=endpoint.label,
+            )
+        except Exception as exc:
+            # A failed topology proof cannot be followed by a later drain of
+            # evidence accumulated during the unverified interval. Censor now.
+            self._announce(endpoint, f"Discovery V2 全量拓扑复核失败；在线房间已保守停止，游戏本身不受影响。技术详情：{exc}")
+            for tid in list(endpoint.rooms):
+                self.finalize_room(endpoint, tid, "worker-association-unverified", remote=False)
+            return
+
+        endpoint._prospective_v2_last_audit = now
+        endpoint._prospective_v2_last_diag = diag
+
+        ambiguous = ambiguous_page_ids(diag)
+        if ambiguous:
             for tid, room in list(endpoint.rooms.items()):
-                reason = room_liveness_reason(
-                    discovery_path=_room_path(room),
-                    target_id=tid,
-                    page_id=_room_page_id(room),
-                    current_target_ids=current_target_ids,
-                    current_page_ids=current_page_ids,
-                )
-                if reason:
-                    self.finalize_room(endpoint, tid, reason, remote=False)
+                if _room_page_id(room) in ambiguous:
+                    self.finalize_room(endpoint, tid, "worker-association-ambiguous", remote=False)
 
-            live_page_ids = {_room_page_id(room) for room in endpoint.rooms.values() if _room_page_id(room)}
-            last_audit = float(getattr(endpoint, "_prospective_v2_last_audit", 0.0) or 0.0)
-            audit_live = now - last_audit >= AUDIT_LIVE_TOPOLOGY_INTERVAL
-            if audit_live:
-                endpoint._prospective_v2_last_audit = now
+        # A room is allowed to drain only if this exact full scan produced the
+        # same page -> exact supported Worker pair. Absence of ambiguity alone
+        # is not sufficient proof.
+        proven_pairs = {
+            (
+                str(candidate.page.get("targetId") or ""),
+                str(candidate.target.get("targetId") or ""),
+            )
+            for candidate in candidates
+            if str(candidate.page.get("targetId") or "") and str(candidate.target.get("targetId") or "")
+        }
 
-            try:
-                candidates, diag = discover_candidates(
-                    endpoint.client,
-                    targets,
-                    session_factory=core.recorder_core.CdpSession,
-                    light_probe_js=core.recorder_core.LIGHT_PROBE,
-                    identity_probe_js=core.IDENTITY_JS,
-                    expected_sha256=core.recorder_core.WORLD_SHA256,
-                    skip_page_ids=set() if audit_live else live_page_ids,
-                    endpoint_label=endpoint.label,
-                )
-            except Exception as exc:
-                self._announce(endpoint, f"Discovery V2 扫描失败；其他房间继续运行，游戏本身不受影响。技术详情：{exc}")
-                candidates, diag = [], {
-                    "version": "wof-prospective-discovery-v2",
-                    "endpointLabel": endpoint.label,
-                    "pageCount": len(current_page_ids),
-                    "candidateCount": 0,
-                    "readOnly": True,
-                    "ramWrites": 0,
-                    "inputInjection": False,
-                    "evidenceClass": "discovery-only",
-                }
-            endpoint._prospective_v2_last_diag = diag
+        if not candidates:
+            self._announce(endpoint, discovery_status_zh(diag))
+        else:
+            for candidate in candidates:
+                if str(candidate.page.get("targetId") or "") in ambiguous:
+                    candidate.close()
+                    continue
+                try:
+                    self.attach_candidate(endpoint, candidate)
+                except ValidationError:
+                    candidate.close()
+                    raise
+                except Exception as exc:
+                    candidate.close()
+                    self._announce(endpoint, f"单个房间准入失败；其他房间继续运行。技术详情：{exc}")
 
-            ambiguous = ambiguous_page_ids(diag)
-            if ambiguous:
-                for tid, room in list(endpoint.rooms.items()):
-                    if _room_page_id(room) in ambiguous:
-                        self.finalize_room(endpoint, tid, "worker-association-ambiguous", remote=False)
-
-            if not candidates:
-                self._announce(endpoint, discovery_status_zh(diag))
-            else:
-                for candidate in candidates:
-                    if str(candidate.page.get("targetId") or "") in ambiguous:
-                        candidate.close()
-                        continue
-                    try:
-                        self.attach_candidate(endpoint, candidate)
-                    except ValidationError:
-                        candidate.close()
-                        raise
-                    except Exception as exc:
-                        candidate.close()
-                        self._announce(endpoint, f"单个房间准入失败；其他房间继续运行。技术详情：{exc}")
+        for tid, room in list(endpoint.rooms.items()):
+            pair = (_room_page_id(room), str(tid))
+            if pair not in proven_pairs:
+                self.finalize_room(endpoint, tid, "worker-association-unverified", remote=False)
 
         for tid, room in list(endpoint.rooms.items()):
             try:
