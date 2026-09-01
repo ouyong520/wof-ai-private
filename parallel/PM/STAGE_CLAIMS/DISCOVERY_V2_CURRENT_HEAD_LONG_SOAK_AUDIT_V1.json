@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "DISCOVERY_V2_CURRENT_HEAD_LONG_SOAK_AUDIT_V1",
+  "promptPath": "parallel/PM/DISCOVERY_V2_CURRENT_HEAD_LONG_SOAK_AUDIT_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "82e08b7bcebf4299781f1a6d9b04679e70789ce8",
+  "startedAtUtc": "2026-09-01T15:05:00Z"
+}
