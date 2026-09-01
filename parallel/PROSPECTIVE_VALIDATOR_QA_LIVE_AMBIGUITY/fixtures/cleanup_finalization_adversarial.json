@@ -1,0 +1,47 @@
+{
+  "schema": "wof-prospective-validator-live-ambiguity-fresh-qa-fixture-v1",
+  "id": "fresh-cleanup-finalization-stop-payload-bypass",
+  "purpose": "Independently prove that remote cleanup may stop the sampler but cannot admit the stop() return payload into prospective counters without a fresh topology proof.",
+  "precondition": {
+    "room": {
+      "pageTargetId": "page-cleanup",
+      "workerTargetId": "worker-cleanup"
+    },
+    "lastFreshlyAdmittedPending": {
+      "marker": "prevalidated-pending",
+      "targetStart7E": 0,
+      "targetLast7E": 0,
+      "sideStart": "LEFT",
+      "sideLast": "LEFT",
+      "retargets": []
+    }
+  },
+  "remoteStopPayload": {
+    "ok": true,
+    "events": [
+      {
+        "kind": "result",
+        "marker": "FORBIDDEN-STOP-EVENT",
+        "activeAttack": 999,
+        "censored": false
+      }
+    ],
+    "status": {
+      "pending": [
+        {
+          "marker": "FORBIDDEN-STOP-PENDING"
+        }
+      ]
+    }
+  },
+  "expected": {
+    "stopCalled": true,
+    "stopPayloadPassedToIngest": false,
+    "forbiddenStopEventInProspectiveTraces": false,
+    "forbiddenStopPendingInProspectiveTraces": false,
+    "previouslyFreshPendingMayBeFinalizedAsCensored": true,
+    "previouslyFreshPendingCensorReason": "validator-stopped",
+    "productionPromotionAllowed": false
+  },
+  "requiredInvariant": "Cleanup/finalization cannot create new prospective evidence. Only evidence already admitted after a fresh topology proof may survive as censored pending state."
+}
