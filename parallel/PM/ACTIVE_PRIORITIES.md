@@ -1,62 +1,60 @@
 # WOF Future Danger AI — Active Priorities
 
-Updated: 2026-09-01 — RC5 real-Browser room-entry repair passed; usable Alpha now waits on safe live-Worker transport
+Updated: 2026-09-01 — RC5 room-entry repair passed; Python launcher foundation implemented; safe live-Worker proof is now P0
 
-## P0 — Safe non-replacing live-Worker transport for usable Browser Alpha
+## P0 — Python Launcher Windows/Browser live proof
 
-Owner real-Browser RC5 retest result:
-- current `WOF Future Danger Alpha RC5 Safe Bootstrap` enabled;
-- Browser Acceptance Helper disabled;
-- game **can enter a room normally**;
-- no Alpha HUD / warnings appear.
+Authoritative state:
+- owner proved RC5 can enter a real Browser room normally;
+- RC5 intentionally shows no HUD/warnings without a safe external transport;
+- `parallel/PYLAUNCH/**` foundation is now implemented;
+- foundation uses post-start localhost CDP, does not replace `window.Worker`, and remains read-only;
+- one real Windows/Browser proof remains.
 
-Decision:
-- the former P0 `Alpha prevents room entry` is CLOSED by owner Browser evidence, pending fresh independent RC5 QA confirmation;
-- the lack of HUD/warnings is expected under RC5 when no safe external live-Worker transport pairs;
-- Alpha is still not usable/releasable until a non-replacing transport connects the detector to the already-native WOF Worker.
+Fresh proof stage:
+- `parallel/PM/PYTHON_LAUNCHER_WINDOWS_PROOF_START_PROMPT.md`
 
-Do not restore the old `window.Worker` replacement / Blob Worker path.
+Required proof:
+- Browser OK;
+- WOF page OK;
+- `gstyphoon*.js` Worker OK;
+- WASM/heap OK;
+- exact World 921031 OK;
+- READ ONLY / RAM writes 0;
+- room remains playable.
 
-The active Python Launcher foundation is the primary non-duplicative transport path:
-- Chrome/Edge CDP post-start attachment;
-- discover already-running WOF page / `gstyphoon*.js` Worker;
-- discover module/heap;
-- keep base gameplay independent of attach failure;
-- read-only foundation first.
+If PASS, the next fresh stage is Alpha transport integration. Do not modify Alpha from the proof stage itself.
 
-Start prompt:
-- `parallel/PM/PYTHON_LAUNCHER_FOUNDATION_START_PROMPT.md`
-- `parallel/PM/PYTHON_LAUNCHER_TRAY_UI_REQUIREMENTS.md`
+## P1 — Fresh independent RC5 room-entry repair QA
 
-## P1 — Fresh independent RC5 QA / retest
-
-Open a fresh QA stage using:
+Fresh QA stage:
 - `parallel/PM/ALPHA_RC5_QA_RETEST_START_PROMPT.md`
 
-Purpose:
-- independently confirm the no-Worker-replacement gameplay-first RC5 repair;
-- preserve all RC4 safety gates;
-- explicitly distinguish `room-entry repair PASS` from `Alpha release-ready`.
+Goal:
+- independently confirm the no-Worker-replacement RC5 repair and retained RC4 safety gates;
+- close only the specific room-entry P0;
+- do not call Alpha release-ready while safe transport is still missing.
 
-QA must not modify `product/alpha/**` and must not duplicate Python Launcher implementation.
+## P1-opportunistic — WOF-052L long event capture tooling
 
-## WOF-052 — evening batch COMPLETE / STOP until natural T18 coverage
+The valid five-room WOF-052 batch had zero T18 coverage. PM has approved replacing repeated blind 120-second windows with one bounded long event-capture design.
 
-Latest bounded batch:
-- 5 joined / 5 complete / 0 error / 0 interrupted;
-- readOnly=true / ramWrites=0;
-- 59,997 polls / 241,485 enemy samples / 1,411 ACTIVE edges;
-- real multiplayer occupancy was present;
-- but all five rooms had `T18 samples = 0` and candidate cycles = 0.
+Decision:
+- `parallel/PM/WOF_052_LONG_CAPTURE_DECISION.md`
 
-Result:
-- no A4704-vs-A4712 ordered discriminator can be inferred;
-- no collector/tooling defect found;
-- do not manually hunt attacks or reopen broad collection;
-- resume WOF-052 only opportunistically when natural rooms actually expose T18.
+Fresh tooling stage:
+- `parallel/PM/WOF_052L_LONG_CAPTURE_START_PROMPT.md`
 
-Authoritative report:
-- `reports/WOF-052_ANALYSIS.md`
+Target:
+- about 60 minutes natural play;
+- event-selective T18 retention only;
+- compact checkpointing and bounded JSON;
+- no full-frame raw dump;
+- no manual attack hunting;
+- read-only / no input injection;
+- no `product/alpha/**` changes.
+
+WOF-052L remains non-blocking for Alpha release.
 
 ## Preserve passed Alpha safety gates
 
@@ -74,14 +72,13 @@ Do not reopen without new evidence:
 
 ## Browser acceptance
 
-Full Browser acceptance remains PAUSED.
-
-It resumes only after:
-1. fresh independent RC5 QA accepts the room-entry repair; and
-2. a safe non-replacing live-Worker transport actually pairs the detector so Browser acceptance can test real HUD/warning behavior.
+Full Browser acceptance remains PAUSED until:
+1. RC5 fresh independent QA accepts the room-entry repair; and
+2. safe live-Worker transport is proven and integrated so real HUD/warning behavior can run.
 
 ## Current fastest path
 
-**Python Launcher safe live-Worker attachment proof + fresh RC5 independent QA -> Alpha transport integration -> bounded real Browser acceptance -> Alpha release decision**
+**PYLAUNCH Windows live proof + RC5 independent QA -> fresh Alpha transport integration -> bounded Browser acceptance -> Alpha release decision**
 
-WOF-052 stays parked until natural T18 coverage appears.
+Parallel research only:
+**WOF-052L tooling -> one long natural capture -> ordered T18 analysis**
