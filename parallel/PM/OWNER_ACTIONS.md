@@ -1,67 +1,53 @@
 # WOF Future Danger AI — Owner Actions
 
-Updated: 2026-09-01 — RC1 QA blocked / RC2 parallel repair
+Updated: 2026-09-01 — RC2 parallel repair started
 
-## Current owner action required: YES — four new non-gameplay work threads
+## Current owner action required: NO
 
-Alpha QA completed RC1 audit and returned **QA BLOCKED** with four open blockers:
+Owner reports all four new RC2-stage work threads are open:
 
-- P0 runtime/build identity can fail open on a layout-compatible lookalike;
-- P1 same-type same-slot replacement can inherit an old warning;
-- P1 HUD silently drops simultaneous warnings after the first row;
-- P1 user load path still requires researcher-level manual Worker-console selection.
+1. Alpha RC2 implementation — edits `product/alpha/**`.
+2. Runtime Identity audit — read-only support under `parallel/ALPHAID/**`.
+3. Enemy Lifecycle / slot-reuse audit — read-only support under `parallel/ALPHALIFE/**`.
+4. Normal-user Bootstrap audit — read-only support under `parallel/ALPHABOOT/**`.
 
-Do **not** run real Browser Alpha acceptance yet.
+Canonical short launcher paths now exist:
+- `parallel/PM/ALPHA_RC2_FIX_START_PROMPT.md`
+- `parallel/PM/RUNTIME_IDENTITY_START_PROMPT.md`
+- `parallel/PM/ENEMY_LIFECYCLE_START_PROMPT.md`
+- `parallel/PM/ALPHA_BOOTSTRAP_START_PROMPT.md`
 
-## Close these completed work threads
+## RC1 QA blocker set
 
-- COVERAGE: complete / PARK; human recap = NO.
-- SEQMINER: current retained corpus exhausted / PARK; no recapture requested.
-- Alpha QA RC1: stage complete at QA BLOCKED.
-- Original Alpha RC1 implementation: stage complete; do not revive it for RC2.
+RC1 is not releasable. QA currently has six known open P0/P1 findings and RC2 must always reread the latest QA files rather than rely on a stale count:
 
-## Action O1 — Open Alpha Fix / RC2 thread
+- ALPHAQA-001 P0 — layout-only runtime/build identity can fail open.
+- ALPHAQA-002 P1 — same-type same-slot replacement can inherit an old warning.
+- ALPHAQA-003 P1 — HUD silently drops simultaneous warnings after the first row.
+- ALPHAQA-004 P1 — normal-user load path requires manual Worker-console selection.
+- ALPHAQA-005 P0 — fixed origin-global BroadcastChannel can cross-contaminate warnings between same-origin sessions/tabs.
+- ALPHAQA-006 P1 — prior research `WOFHUD` is hidden rather than fully disposed during Alpha takeover.
 
-```text
-你负责 WOF Alpha RC2 修复。请连接 GitHub，读取 ouyong520/wof-ai-private/parallel/PM/ALPHA_RC2_FIX_START_PROMPT.md，然后严格按里面要求修复 Alpha QA 找出的 P0/P1 问题，直到 RC2 可以交给新的独立 QA 复测，或者只剩一个必须真人 Browser 操作才能解决的精确阻断点。
-```
-
-Owns `product/alpha/**` fixes for this stage.
-
-## Action O2 — Open Runtime Identity audit thread
-
-```text
-你负责 WOF Alpha 的 Browser 运行时/版本识别审计。请连接 GitHub，读取 ouyong520/wof-ai-private/parallel/PM/ALPHA_RUNTIME_IDENTITY_AUDIT_START_PROMPT.md，然后只读检查现有 GitHub 证据，找出怎样真正确认是支持的 wofr1 / World 921002 Browser 版本。不要改 Alpha 产品代码，结果写回 GitHub，直到找到安全的版本识别办法，或者确认只差一个最小真人 Browser 探针。
-```
-
-Writes only `parallel/ALPHAID/**`.
-
-## Action O3 — Open Enemy Lifecycle audit thread
-
-```text
-你负责 WOF Alpha 的敌人生命周期/槽位复用审计。请连接 GitHub，读取 ouyong520/wof-ai-private/parallel/PM/ALPHA_LIFECYCLE_AUDIT_START_PROMPT.md，然后只读检查现有 Browser 证据，解决“同类型敌人复用同一槽位时旧警告可能继承”的问题。不要改 Alpha 产品代码，把可实施的安全清理方案和测试要求写回 GitHub。
-```
-
-Writes only `parallel/ALPHALIFE/**`.
-
-## Action O4 — Open User Bootstrap audit thread
-
-```text
-你负责 WOF Alpha 的普通用户加载方式审计。请连接 GitHub，读取 ouyong520/wof-ai-private/parallel/PM/ALPHA_BOOTSTRAP_AUDIT_START_PROMPT.md，然后只读研究怎样让普通用户不用手动寻找 gstyphoon.js Worker 控制台，也能用一个简单入口启动 Alpha。不要改 Alpha 产品代码，把推荐方案写回 GitHub。
-```
-
-Writes only `parallel/ALPHABOOT/**`.
-
-## Why four threads are safe
-
-Only O1 edits `product/alpha/**`. O2/O3/O4 are read-only support investigations with separate output directories, so they can run simultaneously without code-write conflicts.
+RC2 bootstrap has been updated so **all current QA OPEN P0/P1 findings** are mandatory, including findings added after the original four-item RC1 audit.
 
 ## Human gameplay action — NOT YET
 
-Do not spend owner Browser time on Alpha acceptance until RC2 exists and fresh independent QA clears all P0/P1.
+Do not run real Browser Alpha acceptance while any P0/P1 remains.
 
-If any support audit proves that exactly one minimal Browser probe is unavoidable, PM will give the precise operation later.
+Wait for:
+1. support audits to write implementation-ready results or one exact minimal human probe;
+2. RC2 implementation to close all offline-fixable blockers;
+3. a fresh independent RC2 QA retest.
+
+Only after fresh QA reports no open P0/P1 should PM request one short real Browser acceptance.
+
+## Closed / parked work
+
+- COVERAGE — complete / PARK; human recap = NO.
+- SEQMINER — current retained corpus exhausted / PARK; no recapture requested.
+- RC1 QA — its stage output is the blocker list; do not keep extending the old thread.
+- Original Alpha RC1 implementation — completed stage; RC2 is a new implementation stage.
 
 ## Next PM trigger
 
-After these threads produce GitHub results, return here and say `继续`. PM will read GitHub directly and decide when to open a fresh RC2 QA-retest thread.
+No copying between work threads is needed. When the four active threads have written GitHub results, return to PM and say `继续`. PM will read GitHub directly, route support findings into RC2, and decide when a fresh QA-retest thread should start.
