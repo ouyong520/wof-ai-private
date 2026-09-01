@@ -179,6 +179,35 @@ class IngestorTests(unittest.TestCase):
         self.assertEqual(row["checks"]["world921031"], "PASS")
         self.assertEqual(summary["overall"], "PASS")
 
+    def test_current_toolkit_v2_regression_is_known(self):
+        payload = {
+            "toolkit": "wof-windows-operator-toolkit-v2-cn",
+            "overall": "PASS",
+            "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False},
+            "checks": [],
+        }
+        self.write_json("regression_20260901_120000/regression_summary.json", payload)
+        summary, _, _, _ = M.ingest(self.root)
+        row = summary["files"][0]
+        self.assertEqual(row["kind"], "REGRESSION_SUMMARY")
+        self.assertEqual(row["checks"]["knownVersion"], "PASS")
+        self.assertEqual(summary["overall"], "PASS")
+
+    def test_current_toolkit_v2_diagnostics_is_known(self):
+        payload = {
+            "toolkit": "wof-windows-operator-toolkit-v2-cn",
+            "time": "2026-09-01T12:00:00",
+            "platform": "Windows",
+            "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False},
+            "components": {},
+        }
+        self.write_json("diagnostics_20260901_120000/diagnostics_summary.json", payload)
+        summary, _, _, _ = M.ingest(self.root)
+        row = summary["files"][0]
+        self.assertEqual(row["kind"], "DIAGNOSTICS_SUMMARY")
+        self.assertEqual(row["checks"]["knownVersion"], "PASS")
+        self.assertEqual(summary["overall"], "PASS")
+
 
 if __name__ == "__main__":
     unittest.main()
