@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "WOF052L_HISTORICAL_REPLAY_CANDIDATE_MINING_LONGRUN_V1",
+  "promptPath": "parallel/PM/WOF052L_HISTORICAL_REPLAY_CANDIDATE_MINING_LONGRUN_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "82e08b7bcebf4299781f1a6d9b04679e70789ce8",
+  "startedAtUtc": "2026-09-01T15:05:00Z"
+}
