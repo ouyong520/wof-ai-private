@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "WOF052L_RECORDER_LONG_CAPTURE_QA_RETEST_V1",
+  "promptPath": "parallel/PM/WOF052L_RECORDER_LONG_CAPTURE_QA_RETEST_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "f6886b057ebdb0b5654a37568fb677e2bf4b94c9",
+  "startedAtUtc": "2026-09-01T15:38:33Z"
+}
