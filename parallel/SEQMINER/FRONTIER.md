@@ -1,7 +1,7 @@
 # SEQMINER Frontier
 
 Updated: 2026-09-01  
-State: **current retained-corpus ordered information exhausted; miner v2 ready; no recapture requested**
+State: **current retained-corpus ordered information exhausted; miner v3 ready; no recapture requested**
 
 ## Current verdict
 
@@ -13,25 +13,23 @@ Ordered context is mandatory for the unresolved attack-selection frontier.
 
 The correct model class is sequence/branch context, not another isolated offset equality.
 
-## Corpus status correction
+## Corpus status
 
-`parallel/SWEEPATLAS/**` now exists.
-
-It confirms broad retained local coverage, including all T1..T31 and explicit local T18/T23 presence. Its authoritative capture index simultaneously states:
+`parallel/SWEEPATLAS/**` confirms broad retained local coverage, including all T1..T31 and explicit local T18/T23 presence. Its capture index simultaneously states:
 
 ```text
 stageSceneWaveLabelsAvailable = false
 fullSweepSeriesPresent = false
 ```
 
-So the old statement “SWEEPATLAS absent” is obsolete. The actual blocker is narrower:
+The actual blockers are therefore narrow:
 
 1. no labeled `BASECAP-SWEEP-*` full-game series on GitHub main;
 2. no separately proven WinKawaks-local exact move/attack value suitable for grouping Axxxx-like outcomes.
 
 No stage/scene labels or exact local attack matrix are fabricated.
 
-## Offline information now exhausted
+## Offline structural information exhausted
 
 ### Cursor topology
 
@@ -51,13 +49,46 @@ Highest-value structural nodes from retained raw-derived reports:
 
 `+0x34` is not adequately represented by literal timer equality alone.
 
-SEQMINER now preserves:
+SEQMINER preserves:
 
 - exact start/end/min/max timer profile;
 - record-ceiling normalized timer family;
-- terminal `timer34==1` residence length.
+- terminal `timer34==1` residence length;
+- positive timer reload edges across compressed-state boundaries.
 
-The last feature matters because `02008D08` / `02005FF8` commonly wait about 32 frames at timer1, `02008BE0` can wait up to 276, and `0200906E` up to 1518.
+The terminal-hold feature matters because `02008D08` / `02005FF8` commonly wait about 32 frames at timer1, `02008BE0` can wait up to 276, and `0200906E` up to 1518.
+
+### v3 delayed-load correction
+
+A concrete representation bug was found by comparing the miner with retained delayed-`1B` evidence.
+
+The EFIELD delayed-dwell analysis contains 52 residences that enter `+0x73=1B` with `+0x34=8` and then load upward. On those load frames:
+
+- `+0x35` changes `52/52`;
+- `+0x42` changes `52/52`;
+- the load occurs within the first few frames of the residence.
+
+Because `+0x35` belongs to SEQMINER's compressed core key, the old state-local reload list could split immediately before the load and fail to encode the cross-state reload edge.
+
+`seqminer.py` v3 now tracks positive `+0x34` loads at cycle-prefix scope in addition to state-local scope. Every reload keeps pre/post core, cursor, mode35, phase tuple, timer42, timer1 hold context, and exact/normalized timer family. Future-event-edge state remains excluded to avoid label leakage.
+
+This is a real offline improvement completed without any new capture.
+
+### Confidence correction
+
+Candidate feature support was already de-duplicated per cycle. v3 applies the same rule explicitly to ambiguous branchpoint support:
+
+```text
+one anchor in one resolved cycle = one confidence unit
+```
+
+Repeated loop visits are still retained as `raw_occurrence_distribution` but cannot inflate attack support.
+
+### Scene-label correction
+
+Capture filenames remain fallback provenance only. They no longer contribute to an `explicit_scene_count`.
+
+If future raw supplies multiple authoritative dimensions, v3 composes all present `stage/scene/sceneId/room/wave` fields instead of silently retaining only the first one.
 
 ### Mode / flag progression
 
@@ -69,23 +100,27 @@ The last feature matters because `02008D08` / `02005FF8` commonly wait about 32 
 
 The miner keeps separate live target, stored association, split third reference and association synchronization checkpoint, preventing target transitions from masquerading as attack-specific sequences.
 
-## SEQMINER v2 completion
+## SEQMINER v3 completion
 
-`seqminer.py` has been strengthened to:
+`seqminer.py` now:
 
-- discover retained raw automatically;
-- use physical-slot/type/B4/B6 episode continuity;
-- avoid using mutable B0 as object identity;
-- compress core executor states while preserving context separately;
-- save frame start/end/dwell;
-- save exact + normalized timer progression;
-- save terminal TM1 hold duration;
-- capture event-edge target changes;
-- count feature support once per cycle;
-- rank final/tail2/tail3/pair/triple exact/context/normalized families;
-- automatically identify ambiguous anchors and next-state divergence;
-- record capture/scene/target stability without inventing scene labels;
-- emit branchpoint and candidate machine-readable outputs.
+- discovers retained raw automatically;
+- uses physical-slot/type/B4/B6 episode continuity;
+- avoids mutable B0 as object identity;
+- compresses core executor states while preserving context separately;
+- saves frame start/end/dwell;
+- saves exact + normalized timer progression;
+- saves terminal TM1 hold duration;
+- captures same-core and cross-core positive timer reload edges;
+- captures event-edge target changes but excludes event-edge state from predictor features;
+- counts candidate and branchpoint confidence once per cycle;
+- keeps repeated loop visits only as raw occurrence diagnostics;
+- ranks final/tail2/tail3/pair/triple/reload exact/context/normalized families;
+- automatically identifies ambiguous anchors and next-state divergence;
+- separates explicit scene evidence from capture-filename fallback;
+- emits branchpoint and candidate machine-readable outputs.
+
+The stable machine-readable semantics are formalized in `FEATURE_CONTRACT.json`.
 
 ## Browser prospective queue
 
@@ -120,9 +155,10 @@ zero cycle
 -> pair/triple
 -> exact timer
 -> normalized timer + terminal-hold family
+-> cross-state timer reload edges
 -> ambiguous anchor branchpoints
 -> eventual exact local attack
--> cross capture/scene/target stability
+-> cross capture / explicit-scene / target stability
 -> Browser prospective candidate ranking
 ```
 
