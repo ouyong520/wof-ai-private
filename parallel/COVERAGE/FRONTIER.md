@@ -56,6 +56,21 @@ Not materialized/proven:
 
 SEQMINER itself requests no recapture.
 
+### Concurrent SEQMINER v3 audit — INCLUDED
+
+COVERAGE also audited the SEQMINER v3 commits that landed concurrently with this refresh through `694c2784b3a9fc68d7b86d58a62643e5b0c1db30`.
+
+v3 adds/clarifies:
+
+- machine-readable `FEATURE_CONTRACT.json`;
+- support counted at most once per unique resolved cycle per signature;
+- cycle-level positive `+0x34` reload edges so reloads crossing a `+0x35`/core-state boundary are not lost;
+- explicit separation of raw loop occurrence counts from independent confidence;
+- capture filename fallback is not authoritative scene evidence;
+- exact local attack semantics remain gated on an independently proven WinKawaks-local attack field.
+
+Coverage impact: **evidence-contract quality strengthened; sample corpus and gap classes unchanged**. No new raw/capture landed with these commits, and SEQMINER v3 still requests no generic Collector recapture.
+
 ### Provenance / raw retention — STABLE
 
 The bridge head remains `e3676d79a38ac23e572af69d23d560c01bd6777d`, the same ledger point used by the old COVERAGE snapshot.
