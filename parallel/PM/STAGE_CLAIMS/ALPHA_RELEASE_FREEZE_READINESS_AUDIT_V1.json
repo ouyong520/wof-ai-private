@@ -2,7 +2,12 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "ALPHA_RELEASE_FREEZE_READINESS_AUDIT_V1",
   "promptPath": "parallel/PM/ALPHA_RELEASE_FREEZE_READINESS_AUDIT_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "5d60c2d5aed9adde23e670da3542fac39c6d1d05",
-  "startedAtUtc": "2026-09-01T16:10:26Z"
+  "startedAtUtc": "2026-09-01T16:10:26Z",
+  "auditTargetCommit": "852b77c1471ccbc123fd2f9e289a96beb545d5ac",
+  "resultPath": "parallel/ALPHA_RELEASE_FREEZE_AUDIT/RESULT.md",
+  "resultCommit": "7c80db57d92ff8d2cc4141bc143462f84cdaab3f",
+  "verdict": "BLOCKED — ALPHA RELEASE FREEZE READINESS AUDIT — CURRENT OWNER ONECLICK PACKAGE IS STALE AGAINST PYLAUNCH STARTUP-ATTESTATION RUNTIME",
+  "ownerAction": "NO"
 }
