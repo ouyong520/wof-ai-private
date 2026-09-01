@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 from wof_launcher.monitor import LauncherMonitor
+from wof_launcher.proof import write_proof_json
 from wof_launcher.state import StatusStore
 from wof_launcher.tray import TrayApp
 
@@ -23,6 +24,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--attach-only", action="store_true", help="Do not start a browser; attach only to an existing CDP endpoint")
     p.add_argument("--no-tray", action="store_true", help="CLI diagnostics mode")
     p.add_argument("--once", action="store_true", help="With --no-tray, print one status snapshot and exit")
+    p.add_argument("--proof-json", help="Continuously write a compact read-only Windows proof JSON snapshot")
     return p.parse_args()
 
 
@@ -31,6 +33,18 @@ def main() -> int:
     status = StatusStore()
     stop = threading.Event()
     tray_holder: dict[str, TrayApp] = {}
+    proof_path = Path(args.proof_json).expanduser().resolve() if args.proof_json else None
+
+    def publish_status() -> None:
+        if proof_path:
+            try:
+                write_proof_json(proof_path, status.get().snapshot())
+            except OSError:
+                # Diagnostics export must never interfere with browser/game attachment.
+                pass
+        tray = tray_holder.get("tray")
+        if tray:
+            tray.refresh()
 
     def request_stop() -> None:
         stop.set()
@@ -45,8 +59,9 @@ def main() -> int:
         profile_dir=Path(args.profile_dir).expanduser() if args.profile_dir else None,
         game_url=args.game_url,
         auto_launch_browser=not args.attach_only,
-        on_change=lambda: tray_holder.get("tray") and tray_holder["tray"].refresh(),
+        on_change=publish_status,
     )
+    publish_status()
     monitor.start()
 
     if args.no_tray:
@@ -64,6 +79,7 @@ def main() -> int:
         except KeyboardInterrupt:
             pass
         finally:
+            publish_status()
             request_stop()
         return 0
 
@@ -73,9 +89,11 @@ def main() -> int:
         tray.run()
     except ImportError as exc:
         print(f"Tray dependency missing ({exc}); run pip install -r requirements.txt or use --no-tray", file=sys.stderr)
+        publish_status()
         request_stop()
         return 2
     finally:
+        publish_status()
         request_stop()
     return 0
 
