@@ -3,6 +3,7 @@ name: Owner One-Click Package
 on:
   push:
     paths:
+      - '.github/workflows/owner-oneclick-package.yml'
       - 'WOF_一键工具.cmd'
       - 'WOF_TOOLKIT.cmd'
       - 'parallel/OWNER_ONECLICK/**'
