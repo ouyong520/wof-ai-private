@@ -1,0 +1,75 @@
+{
+  "schema": "wof-alpha-formal-real-adapter-integration-recovery-v2",
+  "stageId": "ALPHA_TRANSPORT_FORMAL_REAL_ADAPTER_INTEGRATION_RECOVERY_V2",
+  "status": "PASS",
+  "repositoryStatus": "ALPHA FORMAL REAL-ADAPTER INTEGRATION READY — READY FOR FRESH INTEGRATION QA",
+  "ownerAction": "NO",
+  "repair": {
+    "blocker": "P1 detector-local exact World 921031 identity TOCTOU between Discovery acceptance and observer installation",
+    "freshDetectorLocalRomSha256": true,
+    "sameTargetIdRuntimeReplacementFailsClosed": true,
+    "discoveryShaIsProvenanceOnly": true,
+    "adapterRequiresFreshWorkerSha256": true
+  },
+  "tests": {
+    "detectorLocalIdentityTocou": {"status": "PASS", "passCount": 2, "failCount": 0},
+    "formalAdapter": {"status": "PASS", "passCount": 10, "failCount": 0},
+    "formalIntegration": {"status": "PASS", "passCount": 20, "failCount": 0},
+    "staleInflightGeneration": {"status": "PASS", "passCount": 5, "failCount": 0},
+    "referenceSelftest": {"status": "PASS", "passCount": 8, "failCount": 0},
+    "frozen67VectorConsumerGate": {"status": "PASS", "passCount": 67, "failCount": 0},
+    "preparedFreshQaSeamPreflight": {"status": "PASS", "passCount": 14, "failCount": 0, "independentCertificationClaimed": false},
+    "currentRelevantRc4Rc5Coverage": {
+      "status": "PASS",
+      "evidence": [
+        "formal integration bootstrap/HUD/session/rebind/failure coverage",
+        "FIQA-09 heartbeat/staleness boundaries",
+        "FIQA-12 Chinese failure status",
+        "FIQA-14 RC5 bootstrap game-unaffected failure",
+        "frozen V64-V67 existing regression preservation"
+      ]
+    }
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "workerReplacement": false,
+    "blobRewrite": false,
+    "gamePostMessageControl": false,
+    "heapWrites": false,
+    "assistMode": false
+  },
+  "authority": {
+    "sessionBound": true,
+    "pairGenerationBound": true,
+    "pairNonceBound": true,
+    "runtimeEpochBound": true,
+    "oneInflight": true,
+    "queueDepth": 0,
+    "oldCompletionRejectedAfterRebind": true,
+    "workerReplacementRevokesOldAuthority": true,
+    "disconnectClearsWarningAuthority": true
+  },
+  "provenance": {
+    "productAlphaRealWorkerBlob": "9c63a2c6a185ead8406487edd10038c035d41623",
+    "formalRealAdapterBlob": "1a5c6a255468c096ddd5df79993851e4d41e23cb",
+    "formalAdapterTestBlob": "824323123cef3d736efb0d8152264303a59d14a9",
+    "detectorLocalIdentityTestBlob": "4140d22114a6e10a8cef345f388b0b479dea1f5b",
+    "formalQaSutBlob": "46c36dca6e906b8134dda76068ada2b3aaedff5a",
+    "formalIntegrationTestBlob": "4b2b2eccb83e16e149a6ddd4f36c438c325c50b9",
+    "bootstrapBlob": "5aed15ff14aa39d95eade187cefb63dbd00848e6",
+    "hudBlob": "f41838c760ee9f7c40f3c91c71687e72ba740803",
+    "alphaCoreBlob": "267a44190744b6848b0685712c3d5572627d3a8a",
+    "pylaunchCdpBlob": "def308bed2a5609be1da26505a15d621395b66aa",
+    "pylaunchDiscoveryV2Blob": "ec9d27bfe26557a11187a23853893b898a3366d1",
+    "pylaunchProbeBlob": "789a6849b826b35542b22d56a4d2ca3628d285a1",
+    "frozenMockFixturesBlob": "35bf36b4c741cda5d94be3f9884511a86653c11f",
+    "frozenMockVectorsBlob": "5a0cbe2ccfcf7eb6e875552f56748f736722c14d",
+    "frozenMockExpectedBlob": "1231e0946d18068284724d92e732ea185e4e6af8"
+  },
+  "notes": [
+    "Prepared fresh-QA harness was consumed as a SUT seam preflight only; this result does not claim an independent QA endorsement.",
+    "No PYLAUNCH, Recorder, Live Proof, Owner OneClick, Prospective, or unrelated lane files were modified by this recovery stage."
+  ]
+}
