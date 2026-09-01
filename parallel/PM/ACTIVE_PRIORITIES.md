@@ -1,70 +1,58 @@
 # WOF Future Danger AI — Active Priorities
 
-Updated: 2026-09-01 — RC4 independent QA PASS / real Browser acceptance authorized
+Updated: 2026-09-01 — real Browser acceptance exposed P0 room-entry blocker
 
-## P0 — One real Browser acceptance
+## P0 — Alpha RC5 real-Browser bootstrap fix
 
-Fresh independent RC4 QA completed with:
+Fresh RC4 independent QA had passed offline/source gates, but the first real Browser acceptance setup exposed a launch blocker before the acceptance run could begin.
 
-`PASS — READY FOR ONE REAL BROWSER ACCEPTANCE`
+Owner A/B evidence:
+- Acceptance helper OFF + normal Alpha userscript ON -> game cannot enter the room.
+- Both WOF userscripts OFF -> game enters normally.
 
-QA independently confirmed:
-- RC3 P1 is closed: paired runtime disable/error/diag immediately invalidates old warnings;
-- foreign-session diag cannot clear the current session;
-- later legal state can recover normally;
-- ordinary no-diag 1500 ms stale behavior is unchanged;
-- exact `wof / World 921031` full 1 MiB CPU-logical SHA-256 identity remains authoritative;
-- exactly two stateless current-level T18 production rules remain active;
-- F1-F4 remain quarantined;
-- same-type slot replacement cannot inherit warning history;
-- session/cross-tab isolation, multi-warning HUD, legacy HUD cleanup, normal-user bootstrap, target/side, UNKNOWN silence, read-only/no-input and GL restoration remain passed.
+Therefore the normal Alpha bootstrap/product entry path is implicated. This is a **P0 release blocker** because enabling Alpha can prevent the base game from entering a room.
 
-Authoritative QA artifact:
-- `parallel/ALPHAQA_RC4/AUDIT_STATUS.md`
+Authoritative PM blocker record:
+- `parallel/PM/ALPHA_BROWSER_ACCEPTANCE_BLOCKER.md`
 
-## Browser acceptance tooling — READY
+Fresh fix bootstrap:
+- `parallel/PM/ALPHA_RC5_BROWSER_BOOTSTRAP_FIX_START_PROMPT.md`
 
-`parallel/ALPHAACCEPT/**` preparation is complete.
-The helper remains functionally compatible with RC4 because RC4 preserved the existing product `release/session/schema` transport contract while changing the HUD fail-closed behavior.
+Only the fresh RC5 engineering stage may modify `product/alpha/**`.
 
-Owner operation:
-1. enable the normal product userscript and acceptance helper userscript;
-2. refresh the real WOF Browser page;
-3. wait for the Alpha acceptance panel;
-4. click the acceptance button once;
-5. return the single final JSON.
+## Preserve passed RC4 gates
 
-A PASS result must be exactly:
-`PASS — REAL BROWSER ACCEPTANCE`
+Do not reopen without new evidence:
+- exact World 921031 full-program SHA-256 authority;
+- exactly two current-level T18 production rules;
+- F1-F4 quarantine;
+- same-type slot replacement safety;
+- session isolation;
+- multi-warning HUD;
+- runtime diag immediate warning invalidation;
+- target/side/UNKNOWN safety;
+- read-only/no-input;
+- GL restoration.
 
-Do not declare Alpha released until PM consumes that JSON.
+The new blocker is specifically real-host normal-user bootstrap / Worker interception / injection compatibility.
+
+## Browser acceptance
+
+PAUSED. Do not rerun the acceptance helper until RC5 produces a candidate and a fresh retest stage authorizes it.
 
 ## SUPPORT — READY / NON-BLOCKING
 
 - Runtime Speed Probe Tooling: complete; one paired ~15 s local/Browser measurement remains when convenient.
-- Local WinKawaks ROM identity: one read-only local hash remains; retained evidence strongly indicates local World 921002 vs Browser World 921031.
-- HUD Anchor Proof Tooling: complete; one bounded Browser projection proof remains for Beta.
-
-## P1 — Alpha release decision after Browser PASS
-
-If real Browser acceptance returns PASS, PM will perform the final Alpha release gate and then resume post-Alpha work, including WOF-052 / ordered T18 discrimination according to roadmap.
-
-## PARK / COMPLETE
-
-- Alpha RC4 implementation — complete / product regression PASS.
-- Alpha RC4 independent QA — complete / PASS.
-- Browser Acceptance Prep — complete / ready.
-- RC3/RC2 and earlier Alpha stages — closed.
-- Runtime Identity / Enemy Lifecycle / Bootstrap support audits — consumed.
-- COVERAGE / SEQMINER / BASECAP / GEO / EFIELD / RAWMINE / SWEEPATLAS — closed or on-demand.
+- Local WinKawaks ROM identity: one read-only local hash remains.
+- HUD Anchor Proof Tooling: complete; one Browser projection proof remains for Beta.
 
 ## Explicit stops
 
-- STOP product changes before Browser acceptance unless the acceptance itself finds a concrete blocker.
-- STOP reopening already-passed identity/lifecycle/rule-scope issues without new evidence.
-- STOP broad collection / speculative rule promotion.
-- STOP treating a Browser acceptance PASS as release declaration until PM records the final release decision.
+- Keep both WOF userscripts disabled for normal play until RC5 retest.
+- STOP repeated room-entry retries on the broken candidate.
+- STOP Alpha release.
+- STOP broad collection / WOF-052 / Beta work as a substitute for the launch blocker.
 
 ## Current fastest path
 
-**one real Browser acceptance -> PM release decision -> Alpha release**
+**RC5 real-host bootstrap fix -> fresh independent QA/retest -> one real Browser acceptance -> Alpha release decision**
