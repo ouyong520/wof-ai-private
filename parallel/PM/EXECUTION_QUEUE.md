@@ -2,86 +2,82 @@
 
 Updated: 2026-09-01
 
-## Owner operating rule
+Authoritative inputs:
+- `parallel/PM/PM_CORE_OPERATING_CHARTER.md`
+- `parallel/PM/COMPLETED_WORK_PM_AUDIT_2026-09-01.md`
+- `parallel/PM/PRIORITY_POLICY.md`
+- `parallel/PM/STAGE_DEDUP_GUARD.md`
+- `parallel/PM/OWNER_INTERVENTION_GATE.md`
 
-Owner does **not** need to read worker summaries, decide PASS/FAIL, compare commits, or remember which prompts were copied.
+## Owner rule
 
-PM is authoritative for reviewing GitHub results and deciding the next stage.
+Owner does not read worker summaries or decide PASS/FAIL.
 
-## Thread lifecycle
-
-Hard rule:
+When Owner says `继续`, PM:
+1. reads latest GitHub results/claims/commits;
+2. independently reviews completed submissions;
+3. closes/supersedes/blocks old stages;
+4. creates only fresh next stages;
+5. re-surfaces any still-needed QUEUED prompt the Owner may have missed;
+6. never re-surfaces equivalent CLAIMED/COMPLETE work;
+7. leaves slots idle rather than manufacture non-mainline work.
 
 `ONE STAGE = ONE FRESH CHAT`
 
-- A work thread runs only its declared stage.
-- When it reaches PASS / READY / BLOCKED / precise stop condition, that thread is finished permanently.
-- Do not continue implementation in the old thread.
-- Do not send a fix back into the old QA thread.
-- Do not reuse a completed dev thread for retest.
-- Every fix, retest, QA, integration, recovery, or downstream stage gets a **new stageId and a fresh chat**.
+## Current product mainline
 
-GitHub is the durable state; chats are disposable workers.
+`Discovery V2 correctness -> cross-component alignment -> global regression/preflight -> as much Alpha Safe Transport implementation/mock QA as safely possible -> one bounded real Windows/WOF proof -> integrated transport QA -> Browser Acceptance -> Alpha release decision`
 
-## PM review rule
+Parallel evidence mainline:
 
-When Owner says `继续`:
+`WOF-052L 10-room long capture -> auto analysis -> ordered discriminator -> discovery->prospective handoff -> research-only prospective validation`
 
-1. PM reads current GitHub results/commits/claims.
-2. PM decides which finished threads were successful, blocked, stale, or superseded.
-3. PM closes those stages conceptually; Owner does not need to inspect their summaries.
-4. PM creates fresh downstream/fix/retest prompts as needed.
-5. PM fills available concurrency slots from this queue.
-6. PM only surfaces prompts whose stage is not already complete and not already claimed.
+Long capture is not authorized until short runtime/admission gates are clean.
 
-Owner only needs to open fresh chats and paste the short launcher instruction.
+## START NOW — only highest-priority work
 
-## Mandatory dedup
+These four primary write scopes are disjoint and directly close current P0/P1 mainline blockers.
 
-Every queue item must reference `parallel/PM/STAGE_DEDUP_GUARD.md` and have a unique `stageId`.
+| Rank | Priority | State | stageId | Prompt | Primary scope | Why now |
+|---:|---|---|---|---|---|---|
+| 1 | P0 | QUEUED | `WOF052L_RECORDER_DISCOVERY_V2_HARDENING_V1` | `WOF052L_RECORDER_DISCOVERY_V2_HARDENING_START_PROMPT.md` | `parallel/WOF052L_RECORDER/**` | closes cross-page shared-Worker evidence ownership P0 plus endpoint/URL/direct-association and Chinese-runtime P1s; prerequisite for non-waste 10-room capture |
+| 2 | P0 | QUEUED | `PROSPECTIVE_VALIDATOR_DISCOVERY_V2_HARDENING_V1` | `PROSPECTIVE_VALIDATOR_DISCOVERY_V2_HARDENING_START_PROMPT.md` | `parallel/PROSPECTIVE_VALIDATOR/**` | closes shared-Worker evidence P0 and false research PASS from ignored target/type/lifecycle gates |
+| 3 | P1 | QUEUED | `PYLAUNCH_DISCOVERY_V2_HARDENING_V1` | `PYLAUNCH_DISCOVERY_V2_HARDENING_START_PROMPT.md` | `parallel/PYLAUNCH/**` | authoritative proof path still has endpoint/URL/direct-association drift; fix before any Owner rerun |
+| 4 | P1 | QUEUED | `UNIFIED_WINDOWS_LIVE_PROOF_FAILCLOSED_FIX_V1` | `UNIFIED_WINDOWS_LIVE_PROOF_FAILCLOSED_FIX_START_PROMPT.md` | `parallel/LIVE_PROOF_BUNDLE/**` | fresh QA proved current aggregator can falsely PASS with retained fatal/blocker; must close before live proof |
 
-A worker must exit immediately with one of:
+## WAITING_GATE — do not consume workers yet
 
-- `ALREADY COMPLETE — SAFE TO CLOSE — 当前线程空闲`
-- `ALREADY CLAIMED — SAFE TO CLOSE — 当前线程空闲`
+These are legitimate next steps but should wait so their results are not immediately stale.
 
-when appropriate.
+| Priority | State | Task | Wait for |
+|---|---|---|---|
+| P1 | WAITING_GATE | Fresh Discovery V2 cross-component retest | Recorder + Prospective + PYLAUNCH hardening complete |
+| P1 | WAITING_GATE | Discovery V2 conformance final run | component hardening blobs stable |
+| P1 | WAITING_GATE | Regression Orchestrator Discovery V2 guard refresh | new component safety tests landed |
+| P1 | WAITING_GATE | Unified Live Proof fresh independent QA | fail-closed fix complete + component contracts stable |
+| P1 | WAITING_GATE | Unified Proof preflight hardening | fresh Unified QA passes and component blockers closed |
+| P1 | WAITING_GATE | Owner one-click unified proof package refresh | preflight/live-proof stack stable; refresh once, not every intermediate commit |
+| P1/P2 | WAITING_GATE | Decide/start Alpha Safe Transport implementation | Discovery/Unified repository gates green; PM should maximize mock/implementation work before Owner proof |
+| P2 | WAITING_GATE | WOF-052L long-capture fresh QA retest | Recorder hardening complete |
+| P2 | WAITING_GATE | Beta manifest-set fresh QA retest | Prospective gate enforcement complete |
+| P2 | WAITING_GATE | WOF-052L handoff fresh QA | Prospective semantics stable |
+| P2 | WAITING_GATE | 10-room 1h+ real capture | short unified live proof + fresh long-capture QA PASS |
 
-Therefore Owner may accidentally paste the same queued prompt twice without duplicating project work.
+## Accepted/closed — do not optimize now
 
-## Queue states
+- Browser Fleet Discovery V2 repository implementation;
+- Discovery V2 cross-component audit (old audit thread closed; later use fresh retest);
+- Alpha Safe Transport Mock Harness 67/67;
+- Alpha Acceptance V2 Prep;
+- Beta manifests themselves until Validator fix/retest says otherwise;
+- Owner package infrastructure until upstream stabilizes.
 
-PM tracks tasks using these meanings:
+## Dedup
 
-- `QUEUED`: prompt exists; safe to offer when a slot is free.
-- `CLAIMED`: a worker created the stage claim and is executing.
-- `COMPLETE`: PM verified stop condition/result; do not reuse thread.
-- `BLOCKED`: PM verified blocker; create a new fix/recovery stage instead of reusing thread.
-- `SUPERSEDED`: newer stage/result fully replaces it.
-- `WAITING_GATE`: valid future stage, but a prerequisite has not passed; do not waste a worker slot yet.
+Every new stage must implement `STAGE_DEDUP_GUARD.md` and a unique atomic claim. If already complete/claimed, worker stops and becomes idle; PM later fills the slot only if a higher-value queued task exists.
 
-## Current queue principle
+## Owner action
 
-Prefer 8-10 useful concurrent execution lanes when write ownership is disjoint.
+`NO`
 
-Do not fill slots with duplicate or premature work. Prefer:
-- P0/P1 blocker closure;
-- independent component fixes with disjoint write scopes;
-- regression/QA that cannot become stale from an in-flight conflicting component change;
-- automatic handoffs that reduce future owner operations;
-- prebuilt downstream stages only when they do not modify the same core files.
-
-## Owner-visible PM response
-
-PM should not ask Owner to interpret technical summaries.
-
-For each available slot, PM supplies only:
-
-```text
-连接 GitHub，读取：
-`ouyong520/wof-ai-private/parallel/PM/<PROMPT>.md`
-
-严格持续执行直到停止条件。
-```
-
-PM itself remains responsible for the later success/failure judgment.
+Repository-side P0/P1 work remains. Do not use Owner as an exploratory debugger.
