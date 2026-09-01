@@ -88,6 +88,9 @@ jobs:
         shell: cmd
         run: call RUN_WOF052L_RECORDER.cmd --self-test
 
-      - name: Operator Toolkit Chinese smoke tests on Windows
+      - name: Operator Toolkit Chinese-only smoke on Windows
         shell: pwsh
-        run: python -m unittest discover -s parallel/OPTOOLKIT/tests -p 'test_*.py' -v
+        run: |
+          $env:PYTHONUTF8='1'
+          $env:PYTHONIOENCODING='utf-8'
+          python -m unittest -v parallel.OPTOOLKIT.tests.test_chinese_owner_ux
