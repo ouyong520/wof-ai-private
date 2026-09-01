@@ -105,6 +105,8 @@ def load_json(path: Path) -> dict[str, Any] | None:
 def trace_fingerprint(trace: dict[str, Any]) -> str:
     core = {
         "roomId": trace.get("roomId"),
+        "runId": trace.get("_runId"),
+        "fleetInstanceId": trace.get("_fleetInstanceId"),
         "id": trace.get("id"),
         "atEpoch": trace.get("atEpoch"),
         "slot": trace.get("slot"),
@@ -226,10 +228,11 @@ class Dataset:
     def check_safety(self, payload: dict[str, Any], source: str) -> None:
         safety = payload.get("safety")
         if not isinstance(safety, dict):
+            self.safety_violations.append(f"{source}: 缺少 safety 元数据")
             return
         if safety.get("readOnly") is not True:
             self.safety_violations.append(f"{source}: readOnly != true")
         if safe_int(safety.get("ramWrites"), -1) != 0:
             self.safety_violations.append(f"{source}: ramWrites != 0")
-        if safety.get("inputInjection") not in (False, None):
+        if safety.get("inputInjection") is not False:
             self.safety_violations.append(f"{source}: inputInjection != false")
