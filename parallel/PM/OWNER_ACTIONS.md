@@ -1,53 +1,66 @@
 # WOF Future Danger AI — Owner Actions
 
-Updated: 2026-09-01 — RC2 parallel repair started
+Updated: 2026-09-01 — RC2 support audits converging
 
-## Current owner action required: NO
+## Current owner action required: YES — one read-only Browser identity probe
 
-Owner reports all four new RC2-stage work threads are open:
+Three RC2 support lanes have now produced implementation-ready guidance:
 
-1. Alpha RC2 implementation — edits `product/alpha/**`.
-2. Runtime Identity audit — read-only support under `parallel/ALPHAID/**`.
-3. Enemy Lifecycle / slot-reuse audit — read-only support under `parallel/ALPHALIFE/**`.
-4. Normal-user Bootstrap audit — read-only support under `parallel/ALPHABOOT/**`.
+1. Runtime Identity: safest release guard is a full 1 MiB CPU-logical main-program SHA-256, but one known-good Browser binding is still required before the golden digest may be embedded.
+2. Enemy Lifecycle: current Browser evidence does not positively prove same-type same-slot continuity. RC2 must fail closed for history-derived warnings unless continuity is proven; current-level T18 rules can remain as hold-only current evidence.
+3. Normal-user Bootstrap: recommended Alpha path is a Chrome/Chromium bootstrap extension that automatically finds the real game Worker and injects Worker + top HUD, with an end-to-end freshness/session handshake.
 
-Canonical short launcher paths now exist:
-- `parallel/PM/ALPHA_RC2_FIX_START_PROMPT.md`
-- `parallel/PM/RUNTIME_IDENTITY_START_PROMPT.md`
-- `parallel/PM/ENEMY_LIFECYCLE_START_PROMPT.md`
-- `parallel/PM/ALPHA_BOOTSTRAP_START_PROMPT.md`
+The Alpha RC2 implementation thread has not yet published product-code fixes at this snapshot.
 
-## RC1 QA blocker set
+## Action O1 — Run the one-shot ALPHAID probe
 
-RC1 is not releasable. QA currently has six known open P0/P1 findings and RC2 must always reread the latest QA files rather than rely on a stale count:
+Use a known-good supported `wofr1 / Warriors of Fate (World 921002)` Browser session.
 
-- ALPHAQA-001 P0 — layout-only runtime/build identity can fail open.
-- ALPHAQA-002 P1 — same-type same-slot replacement can inherit an old warning.
-- ALPHAQA-003 P1 — HUD silently drops simultaneous warnings after the first row.
-- ALPHAQA-004 P1 — normal-user load path requires manual Worker-console selection.
-- ALPHAQA-005 P0 — fixed origin-global BroadcastChannel can cross-contaminate warnings between same-origin sessions/tabs.
-- ALPHAQA-006 P1 — prior research `WOFHUD` is hidden rather than fully disposed during Alpha takeover.
+Open the same live game Worker DevTools Console where prior WOF Browser probes can access `_0x515056` / `HEAPU8`.
 
-RC2 bootstrap has been updated so **all current QA OPEN P0/P1 findings** are mandatory, including findings added after the original four-item RC1 audit.
+Read and paste the **entire exact command** from:
 
-## Human gameplay action — NOT YET
+`parallel/ALPHAID/MINIMAL_BROWSER_PROBE.md`
 
-Do not run real Browser Alpha acceptance while any P0/P1 remains.
+This probe is read-only:
+- no CPS RAM writes;
+- no player control/input injection;
+- no gameplay choreography;
+- no WOF-052 collection.
 
-Wait for:
-1. support audits to write implementation-ready results or one exact minimal human probe;
-2. RC2 implementation to close all offline-fixable blockers;
-3. a fresh independent RC2 QA retest.
+Copy back the single JSON object printed by the probe.
 
-Only after fresh QA reports no open P0/P1 should PM request one short real Browser acceptance.
+Acceptance requires at minimum:
+- `accepted == true`
+- `readOnly == true`
+- `ramWrites == 0`
+- `canonical.wofr1Match == true`
+- `fullCpuLogicalSha256 == repeatCpuLogicalSha256`
+- `stable == true`
 
-## Closed / parked work
+Do not use a result from another WOF revision as the golden value.
 
-- COVERAGE — complete / PARK; human recap = NO.
-- SEQMINER — current retained corpus exhausted / PARK; no recapture requested.
-- RC1 QA — its stage output is the blocker list; do not keep extending the old thread.
-- Original Alpha RC1 implementation — completed stage; RC2 is a new implementation stage.
+## Why this action is needed now
+
+GitHub does not retain a canonically bound Browser SHA-256 for the supported `wofr1` program. The value cannot safely be guessed from RAM layout, sparse code anchors, published SHA-1 strings, or WinKawaks offsets.
+
+Once the accepted probe JSON is committed under `parallel/ALPHAID/**`, RC2 can implement:
+
+`layout sanity AND exact full-program SHA-256 match => warnings eligible; otherwise fail closed`.
+
+## Do not do yet
+
+- Do not run full Alpha Browser acceptance.
+- Do not resume WOF-052 as part of this action.
+- Do not perform broad gameplay/WinKawaks collection.
+- Do not manually test RC1 as a release candidate.
+
+## Active work while owner runs the probe
+
+- Alpha RC2 implementation continues to close all current QA OPEN P0/P1 findings.
+- Runtime Identity lane waits for the one probe result, then can seal its handoff.
+- Lifecycle and Bootstrap support outputs are ready for RC2 consumption.
 
 ## Next PM trigger
 
-No copying between work threads is needed. When the four active threads have written GitHub results, return to PM and say `继续`. PM will read GitHub directly, route support findings into RC2, and decide when a fresh QA-retest thread should start.
+After the probe prints its JSON, paste that JSON into the PM or Runtime Identity thread. PM/ALPHAID will commit the evidence and route the approved digest to RC2. Then continue until RC2 is ready for a fresh independent QA retest.
