@@ -213,8 +213,8 @@ def main() -> int:
             print(
                 "\r"
                 f"在线浏览器 {browser_online}/{count}｜正在采集 {totals['live']}｜已完成 {totals['completed']}｜"
-                f"T18 {totals['t18']}｜candidate {totals['candidate']}｜A4704 {totals['a4704']}｜"
-                f"A4712 {totals['a4712']}｜T23 {totals['t23']}｜只读 开启｜RAM writes 0".ljust(190),
+                f"T18 {totals['t18']}｜候选周期 {totals['candidate']}｜A4704 {totals['a4704']}｜"
+                f"A4712 {totals['a4712']}｜T23 {totals['t23']}｜只读 开启｜游戏内存写入 0".ljust(190),
                 end="",
                 flush=True,
             )
