@@ -12,7 +12,7 @@ where py >nul 2>nul && (set "PY=py -3") || (set "PY=python")
   pause
   exit /b 2
 )
-%PY% hudanchor_proof.py
+%PY% hudanchor_proof_safe.py
 set "RC=%ERRORLEVEL%"
 echo.
 if "%RC%"=="0" (
