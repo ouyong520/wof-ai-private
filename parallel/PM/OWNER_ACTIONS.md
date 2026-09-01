@@ -1,10 +1,10 @@
 # WOF Future Danger AI — Owner Actions
 
-Updated: 2026-09-01
+Updated: 2026-09-01 — parallel acceleration
 
-## Current owner action required: YES — two lightweight actions
+## Current owner action required: YES — two remaining actions
 
-Only one action involves gameplay.
+Product Alpha thread has been opened by the owner and is considered STARTED.
 
 ### Action O1 — MAINLINE WOF-052 Browser run
 
@@ -25,28 +25,46 @@ Do **not**:
 - repeatedly hunt T23-only rooms at high operator cost;
 - interpret or choose offsets/rules manually.
 
-### Action O2 — Start one PRODUCT / ALPHA implementation thread
+### Action O2 — PRODUCT / ALPHA implementation thread — STARTED
 
-Open one new ChatGPT thread and send only this bootstrap instruction:
+Status: owner reports the dedicated Product Alpha thread has been opened.
+
+It should continue from:
+- `parallel/PM/PRODUCT_ALPHA_START_PROMPT.md`
+
+No duplicate Product Alpha implementation thread should be opened.
+
+### Action O3 — Open one COVERAGE refresh thread
+
+Open one new ChatGPT thread and send:
 
 ```text
-你负责 WOF PRODUCT / ALPHA 实现。请连接 GitHub，读取 ouyong520/wof-ai-private/parallel/PM/PRODUCT_ALPHA_START_PROMPT.md，然后严格按里面的职责、写入范围和 stop condition 持续执行，直到 Alpha RC 或只剩真人 Browser acceptance。
+你负责 WOF 的 COVERAGE 数据整理。请连接 GitHub，读取 ouyong520/wof-ai-private/parallel/PM/COVERAGE_REFRESH_START_PROMPT.md，然后按里面要求继续做。主要使用现有数据，不要让我重新采集，做到覆盖情况整理清楚或者确认真的需要最小补采为止。
 ```
 
 Purpose:
-- let Alpha engineering proceed in parallel with MAINLINE research;
-- keep release runtime/ruleset/HUD separate from WOF-0xx research coordinators;
-- reuse existing HUD/production-shadow assets rather than rebuild them.
+- refresh stale COVERAGE snapshot against current SWEEPATLAS/SEQMINER;
+- normalize enemy type IDs;
+- separate real physical data gaps from analysis/label gaps;
+- avoid unnecessary human replay.
 
-This is the only new workstream currently authorized. Do not open another research lane.
+## Current authorized parallel streams
 
-## No other owner work now
+1. Product Alpha implementation — active.
+2. MAINLINE WOF-052 — active / human-gated.
+3. Existing SEQMINER — active existing lane.
+4. COVERAGE refresh — start O3.
+5. PM coordination — active.
 
-After O1 and O2 are started, PM/research/product lanes can continue from GitHub without the owner manually moving technical results between chats.
+Do not open more research lanes now.
 
-A further owner action should not be requested until one of these gates occurs:
+A separate Alpha QA thread should wait until Product Alpha produces a concrete release candidate or stable integrated implementation; opening it earlier would duplicate work and create conflict risk.
+
+## Further owner action gates
+
+After O1 and O3 are started, do not request more owner work until one of these occurs:
 
 1. a prospective Browser validator needs a precise operator run;
 2. Alpha release candidate needs a short real-Browser acceptance test;
-3. COVERAGE proves a minimal targeted WinKawaks recap is necessary;
+3. refreshed COVERAGE proves a minimal targeted WinKawaks recap is necessary;
 4. a true product-scope/release choice is required.
