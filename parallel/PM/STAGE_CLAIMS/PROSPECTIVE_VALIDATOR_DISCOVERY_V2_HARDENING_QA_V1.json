@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "PROSPECTIVE_VALIDATOR_DISCOVERY_V2_HARDENING_QA_V1",
+  "promptPath": "parallel/PM/PROSPECTIVE_VALIDATOR_DISCOVERY_V2_HARDENING_QA_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "c7587998c31fe1fcb87c58db11439399d7e12a05",
+  "startedAtUtc": "2026-09-01T13:53:00Z"
+}
