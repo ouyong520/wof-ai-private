@@ -1,0 +1,59 @@
+{
+  "schema": "wof-unified-live-proof-freshness-independent-qa-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_FRESHNESS_QA_V1",
+  "result": "BLOCKED",
+  "stopCondition": "BLOCKED — UNIFIED LIVE PROOF FRESHNESS QA — P1 arbitrary Recorder stdout can refresh stale admission authority",
+  "ownerAction": "NO",
+  "ownerWindowsWofRunUsed": false,
+  "target": {
+    "unifiedLiveProofPath": "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py",
+    "unifiedLiveProofBlob": "ce2e9f970f1a9e70493eb0d06b04431ea4870aa1",
+    "pylaunchProofPath": "parallel/PYLAUNCH/wof_launcher/proof.py",
+    "pylaunchProofBlob": "7cddae420b08bba627b05f2164083289569e5f5a",
+    "pylaunchStatePath": "parallel/PYLAUNCH/wof_launcher/state.py",
+    "pylaunchStateBlob": "7f00e9a2e948f86c30a99cab04809d726b60c95d",
+    "recorderSupervisorPath": "parallel/WOF052L_RECORDER/fleet_recorder.py",
+    "recorderSupervisorBlob": "9398ef1569815439e6c141890f069674a30dca0f"
+  },
+  "freshFixture": {
+    "path": "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/test_freshness_adversarial.py",
+    "blob": "bb13a3577facc7160c8b26a306a8fee789282857",
+    "commit": "b145a6b0db4899cc3e10820a5456dd34895acbbb"
+  },
+  "blocker": {
+    "severity": "P1",
+    "id": "RECORDER_ARBITRARY_STDOUT_REFRESHES_STALE_ADMISSION",
+    "summary": "RecorderEvidence.feed refreshes last-output freshness and output generation for every non-empty stdout fragment before determining whether the fragment is a trusted supervisor heartbeat, a fresh admission, a fatal marker, or unrelated text.",
+    "adversarialSequence": [
+      "establish one valid Recorder admission",
+      "age its last-output monotonic timestamp past RECORDER_FRESHNESS_SECONDS so current_healthy=false",
+      "feed arbitrary non-heartbeat text through the carriage-return-aware reader",
+      "reader forwards the text to RecorderEvidence.feed",
+      "feed increments outputGeneration and resets _last_output_monotonic",
+      "the old admission remains admitted=true and fatal=false, so current_healthy becomes true again"
+    ],
+    "observedSourceExactReproduction": {
+      "beforeArbitraryTextCurrentHealthy": false,
+      "beforeOutputGeneration": 1,
+      "afterArbitraryTextCurrentHealthy": true,
+      "afterOutputGeneration": 2,
+      "arbitraryText": "arbitrary stale diagnostic text"
+    },
+    "readinessImpact": "With otherwise current/safe Fleet, PYLAUNCH PASS, process health and Owner CONFIRMED, the stale Recorder admission can again satisfy recorder.current_healthy and therefore can restore PASS/tenRoomLongCaptureReady authority. This violates the requirement that carriage-return handling must not accept arbitrary stale text as new authority.",
+    "fixDirection": "Only a semantically trusted current Recorder heartbeat/admission should advance Recorder success freshness. Arbitrary stdout/diagnostic text may remain diagnostics but must not renew admission authority; add a distinct trusted-heartbeat generation and gate current_healthy on it."
+  },
+  "otherFreshVectors": {
+    "malformedProcessHealth": "covered by fresh malformed mapping fixture; expected fail-closed",
+    "liveButHungRecentPylaunchPass": "covered by unchanged-PYLAUNCH-generation fixture; generation gate rejects it",
+    "doubleOwnerGenerationGate": "covered; second gate rejects unchanged PYLAUNCH generation",
+    "staleMissingMalformedFuturePylaunchTimestamp": "covered; cannot authorize currentAutomatedPass",
+    "validCarriageReturnSupervisorHeartbeat": "covered; CR-delimited output is visible",
+    "longCaptureAutoStarted": false,
+    "safetyExpected": {
+      "readOnly": true,
+      "ramWrites": 0,
+      "inputInjection": false,
+      "workerReplacement": false
+    }
+  }
+}
