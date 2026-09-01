@@ -2,7 +2,11 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "ALPHA_TRANSPORT_FORMAL_REAL_ADAPTER_INTEGRATION_RECOVERY_V2",
   "promptPath": "parallel/PM/ALPHA_TRANSPORT_FORMAL_REAL_ADAPTER_INTEGRATION_RECOVERY_V2_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "7600418d74b79bfc8b89fe9715438900cba6ab66",
-  "startedAtUtc": "2026-09-01T16:06:00Z"
+  "startedAtUtc": "2026-09-01T16:06:00Z",
+  "resultPath": "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/RESULT.md",
+  "resultCommit": "d759697ded0981343eb3a54f42af3927adf8baf8",
+  "repositoryStatus": "ALPHA FORMAL REAL-ADAPTER INTEGRATION READY — READY FOR FRESH INTEGRATION QA",
+  "ownerAction": "NO"
 }
