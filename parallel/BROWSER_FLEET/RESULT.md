@@ -12,11 +12,11 @@ This is project-acceleration tooling only. It does not modify Alpha product logi
 
 `parallel/BROWSER_FLEET/RUN_WOF_FLEET.cmd`
 
-First run only stores Browser preference and an optional WOF URL. Normal repeated owner path is:
+Normal owner path is now exactly:
 
 `double-click CMD -> enter 1 / 5 / 10 -> browser windows launch automatically`
 
-Default empty input means 10.
+Default empty input means 10. There is no mandatory first-run Browser/URL configuration. The manager automatically finds Chrome/Edge and opens WOF-ready isolated windows; an optional WOF URL can be configured later but does not block startup.
 
 ### Independent Browser isolation
 
@@ -133,14 +133,13 @@ Preserved:
 Only a real Windows Chrome/Edge run can prove process/window behavior and live native Worker exposure.
 
 1. Double-click `parallel/BROWSER_FLEET/RUN_WOF_FLEET.cmd`.
-2. First run only: choose Browser (`auto` is fine) and optionally store the real WOF URL.
-3. Enter `10`.
-4. Confirm 10 numbered browser instances/windows appear in a grid.
-5. Enter WOF normally in at least two instances; press `S` and confirm their Browser/page rows become `OK` and Worker becomes `OK` when the native game Worker is exposed.
-6. Use `R` on one instance. Confirm another running WOF instance is unaffected.
-7. Optional integration proof: from PYLAUNCH run `launcher.py --fleet-instance 1 --no-tray` and confirm its existing Browser/page/Worker/WASM/World read-only status reaches the expected state.
-8. Optional recorder proof: double-click `parallel/WOF052L_RECORDER/RUN_WOF052L_RECORDER.cmd`; confirm Fleet entries/recorder workers appear and one room can finalize without stopping another.
-9. Return to Fleet console and press `A`; confirm all managed Fleet windows close.
+2. Enter `10`.
+3. Confirm 10 browser instances/windows appear in a grid.
+4. Enter WOF normally in at least two instances; press `S` and confirm their Browser/page rows become `OK` and Worker becomes `OK` when the native game Worker is exposed.
+5. Use `R` on one instance. Confirm another running WOF instance is unaffected.
+6. Optional integration proof: from PYLAUNCH run `launcher.py --fleet-instance 1 --no-tray` and confirm its existing Browser/page/Worker/WASM/World read-only status reaches the expected state.
+7. Optional recorder proof: double-click `parallel/WOF052L_RECORDER/RUN_WOF052L_RECORDER.cmd`; confirm Fleet entries/recorder workers appear and one room can finalize without stopping another.
+8. Return to Fleet console and press `A`; confirm all managed Fleet windows close.
 
 No DevTools, Worker-console selection, pasted JavaScript, RAM inspection, gameplay capture, or injected input is required.
 
