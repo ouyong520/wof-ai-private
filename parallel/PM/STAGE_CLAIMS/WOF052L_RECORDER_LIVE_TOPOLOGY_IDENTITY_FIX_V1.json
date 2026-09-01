@@ -2,7 +2,12 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "WOF052L_RECORDER_LIVE_TOPOLOGY_IDENTITY_FIX_V1",
   "promptPath": "parallel/PM/WOF052L_RECORDER_LIVE_TOPOLOGY_IDENTITY_FIX_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "DONE",
   "startCommit": "9d50c16a5e65ba1b7c914d2e6da497b78f12b417",
-  "startedAtUtc": "2026-09-01T14:36:00Z"
+  "startedAtUtc": "2026-09-01T14:36:00Z",
+  "implementationCommit": "23ba3177a399f7975ad99b0191f98b1061db67e6",
+  "verificationWorkflowCommit": "e71e12294c5f3692ee8a9296003bff423bc6865d",
+  "verificationRunId": "33522460226",
+  "resultCommit": "5129c6b506f95f2987240f281192cc4325d42717",
+  "resultPath": "parallel/WOF052L_RECORDER_LIVE_TOPOLOGY_IDENTITY_FIX/RESULT.md"
 }
