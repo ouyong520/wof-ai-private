@@ -1,100 +1,80 @@
 # WOF Future Danger AI — Project Dashboard
 
-Snapshot: 2026-09-01 — second PM audit
+Snapshot: 2026-09-01 — Alpha RC audit
 
 ## Executive status
 
-**Stage: Late research / Alpha implementation transition.**
+**Stage: Alpha RC / independent QA gate, with late research continuing separately.**
 
-No new MAINLINE or research-lane evidence has landed since the initial PM control-plane commits. WOF-052 code is already present, but there is not yet a WOF-052 run/result in GitHub. The research frontier therefore remains unchanged: ordered T18 context is the next Browser information gate.
+A concrete Alpha RC1 now exists under `product/alpha/**`. The product implementation lane reports that its engineering stop condition is reached: six frozen rules only, isolated release runtime, fail-closed layout guard, live target/retarget, WebGL HUD, packaging and release-artifact regression are present. The release regression reconstructs the audited WOF-051 production subset at 143/143 resolved signals with zero hard-miss equivalent in the fixtures.
 
-The product audit found that Alpha engineering is closer than first estimated because reusable product assets already exist: production-shadow/danger-map runtime history plus a direct WebGL HUD with reload-safe hook and load-confirmation hardening. The main product bottleneck is now release integration and rule freeze, not inventing a HUD from scratch.
+This is not yet an Alpha release. Two release gates remain: independent Alpha QA and one real Browser owner acceptance run. The RC report explicitly notes that the repository does not retain the raw WOF-051 per-poll stream, so its 143/143 regression is a canonical fixture reconstruction rather than a raw Browser replay.
+
+Research state also improved: COVERAGE normalized the type notation and corrected the old T23 accounting error; current retained EFIELD material contains canonical T1 (0x01) through T31 (0x1F), including T23 (0x17). COVERAGE concludes human recap is not required. SEQMINER continues to refine ordered features but requests no recapture. WOF-052 still has no Browser run/result.
 
 ## Project metrics
 
-These are management bands, not fabricated precision.
-
 | Dimension | Status | Meaning |
 |---|---|---|
-| Reverse engineering foundation | READY | selector/dispatcher/descriptor foundation is solved enough for product work |
-| Collector infrastructure | READY | retained raw, provenance, read-only safeguards and reusable acquisition workflow exist |
-| BASECAP coverage | READY for v1 baseline | broad reusable baseline complete; no generic recollection justified |
-| GEO coverage | LATE / CORE READY | P1 X/Y, P2/P3 structure, facing, top/bottom closed; only demand-driven geometry remains |
-| EFIELD mapping | READY for current product needs | bounded high-value mapping complete; generic mapping stopped |
-| RAWMINE capability | READY / PARKED | reusable generic analyzer complete for present owner questions |
-| enemy type coverage | MID | local type coverage exists but density and authoritative scene labels are uneven |
-| attack coverage | EARLY-MID | several high-quality Browser rules exist, but broad semantic attack coverage is not yet established |
-| ordered-sequence coverage | EARLY | ordered hypothesis is mandatory; T18/T23 discovery candidates exist but prospective sequence proof remains limited |
-| target coverage | LATE | aggregate P1/P2/P3 and audited Browser target/side evidence exist; release retarget regression remains required |
-| prospective Browser validation | MID-LATE for narrow subset | current production-shadow subset is strong; breadth remains limited |
-| production rule count | SMALL BUT REAL | PM Alpha freeze now has six conservative candidates pending release regression |
-| production rule evidence quality | HIGH for candidate freeze subset | repeated prospective/multi-room evidence exists for the current candidate set |
-| HUD engineering | LATE FOUNDATION | direct WebGL HUD exists with reload/load-confirmation hardening; release integration still needed |
-| Alpha readiness | LATE / NOT RC | major foundations exist; release rule manifest/runtime isolation/version guard/regression/acceptance are still open |
-| Beta readiness | MID | needs broader common-event coverage, ordered ambiguity resolution and user-facing polish |
-| v1 readiness | EARLY-MID | requires stable Beta plus trustworthy common-event coverage denominator |
+| Reverse engineering foundation | READY | sufficient for narrow product release work |
+| Collector / retained raw | READY / STOP BROAD COLLECTION | reusable baseline exists; no generic recap justified |
+| BASECAP | READY | complete for current baseline |
+| GEO | CORE READY / ON DEMAND | no current Alpha blocker |
+| EFIELD | READY / STOP GENERIC | bounded high-value mapping complete |
+| RAWMINE | READY / PARKED | reopen only for a concrete question |
+| normalized enemy type census | STRONG LOCAL ACCOUNTING | retained corpus observes canonical T1..T31; scene semantics remain incomplete |
+| attack coverage | NARROW | six conservative Alpha freeze rules; breadth is a Beta/v1 issue |
+| ordered-sequence research | MID-DISCOVERY | ordered context is mandatory for T18/T23 ambiguity; no new production promotion yet |
+| target/retarget | STRONG IMPLEMENTATION / HUMAN CHECK PENDING | RC regression covers live retarget/side; real Browser visual check remains |
+| production rules | 6 FROZEN IN RC1 | exact Alpha subset only |
+| Alpha readiness | **RC1 / QA + HUMAN ACCEPTANCE PENDING** | implementation work is no longer the main blocker |
+| Beta readiness | MID | requires broader validated common-event coverage and product polish |
+| v1 readiness | EARLY-MID | requires stable Beta and defensible breadth denominator |
 
 ## Current lane state
 
-### MAINLINE — ACTIVE / HUMAN-GATED P0
+### PRODUCT / ALPHA — RC1 REACHED / WAIT FOR QA
 
-WOF-052 coordinator is already committed. No WOF-052 result has landed yet. The next useful research input is therefore the already-requested Browser run, not more code or new offline mining.
+`product/alpha/ALPHA_RC_REPORT.md` declares `wof-alpha-rc1` and says only real Browser owner acceptance remains from the implementation owner's perspective.
 
-Latest critical research result remains: T18 BODY4728/A4/B2/TM1 is forward-relevant but attack-ambiguous because prospective outcomes included A4704 and A4712. It is excluded from attack-specific Alpha freeze.
+PM adds one independent gate before spending owner Browser time: `parallel/ALPHAQA/**` must independently audit the RC. The QA bootstrap already exists at `parallel/PM/ALPHA_QA_START_PROMPT.md`.
 
-### PRODUCT / ALPHA — START NOW / PARALLEL P0
+### ALPHA QA — START NOW / P0
 
-A bounded product workstream is now justified. This is not a new research lane.
+Read-only audit of `product/alpha/**`. QA writes only under `parallel/ALPHAQA/**`. It must either PASS with no open P0/P1 or return an exact blocking defect list to the Alpha developer.
 
-Inputs and stop condition are defined in:
-- `parallel/PM/ALPHA_FREEZE_SPEC.md`
-- `parallel/PM/ALPHA_ENGINEERING_TASKS.md`
-- `parallel/PM/PRODUCT_ALPHA_START_PROMPT.md`
+No `parallel/ALPHAQA/**` result exists yet at this snapshot.
 
-Goal: produce a release candidate containing only frozen validated rules, fail-closed runtime identity, live target/retarget, user HUD, UNKNOWN silence and release-artifact regression.
+### MAINLINE WOF-052 — HUMAN-GATED / P1 FOR ALPHA, P0 RESEARCH
 
-### BASECAP — COMPLETE / STOP
+The coordinator exists, but no WOF-052 result has landed. T18 BODY4728 remains attack-ambiguous and excluded from RC1. WOF-052 is useful research but no longer blocks Alpha RC1.
 
-v1 reusable baseline is complete. No broad operator collection should continue.
+### COVERAGE — REFRESH COMPLETE / PARK
 
-### GEO — CORE CLOSED / ON DEMAND
+Canonical notation is now `T<decimal> (0xHH)`. The retained corpus observes T1..T31. The previous `T23=0` conclusion was a notation artifact: canonical T23 (0x17) has 2,140 retained samples. Current stop decision: **human recap required: NO**.
 
-P1 X/Y, P2/P3 same-offset structure, facing and top/bottom have closure artifacts. Do not continue geometry research without a concrete product question.
+### SEQMINER — CURRENT CORPUS NEAR SAFE STOP / NO RECAP
 
-### EFIELD — COMPLETE / STOP GENERIC MAPPING
+Latest work strengthens ordered feature contracts and cross-state timer progression. It requests no Collector recapture. Browser validation remains the correct next evidence step for attack-specific promotion.
 
-High-value lifecycle, target, executor/phase and metadata mapping is complete for the bounded phase. Residual unknowns are not a reason for generic capture.
+### BASECAP / GEO / EFIELD / RAWMINE / SWEEPATLAS — STOP OR ON DEMAND
 
-### RAWMINE — COMPLETE / PARK
-
-Candidate-screen infrastructure is complete for current assignments. Reopen only for a concrete owner ambiguity.
-
-### SWEEPATLAS — PARKED AT SAFE BOUNDARY
-
-Current retained GitHub corpus is exhausted to the safe labeling boundary. No broad recap is justified.
-
-### SEQMINER — v1 COMPLETE / FEEDS MAINLINE
-
-Infrastructure/current-corpus analysis is complete. T18 ordered split remains highest Browser-return candidate. No Collector task is justified.
-
-### COVERAGE — ACTIVE ACCOUNTING / NEEDS NORMALIZED REFRESH
-
-Current coverage material remains useful but should normalize type notation and ingest current SWEEPATLAS/SEQMINER state before it drives Beta/v1 breadth claims or any physical recap.
+No broad collection or generic field research is justified.
 
 ## Current biggest bottlenecks
 
-1. **Alpha release integration:** exact production manifest + isolated release runtime + identity guard + release regression are not yet assembled into one RC.
-2. **Ordered T18 discrimination:** WOF-052 human Browser input is still needed before the ambiguous anchor can produce a new attack-specific candidate.
-3. **Coverage semantics/join quality:** scene/wave/boss/common-event denominator is not yet authoritative enough for Beta/v1 breadth claims.
+1. **Independent Alpha QA** — falsify RC1 before human acceptance.
+2. **Real Browser Alpha acceptance** — only after QA has no open P0/P1.
+3. **WOF-052 ordered T18 Browser evidence** — important for post-Alpha rule expansion, not required for RC1.
 
 ## Current biggest risks
 
-1. **Research code / candidate leakage into production.** The new PRODUCT workstream exists specifically to reduce this risk.
-2. **Target/retarget correctness in the final release artifact.** Research evidence is strong but release regression is still required.
-3. **Runtime identity/version mismatch.** Release must fail closed rather than reuse guessed offsets or assumptions.
+1. RC1 regression is fixture reconstruction, not replay of retained raw WOF-051 polls.
+2. Browser identity guard is conservative layout-based, not a cryptographic ROM hash.
+3. Independent QA has not yet produced a result; developer self-tests alone are not enough for release approval.
 
 ## Current product judgment
 
-**Do not wait for WOF-052 to begin Alpha engineering.** Research and productization now run in parallel.
+**Do not open more discovery lanes. Move Alpha through QA, then one short real Browser acceptance.**
 
-The Alpha freeze may shrink if a candidate fails release regression; correct silence is preferable to keeping a weak rule for feature count.
+COVERAGE should stop rather than request recap. SEQMINER should stop when its current contract/materialization work is exhausted. Correct narrow release is now more valuable than adding speculative rules before Alpha.
