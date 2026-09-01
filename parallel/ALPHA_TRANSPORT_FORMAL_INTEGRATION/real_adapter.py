@@ -15,13 +15,14 @@ PYLAUNCH = ROOT / "parallel" / "PYLAUNCH"
 if str(PYLAUNCH) not in sys.path:
     sys.path.insert(0, str(PYLAUNCH))
 
-from wof_launcher.cdp import CdpClient, CdpError  # noqa: E402
+from wof_launcher.cdp import CdpClient  # noqa: E402
 from wof_launcher.discovery_v2 import TargetChoice, discover  # noqa: E402
 
 RELEASE = "wof-alpha-rc3"
 SCHEMA = "wof-alpha-v2"
 TRANSPORT = "wof-alpha-safe-transport-v1"
 GOLDEN_SHA = "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62"
+IDENTITY_SIGNATURE = "wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8"
 WORKER_SOURCE = ROOT / "product" / "alpha" / "wof_alpha_real_worker.js"
 
 
@@ -98,11 +99,13 @@ class FormalRealAdapter:
         return value if isinstance(value, dict) else None
 
     def _reset_page(self, page_id: str) -> None:
-        _eval(
+        value = _eval(
             self.client,
             page_id,
             "(()=>{const t=window.__WOF_ALPHA_TRANSPORT_V1;return t&&typeof t.reset==='function'?t.reset():null})()",
         )
+        if not isinstance(value, dict) or value.get("bound") is not False:
+            raise RuntimeError("页面旧 warning authority 未确认撤销")
 
     def _stop_worker(self, worker_id: str) -> bool:
         value = _eval(
@@ -113,6 +116,7 @@ class FormalRealAdapter:
         return value is True
 
     def revoke(self) -> None:
+        """Best-effort teardown for disconnect/exit; never creates new authority."""
         old = self.current
         self.current = None
         if old is None:
@@ -125,6 +129,35 @@ class FormalRealAdapter:
             self._stop_worker(old.worker_id)
         except Exception:
             pass
+
+    def _strict_revoke_for_rebind(self, next_page_id: str, next_worker_id: str) -> None:
+        """Fail closed if a still-addressable old authority cannot be proven revoked."""
+        old = self.current
+        self.current = None
+        if old is None:
+            return
+
+        try:
+            self._reset_page(old.page_id)
+        except Exception as exc:
+            if old.page_id == next_page_id:
+                raise RuntimeError("同一页面旧 warning authority 无法确认撤销；拒绝建立新 generation") from exc
+
+        if old.worker_id == next_worker_id:
+            try:
+                stopped = self._stop_worker(old.worker_id)
+            except Exception as exc:
+                raise RuntimeError("同一原生 Worker 的旧 observer 无法确认停止；拒绝建立新 generation") from exc
+            if not stopped:
+                raise RuntimeError("同一原生 Worker 的旧 observer 拒绝停止；拒绝建立新 generation")
+        else:
+            # A different targetId is a Worker/runtime replacement. The old target may
+            # already be gone; page authority was revoked above, so any late old
+            # completion cannot pass the new pair generation/nonce gate.
+            try:
+                self._stop_worker(old.worker_id)
+            except Exception:
+                pass
 
     def _read_page_config(self, page_id: str) -> dict[str, Any] | None:
         value = _eval(
@@ -170,6 +203,16 @@ throw new Error('正式 observer 启动超时');
         value = _eval(self.client, worker_id, expression, await_promise=True, timeout=15.0)
         if not isinstance(value, dict) or value.get("running") is not True:
             raise RuntimeError("原生 Worker observer 未进入运行态")
+        if value.get("identitySignature") != IDENTITY_SIGNATURE:
+            raise RuntimeError("检测器本地身份签名不匹配")
+        if not (
+            value.get("readOnly") is True
+            and value.get("ramWrites") == 0
+            and value.get("inputInjection") is False
+            and value.get("workerReplacement") is False
+            and value.get("queueDepth") == 0
+        ):
+            raise RuntimeError("原生 Worker observer 安全状态不满足正式传输合同")
         return value
 
     def _current_still_authoritative(self, choice: TargetChoice) -> bool:
@@ -186,15 +229,21 @@ throw new Error('正式 observer 启动超时');
         return bool(
             page and worker
             and page.get("bound") is True
+            and page.get("transportVersion") == TRANSPORT
             and page.get("session") == current.session
             and page.get("pairGeneration") == current.pair_generation
             and page.get("pairNonce") == current.pair_nonce
             and worker.get("running") is True
+            and worker.get("identitySignature") == IDENTITY_SIGNATURE
             and worker.get("runtimeEpoch") == current.runtime_epoch
             and worker.get("session") == current.session
             and worker.get("pairGeneration") == current.pair_generation
             and worker.get("pairNonce") == current.pair_nonce
             and worker.get("queueDepth") == 0
+            and worker.get("readOnly") is True
+            and worker.get("ramWrites") == 0
+            and worker.get("inputInjection") is False
+            and worker.get("workerReplacement") is False
         )
 
     def bind_choice(self, choice: TargetChoice) -> ActiveBinding:
@@ -204,11 +253,14 @@ throw new Error('正式 observer 启动超时');
         worker_id = _safe_target_id(choice.worker)
         if not page_id or not worker_id:
             raise RuntimeError("Discovery V2 缺少 page/Worker targetId")
+
+        # Rebinding starts by revoking old warning/detector authority. If the same
+        # live page/Worker cannot prove revocation, no new generation is created.
+        self._strict_revoke_for_rebind(page_id, worker_id)
         config = self._read_page_config(page_id)
         if config is None:
             raise RuntimeError("Alpha RC5 页面传输接口尚未就绪")
 
-        self.revoke()
         pair_nonce = secrets.token_hex(16)
         runtime_epoch = secrets.token_hex(16)
         page_binding = self._bind_page(page_id, pair_nonce)
@@ -224,9 +276,7 @@ throw new Error('正式 observer 启动超时');
             "launcherIdentitySha": GOLDEN_SHA,
         }
         try:
-            status = self._install_worker(worker_id, binding)
-            if status.get("identitySignature") not in (None, "wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8"):
-                raise RuntimeError("检测器本地身份签名不匹配")
+            self._install_worker(worker_id, binding)
         except Exception:
             try:
                 self._reset_page(page_id)
