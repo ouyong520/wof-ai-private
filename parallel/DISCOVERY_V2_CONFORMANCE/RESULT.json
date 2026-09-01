@@ -1,0 +1,91 @@
+{
+  "schema": "wof-discovery-v2-conformance-current-head-v1",
+  "stageId": "DISCOVERY_V2_CONFORMANCE_HARNESS_V1",
+  "testedHead": "250ccae3be8430fd84875093fef700819d82cf6c",
+  "generatedAtUtc": "2026-09-01T13:59:30Z",
+  "executionMode": "synthetic-fixture-current-head-evidence",
+  "ownerBrowserRequired": false,
+  "canonicalRegenerator": "python parallel/DISCOVERY_V2_CONFORMANCE/run_current_head.py",
+  "harnessReady": true,
+  "conformanceReady": false,
+  "stopCondition": "DISCOVERY V2 CONFORMANCE HARNESS READY",
+  "verdict": "DISCOVERY V2 CONFORMANCE HARNESS READY",
+  "conformanceVerdict": "DRIFT DETECTED — PYLAUNCH P1 DIRECT PARENTFRAMEID AUTHORITY NOT REACHABLE",
+  "counts": {
+    "PASS": 71,
+    "FAIL": 1,
+    "EXPECTED_ROLE_DIFFERENCE": 8,
+    "safetyPASS": 4,
+    "safetyFAIL": 0
+  },
+  "evidence": {
+    "browserFleet": {
+      "result": "parallel/BROWSER_FLEET/RESULT.md",
+      "repositoryRegression": "15/15 PASS",
+      "role": "cheap-indicator-only; exact World 921031 identity is non-authoritative"
+    },
+    "pylaunch": {
+      "implementationResult": "parallel/PYLAUNCH/DISCOVERY_V2_HARDENING_RESULT.md",
+      "independentQa": "parallel/PYLAUNCH_QA_DISCOVERY_V2_HARDENING/RESULT.json",
+      "adversarialFixture": "parallel/PYLAUNCH_QA_DISCOVERY_V2_HARDENING/test_adversarial_parent_frame.py",
+      "qaVerdict": "BLOCKED",
+      "blocker": "P1-DIRECT-PARENTFRAMEID-AUTHORITY-NOT-REACHABLE"
+    },
+    "recorder": {
+      "result": "parallel/WOF052L_RECORDER/DISCOVERY_V2_HARDENING_RESULT.md",
+      "repositoryRegression": "21/21 PASS",
+      "publicEntry": "RUN_WOF052L_RECORDER.cmd -> owner_zh_cn.py -> discovery_v2_sync.install + hardening_v2.install",
+      "windowsCi": "Owner Tools Chinese UX run 33516087731 SUCCESS"
+    },
+    "prospectiveValidator": {
+      "result": "parallel/PROSPECTIVE_VALIDATOR/RESULT.md",
+      "repositoryRegression": "40 test cases; P0/P1 closed in repository",
+      "role": "research-only prospective evidence; discovery-only diagnostics do not promote"
+    }
+  },
+  "matrix": [
+    {"scenario":"one-page-one-worker","zh":"单页面 / 单 Worker","BROWSER_FLEET":"PASS","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"two-pages-two-workers","zh":"双页面 / 双独立 Worker","BROWSER_FLEET":"EXPECTED_ROLE_DIFFERENCE","PYLAUNCH":"EXPECTED_ROLE_DIFFERENCE","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"two-pages-same-shared-worker","zh":"双页面 / 同一 shared Worker","BROWSER_FLEET":"EXPECTED_ROLE_DIFFERENCE","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"iframe-to-worker","zh":"iframe -> Worker","BROWSER_FLEET":"PASS","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"direct-worker-fallback","zh":"direct Worker fallback","BROWSER_FLEET":"PASS","PYLAUNCH":"FAIL","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"misleading-opener-id","zh":"误导 openerId","BROWSER_FLEET":"EXPECTED_ROLE_DIFFERENCE","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"worker-url-gstyphoon","zh":"Worker URL: gstyphoon","BROWSER_FLEET":"PASS","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"worker-url-hashed","zh":"Worker URL: hashed","BROWSER_FLEET":"PASS","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"worker-url-blob","zh":"Worker URL: blob","BROWSER_FLEET":"PASS","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"worker-url-data","zh":"Worker URL: data","BROWSER_FLEET":"PASS","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"worker-url-no-extension","zh":"Worker URL: no extension","BROWSER_FLEET":"PASS","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"remote-host","zh":"remote host","BROWSER_FLEET":"PASS","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"cross-port-websocket","zh":"cross-port websocket","BROWSER_FLEET":"PASS","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"loopback-alias","zh":"loopback alias","BROWSER_FLEET":"PASS","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"reload-recreated-worker","zh":"reload / recreated Worker","BROWSER_FLEET":"PASS","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"stale-target-session","zh":"stale target / session","BROWSER_FLEET":"PASS","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"exact-supported-identity","zh":"exact supported identity","BROWSER_FLEET":"EXPECTED_ROLE_DIFFERENCE","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"wrong-identity","zh":"wrong identity","BROWSER_FLEET":"EXPECTED_ROLE_DIFFERENCE","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"one-room-failure-isolation","zh":"单房间失败隔离","BROWSER_FLEET":"PASS","PYLAUNCH":"EXPECTED_ROLE_DIFFERENCE","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"},
+    {"scenario":"advisory-vs-authoritative-role","zh":"Fleet advisory vs authoritative roles","BROWSER_FLEET":"EXPECTED_ROLE_DIFFERENCE","PYLAUNCH":"PASS","WOF052L_RECORDER":"PASS","PROSPECTIVE_VALIDATOR":"PASS"}
+  ],
+  "drift": [
+    {
+      "severity": "P1",
+      "component": "PYLAUNCH",
+      "scenario": "direct-worker-fallback",
+      "id": "P1-DIRECT-PARENTFRAMEID-AUTHORITY-NOT-REACHABLE",
+      "status": "FAIL",
+      "detail": "With two positively identified WOF pages and one exact World 921031 direct Worker whose parentFrameId uniquely maps to page B, current PYLAUNCH discovery never requests Page.getFrameTree or equivalent frame mapping and therefore rejects as ambiguous instead of selecting page B.",
+      "ownerActionRequired": false,
+      "requiredFixScope": "parallel/PYLAUNCH/**"
+    }
+  ],
+  "safety": {
+    "BROWSER_FLEET": {"status":"PASS","readOnly":true,"ramWrites":0,"inputInjection":false,"workerReplacementOrWrap":false,"blobDataObjectUrlCreationOrRewrite":false,"productionAutoPromotion":false},
+    "PYLAUNCH": {"status":"PASS","readOnly":true,"ramWrites":0,"inputInjection":false,"workerReplacementOrWrap":false,"blobDataObjectUrlCreationOrRewrite":false,"productionAutoPromotion":false},
+    "WOF052L_RECORDER": {"status":"PASS","readOnly":true,"ramWrites":0,"inputInjection":false,"workerReplacementOrWrap":false,"blobDataObjectUrlCreationOrRewrite":false,"productionAutoPromotion":false},
+    "PROSPECTIVE_VALIDATOR": {"status":"PASS","readOnly":true,"ramWrites":0,"inputInjection":false,"workerReplacementOrWrap":false,"blobDataObjectUrlCreationOrRewrite":false,"productionAutoPromotion":false}
+  },
+  "notes": [
+    "EXPECTED_ROLE_DIFFERENCE is intentional and is never normalized to PASS.",
+    "Harness readiness is separate from component conformance readiness; the current PYLAUNCH FAIL is intentionally preserved.",
+    "No Owner real Browser is required by this harness stage."
+  ]
+}
