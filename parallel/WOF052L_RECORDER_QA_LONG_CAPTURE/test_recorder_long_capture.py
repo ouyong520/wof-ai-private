@@ -166,6 +166,8 @@ class StressFleetManager:
         for cycle in range(FLEET_LOOPS):
             if self.stop_event.is_set():
                 break
+            cycle_safe = recorder.safe_name(f"room ../fleet ♥ {self.fleet_instance_id} / cycle {cycle}")
+            assert "/" not in cycle_safe and "\\" not in cycle_safe and len(cycle_safe) <= 80
             row = {"room": safe, "cycle": cycle, "kind": "qa-action", "ok": True}
             with action_path.open("a", encoding="utf-8", newline="\n") as handle:
                 handle.write(json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n")
@@ -277,6 +279,7 @@ def exercise_fleet_and_artifacts(root: Path) -> dict[str, Any]:
             "samples": index["counts"]["samples"],
         },
         "artifactValidation": {
+            "repeatedNamingSafetyChecks": (ROOM_COUNT - 1) * FLEET_LOOPS,
             "actionLogFiles": len(action_files),
             "actionLogRowsParsed": action_rows,
             "overlayFiles": len(overlay_files),
