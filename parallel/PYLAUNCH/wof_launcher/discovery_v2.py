@@ -268,14 +268,17 @@ def _diag(targets: list[dict[str, Any]], pages: list[dict[str, Any]], *, path: s
 
 
 def discover(client: CdpClient, *, identity_timeout: float = 20.0, identity_cache: dict[str, dict[str, Any]] | None = None) -> TargetChoice:
+    # Exact identity authority is valid only inside this discovery generation. A
+    # targetId is not a browser/runtime/execution-context generation token, so an
+    # external cache may retain this generation's result for diagnostics but must
+    # never carry accepted identity authority into the next discover() call.
+    if identity_cache is not None:
+        identity_cache.clear()
+
     raw = client.request("Target.getTargets").get("targetInfos") or []
     if not isinstance(raw, list):
         raise CdpError("Target.getTargets returned malformed targetInfos")
     targets = [dict(t) for t in raw if isinstance(t, dict)]
-    live_target_ids = {str(t.get("targetId") or "") for t in targets if t.get("targetId")}
-    if identity_cache is not None:
-        for stale_id in [key for key in identity_cache if key not in live_target_ids]:
-            identity_cache.pop(stale_id, None)
     pages = [_probe_page(client, t) for t in targets if t.get("type") == "page"]
 
     supported: list[tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]] = []
