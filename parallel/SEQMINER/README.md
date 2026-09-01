@@ -92,6 +92,8 @@ event proxy = first same-object enemy+0x73 != 0
 label       = first nonzero +0x73 value
 ```
 
+This event definition is a hard visibility boundary. Anything that occurs **after** the first `+0x73 != 0` frame is post-event context in default mode and is deliberately excluded from predictor features. In particular, the retained delayed-`1B` reloads described below motivate the v3 representation but occur after the default `+0x73` zero->nonzero boundary, so default proxy mode does not use those 52 reloads as predictors.
+
 Explicit attack mode is allowed only after an exact WinKawaks-local move/attack field has independently been proven:
 
 ```bash
@@ -100,6 +102,8 @@ python .../seqminer.py \
   --output .../parallel/SEQMINER/generated \
   --attack-offset 0xNN --attack-width 2 --attack-endian be
 ```
+
+Under explicit attack mode, a delayed `1B` reload becomes a valid prefix candidate only if the proven exact attack field remains zero until after that reload. No event definition is allowed to move the boundary backward merely to make a candidate visible.
 
 ### Cycle identity
 
@@ -139,7 +143,7 @@ Retained delayed-`1B` analysis contains **52** residences that enter with `+0x34
 
 Because `+0x35` is part of the core state, a reload that coincides with the mode transition crosses a compressed-state boundary. A state-local `positiveTimer34Reloads` list can therefore miss exactly the delayed-load edge we care about.
 
-v3 fixes that by also tracking every positive `+0x34` load at the **cycle prefix** level, before the future event, preserving:
+v3 fixes the representation generally by also tracking every positive `+0x34` load that occurs inside the chosen **cycle prefix**, preserving:
 
 ```text
 from/to timer34
@@ -153,7 +157,7 @@ sameCore / cursorChanged / mode35Changed / timer42Changed
 exact + record-normalized reload family
 ```
 
-The future event edge is deliberately excluded from predictor features to prevent leakage.
+The future event edge and all post-event frames are deliberately excluded from predictor features to prevent leakage. Thus the 52 known delayed-`1B` reloads are evidence that the representation is needed, not evidence that default `+0x73` proxy mode can prospectively use them.
 
 ## Confidence and scene-label rules
 
@@ -171,7 +175,7 @@ Core rules:
 
 A run writes:
 
-- `CYCLES.generated.jsonl` — resolved same-object cycles, including cycle-level timer reload edges;
+- `CYCLES.generated.jsonl` — resolved same-object cycles, including cycle-level timer reload edges when they occur before the selected event;
 - `CANDIDATES.generated.json` — final/tail/pair/triple/reload exact/normalized rankings;
 - `BRANCHPOINTS.generated.json` — ambiguous anchors plus cycle-based next/previous/timer outcome distributions and separate raw loop counts;
 - `SEQUENCE_ATLAS.generated.md`;
@@ -202,6 +206,10 @@ WinKawaks-local structural hotspots for future exact-label mining:
 - `+0x35` transitions as an independent branch axis.
 
 These are structural candidates only and must never be numerically copied into Browser/WASM logic.
+
+## Exact local attack-descriptor audit
+
+Existing bridge reports do not close the missing exact-label gap. `MOVE_ATTACK.md` defines 2,391 "attack-field transition events" through the attack-associated phase family and shows `+0x6C/+0x73` as perfectly selective against its own transition anchor; `ATTACK_CYCLE.md` explicitly defines an episode as a contiguous `+0x73 != 0` run. This is useful structural evidence, not a move-valued attack identity. The retained EFIELD summary contains no `activeAttack` field and no `0x1260` value corresponding to Browser A4704. Therefore SEQMINER does not silently reinterpret any attack-selective byte as an exact local move descriptor.
 
 ## Stop condition
 
