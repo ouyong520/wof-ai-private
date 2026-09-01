@@ -1,41 +1,50 @@
 {
-  "version": "seqminer-candidates-v1",
-  "evidenceNamespace": "mixed-explicitly-labelled",
+  "version": "seqminer-candidates-v2",
+  "updated": "2026-09-01",
   "productionPromotion": false,
-  "allGameSweepRawVisibleOnGitHubMain": false,
+  "evidenceNamespace": "mixed-explicitly-labelled",
+  "corpusStatus": {
+    "sweepAtlasVisible": true,
+    "sweepAtlasFullSweepSeriesPresent": false,
+    "stageSceneWaveLabelsAvailable": false,
+    "allGameSweepRawVisibleOnGitHubMain": false,
+    "naturalEfieldRuns": 7,
+    "typePresentSamples": 60271,
+    "distinctLocalTypes": 31,
+    "localT18Samples": 528,
+    "localT23Samples": 2140
+  },
   "candidates": [
     {
       "rank": 1,
       "id": "T18-BODY4728-POST-SEQUENCE-SPLIT",
+      "namespace": "Browser-labelled",
       "type": "T18",
-      "goal": "split eventual A4704 versus A4712 after the prospectively ambiguous BODY4728 state",
+      "goal": "split eventual A4704 versus A4712 after the prospectively ambiguous BODY4728 anchor",
       "anchor": "S0/A4/B2|BODY4728|FE8b660|NX8b204|Vffff|TM1|P6C4736",
       "evidenceClass": "potentially_prospectively_testable_candidate_design",
       "knownEvidence": {
-        "prospectiveOutcomes": {
-          "A4704": 1,
-          "A4712": 1
-        },
+        "prospectiveOutcomes": {"A4704": 1, "A4712": 1},
         "targetStable": "2/2",
         "sideStable": "2/2"
       },
       "orderedFeaturesToRank": [
         "first distinct post-anchor state",
-        "post-anchor tail2",
-        "post-anchor tail3",
-        "descriptor/next progression",
+        "post-anchor pair",
+        "post-anchor triple",
+        "descriptor/body/frameEnd/next progression",
         "exact timer progression",
+        "terminal-timer hold duration",
         "timer-normalized progression",
-        "target/reference context"
+        "pre-anchor tail if still needed"
       ],
-      "reason": "single-state ambiguity is already proven prospectively; WOF-051 states longer histories differ materially",
       "browserProductionRule": false
     },
     {
       "rank": 2,
       "id": "T23-A5888-BODY4936-TAIL3",
+      "namespace": "Browser-labelled",
       "type": "T23",
-      "goal": "prospectively test whether an ordered BODY4936 tail discriminates A5888 from A4792/A4920",
       "signature": [
         "S0/A8/B2 BODY4936",
         "S0/A2/B0 BODY4936",
@@ -45,72 +54,72 @@
       "evidenceClass": "same_cycle_evidence",
       "knownSupport": 1,
       "knownAttackClassCycles": 2,
-      "reason": "the first state also occurs on an A4792 cycle, demonstrating that order adds information",
+      "reason": "constituent first state also occurs on A4792; order adds information",
       "browserProductionRule": false
     },
     {
       "rank": 3,
       "id": "T23-BRANCH-SET-TAIL2-TAIL3",
+      "namespace": "Browser-labelled",
       "type": "T23",
-      "goal": "learn a branch set rather than one universal fingerprint for A4792/A4920/A5888",
+      "knownCycles": {"A4792": 3, "A4920": 3, "A5888": 2},
       "evidenceClass": "same_cycle_evidence",
-      "knownCycles": {
-        "A4792": 3,
-        "A4920": 3,
-        "A5888": 2
-      },
-      "reason": "A4792 itself has three distinct immediate tails and A4920 also shows multiple final/tail families",
-      "requiredStability": [
-        "cross-room",
-        "cross-target",
-        "timer-normalized",
-        "same-cycle"
-      ],
+      "goal": "validate a small set of branch-specific tails rather than force one universal fingerprint",
+      "requiredStability": ["same-cycle", "cross-room", "cross-target", "timer-normalized"],
       "browserProductionRule": false
     },
     {
       "rank": 4,
-      "id": "WINKAWAKS-CURSOR-PHASE-TIMER-SEQUENCE",
-      "type": "all observed WinKawaks types",
-      "goal": "use logical cursor transitions plus phase tuple and timer progression as the ordered backbone once exact local attack labels are available",
+      "id": "WK-02008BE0-CONDITIONAL-BRANCH",
+      "namespace": "WinKawaks-local",
       "evidenceClass": "discovery_correlation",
-      "localFields": [
-        "+0x2F..0x32 logical cursor",
-        "+0x34 dwell/countdown",
-        "+0x35 mode",
-        "+0x37 gate",
-        "+0x6C/+0x70/+0x72/+0x73/+0x77 phase tuple"
-      ],
-      "knownStability": {
-        "logicalCursorDestinationPhaseAggregateHoldoutCoverage": "4819/4820",
-        "logicalCursorDestinationPhaseAccuracyCovered": "4818/4819"
+      "anchorLogicalCursor": "0x02008BE0",
+      "knownEvidence": {
+        "fullSegments": 355,
+        "sequentialPlus10Exits": 199,
+        "branchOtherExits": 141,
+        "commonSequentialTo08BEA": 170,
+        "alternateJumpTo09006": 30,
+        "terminalTimer1MedianFrames": 2,
+        "terminalTimer1MaxFrames": 276,
+        "terminalTimer1AtLeast30Frames": 37
       },
-      "reason": "cursor-to-phase transitions replicate across retained EFIELD captures and encode order more directly than a single state byte",
+      "goal": "after exact local attack labels exist, test exit destination plus terminal-hold duration and mode35 history as an outcome discriminator",
       "browserProductionRule": false
     },
     {
       "rank": 5,
-      "id": "WINKAWAKS-TIMER-NORMALIZED-BRANCH",
-      "type": "all observed WinKawaks types",
-      "goal": "compare exact-timer versus record-relative timer-normalized sequence families",
+      "id": "WK-CURSOR-FLAG-SPLIT-08BD6-05E9A",
+      "namespace": "WinKawaks-local",
       "evidenceClass": "discovery_correlation",
-      "timerField": "+0x34",
-      "normalization": "recordCeiling(logicalCursor)-timer34",
-      "knownStability": {
-        "arrivalAtCeiling": "3192/4323",
-        "arrivalWithin1": "4000/4323",
-        "arrivalWithin2": "4090/4323",
-        "leaveOneRunOutCoverage": "4321/4323",
-        "holdoutExceedsTrainingCeiling": "11/4321"
+      "knownEvidence": {
+        "08BD6Flag100000PhasePurity": "354/354 E0,00,38,0A,00",
+        "05E9AFlag100000PhasePurity": "210/210 E0,00,38,0A,00",
+        "flag140000": "rare 1E termination-family enrichment"
       },
-      "reason": "one/two tick sampling differences are common and should not fragment otherwise identical ordered branches",
+      "goal": "retain embedded flag as mandatory ordered-state context; do not collapse to logical cursor only",
       "browserProductionRule": false
     },
     {
       "rank": 6,
-      "id": "WINKAWAKS-MODE35-TRANSITION-CONTEXT",
-      "type": "all observed WinKawaks types",
-      "goal": "test whether +0x35 transition history splits branches that share cursor/phase state",
+      "id": "WK-TERMINAL-TIMER1-HOLD-FAMILY",
+      "namespace": "WinKawaks-local",
+      "evidenceClass": "discovery_correlation",
+      "knownEvidence": {
+        "02008D08MedianMax": "32/40",
+        "02005FF8MedianMax": "32/42",
+        "02008D12MedianMax": "23/24",
+        "02006002MedianMax": "23/24",
+        "02008BE0MedianMax": "2/276",
+        "0200906EMedianMax": "2/1518"
+      },
+      "goal": "distinguish states identical at literal TM1 but different in time already held at TM1",
+      "browserProductionRule": false
+    },
+    {
+      "rank": 7,
+      "id": "WK-MODE35-TRANSITION-CONTEXT",
+      "namespace": "WinKawaks-local",
       "evidenceClass": "discovery_correlation",
       "notableTransitions": {
         "00->FF": 353,
@@ -121,15 +130,29 @@
         "00->02": 52,
         "01->FF": 39
       },
-      "reason": "+0x35 has an independent state-machine structure and is not reducible to the +0x34 countdown",
+      "goal": "test mode35 history as an independent branch discriminator after exact local attack labels exist",
+      "browserProductionRule": false
+    },
+    {
+      "rank": 8,
+      "id": "WK-LOOP-RESET-NODES",
+      "namespace": "WinKawaks-local",
+      "evidenceClass": "discovery_correlation",
+      "knownEvidence": {
+        "02008C12": {"segments": 144, "sequential": 0, "branchOther": 142},
+        "02008C52": {"segments": 113, "sequential": 0, "branchOther": 107},
+        "02005ED6": {"segments": 75, "sequential": 0, "branchOther": 75}
+      },
+      "goal": "preserve loop-iteration context and avoid counting repeated in-cycle loops as independent support",
       "browserProductionRule": false
     }
   ],
-  "blockedUntilDataAppears": [
+  "blockedExactAnalyses": [
     {
-      "id": "ALL-GAME-WINKAWAKS-ATTACK-AMBIGUITY-ATLAS",
-      "reason": "connector-visible GitHub main currently exposes no retained all-game SWEEP* raw and no parallel/SWEEPATLAS directory; do not fabricate attack-labelled cross-type counts",
-      "action": "run parallel/SEQMINER/seqminer.py automatically against retained sweep raw when it is present in a checkout/CI workspace"
+      "id": "ALL-GAME-EXACT-ATTACK-SEQUENCE-ATLAS",
+      "reason": "SWEEPATLAS exists but explicitly reports fullSweepSeriesPresent=false and stageSceneWaveLabelsAvailable=false; no separately proven WinKawaks-local exact move/attack field exists",
+      "notJustificationForRecapture": true,
+      "automaticNextAction": "rerun seqminer.py v2 over retained raw when labeled sweep data or exact local attack labels become available"
     }
   ]
 }
