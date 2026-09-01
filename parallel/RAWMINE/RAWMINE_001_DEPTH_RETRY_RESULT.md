@@ -70,12 +70,14 @@ Therefore wrong P1/P2/P3 slot indexing is not a plausible explanation for the mi
 
 This is an acquisition/focus ambiguity, not a field-semantic result.
 
-## Final bounded retry
+## Final bounded owner retry
 
-One final narrow retry is justified to isolate that remaining ambiguity:
+While RAWMINE was preparing a final focus-guard retry, the GEO owner independently queued the narrower owner task first:
 
-`RAWMINE-002-p1-depth-focus-retry-20s60`
+`GEO-0009-p1-depth-visible-traverse-8s60-20260901-0024Z`
 
-The analyzer is already configured to consume this task as controlled attempt 3. The task explicitly requires immediate WinKawaks refocus after READY plus visible confirmation that UP/DOWN moves P1 between distinct floor/depth positions. It remains P1-only, no LEFT/RIGHT/jump/attack, P2/P3 untouched, read-only, and discovery-only.
+Per collector routing and lane ownership, RAWMINE withdrew its duplicate `RAWMINE-002` queue entry rather than create a second equivalent acquisition. `analysis/rawmine/candidate_screen_geo_depth.py` is configured to consume GEO-0009 as controlled attempt 3 alongside GEO-0008 and RAWMINE-001.
 
-Stop rule: if RAWMINE-002 is mechanically valid but again contains no P1-specific manipulated byte dynamics, RAWMINE will not request another equivalent retry. The acquisition limitation will be recorded explicitly and the unresolved semantic question returned to GEO without treating the failed manipulation as negative evidence against `+0x08`.
+GEO-0009 requires P1 to HOLD UP for roughly three seconds and visibly traverse toward the upper/deeper lane, then HOLD DOWN for roughly three seconds and visibly traverse back, with no LEFT/RIGHT/jump/attack and P2/P3 untouched. This directly addresses the main weakness of the first two captures: the operator must visibly observe a substantial depth traverse rather than only intend UP/DOWN input.
+
+RAWMINE stop rule: if GEO-0009 is mechanically valid but again contains no P1-specific manipulated byte dynamics, RAWMINE will not request another equivalent capture. The acquisition limitation will be recorded explicitly and the unresolved semantic question returned to GEO without treating failed manipulation as negative evidence against `+0x08`.
