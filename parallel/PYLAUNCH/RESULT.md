@@ -1,110 +1,130 @@
-# WOF Python Launcher — Fresh Windows/Browser Live Proof Result
+# WOF Python Launcher — Real Chrome Worker Discovery Fresh Fix Result
 
 Date: 2026-09-01
-Status: **AUTOMATION READY; ONE MINIMAL OWNER WINDOWS RUN REMAINS**
+Status: **FIX READY — 只剩一次新的真人 Windows 一键 Proof**
 
-## Foundation is not being redone
+## Root cause closed in repository
 
-The existing Python Launcher Foundation remains the transport under test. This proof stage only adds owner-proof UX under `parallel/PYLAUNCH/**`.
+Real Windows evidence proved Chrome/CDP connection and room playability, but the old launcher required browser-level `Target.getTargets` to directly expose a target matching `type=worker + gstyphoon*.js`. If that match was absent, discovery returned before even probing the WOF page.
 
-Still unchanged:
+The fresh fix adds `wof_launcher/discovery_v2.py` and switches the monitor to it.
 
+Preferred discovery now is:
+
+```text
+browser CDP
+-> page targets
+-> page session Target.setAutoAttach
+-> related iframe / worker target tree
+-> fixed read-only Worker WASM/heap probe
+-> exact World 921031 SHA-256 gate
+```
+
+The original direct Worker path remains a compatibility fallback.
+
+## Safety retained
+
+Unchanged and enforced:
+- localhost CDP only;
+- readOnly=true;
+- ramWrites=0;
+- inputInjection=false;
 - no `product/alpha/**` modification;
-- no WOF-052/WOF-052L modification;
-- no Tampermonkey dependency;
+- no WOF-052L modification;
 - no `window.Worker` replacement/wrapping;
-- no gameplay input injection;
-- no game/WASM RAM writes;
-- no one-key moves / Assist Mode;
-- localhost Chrome/Edge CDP only;
-- exact World 921031 full 1 MiB CPU-logical SHA-256 gate remains `5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`.
+- no Blob/Data/ObjectURL Worker creation;
+- no Worker URL rewrite;
+- no Chrome native process-memory hook;
+- no game RAM writes;
+- no `Input.*` gameplay injection;
+- no one-key moves / Assist Mode.
 
-## Proof UX added
+Exact authoritative World 921031 SHA-256 remains:
 
-New double-click entry:
+`5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`
 
-```text
-parallel\PYLAUNCH\RUN_WINDOWS_PROOF.cmd
-```
+## Discovery behavior
 
-It:
+The fix now supports:
+- original direct worker target;
+- page-related `worker` / `shared_worker` / `service_worker` target types;
+- Worker URL shape differences;
+- page -> iframe -> Worker recursion;
+- parentId/opener relationships when available;
+- page discovery even while Worker is not yet surfaced;
+- reload/recreated Worker target IDs without stale identity inheritance;
+- bounded topology diagnostics for real Chrome follow-up.
 
-1. reuses `.venv` if present;
-2. creates it only when missing;
-3. installs the three launcher dependencies only when their imports are missing;
-4. starts the tray launcher with `pythonw.exe` so no permanent console window is required;
-5. lets the launcher attach to or start its dedicated localhost-CDP Chrome/Edge profile;
-6. continuously writes one compact diagnostics file:
+Acceptance remains fail-closed:
+- multiple exact supported page/Worker pairs are ambiguous and rejected;
+- wrong World identity is rejected;
+- WASM not ready remains WAITING;
+- Blob/Data/JavaScript Worker URLs are rejected;
+- direct Worker without unique page association is rejected.
 
-```text
-parallel\PYLAUNCH\WINDOWS_PROOF_STATUS.json
-```
+## Offline regression
 
-The JSON is generated from launcher status only. Failure to export diagnostics is deliberately ignored by the monitor path so diagnostics can never become a game/browser blocker.
+Fresh discovery-v2 + Windows proof regression: **13/13 PASS**.
 
-## Automated proof JSON contract
+Coverage includes:
+- direct worker backward compatibility;
+- shared-worker / URL variation;
+- missing root worker while page is found;
+- nested iframe -> Worker;
+- multiple page/Worker ambiguity;
+- WASM not ready;
+- wrong World identity;
+- stale/replaced Worker lifecycle;
+- disconnect state reset;
+- read-only allowlist rejects `Input.dispatchKeyEvent` and `Runtime.callFunctionOn`;
+- proof PASS still requires all six checks and ramWrites=0.
 
-`WINDOWS_PROOF_STATUS.json` reaches `"automatedResult": "PASS"` only when all six checks are simultaneously true:
+## Simplified Chinese owner UX
 
-```text
-Browser: OK
-WOF page: OK
-Worker: OK
-WASM / heap: OK
-World 921031: OK
-READ ONLY / RAM writes: 0
-```
+Updated owner-facing PYLAUNCH surfaces:
+- tray status/menu;
+- settings and diagnostics;
+- launcher CLI help/errors;
+- `RUN_WINDOWS_PROOF.cmd`;
+- `RUN_WOF_LAUNCHER.bat`;
+- proof JSON adds `ownerSummaryZh` and `checksZh` while preserving machine-compatible English keys/schema.
 
-It also records page/Worker URLs, module key, heap size, exact SHA-256/reason, launcher error, `readOnly`, `ramWrites`, and `inputInjection`.
+Technical errors are secondary to Chinese human-readable explanations and always state that the game itself is unaffected where appropriate.
 
-Even after automated PASS it reports:
+## New direct one-click entry
 
-```text
-"ownerPlayabilityConfirmation": "REQUIRED"
-```
+New standalone bootstrap:
 
-because repository/offline tooling must not pretend to prove that the real room stayed playable.
+`parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd`
 
-## Offline validation completed in this stage
-
-- `wof_launcher/proof.py` compiles under Python.
-- PASS aggregation was exercised with all six checks true.
-- changing `ramWrites` away from zero forces the proof result back to WAITING.
-- proof JSON is written by atomic replace (`*.tmp` -> final file).
-- no new CDP method, Worker hook, input path, or RAM-write path was introduced.
-
-## The only remaining owner operation
-
-1. Update the local repository.
-2. Double-click exactly:
-
-```text
-parallel\PYLAUNCH\RUN_WINDOWS_PROOF.cmd
-```
-
-3. In the Chrome/Edge window opened by the launcher, enter the normal WOF room exactly as usual. Do not open DevTools and do not paste JavaScript.
-4. Confirm the tray reaches all six `OK` lines above and that the room remains normally playable.
-
-### If it passes
-
-Return only:
+Owner flow:
 
 ```text
-PASS — PYLAUNCH WINDOWS PROOF
+直接下载 WOF_ONECLICK_PROOF_CN.cmd
+-> 双击
+-> 自动下载当前最新仓库快照
+-> 自动准备 Launcher
+-> 自动打开/连接专用 Chrome/Edge
+-> 正常进入 WOF 房间
+-> 托盘自动验证 Browser / page / Worker / WASM / World 921031 / READ ONLY
 ```
 
-Then this file can be updated with the live PASS and a separate Alpha transport-integration handoff can be prepared. Do not modify Alpha in this stage.
+No Git, GitHub Desktop, repository-directory knowledge, DevTools, Worker Console, or pasted JavaScript is required.
 
-### If it does not pass
+## Remaining live gate
 
-Return only this one file:
+Repository-side fix is ready. One real Windows run is still required to prove Chrome 151's actual WOF target topology reaches all six checks simultaneously while the room remains playable.
+
+Expected final status:
 
 ```text
-parallel\PYLAUNCH\WINDOWS_PROOF_STATUS.json
+浏览器：已连接
+WOF 页面：已找到
+Worker：已找到
+WASM / 内存：已找到
+游戏版本：World 921031 已确认
+只读模式：开启
+游戏内存写入：0
 ```
 
-No DevTools output, Worker-console selection, pasted JavaScript, frame counting, gameplay capture, or memory collection is required.
-
-## Stop condition reached
-
-All repository-side work practical before a real Windows/Browser target is complete. The remaining uncertainty is specifically live Chromium target/session behavior plus owner confirmation that room playability is unaffected while attached.
+If it does not reach PASS, return only the generated `WINDOWS_PROOF_STATUS.json`; the new `targetTopology` field should provide the needed read-only real-Chrome topology evidence without DevTools.

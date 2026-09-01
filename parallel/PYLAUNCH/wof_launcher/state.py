@@ -28,6 +28,8 @@ class LauncherStatus:
     world_921031: bool = False
     identity_sha256: str | None = None
     identity_reason: str | None = None
+    discovery_path: str | None = None
+    discovery_diagnostics: dict[str, Any] | None = None
     read_only: bool = True
     ram_writes: int = 0
     input_injection: bool = False
@@ -75,6 +77,8 @@ class StatusStore:
             world_921031=False,
             identity_sha256=None,
             identity_reason=None,
+            discovery_path=None,
+            discovery_diagnostics=None,
             state="ERROR" if error else "DISCONNECTED",
             last_error=error,
             read_only=True,
