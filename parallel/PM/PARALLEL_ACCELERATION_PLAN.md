@@ -1,61 +1,66 @@
 # WOF Future Danger AI — Parallel Acceleration Plan
 
-Updated: 2026-09-01
+Updated: 2026-09-01 — RC1 reallocation
 
 ## Goal
 
-Increase throughput without opening duplicate research or causing concurrent-write conflicts.
+Keep useful work parallel without duplicating implementation, wasting owner gameplay, or reopening closed collection lanes.
 
-## Authorized concurrent work
+## Current concurrent work allocation
 
-### Stream 1 — PRODUCT / ALPHA implementation — P0
+### Stream 1 — PRODUCT / ALPHA implementation — RC1 REACHED / MAINTENANCE ONLY
 Owner: dedicated Product Alpha thread.
-Scope: release runtime, frozen rules, loader/bootstrap, identity guard, fail-closed behavior, live target/retarget, HUD integration, release regression.
-Bootstrap: `parallel/PM/PRODUCT_ALPHA_START_PROMPT.md`.
-Stop: Alpha RC exists or only real Browser acceptance remains.
 
-### Stream 2 — MAINLINE WOF-052 — P0 / human gated
+Engineering stop condition has been reached at `wof-alpha-rc1`. The implementation thread should not keep adding features. It should only respond to concrete Alpha QA P0/P1 findings until release.
+
+### Stream 2 — ALPHA QA — START NOW / P0
+Owner: one independent QA thread.
+Bootstrap: `parallel/PM/ALPHA_QA_START_PROMPT.md`.
+
+Read-only audit of `product/alpha/**`; findings under `parallel/ALPHAQA/**` only.
+
+Stop: QA PASS with no open P0/P1, or exact defect list handed to Product Alpha.
+
+### Stream 3 — MAINLINE WOF-052 — HUMAN-GATED RESEARCH
 Owner: existing MAINLINE Browser thread + owner gameplay.
-Scope: ordered T18 context discovery separating A4704 vs A4712 while preserving production audits.
-Stop: shortest stable ordered discriminator is identified, then hand off to a later prospective validator.
 
-### Stream 3 — SEQMINER — ACTIVE EXISTING LANE
+Still the highest-value ordered T18 research task, but not an Alpha blocker. Resume when owner Browser time is available. Do not replace Alpha acceptance with WOF-052 work.
+
+### Stream 4 — SEQMINER — FINISH CURRENT MATERIALIZATION / THEN PARK
 Owner: existing SEQMINER thread.
-Scope: consume retained corpus, ordered-cycle/retarget/reference timeline mining, feed Browser validation queue.
-Do not request broad collection.
-Stop: current retained corpus is exhausted for product-relevant ordered candidates.
 
-### Stream 4 — COVERAGE refresh — P1
-Owner: one dedicated COVERAGE refresh thread.
-Scope: normalize T identifiers, ingest current SWEEPATLAS/SEQMINER, materialize cross-tabs, distinguish physical vs analysis vs label gaps, recompute minimal recap decision.
-Bootstrap: `parallel/PM/COVERAGE_REFRESH_START_PROMPT.md`.
-Stop: refreshed matrix says either human recap NO or identifies exactly one bounded residual recap need.
+Latest work may finish its v3 feature/contract outputs from retained data. No new Collector request is allowed. Park once current retained material is exhausted.
 
-### Stream 5 — PM / release coordination — continuous
+### Stream 5 — COVERAGE — REFRESH COMPLETE / PARK
+Owner: COVERAGE thread.
+
+Normalized refresh is complete. Current physical recap decision is NO. Stop this thread unless later Beta/v1 evidence creates a concrete bounded coverage question.
+
+### Stream 6 — PM / release coordination — CONTINUOUS
 Owner: PM thread.
-Scope: audit GitHub, prevent duplication, update priorities, decide promotion/release gates, request owner action only when truly required.
 
-## Not authorized now
+Audit GitHub, route QA findings, keep closed lanes closed, and move RC1 to human Browser acceptance once QA clears.
 
-Do not open more research lanes for:
-- generic RAM mining;
-- new EFIELD mapping;
-- broad GEO work;
-- another full-game sweep;
+## Human-time sequencing
+
+Owner gameplay is the scarce resource. Use it in this order:
+
+1. Alpha RC1 Browser acceptance after QA clears P0/P1;
+2. WOF-052 T18 Browser run;
+3. any later precise prospective validator;
+4. targeted WinKawaks recap only if COVERAGE later proves it necessary.
+
+## Do not open now
+
+No new generic:
+- RAM mining;
+- EFIELD mapping;
+- GEO research;
+- full-game sweep;
 - duplicate sequence mining;
-- speculative attack-rule discovery without an owner question.
+- extra Alpha implementation thread;
+- speculative rule-discovery thread.
 
-## Why not add Alpha QA as a separate thread yet
+## Throughput judgment
 
-A separate Alpha QA/release-audit thread becomes valuable only after Product Alpha produces a concrete release artifact or stable implementation commit. Starting it earlier would duplicate implementation work and increase merge/conflict risk.
-
-Trigger to open Alpha QA:
-- Product Alpha publishes a candidate frozen manifest + runtime/HUD integration or labels an Alpha RC candidate.
-
-At that point PM should create a read-mostly release audit task focused on regression, identity guard, fail-closed behavior, target/retarget, no writes, UNKNOWN silence, and acceptance checklist.
-
-## Throughput rule
-
-Prefer 4 high-value parallel streams with disjoint outputs over 8 overlapping threads.
-
-If two streams begin editing the same product file family, PM will serialize them rather than allow race/conflict.
+The project no longer needs more thread count for its own sake. The fastest safe throughput is to let QA attack the existing RC1 while SEQMINER finishes retained-data work and COVERAGE parks. Adding overlapping threads before QA returns would increase conflict rather than speed.
