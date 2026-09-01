@@ -9,14 +9,16 @@
       "zeroCondition": "+0x73 == 0",
       "futureEvent": "first same-object +0x73 != 0",
       "semanticMeaning": "structural executor phase proxy only",
-      "attackSemanticAllowed": false
+      "attackSemanticAllowed": false,
+      "visibilityLimit": "events that occur after +0x73 first becomes nonzero are post-event context in this mode and are not predictor-prefix features"
     },
     "explicit-local-attack": {
       "precondition": "a WinKawaks-local exact move/attack field has been independently proven",
       "zeroCondition": "explicit attack field == 0",
       "futureEvent": "first same-object explicit attack field != 0",
       "attackSemanticAllowed": true,
-      "browserOffsetEquivalence": false
+      "browserOffsetEquivalence": false,
+      "reloadVisibility": "delayed +0x73=1B timer reloads become predictor candidates only if the proven explicit attack field is still zero before those reloads"
     }
   },
   "episodeGuard": [
@@ -65,6 +67,7 @@
       "reason": "positive +0x34 loads may coincide with a +0x35/core transition, so state-local tracking alone can miss the edge",
       "prefixOnly": true,
       "eventEdgeExcludedFromPredictor": true,
+      "modeDependentVisibility": "the 52 retained delayed-1B reloads motivate this representation but lie after the default +0x73 zero->nonzero boundary; default proxy mode does not use them as predictors. They are available to a future explicit attack event definition only when that event occurs later.",
       "fields": [
         "from/to +0x34",
         "coreFrom/coreTo",
@@ -132,6 +135,7 @@
     "no WinKawaks-to-Browser numeric offset equivalence",
     "no Browser production-rule promotion from local evidence",
     "no fabricated stage/scene/wave labels",
+    "no post-event feature leakage into predictor signatures",
     "no generic Collector recapture request solely to increase volume"
   ]
 }
