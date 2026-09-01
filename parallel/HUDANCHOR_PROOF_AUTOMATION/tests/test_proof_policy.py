@@ -48,6 +48,28 @@ class PolicyTests(unittest.TestCase):
         self.assertEqual(r["result"],"BLOCKED")
         self.assertIn("camera model confidence too low",r["reasons"])
 
+    def test_camera_warmup_swap_then_tail_stable_passes(self):
+        t=[]
+        for i in range(18):
+            row=sample(i,y=70+(i%4)*4,z=(0,8,16,0)[i%4],x=100+i*9)
+            if i < 5:
+                row["camera"]["address"]="0xFF1111" if i%2 else "0xFF2222"
+            t.append(row)
+        ref={"worldSha256":base.WORLD_SHA256,"visuallyProven":True,"verticalModel":"Y-Z","absoluteAnchorProven":True}
+        r=policy.evaluate_trace(t,projection_reference=ref)
+        self.assertEqual(r["result"],"PASS")
+        self.assertEqual(r["cameraAddress"],"0xFF2468")
+        self.assertGreaterEqual(r["cameraDominance"],0.8)
+
+    def test_calibration_before_camera_settles_blocks(self):
+        t=self.trace()
+        t[0]["camera"]["address"]="0xFF1111"
+        t[0]["visualReference"]={"nativeX":160,"nativeY":90,"kind":"single-calibration-click"}
+        ref={"worldSha256":base.WORLD_SHA256,"visuallyProven":True,"verticalModel":"Y-Z"}
+        r=policy.evaluate_trace(t,projection_reference=ref)
+        self.assertEqual(r["result"],"BLOCKED")
+        self.assertIn("calibration camera differs from stable camera",r["reasons"])
+
     def test_absolute_reference_can_remove_click(self):
         ref={"worldSha256":base.WORLD_SHA256,"visuallyProven":True,"verticalModel":"Y-Z","absoluteAnchorProven":True}
         self.assertEqual(policy.evaluate_trace(self.trace(),projection_reference=ref)["result"],"PASS")
