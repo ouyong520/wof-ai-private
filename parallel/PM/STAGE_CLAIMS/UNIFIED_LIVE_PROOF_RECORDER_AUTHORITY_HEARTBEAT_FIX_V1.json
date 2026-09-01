@@ -1,8 +1,15 @@
 {
   "stageId": "UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_HEARTBEAT_FIX_V1",
-  "status": "ACTIVE",
+  "status": "COMPLETE",
   "claimedBy": "ChatGPT",
   "scope": "parallel/LIVE_PROOF_BUNDLE/**",
-  "note": "Fresh Recorder authority heartbeat fix per UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_HEARTBEAT_FIX_START_PROMPT.md",
-  "startCommit": "b565af5d490182fb155c7fcc4ad47a2dc3445ce5"
+  "note": "Recorder authority freshness is now separated from generic stdout; trusted Fleet supervisor heartbeat/admission only. Targeted, existing, and preflight hardening regressions are green. Fresh independent QA remains required.",
+  "startCommit": "b565af5d490182fb155c7fcc4ad47a2dc3445ce5",
+  "implementationCommit": "dbf3bd67df1e5946e14d780ea81b26ccf3c23669",
+  "targetedTestsCommit": "ec5dd803f60e8f5d972df9d1539b37834d296897",
+  "regressionIntegrationCommit": "0f9f3f8cd8a63fcd7a5380feccb9ff7dc23a69d2",
+  "resultPath": "parallel/LIVE_PROOF_BUNDLE/RECORDER_AUTHORITY_HEARTBEAT_FIX_RESULT.md",
+  "resultCommit": "b64f3460d664f15adec4a9c0a97296dbccf3924f",
+  "stopCondition": "UNIFIED LIVE PROOF RECORDER AUTHORITY HEARTBEAT FIX READY — READY FOR FRESH QA",
+  "ownerActionRequired": false
 }
