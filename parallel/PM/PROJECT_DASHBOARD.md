@@ -1,14 +1,14 @@
 # WOF Future Danger AI — Project Dashboard
 
-Snapshot: 2026-09-01
+Snapshot: 2026-09-01 — second PM audit
 
 ## Executive status
 
-**Stage: Late research / Alpha transition.**
+**Stage: Late research / Alpha implementation transition.**
 
-The core technical feasibility is proven. Multiple Browser production-shadow predictors have strong prospective evidence, target/side are working on audited rules, and the local WinKawaks infrastructure is mature enough that broad foundational research is no longer the bottleneck.
+No new MAINLINE or research-lane evidence has landed since the initial PM control-plane commits. WOF-052 code is already present, but there is not yet a WOF-052 run/result in GitHub. The research frontier therefore remains unchanged: ordered T18 context is the next Browser information gate.
 
-The next product-level constraint is not “discover more bytes.” It is to freeze a safe subset, ship an Alpha runtime/HUD/loader around it, and continue high-value Browser sequence validation in parallel.
+The product audit found that Alpha engineering is closer than first estimated because reusable product assets already exist: production-shadow/danger-map runtime history plus a direct WebGL HUD with reload-safe hook and load-confirmation hardening. The main product bottleneck is now release integration and rule freeze, not inventing a HUD from scratch.
 
 ## Project metrics
 
@@ -22,24 +22,36 @@ These are management bands, not fabricated precision.
 | GEO coverage | LATE / CORE READY | P1 X/Y, P2/P3 structure, facing, top/bottom closed; only demand-driven geometry remains |
 | EFIELD mapping | READY for current product needs | bounded high-value mapping complete; generic mapping stopped |
 | RAWMINE capability | READY / PARKED | reusable generic analyzer complete for present owner questions |
-| enemy type coverage | MID | 31 local type codes observed in current EFIELD census, but coverage density and scene labels are uneven |
-| attack coverage | EARLY-MID | several high-quality Browser rules exist, but common/all-game semantic attack coverage is not yet broad |
-| ordered-sequence coverage | EARLY | ordered hypothesis is now mandatory; T18/T23 candidates exist but prospective sequence proof is limited |
-| target coverage | LATE | aggregate P1/P2/P3 and audited Browser target/side evidence exist; retarget remains a release risk |
-| prospective Browser validation | MID-LATE for a narrow subset | production-shadow subset is strong; breadth remains limited |
-| production rule count | SMALL BUT REAL | enough for a narrow Alpha, not enough to claim broad game coverage |
-| production rule evidence quality | HIGH for frozen subset | current audited rules include repeated prospective/multi-room evidence |
-| Alpha readiness | LATE | can start now; remaining must-items are packaging, freeze, fail-safe, regression/compatibility checks |
-| Beta readiness | MID | needs substantially broader common-enemy/common-attack coverage and user-facing polish |
-| v1 readiness | EARLY-MID | requires stable product plus coverage threshold based on actual usage/census, not 100% attacks |
+| enemy type coverage | MID | local type coverage exists but density and authoritative scene labels are uneven |
+| attack coverage | EARLY-MID | several high-quality Browser rules exist, but broad semantic attack coverage is not yet established |
+| ordered-sequence coverage | EARLY | ordered hypothesis is mandatory; T18/T23 discovery candidates exist but prospective sequence proof remains limited |
+| target coverage | LATE | aggregate P1/P2/P3 and audited Browser target/side evidence exist; release retarget regression remains required |
+| prospective Browser validation | MID-LATE for narrow subset | current production-shadow subset is strong; breadth remains limited |
+| production rule count | SMALL BUT REAL | PM Alpha freeze now has six conservative candidates pending release regression |
+| production rule evidence quality | HIGH for candidate freeze subset | repeated prospective/multi-room evidence exists for the current candidate set |
+| HUD engineering | LATE FOUNDATION | direct WebGL HUD exists with reload/load-confirmation hardening; release integration still needed |
+| Alpha readiness | LATE / NOT RC | major foundations exist; release rule manifest/runtime isolation/version guard/regression/acceptance are still open |
+| Beta readiness | MID | needs broader common-event coverage, ordered ambiguity resolution and user-facing polish |
+| v1 readiness | EARLY-MID | requires stable Beta plus trustworthy common-event coverage denominator |
 
 ## Current lane state
 
-### MAINLINE — ACTIVE / P0
+### MAINLINE — ACTIVE / HUMAN-GATED P0
 
-Current frontier is production-shadow audit + coverage expansion + ordered sequence discrimination. The latest critical result is that exact T18 BODY4728/A4/B2/TM1 is forward-relevant but attack-ambiguous: it led prospectively to both A4704 and A4712. Therefore it is not an attack-specific production rule.
+WOF-052 coordinator is already committed. No WOF-052 result has landed yet. The next useful research input is therefore the already-requested Browser run, not more code or new offline mining.
 
-MAINLINE should prioritize ordered post-anchor discrimination while preserving existing production audits.
+Latest critical research result remains: T18 BODY4728/A4/B2/TM1 is forward-relevant but attack-ambiguous because prospective outcomes included A4704 and A4712. It is excluded from attack-specific Alpha freeze.
+
+### PRODUCT / ALPHA — START NOW / PARALLEL P0
+
+A bounded product workstream is now justified. This is not a new research lane.
+
+Inputs and stop condition are defined in:
+- `parallel/PM/ALPHA_FREEZE_SPEC.md`
+- `parallel/PM/ALPHA_ENGINEERING_TASKS.md`
+- `parallel/PM/PRODUCT_ALPHA_START_PROMPT.md`
+
+Goal: produce a release candidate containing only frozen validated rules, fail-closed runtime identity, live target/retarget, user HUD, UNKNOWN silence and release-artifact regression.
 
 ### BASECAP — COMPLETE / STOP
 
@@ -47,7 +59,7 @@ v1 reusable baseline is complete. No broad operator collection should continue.
 
 ### GEO — CORE CLOSED / ON DEMAND
 
-P1 X/Y, P2/P3 same-offset structure, facing and top/bottom have closure artifacts. Do not continue geometry research without a product question.
+P1 X/Y, P2/P3 same-offset structure, facing and top/bottom have closure artifacts. Do not continue geometry research without a concrete product question.
 
 ### EFIELD — COMPLETE / STOP GENERIC MAPPING
 
@@ -55,34 +67,34 @@ High-value lifecycle, target, executor/phase and metadata mapping is complete fo
 
 ### RAWMINE — COMPLETE / PARK
 
-Candidate-screen infrastructure is complete for current assignments. Reopen only when a concrete GEO/EFIELD ambiguity needs screening.
+Candidate-screen infrastructure is complete for current assignments. Reopen only for a concrete owner ambiguity.
 
 ### SWEEPATLAS — PARKED AT SAFE BOUNDARY
 
-All retained GitHub gameplay raws were provenance-audited and local type/executor existence was indexed. Stage/scene/wave and boss labels are still missing. No broad recap is justified.
+Current retained GitHub corpus is exhausted to the safe labeling boundary. No broad recap is justified.
 
 ### SEQMINER — v1 COMPLETE / FEEDS MAINLINE
 
-Infrastructure/current-corpus analysis is complete. Highest-value return candidate is T18 post-BODY4728 ordered sequence split, then T23 ordered branch candidates. No Collector task is justified.
+Infrastructure/current-corpus analysis is complete. T18 ordered split remains highest Browser-return candidate. No Collector task is justified.
 
-### COVERAGE — ACTIVE ACCOUNTING / NEEDS REFRESH
+### COVERAGE — ACTIVE ACCOUNTING / NEEDS NORMALIZED REFRESH
 
-Coverage audit is useful, but the current snapshot predates SWEEPATLAS/SEQMINER and uses a hex-style `Txx` notation that conflicts with Browser decimal type naming. It must normalize notation and recompute before driving physical recap decisions.
+Current coverage material remains useful but should normalize type notation and ingest current SWEEPATLAS/SEQMINER state before it drives Beta/v1 breadth claims or any physical recap.
 
 ## Current biggest bottlenecks
 
-1. **Ordered attack discrimination:** known single-state ambiguity means sequence/context must separate branches before promotion.
-2. **User product shell:** mature rules are still primarily research/JSON assets rather than a frozen fail-safe user Alpha.
-3. **Coverage semantics/join quality:** scene/wave/boss labels and per-type semantic attack coverage are not yet authoritative enough to optimize targeted recaps or make broad coverage claims.
+1. **Alpha release integration:** exact production manifest + isolated release runtime + identity guard + release regression are not yet assembled into one RC.
+2. **Ordered T18 discrimination:** WOF-052 human Browser input is still needed before the ambiguous anchor can produce a new attack-specific candidate.
+3. **Coverage semantics/join quality:** scene/wave/boss/common-event denominator is not yet authoritative enough for Beta/v1 breadth claims.
 
 ## Current biggest risks
 
-1. **False positive via over-promotion:** local or same-cycle discovery could be mistaken for Browser production proof, especially with ambiguous single states.
-2. **Target/retarget correctness:** stale target or side at the dangerous edge would directly harm user trust even when attack prediction is correct.
-3. **Namespace/notation drift:** WinKawaks offsets and T-type naming can be confused with Browser/WASM identities; current decimal-vs-hex T-number inconsistency is a concrete example.
+1. **Research code / candidate leakage into production.** The new PRODUCT workstream exists specifically to reduce this risk.
+2. **Target/retarget correctness in the final release artifact.** Research evidence is strong but release regression is still required.
+3. **Runtime identity/version mismatch.** Release must fail closed rather than reuse guessed offsets or assumptions.
 
-## Product judgment
+## Current product judgment
 
-**Start Alpha productization now.** Do not wait for full research coverage.
+**Do not wait for WOF-052 to begin Alpha engineering.** Research and productization now run in parallel.
 
-The release should be explicitly conservative: validated subset only, UNKNOWN stays silent, production rules isolated from experimental candidates, live target reread retained, and all failures degrade to no warning rather than speculative warning.
+The Alpha freeze may shrink if a candidate fails release regression; correct silence is preferable to keeping a weak rule for feature count.
