@@ -172,10 +172,13 @@ class PlayerAnchorResolver {
         projectionVersion: projectionState.version,
       });
     }
-    if (
+    const anchorOutsideNativeViewport =
+      projected.anchorXNative < 0 || projected.anchorXNative >= nativeWidth ||
+      projected.anchorYNative < 0 || projected.anchorYNative >= nativeHeight;
+    const bodyOutsideValidationBounds =
       projected.bodyXNative < bounds.minX || projected.bodyXNative > bounds.maxX ||
-      projected.bodyYNative < bounds.minY || projected.bodyYNative > bounds.maxY
-    ) {
+      projected.bodyYNative < bounds.minY || projected.bodyYNative > bounds.maxY;
+    if (anchorOutsideNativeViewport || bodyOutsideValidationBounds) {
       return failAnchor(player, 'PROJECTION_OUT_OF_BOUNDS', {
         source: projectionState.source,
         projectionVersion: projectionState.version,
