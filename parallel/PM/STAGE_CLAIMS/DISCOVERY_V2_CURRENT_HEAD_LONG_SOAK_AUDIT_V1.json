@@ -2,7 +2,15 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "DISCOVERY_V2_CURRENT_HEAD_LONG_SOAK_AUDIT_V1",
   "promptPath": "parallel/PM/DISCOVERY_V2_CURRENT_HEAD_LONG_SOAK_AUDIT_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "82e08b7bcebf4299781f1a6d9b04679e70789ce8",
-  "startedAtUtc": "2026-09-01T15:05:00Z"
+  "startedAtUtc": "2026-09-01T15:05:00Z",
+  "finishedAtUtc": "2026-09-01T15:14:30Z",
+  "testedHead": "b565af5d490182fb155c7fcc4ad47a2dc3445ce5",
+  "observedHeadBeforeClose": "e67cb4c536a3209719cad5575726aadda02ebce9",
+  "resultPath": "parallel/DISCOVERY_V2_CURRENT_HEAD_LONG_SOAK_AUDIT/RESULT.json",
+  "summaryPath": "parallel/DISCOVERY_V2_CURRENT_HEAD_LONG_SOAK_AUDIT/SUMMARY_ZH_CN.md",
+  "resultCommit": "05e744dfdea0306effcfbd70c3caf3d29952fbff",
+  "blockerId": "P1-OWNER-ONECLICK-STALE-DISCOVERY-V2-AUTHORITY-RUNTIME",
+  "verdict": "BLOCKED — DISCOVERY V2 CURRENT-HEAD LONG SOAK — Owner One-Click manifest pins pre-authority-fix Discovery V2 runtimes"
 }
