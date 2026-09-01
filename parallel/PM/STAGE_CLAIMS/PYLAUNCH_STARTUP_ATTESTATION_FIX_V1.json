@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "PYLAUNCH_STARTUP_ATTESTATION_FIX_V1",
+  "promptPath": "parallel/PM/PYLAUNCH_STARTUP_ATTESTATION_FIX_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "0fb7660b0cb2bd9f3460dc872766bf19ac1d42fa",
+  "startedAtUtc": "2026-09-01T15:38:00Z"
+}
