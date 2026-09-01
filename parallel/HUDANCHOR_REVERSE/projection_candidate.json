@@ -1,0 +1,116 @@
+{
+  "schema": "wof-hudanchor-player-projection-reverse-v1",
+  "stageId": "HUDANCHOR_PLAYER_PROJECTION_REVERSE_V1",
+  "status": "ONLY_EXACT_BOUNDED_LIVE_PROOF_REMAINS",
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "alphaModified": false,
+    "formalHudModified": false
+  },
+  "nativeRaster": {
+    "width": 384,
+    "height": 224,
+    "status": "OFFLINE_CLOSED"
+  },
+  "players": {
+    "strideHex": "0xE0",
+    "P1": {"baseHex": "0xFFBE1C"},
+    "P2": {"baseHex": "0xFFBEFC"},
+    "P3": {"baseHex": "0xFFBFDC"},
+    "browserReader": {
+      "byteAddressTransform": "address ^ 1",
+      "x": {"offsetHex": "0x04", "encoding": "s32-be-16.16"},
+      "y": {"offsetHex": "0x08", "encoding": "s32-be-16.16"},
+      "z": {"offsetHex": "0x0C", "encoding": "s32-be-16.16"}
+    },
+    "sharedProjection": {
+      "value": true,
+      "status": "OFFLINE_STRUCTURALLY_CLOSED",
+      "note": "P1 and P2 movement semantics are independently supported; P3 shares the same record layout/stride. No player-specific projection constant has been found."
+    }
+  },
+  "cameraX": {
+    "boundedScan": {
+      "startHex": "0xFF0000",
+      "endExclusiveHex": "0xFFBE00",
+      "stepBytes": 2,
+      "readCandidate": "u16be",
+      "playerObjectBlockExcluded": true
+    },
+    "selectedAddressHex": null,
+    "readEncoding": null,
+    "sign": null,
+    "scale": null,
+    "status": "LIVE_PROOF_REQUIRED",
+    "reason": "The repository contains the bounded ranked scanner and quality gates but no retained authoritative Browser result selecting a camera address/read identity."
+  },
+  "nativeProjection": {
+    "x": {
+      "candidateFormula": "worldX-camera+xBias",
+      "xBias": null,
+      "status": "LIVE_PROOF_REQUIRED"
+    },
+    "y": {
+      "candidateModels": [
+        {"id": "Y-Z", "formula": "worldY-z+yBias"},
+        {"id": "Y+Z", "formula": "worldY+z+yBias"},
+        {"id": "Y", "formula": "worldY+yBias"}
+      ],
+      "selectedModel": null,
+      "yBias": null,
+      "status": "LIVE_PROOF_REQUIRED"
+    }
+  },
+  "drawingBuffer": {
+    "mapping": {
+      "viewportTop": "drawingBufferHeight-(viewportY+viewportHeight)",
+      "xDb": "viewportX+nativeX/384*viewportWidth",
+      "yDb": "viewportTop+nativeY/224*viewportHeight"
+    },
+    "inverseCalibration": "client click -> current canvas CSS rect -> drawing buffer -> current WebGL VIEWPORT -> 384x224 native coordinate",
+    "viewportSource": "live WebGL VIEWPORT",
+    "dprPolicy": "never hard-code DPR; remeasure canvas CSS rect, drawing buffer and viewport",
+    "resizeFullscreenPolicy": "mapping must recover after at least one observed CSS/drawing-buffer/DPR/fullscreen layout change",
+    "status": "OFFLINE_CLOSED_AS_RUNTIME_MAPPING"
+  },
+  "aboveCharacterClearance": {
+    "aboveCharacterOffsetNative": null,
+    "meaning": "logical constant from raw player floor/Z reference to the chosen warning-anchor center; not a sprite-height claim",
+    "status": "LIVE_PROOF_REQUIRED"
+  },
+  "freshnessAndEpoch": {
+    "workerSamplePeriodMs": 100,
+    "topWorkerFreshMaxAgeMs": 700,
+    "calibrationLocksCameraAddress": true,
+    "projectOnlyWhenLockedCameraMatchesCalibrationAddress": true,
+    "playerAndCameraMustComeFromSameWorkerState": true,
+    "onStaleWorker": "FAIL_CLOSED_NO_ANCHORED_CUE",
+    "onCameraIdentityMismatch": "FAIL_CLOSED_NO_ANCHORED_CUE",
+    "status": "OFFLINE_CLOSED_POLICY"
+  },
+  "liveProofGates": {
+    "cameraQuality": {
+      "minimumSamples": 80,
+      "minimumRange": 8,
+      "minimumChanges": 5,
+      "minimumValidRatio": 0.7,
+      "minimumStrongRatio": 0.45,
+      "minimumFollowRatio": 0.55,
+      "minimumTopScoreGap": 0.1
+    },
+    "postCalibrationCoverage": {
+      "minimumWorldXRange": 24,
+      "minimumCameraRange": 6,
+      "minimumFloorYRange": 8,
+      "minimumZRange": 8,
+      "minimumWebglHookCount": 30,
+      "minimumMarkerDrawCount": 30,
+      "layoutChangeAndRecoveryRequired": true,
+      "liveP2P3FocusMsEach": 1200
+    }
+  },
+  "remainingProofPath": "parallel/HUDANCHOR_REVERSE/MINIMAL_LIVE_PROOF.md",
+  "reusableExistingProofTool": "parallel/HUDANCHOR_PROOF/OPERATOR_STEPS.md"
+}
