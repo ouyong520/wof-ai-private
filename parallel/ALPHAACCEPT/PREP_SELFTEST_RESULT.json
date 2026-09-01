@@ -1,0 +1,46 @@
+{
+  "schema": "wof-alpha-browser-acceptance-prep-selftest-v2",
+  "date": "2026-09-01",
+  "verdict": "PASS — ACCEPTANCE PREP READY",
+  "checks": {
+    "collectorNodeSyntax": "PASS",
+    "collectorRunPairAnchoring": "PASS",
+    "validatorPythonCompile": "PASS",
+    "fixtureJsonParse": "PASS",
+    "validatorAcceptsCompletePassFixture": "PASS",
+    "validatorRejectsRamWritesNonzero": "PASS",
+    "driverCollectorEvidenceContractClosed": "PASS",
+    "compactResultSchemaDefined": "PASS",
+    "simplifiedChineseOwnerFlowDefined": "PASS",
+    "githubArtifactsReRead": "PASS"
+  },
+  "preparedCoverage": {
+    "transportVersion": true,
+    "session": true,
+    "pairGeneration": true,
+    "pairNonce": true,
+    "browserPageWorkerWasmWorld921031": true,
+    "detectorLocalIdentity": true,
+    "firstCurrentPairState": true,
+    "stale1500": true,
+    "diagImmediateClear": true,
+    "reconnectRebindFreshPair": true,
+    "oldGenerationRejected": true,
+    "wrongNonceRejected": true,
+    "gameplayFailOpen": true,
+    "roomRemainsPlayable": true,
+    "compactFinalJson": true
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false,
+    "productAlphaModified": false,
+    "pylaunchModified": false,
+    "wof052lModified": false,
+    "attackResearchAdded": false
+  },
+  "externalGate": "WAITING FOR PYLAUNCH REAL WINDOWS PROOF + SAFE TRANSPORT INTEGRATION OFFLINE PASS",
+  "stopCondition": "ACCEPTANCE PREP READY — WAITING FOR TRANSPORT INTEGRATION"
+}
