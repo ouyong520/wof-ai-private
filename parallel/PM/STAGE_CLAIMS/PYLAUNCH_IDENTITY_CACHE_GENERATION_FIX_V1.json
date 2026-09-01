@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "PYLAUNCH_IDENTITY_CACHE_GENERATION_FIX_V1",
+  "promptPath": "parallel/PM/PYLAUNCH_IDENTITY_CACHE_GENERATION_FIX_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "96cc572442ba9ba9895ed94a393573c049b3fc33",
+  "startedAtUtc": "2026-09-01T14:55:00Z"
+}
