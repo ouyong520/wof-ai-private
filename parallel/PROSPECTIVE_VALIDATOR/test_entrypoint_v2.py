@@ -7,9 +7,10 @@ HERE = Path(__file__).resolve().parent
 
 
 class EntryPointV2Tests(unittest.TestCase):
-    def test_direct_python_entry_routes_to_v2(self):
+    def test_direct_and_imported_python_entry_route_to_v2(self):
         text = (HERE / "live_validator.py").read_text(encoding="utf-8")
         self.assertIn('from live_validator_v2 import main', text)
+        self.assertIn('from live_validator_v2 import main as _v2_main', text)
         self.assertIn('from live_validator_core import *', text)
         self.assertNotIn('GSTYPHOON_RE.search', text)
 
