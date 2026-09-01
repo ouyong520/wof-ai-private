@@ -1,6 +1,6 @@
 (function(root){
 'use strict';
-const VERSION='wof-alpha-hud-model-rc2';
+const VERSION='wof-alpha-hud-model-rc3';
 const SIDE_ZH={LEFT:'左侧',RIGHT:'右侧',CENTER:'近身'};
 const TARGET_ORDER={P1:1,P2:2,P3:3};
 function summarizeWarnings(input){
