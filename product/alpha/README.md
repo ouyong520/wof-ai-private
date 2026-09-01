@@ -1,8 +1,12 @@
-# WOF Future Danger — Alpha RC2
+# WOF Future Danger — Alpha RC3
 
-Status: **RC2 candidate — offline P0/P1 regression complete; fresh real-Browser QA still required.**
+Status: **RC3 candidate — product offline regression PASS; ready for fresh independent QA and real-Browser acceptance.**
 
-RC2 ships only the six frozen PM rules. It does not ship T18 BODY4728/A4/B2/TM1 as A4704-specific, any T23/T24 discovery rule, Safe Path, miners, or WinKawaks-local logic.
+Supported Browser lineage for this candidate is **WOF / Warriors of Fate (World 921031)**. The authoritative program identity is the exact full 1 MiB CPU-logical SHA-256:
+
+`5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`
+
+RC3 deliberately ships fewer user-facing warning rules than RC2. The Browser snapshot contract has no proven enemy instance/generation token, so history-derived rules are quarantined rather than allowed to infer continuity from slot/type.
 
 ## Normal user install
 
@@ -10,43 +14,60 @@ Use the single userscript entry:
 
 `product/alpha/wof_alpha_bootstrap.user.js`
 
-Install it in a userscript manager, enable it for the Browser game page, then refresh the game page once. The script runs at `document-start`, creates a fresh per-page random session, intercepts the target `gstyphoon*.js` Worker as it is created, injects the read-only detector there, and loads the WebGL HUD in the page. No DevTools context switching is part of the supported Alpha path.
+Install it in a userscript manager, enable it for the Browser game page, then refresh once. It runs at `document-start`, creates a fresh random per-page session, intercepts the target `gstyphoon*.js` Worker, injects the read-only detector there, and loads the WebGL HUD in the page. No manual Worker-console selection is part of the supported Alpha path.
 
 Expected page diagnostic:
 
 `WOFALPHAHUD.status()`
 
-Expected detector contract (available inside the instrumented Worker for engineering diagnostics): release `wof-alpha-rc2`, `readOnly=true`, `ramWrites=0`, `inputInjection=false`.
+Engineering detector contract: release `wof-alpha-rc3`, `readOnly=true`, `ramWrites=0`, `inputInjection=false`.
 
-If the userscript was enabled only after the emulator Worker had already been created, refresh the page so the bootstrap can run before Worker creation.
+If the userscript was enabled after the emulator Worker already existed, refresh so the bootstrap can run before Worker creation.
 
-## Fail-closed supported-runtime guard
+## Authoritative runtime identity gate
 
-Warnings are enabled only after both classes of evidence pass:
+Warnings cannot initialize until all of the following are true:
 
-1. Browser/WASM runtime layout: shared `HEAPU8`/`HEAPU32`, valid CPS RAM window, and P1/P2/P3 `+0x7C` self indexes `0/4/8`.
-2. Positive Browser ROM executable fingerprint, derived from the retained Browser ROM probe: reset vectors `SP=0x00FF62EE`, `PC=0x0000754A`, dispatch table offset `0x25DC`, and the five-entry type-dispatch sequence based on `0x06F4E4, 0x07494C, 0x071ADA, 0x077B8E, 0x07C6D2` (allowing only the small uniform live-ROM delta already handled by the Browser probe).
+1. Browser/WASM layout sanity passes: shared HEAP buffer, valid CPS RAM window, self indexes `0/4/8`.
+2. The retained reset-vector/dispatch checks locate exactly one plausible 1 MiB program candidate. These checks are **locator/sanity helpers only**, not proof of build identity.
+3. The candidate is normalized to CPU-logical byte order and SHA-256 hashed once for that Worker/runtime startup.
+4. The resulting lowercase digest equals exactly `5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`.
 
-A layout-compatible runtime without the ROM fingerprint is unsupported and emits no warnings.
+Hash pending, missing, malformed, mismatched, ambiguous-locator, Web Crypto failure, timeout, or exception all fail closed. No sparse-vector/dispatch/layout fallback can enable warnings.
 
-## RC2 safety changes
+Canonical provenance for the confirmed 921031 lineage:
 
-- Same-slot/same-type watch inheritance is conservative: an armed watch survives only while its exact frozen zero-attack precursor remains observable. Any descriptor drift invalidates the episode before a later ACTIVE edge can resolve it.
-- Every active warning is preserved in HUD state. The HUD aggregates all current warnings by target and threat side rather than selecting only one warning.
-- Warning transport is session-bound. Each page has a fresh random nonce and a unique BroadcastChannel; HUD messages must also carry the same nonce.
-- Before Alpha takes the WebGL HUD bridge, an existing research `WOFHUD` must expose `dispose()` and is disposed. Alpha refuses takeover if a legacy HUD cannot be safely released.
-- Game RAM remains read-only; there is no input injection.
+- `tk2e_23c.8f` SHA-1 `10b8cb53a4600e3e76f471a3eee8a600e93096fc`
+- `tk2e_22c.7f` SHA-1 `52c2d05279623d93b27856e6b76830796a089eae`
+- historical live dispatch delta `+0x34`
 
-## Frozen rules
+## Active production rules
 
-1. `T16_B4_DANGER_40` — imminent danger only, not A6432-specific.
-2. `T20_5136_B0_TO_B255_1250` — A5136.
-3. `D867BA_3232_TM6_220` — A3232.
-4. `D8811E_3232_TM6_135` — A3232.
-5. `T18_5440_CYCLE_BODY7512_TM4_LEVEL_90` — A5440.
-6. `T18_5424_CYCLE_BODY7520_TM4_LEVEL_90` — A5424.
+Only two rules are user-facing in RC3, both as stateless hold-only current-level warnings:
 
-Target is reread live from `enemy+0x7E`; threat side is recomputed from current enemy/target X. Invalid target selector, stale state, unsupported runtime, identity uncertainty, and runtime exceptions are silent with respect to danger warnings.
+1. `T18_5440_CYCLE_BODY7512_TM4_LEVEL_90` — A5440.
+2. `T18_5424_CYCLE_BODY7520_TM4_LEVEL_90` — A5424.
+
+For both rules, publication is based only on the exact **current** sample. The warning disappears on the first current nonmatch. A matching same-type replacement is valid only because that replacement independently supplies fresh current evidence; it inherits no `atMs`, age, watch/cycle state, prior target provenance, or previous/current transition state.
+
+Target is reread live from `enemy+0x7E`; threat side is recomputed from current enemy/target X. Invalid/UNKNOWN target is silent.
+
+## Quarantined frozen candidates
+
+The following remain frozen research candidates but are not user-facing production rules in RC3:
+
+- `T16_B4_DANGER_40`
+- `T20_5136_B0_TO_B255_1250`
+- `D867BA_3232_TM6_220`
+- `D8811E_3232_TM6_135`
+
+Reason: each depends on previous/current or watch history, while `same slot + same type` is not proven enemy continuity in the Browser contract.
+
+## Preserved RC2 safety work
+
+RC3 preserves the RC2 mechanisms for random per-session transport binding/cross-tab isolation, simultaneous warning aggregation, safe legacy `WOFHUD.dispose()` takeover, one-step userscript bootstrap, live target/side recomputation, UNKNOWN silence, no RAM writes, and no gameplay input injection.
+
+Still excluded: BODY4728/A4704-specific production logic, T23, T24, discovery/local promotion, WOF-052, and Beta features.
 
 ## Offline regression
 
@@ -57,16 +78,19 @@ cd product/alpha
 node regression.mjs
 ```
 
-RC2 regression covers the six frozen rules, the 143-signal WOF-051 canonical reconstruction, layout-lookalike identity rejection, ROM fingerprint mismatch rejection, same-type replacement invalidation, simultaneous warning aggregation, foreign-session transport rejection, research HUD teardown, read-only/no-input static checks, and the document-start user bootstrap contract.
+The RC3 product regression covers the exact 921031 SHA-256 positive gate; wrong/mutated/malformed/pending/error digest rejection; sparse-fingerprint-without-full-digest rejection; ambiguous locator rejection; F1–F4 quarantine; F5/F6 hold-only behavior; neutral and matching same-type replacements; UNKNOWN target silence; multi-slot current warnings; session transport; and static read-only/no-input guards.
 
-## Fresh Browser QA still required
+The existing `parallel/ALPHAQA/independent_qa.mjs` was written for the older six-production-rule RC2 contract and must be refreshed independently rather than edited by this product-fix stage.
 
-The remaining work is real Browser acceptance rather than more offline rule research:
+## Fresh QA / Browser acceptance remaining
 
-- userscript/Worker interception on the actual host, including CSP and the real Worker constructor/options;
-- positive ROM fingerprint passes on the declared World 921002 / `wofr1` Browser build;
-- a deliberately unsupported/lookalike environment fails closed if one is available;
+RC3 is not declared QA PASS. Fresh independent QA should verify the new two-rule production inventory and lifecycle contract, then real Browser acceptance should confirm:
+
+- the actual 921031 runtime hashes to the bound golden digest and starts the detector;
+- loader/Worker interception works under the real host CSP and Worker options;
 - two same-origin game tabs stay isolated;
-- reload/restart creates clean pairing;
-- legacy research HUD listeners/channel/resources are gone after takeover;
-- real WebGL rendering, simultaneous-danger layout, retarget, stale cleanup, and frame-time overhead.
+- reload/restart creates a clean new pairing and one startup hash;
+- legacy research HUD resources are released before Alpha takeover;
+- simultaneous current-level warnings render correctly;
+- retarget/UNKNOWN/stale cleanup and WebGL restoration remain correct;
+- no gameplay input injection or RAM writes occur.
