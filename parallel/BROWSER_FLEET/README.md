@@ -1,8 +1,8 @@
 # WOF 多房间浏览器管理器
 
-状态：仓库侧工具已就绪；还需要一次真人 Windows 集群验证。
+状态：**BROWSER FLEET DISCOVERY V2 READY（仓库侧）**；只保留一次最小真人 Windows 集群验证。
 
-这个工具只用于项目操作加速。它会启动多个普通 Chrome/Edge WOF 浏览器实例，不修改 Alpha、不替换 `window.Worker`、不写游戏 RAM，也不注入游戏输入。
+这个工具只用于项目操作加速。它启动多个普通 Chrome/Edge WOF 浏览器实例，不修改 Alpha、不替换 `window.Worker`、不写游戏 RAM，也不注入游戏输入。
 
 ## 你实际怎么用
 
@@ -17,7 +17,7 @@
 4. 自动排列窗口；
 5. 进入中文管理界面查看每个房间状态。
 
-第一次使用不要求先设置游戏网址。没有配置网址时，会打开可供 WOF 使用的空白浏览器窗口，你可以正常进入游戏页面。
+第一次使用不要求先设置游戏网址。没有配置网址时会打开可供 WOF 使用的空白浏览器窗口，你可以正常进入游戏页面。
 
 ## 中文状态说明
 
@@ -29,7 +29,24 @@
 - 独立配置目录；
 - 永久安全提示：`只读模式：开启｜游戏内存写入：0｜游戏输入注入：无｜window.Worker 替换：无`。
 
-如果出现错误，第一行会先给出中文说明，随后才显示 `技术详情：...`，方便排查但不要求你看懂英文异常。
+界面会同时明确提示：**Worker 状态只用于快速发现；World 921031 身份确认仍以 PYLAUNCH 只读验证为准。**
+
+如果出现错误，第一行先给出中文说明，随后才显示 `技术详情：...`。跨房间 CDP 端口异常会被安全拒绝，不会静默串到另一个房间。
+
+## Discovery V2 做了什么
+
+旧 Fleet Worker 状态只看 `/json/list` 中 `worker/shared_worker + URL 包含 gstyphoon`，会漏掉真实 Chrome/WOF runtime surface。
+
+现在每个实例都只连接自己的 localhost CDP 端口，并执行轻量、只读 discovery_v2：
+- 页面发现与 Worker 发现解耦；
+- 从 WOF page 使用 flattened `Target.setAutoAttach` 发现 related target；
+- 支持 `iframe -> worker` 的关联拓扑；
+- Worker URL 变化时，可通过只读 Emscripten `HEAPU8/HEAPU32` 结构探测成为快速状态候选；
+- 保留 direct `gstyphoon*.js` Worker 的向后兼容；
+- reload / recreated Worker 每次刷新重新发现，不继承旧 Worker 成功状态；
+- 一个房间 discovery 异常只影响该房间，其他实例继续刷新。
+
+Fleet 不运行完整 ROM SHA-256 身份计算，所以不会冒充 PYLAUNCH 的权威 World 921031 proof。
 
 ## 中文管理命令
 
@@ -48,7 +65,7 @@
 - 窗口位置；
 - manifest 条目。
 
-不同房间不共享 profile。一个浏览器房间崩溃、关闭或重载，不会主动停止其他房间。
+不同房间不共享 profile。每次状态刷新只访问该实例的 `127.0.0.1:<port>`。如果 `/json/version` 返回的 browser websocket 指向另一个 Fleet 端口，管理器会拒绝连接。一个浏览器房间崩溃、关闭、重载或 Worker 重建不会阻断其他房间。
 
 ## 给其他工具发现房间
 
@@ -60,27 +77,17 @@
 
 `wof-browser-fleet-v1`
 
-内部 JSON key / schema 为兼容性继续使用英文，例如：
-- `id`
-- `host`
-- `port`
-- `endpoint`
-- `profileDir`
-- `status`
-- `readOnly`
-- `ramWrites`
-- `inputInjection`
-- `windowWorkerReplacement`
-
-其中安全字段继续固定为：
+内部 JSON key / schema 为兼容性继续使用英文。安全字段固定为：
 - `readOnly: true`
 - `ramWrites: 0`
 - `inputInjection: false`
 - `windowWorkerReplacement: false`
+- `workerStatusAuthority: "cheap-indicator-only"`
+- `world921031IdentityAuthoritative: false`
 
-这些内部字段不会为了中文界面而改名。中文化只发生在你看到的显示层。
+PYLAUNCH 和 WOF-052L Recorder 可以继续读取同一个 manifest，但消费者必须独立重新 probe endpoint。Fleet 的状态不能替代 PYLAUNCH 的 Worker/WASM/heap/World 921031 验证。
 
-PYLAUNCH 和 WOF-052L Recorder 可以继续读取同一个 manifest。Fleet Manager 里的 Worker 状态只是轻量目标列表提示；权威 Worker/WASM/heap/World 921031 校验仍由现有只读探测链路负责。
+详细格式见 `DISCOVERY_CONTRACT.md`。
 
 ## 可选高级命令
 
@@ -92,7 +99,10 @@ py -3 fleet_owner_zh_cn.py configure
 py -3 fleet_owner_zh_cn.py status
 ```
 
-内部核心实现仍是 `fleet_manager.py`，中文 owner 入口是 `fleet_owner_zh_cn.py`。
+内部核心实现：
+- `fleet_manager.py`
+- `fleet_discovery_v2.py`
+- 中文 owner 入口：`fleet_owner_zh_cn.py`
 
 ## 安全边界
 
@@ -105,7 +115,7 @@ py -3 fleet_owner_zh_cn.py status
 - 调整游戏速度；
 - 注入攻击逻辑。
 
-CDP 只绑定本机 localhost。即使管理器退出，游戏和浏览器也应继续正常使用。
+Discovery 只使用 target/session attach、auto-attach、Runtime enable/evaluate 的只读表达式。CDP 只绑定 localhost。即使 discovery 或管理器失败，游戏本身应继续运行。
 
 ## 离线回归
 
@@ -115,17 +125,28 @@ CDP 只绑定本机 localhost。即使管理器退出，游戏和浏览器也应
 py -3 -m unittest discover parallel\BROWSER_FLEET\tests -v
 ```
 
-回归覆盖窗口排列、数量/端口保护、独立 profile/端口分配、设置持久化、manifest 安全字段和中文 owner UX smoke test。
+本次 discovery_v2 仓库侧回归：**15/15 PASS**。
 
-## 真人 Windows 验证
+覆盖：
+- direct worker backward compatibility；
+- related-target-only；
+- URL mismatch but related runtime；
+- iframe -> worker；
+- reload/recreated worker；
+- 10 instance isolation；
+- stale/missing endpoint；
+- no cross-port association；
+- 一个实例 discovery 异常不影响其他实例；
+- 原有窗口排列、数量保护、设置持久化、独立 profile/port、manifest 安全字段。
 
-后续真人验证只需要：
+## 真人 Windows 验证 — 唯一剩余 bounded proof
+
 1. 双击 `RUN_WOF_FLEET.cmd`；
 2. 输入 `10`；
 3. 确认 10 个窗口出现并自动排列；
 4. 至少在两个窗口正常进入 WOF 房间；
 5. 按 `S`，确认对应房间逐步显示“浏览器：已连接 / WOF 页面：已找到 / Worker：已找到”；
-6. 用 `R` 重启一个房间，确认其他房间不受影响；
+6. 用 `R` 重启其中一个房间，确认另一个房间不受影响；
 7. 用 `A` 全部关闭。
 
-不需要 DevTools、不需要 Worker Console、不需要手工 RAM 检查，也不会注入游戏输入。
+不需要 DevTools、不需要 Worker Console、不需要粘贴 JS、不需要手工 RAM 检查，也不会注入游戏输入。
