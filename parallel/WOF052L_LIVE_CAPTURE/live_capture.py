@@ -44,13 +44,15 @@ def recorder_discovery_v2_ready(recorder_module: ModuleType) -> tuple[bool, str]
         return False, "Recorder 只读 CDP 白名单出现禁止方法：" + ", ".join(sorted(forbidden))
     if "Target.setAutoAttach" not in methods:
         return False, "Recorder 尚未启用 page-session Target.setAutoAttach discovery-v2。"
+    if getattr(recorder_module, "_WOF052L_DISCOVERY_V2_INSTALLED", False) is True:
+        return True, "WOF-052L Recorder discovery-v2 已安装并具备长采集准入条件。"
     source = "\n".join(
         [
             _safe_source(getattr(recorder_module, "CdpClient", None)),
-            _safe_source(getattr(recorder_module, "RecorderManager", None)),
+            _safe_source(getattr(getattr(recorder_module, "RecorderManager", None), "discover", None)),
         ]
     )
-    topology_tokens = ("attachedToTarget", "autoAttach", "setAutoAttach", "iframe")
+    topology_tokens = ("attachedToTarget", "autoAttach", "setAutoAttach", "iframe", "related")
     if not any(token in source for token in topology_tokens):
         return False, "Recorder 尚未发现 related target / iframe -> Worker 的 discovery-v2 实现。"
     return True, "WOF-052L Recorder discovery-v2 已具备长采集准入条件。"
@@ -140,11 +142,13 @@ def _stop_analysis(proc: subprocess.Popen[str] | None) -> None:
 def main() -> int:
     try:
         import recorder
+        import discovery_v2_sync
+        discovery_v2_sync.install(recorder)
         import fleet_recorder
         from owner_zh_cn import choose_output_dir_zh
         from fleet_owner_zh_cn import ChineseFleetManager
     except Exception as exc:
-        print("无法加载 Browser Fleet / WOF-052L Recorder 组件。")
+        print("无法加载 Browser Fleet / WOF-052L Recorder discovery-v2 组件。")
         print("游戏本身没有受到影响。")
         print(f"技术详情：{exc}")
         return 2
