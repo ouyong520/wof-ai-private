@@ -1,0 +1,117 @@
+{
+  "schema": "wof-alpha-fixed-hud-stability-qa-v1",
+  "stageId": "ALPHA_FIXED_HUD_STABILITY_QA_V1",
+  "verdict": "PASS — FIXED HUD STABLE FOR ALPHA FALLBACK",
+  "testedCommit": "47389e321ca465b551ab30fa0835844e433da5d7",
+  "completedAtUtc": "2026-09-01T13:55:04Z",
+  "method": [
+    "independent static source audit",
+    "synthetic drawing-buffer resize/fullscreen/DPR-like vectors",
+    "WebGL state/control-flow audit",
+    "existing ALPHAACCEPT safety evidence cross-check",
+    "frozen HUDANCHOR fallback contract cross-check"
+  ],
+  "scope": {
+    "readOnly": [
+      "product/alpha/**",
+      "parallel/ALPHAACCEPT/**",
+      "parallel/HUDANCHOR/**",
+      "parallel/PM/**"
+    ],
+    "writes": [
+      "parallel/ALPHA_FIXED_HUD_QA/**",
+      "parallel/PM/STAGE_CLAIMS/ALPHA_FIXED_HUD_STABILITY_QA_V1.json"
+    ],
+    "productAlphaModified": false,
+    "hudAnchorModified": false
+  },
+  "syntheticVectors": [
+    {"drawingBuffer":[1280,720],"warningBoxHeight":108,"warningRect":[380,604,520,108],"topRectX":380},
+    {"drawingBuffer":[1920,1080],"warningBoxHeight":108,"warningRect":[700,964,520,108],"topRectX":700},
+    {"drawingBuffer":[2560,1440],"warningBoxHeight":108,"warningRect":[1020,1324,520,108],"topRectX":1020},
+    {"drawingBuffer":[780,1280],"warningBoxHeight":108,"warningRect":[130,1164,520,108],"topRectX":130},
+    {"drawingBuffer":[390,844],"warningBoxHeight":108,"warningRect":[4,728,382,108],"topRectX":4}
+  ],
+  "checks": [
+    {
+      "id": 1,
+      "name": "fixed coordinates independent of player X/Y/Z",
+      "status": "PASS",
+      "evidence": "wof_alpha_hud.js drawHud/drawTexture derive placement only from current drawingBufferWidth/Height and box dimensions; player world coordinates are not consumed by HUD placement."
+    },
+    {
+      "id": 2,
+      "name": "camera scroll does not move fixed HUD anchor",
+      "status": "PASS",
+      "evidence": "Fixed HUD placement has no camera/scroll/translation input; identical HUD state at identical drawing-buffer dimensions yields identical screen coordinates."
+    },
+    {
+      "id": 3,
+      "name": "P1/P2/P3 warning row switch leaves no old-target residual",
+      "status": "PASS",
+      "evidence": "HUD model rows are rebuilt from the current warning array; paintBox clears the full HUD backing canvas whenever the title/lines key changes; no target-coordinate state is retained."
+    },
+    {
+      "id": 4,
+      "name": "multi-warning layout deterministic",
+      "status": "PASS",
+      "evidence": "wof_alpha_hud_model.js groups by target|side, sorts target by P1/P2/P3 rank then side, sorts attack labels, and maps the ordered rows deterministically."
+    },
+    {
+      "id": 5,
+      "name": "drawing-buffer resize remaps without page/sidebar drift",
+      "status": "PASS",
+      "evidence": "drawHud and drawTexture read current gl.drawingBufferWidth/Height on every draw; synthetic vectors across 390x844 through 2560x1440 recompute centered/bottom or centered/top rectangles from the new buffer."
+    },
+    {
+      "id": 6,
+      "name": "fullscreen/DPR/viewport-like buffer changes use current drawing-buffer",
+      "status": "PASS",
+      "evidence": "Clip-space conversion uses current W/H from drawingBufferWidth/Height (canvas width/height only as fallback), with no remembered CSS/page viewport coordinates."
+    },
+    {
+      "id": 7,
+      "name": "WebGL state save/draw/restore",
+      "status": "PASS",
+      "evidence": "snapGL/restoreGL cover program, array buffer, active textures, viewport, blend/depth/cull/scissor, blend funcs/equations, color mask, pixel-store flags, and attribute-0 state; upload and drawTexture restore in finally blocks."
+    },
+    {
+      "id": 8,
+      "name": "diag/stale/disable old-warning cleanup preserved",
+      "status": "PASS",
+      "evidence": "diag atomically nulls lastMsg and lastRx and resets lastKey before recording lastDiag; stale state no longer qualifies after 1500 ms; subsequent HUD paint clears its backing surface before rendering replacement content."
+    },
+    {
+      "id": 9,
+      "name": "HUD unavailable/failure is gameplay fail-open",
+      "status": "PASS",
+      "evidence": "drawArrays wrapper calls native game draw first; HUD callback executes afterward inside try/catch/finally, recording lastError without throwing through the game draw path. Bootstrap HUD attach errors are retained as lastError rather than replacing the native game Worker."
+    },
+    {
+      "id": 10,
+      "name": "read-only / ramWrites=0 / no input",
+      "status": "PASS",
+      "evidence": "HUD/Core/Bootstrap audit finds no gameplay RAM write or input-injection path; ALPHAACCEPT/PREP_SELFTEST_RESULT.json independently records readOnly=true, ramWrites=0, inputInjection=false and windowWorkerReplacement=false."
+    },
+    {
+      "id": 11,
+      "name": "legacy HUD teardown leaves no competing residual path",
+      "status": "PASS",
+      "evidence": "wof_alpha_hud.js disposes legacy window.WOFHUD or refuses takeover if it cannot be disposed, stops WOFCANVAS, disposes prior WOFALPHAHUD, and installs one bridge callback."
+    },
+    {
+      "id": 12,
+      "name": "anchored-HUD not-ready preserves fixed fallback",
+      "status": "PASS",
+      "evidence": "Current Alpha fixed renderer has no HUDANCHOR runtime dependency. Frozen parallel/HUDANCHOR/IMPLEMENTATION_RECOMMENDATION.md explicitly requires fixed fallback whenever anchor resolver/projection is invalid or stale. HUDANCHOR files were not modified or reopened."
+    }
+  ],
+  "summary": {
+    "passed": 12,
+    "failed": 0,
+    "blocked": 0
+  },
+  "blockers": [],
+  "nextGate": "Return to the existing PM/release-hold flow; anchored HUD remains non-blocking for Alpha.",
+  "stopCondition": "PASS — FIXED HUD STABLE FOR ALPHA FALLBACK"
+}
