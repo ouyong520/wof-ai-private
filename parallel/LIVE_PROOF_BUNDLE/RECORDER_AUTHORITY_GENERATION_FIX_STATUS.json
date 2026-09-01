@@ -1,0 +1,52 @@
+{
+  "schema": "wof-recorder-authority-generation-fix-status-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_FIX_V1",
+  "result": "READY_FOR_FRESH_QA",
+  "classification": "ACCEPTED_WAITING_GATE",
+  "implementationCommit": "443eca7b591fa2331e71d2bd6e91643b90b9765d",
+  "implementation": {
+    "entrypoint": "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py",
+    "frozenBase": "parallel/LIVE_PROOF_BUNDLE/unified_live_proof_base.py",
+    "generationRegression": "parallel/LIVE_PROOF_BUNDLE/test_recorder_authority_generation.py",
+    "unifiedRegression": "parallel/LIVE_PROOF_BUNDLE/test_unified_live_proof.py"
+  },
+  "closedBlocker": {
+    "code": "P1-RECORDER-AUTHORITY-PRIOR-GENERATION-REPLAY",
+    "closedByFix": true,
+    "summary": "Recorder admission/heartbeat authority is bound to the active Recorder child runtime generation; stale, wrong, missing, revoked, delayed, and out-of-order authority-like events fail closed without refreshing or mutating the current authority slot."
+  },
+  "semantics": {
+    "immutableChildGenerationToken": true,
+    "admissionBoundToActiveSourceGeneration": true,
+    "heartbeatRequiresActiveAdmissionSourceGeneration": true,
+    "rolloverRevokesPriorAuthorityImmediately": true,
+    "sameGenerationFatalRevokesSource": true,
+    "missingGenerationFailsClosedOnRuntimePath": true,
+    "genericStdoutRemainsDiagnosticOnly": true,
+    "staleEventsCannotMutateCurrentAuthoritySlot": true,
+    "readOnlyInvariantPreserved": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "longCaptureAutoStarted": false
+  },
+  "validation": {
+    "generationRegressionVectors": 10,
+    "generationRegressionResult": "PASS",
+    "auxiliaryGenerationVectors": 7,
+    "auxiliaryGenerationResult": "PASS",
+    "freshQaBlockerDirectedVectors": 8,
+    "freshQaBlockerDirectedResult": "PASS",
+    "syntaxCompile": "PASS",
+    "githubCommitStatuses": "NONE_REPORTED",
+    "fullIndependentFreshQaClaimed": false,
+    "note": "The connected execution environment does not expose a repository checkout/CI runner for a complete independent fresh-QA run. Blocker-directed vectors were re-executed against the exact hardened overlay blob and the source-exact Recorder authority base semantics; a new fresh QA stage remains mandatory."
+  },
+  "deliveryReassessment": {
+    "p1RecorderGenerationReplayClosedByImplementation": true,
+    "freshIndependentQaRerunUnblocked": true,
+    "alphaCriticalPathImpact": "Removes the repository-side P1 Recorder authority replay blocker and unblocks a fresh independent live-proof QA stage. It does not itself authorize an Owner Browser/WOF run.",
+    "ownerActionRequired": false
+  },
+  "requiredNext": "Run a new fresh independent QA stage against current main, including the existing LIVE_PROOF_BUNDLE_QA_RECORDER_HEARTBEAT blocker-directed suite and unified preflight/freshness regressions.",
+  "stopCondition": "UNIFIED RECORDER AUTHORITY GENERATION FIX READY — READY FOR FRESH QA"
+}
