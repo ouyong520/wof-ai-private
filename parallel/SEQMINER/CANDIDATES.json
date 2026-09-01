@@ -122,13 +122,16 @@
         "localT23Examples": 1
       },
       "reason": "the positive timer load can coincide with the mode35 transition that defines a new compressed core state, so literal TM or state-local reload history is incomplete",
+      "defaultPhase73ProxyPredictorEligible": false,
+      "visibilityReason": "the retained delayed-1B reloads occur after +0x73 has already become nonzero, so they are post-event context in default structural-proxy mode",
+      "futureExplicitAttackEligibility": "eligible only if a separately proven exact local attack field remains zero until after the reload",
       "minerSupport": [
         "timer34_reload_exact",
         "timer34_reload_norm",
         "cross_core_reload_exact",
         "cross_core_reload_norm"
       ],
-      "goal": "when an exact local attack label exists, test whether pre/post core plus reload magnitude/normalization splits eventual attack branches",
+      "goal": "when an exact local attack label exists and the reload is truly pre-event, test whether pre/post core plus reload magnitude/normalization splits eventual attack branches",
       "browserProductionRule": false
     },
     {
