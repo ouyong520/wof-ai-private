@@ -37,13 +37,14 @@ const M=MOD.HEAPU8;
 const R=MOD.HEAPU32?.[0x2e39e4>>>2]>>>0;
 if(!R||R+RAM_SIZE>M.length)throw new Error('CPS RAM base pointer invalid or outside HEAP');
 const B=a=>M[R+((((a-0xFF0000)&0xffff)^1))]>>>0;
+const U16=a=>((B(a)<<8)|B(a+1))>>>0;
 const activeStructure=()=>{
   const bases=[0xFFBE1C,0xFFBEFC,0xFFBFDC],ids=[0,4,8];
   try{
     for(let i=0;i<3;i++){
       const a=bases[i];
       if(B(a)!==1||B(a+1)!==0||B(a+2)!==0||B(a+3)!==0)return false;
-      if(B(a+0x7C)!==ids[i])return false;
+      if(U16(a+0x7C)!==ids[i])return false;
     }
     return true;
   }catch(_){return false;}
