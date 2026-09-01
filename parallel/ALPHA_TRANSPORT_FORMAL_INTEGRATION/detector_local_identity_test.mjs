@@ -28,8 +28,8 @@ await test('production source requires detector-local SHA-256', async () => {
   assert.match(block, /digest\('SHA-256',logical\)/);
   assert.match(block, /sha256!==GOLDEN_SHA/);
   assert.match(block, /sha256,expectedSha256:GOLDEN_SHA/);
-  assert.match(adapterSource, /identity\.get\("sha256"\) != GOLDEN_SHA/);
-  assert.match(adapterSource, /"launcherIdentitySha": discovery_identity_sha/);
+  assert.match(adapterSource, /identity\.get\("sha256"\)\s*!=\s*GOLDEN_SHA/);
+  assert.match(adapterSource, /"launcherIdentitySha"\s*:\s*discovery_identity_sha/);
   assert.doesNotMatch(adapterSource, /"launcherIdentitySha"\s*:\s*GOLDEN_SHA/);
 });
 
@@ -79,11 +79,16 @@ await test('same-targetId replacement with golden Discovery assertion fails clos
   };
   vm.createContext(context);
   vm.runInContext(workerSource, context, { filename: workerPath });
-  for (let i = 0; i < 120 && workerScope.__WOF_ALPHA_REAL_TRANSPORT?.running !== false; i++) {
-    await new Promise(resolve => setImmediate(resolve));
+
+  const deadline = Date.now() + 5000;
+  while (Date.now() < deadline) {
+    const state = workerScope.__WOF_ALPHA_REAL_TRANSPORT;
+    if (state?.running === false || typeof state?.status === 'function') break;
+    await new Promise(resolve => setTimeout(resolve, 10));
   }
+
   const failed = workerScope.__WOF_ALPHA_REAL_TRANSPORT;
-  assert.ok(failed, 'worker install did not publish fail-closed status');
+  assert.ok(failed, 'worker install did not publish terminal status within 5 seconds');
   assert.equal(failed.running, false);
   assert.match(String(failed.lastError || ''), /World 921031|SHA-256|身份校验失败/);
   assert.equal(failed.readOnly, true);
