@@ -96,7 +96,12 @@ class LauncherMonitor:
                     self._invalidate_authority()
                     error = self._startup_attestation_error or "未连接到本机 Chrome/Edge 调试端口。游戏本身没有受到影响。"
                     self.status.reset_runtime(error=error); self._notify(); self._sleep(); continue
-                if not self._client or not self._endpoint or self._endpoint.websocket_url != endpoint.websocket_url: self._connect(endpoint)
+                if not self._client or not self._endpoint or self._endpoint.websocket_url != endpoint.websocket_url:
+                    self._connect(endpoint)
+                else:
+                    # Even when the websocket URL is stable, retain only metadata from
+                    # this loop's fresh /json/version attestation.
+                    self._endpoint = endpoint
                 assert self._client is not None
                 choice = discover(self._client, identity_cache=self._identity_cache)
                 worker_id = str(choice.worker.get("targetId")) if choice.worker else None; identity = choice.identity
