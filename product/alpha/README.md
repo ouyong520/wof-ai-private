@@ -1,68 +1,72 @@
-# WOF Future Danger — Alpha RC1
+# WOF Future Danger — Alpha RC2
 
-Status: **Release Candidate; real Browser acceptance pending**  
-Release: `wof-alpha-rc1`  
-Rule manifest: `wof-alpha-rules-v1`
+Status: **RC2 candidate — offline P0/P1 regression complete; fresh real-Browser QA still required.**
 
-This directory is the bounded user Alpha implementation. It is intentionally separate from WOF-0xx research coordinators and all `parallel/**` discovery lanes.
+RC2 ships only the six frozen PM rules. It does not ship T18 BODY4728/A4/B2/TM1 as A4704-specific, any T23/T24 discovery rule, Safe Path, miners, or WinKawaks-local logic.
 
-## Included rules
+## Normal user install
 
-Only the six PM freeze candidates are compiled into the release core:
+Use the single userscript entry:
 
-- `T16_B4_DANGER_40` — danger-only, never labeled A6432-exclusive.
-- `T20_5136_B0_TO_B255_1250` — A5136.
-- `D867BA_3232_TM6_220` — A3232.
-- `D8811E_3232_TM6_135` — A3232.
-- `T18_5440_CYCLE_BODY7512_TM4_LEVEL_90` — A5440.
-- `T18_5424_CYCLE_BODY7520_TM4_LEVEL_90` — A5424.
+`product/alpha/wof_alpha_bootstrap.user.js`
 
-`T18 BODY4728/A4/B2/TM1`, T23 ordered candidates, T24 non-freeze variants and all discovery/local candidates are absent.
+Install it in a userscript manager, enable it for the Browser game page, then refresh the game page once. The script runs at `document-start`, creates a fresh per-page random session, intercepts the target `gstyphoon*.js` Worker as it is created, injects the read-only detector there, and loads the WebGL HUD in the page. No DevTools context switching is part of the supported Alpha path.
 
-## Runtime boundaries
+Expected page diagnostic:
 
-1. `wof_alpha_loader.js` — the single supported load path; same URL in top Window and live `gstyphoon.js` Worker.
-2. `wof_alpha_core.js` — frozen rule engine + identity guard logic. No research mining.
-3. `wof_alpha_hud.js` — direct WebGL HUD consumer. SAFE/UNKNOWN/stale are visually silent after short load confirmation.
-4. `rules_manifest.json` — machine-readable freeze and release policy.
-5. `regression.mjs` — release-artifact fixture/static regression.
+`WOFALPHAHUD.status()`
 
-## Supported identity / fail closed
+Expected detector contract (available inside the instrumented Worker for engineering diagnostics): release `wof-alpha-rc2`, `readOnly=true`, `ramWrites=0`, `inputInjection=false`.
 
-Warnings are enabled only when all checks pass:
+If the userscript was enabled only after the emulator Worker had already been created, refresh the page so the bootstrap can run before Worker creation.
 
-- a Browser WASM module exposes compatible `HEAPU8`/`HEAPU32` over the same buffer;
-- CPS RAM pointer `HEAPU32[0x2e39e4>>2]` is nonzero and its 64 KiB window is in bounds;
-- Browser player objects report self-index `0/4/8` at P1/P2/P3 `+0x7C`.
+## Fail-closed supported-runtime guard
 
-This is the supported Browser layout signature `wofr1-world-921002-browser-layout-v1`. It is a positive layout guard, not a ROM cryptographic hash. Any mismatch disables warnings and emits a diagnostic; offsets are never guessed.
+Warnings are enabled only after both classes of evidence pass:
 
-## Target / retarget / side
+1. Browser/WASM runtime layout: shared `HEAPU8`/`HEAPU32`, valid CPS RAM window, and P1/P2/P3 `+0x7C` self indexes `0/4/8`.
+2. Positive Browser ROM executable fingerprint, derived from the retained Browser ROM probe: reset vectors `SP=0x00FF62EE`, `PC=0x0000754A`, dispatch table offset `0x25DC`, and the five-entry type-dispatch sequence based on `0x06F4E4, 0x07494C, 0x071ADA, 0x077B8E, 0x07C6D2` (allowing only the small uniform live-ROM delta already handled by the Browser probe).
 
-The Worker rereads `enemy+0x7E` every 10 ms and resolves only `0/4/8` to P1/P2/P3. The rule engine does not freeze entry target. While a warning exists, the published target and left/right threat side are recomputed from the current target every poll. Unknown target values are silent.
+A layout-compatible runtime without the ROM fingerprint is unsupported and emits no warnings.
 
-## Read-only contract
+## RC2 safety changes
 
-The Alpha runtime only reads the WASM heap. It contains no game RAM assignment and no keyboard/gameplay input injection. Worker exceptions stop the Alpha timer, clear warnings and publish a disabled diagnostic; gameplay is not modified.
+- Same-slot/same-type watch inheritance is conservative: an armed watch survives only while its exact frozen zero-attack precursor remains observable. Any descriptor drift invalidates the episode before a later ACTIVE edge can resolve it.
+- Every active warning is preserved in HUD state. The HUD aggregates all current warnings by target and threat side rather than selecting only one warning.
+- Warning transport is session-bound. Each page has a fresh random nonce and a unique BroadcastChannel; HUD messages must also carry the same nonce.
+- Before Alpha takes the WebGL HUD bridge, an existing research `WOFHUD` must expose `dispose()` and is disposed. Alpha refuses takeover if a legacy HUD cannot be safely released.
+- Game RAM remains read-only; there is no input injection.
 
-## Supported load path
+## Frozen rules
 
-Use the same loader expression in both contexts:
+1. `T16_B4_DANGER_40` — imminent danger only, not A6432-specific.
+2. `T20_5136_B0_TO_B255_1250` — A5136.
+3. `D867BA_3232_TM6_220` — A3232.
+4. `D8811E_3232_TM6_135` — A3232.
+5. `T18_5440_CYCLE_BODY7512_TM4_LEVEL_90` — A5440.
+6. `T18_5424_CYCLE_BODY7520_TM4_LEVEL_90` — A5424.
 
-```js
-fetch('https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/product/alpha/wof_alpha_loader.js?x='+Date.now()).then(r=>r.text()).then(eval)
-```
+Target is reread live from `enemy+0x7E`; threat side is recomputed from current enemy/target X. Invalid target selector, stale state, unsupported runtime, identity uncertainty, and runtime exceptions are silent with respect to danger warnings.
 
-For RC acceptance, load it once in the live `gstyphoon.js` Worker console and once in the top page console. The top copy installs only the HUD; the Worker copy installs only the read-only detector/publisher.
+## Offline regression
 
-## Regression
+Run:
 
-Run locally from this directory with:
-
-```text
+```bash
+cd product/alpha
 node regression.mjs
 ```
 
-The fixture suite checks all six release predicates, 143 WOF-051 production-subset signal/resolution fixtures, attack distributions, zero hard-miss equivalent in claimed fixtures, level-arm deduplication, BODY4728 exclusion, live retarget, UNKNOWN silence, stale cleanup, static no-HEAP-write/no-input-injection, and presence of WebGL state snapshot/restore.
+RC2 regression covers the six frozen rules, the 143-signal WOF-051 canonical reconstruction, layout-lookalike identity rejection, ROM fingerprint mismatch rejection, same-type replacement invalidation, simultaneous warning aggregation, foreign-session transport rejection, research HUD teardown, read-only/no-input static checks, and the document-start user bootstrap contract.
 
-Historical WOF-051 raw per-poll snapshots are not retained as a release replay corpus here; the 143-count regression is a canonical fixture reconstruction from the audited WOF-051 aggregate. The final real-Browser RC acceptance is therefore still required.
+## Fresh Browser QA still required
+
+The remaining work is real Browser acceptance rather than more offline rule research:
+
+- userscript/Worker interception on the actual host, including CSP and the real Worker constructor/options;
+- positive ROM fingerprint passes on the declared World 921002 / `wofr1` Browser build;
+- a deliberately unsupported/lookalike environment fails closed if one is available;
+- two same-origin game tabs stay isolated;
+- reload/restart creates clean pairing;
+- legacy research HUD listeners/channel/resources are gone after takeover;
+- real WebGL rendering, simultaneous-danger layout, retarget, stale cleanup, and frame-time overhead.
