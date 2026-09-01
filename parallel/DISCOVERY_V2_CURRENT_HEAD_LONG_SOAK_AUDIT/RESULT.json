@@ -1,0 +1,121 @@
+{
+  "schema": "wof-discovery-v2-current-head-long-soak-audit-v1",
+  "stageId": "DISCOVERY_V2_CURRENT_HEAD_LONG_SOAK_AUDIT_V1",
+  "state": "BLOCKED",
+  "startHead": "82e08b7bcebf4299781f1a6d9b04679e70789ce8",
+  "testedHead": "b565af5d490182fb155c7fcc4ad47a2dc3445ce5",
+  "stopCondition": "A",
+  "verdict": "BLOCKED — DISCOVERY V2 CURRENT-HEAD LONG SOAK — Owner One-Click manifest pins pre-authority-fix Discovery V2 runtimes",
+  "severity": "P1",
+  "blockerId": "P1-OWNER-ONECLICK-STALE-DISCOVERY-V2-AUTHORITY-RUNTIME",
+  "scope": "cross-component Discovery V2 / authority / generation / owner-facing Chinese path",
+  "ownerActionRequired": false,
+  "blocker": {
+    "summary": "The current Owner One-Click bootstrap fetches package_manifest.json from main and then downloads every runtime file from the manifest's immutable baseUrl/sourceCommit. The current manifest is still packageVersion 2026.09.01.5 at sourceCommit 7b10867f14f59ca9ab95c0fa6d30530008409371, so the Chinese Owner path installs old Discovery V2 runtimes instead of the current authoritative fixes.",
+    "impact": [
+      "PYLAUNCH current discovery_v2.py includes Page.getFrameTree/parentFrameId association and discovery-generation cache invalidation, but the package manifest pins an older blob.",
+      "PYLAUNCH current monitor.py/cdp.py/browser.py also differ from the pinned package blobs, so the packaged runtime cannot represent current authority/generation behavior as a unit.",
+      "WOF052L Recorder current owner_zh_cn.py installs discovery_v2_sync and hardening_v2, while the frozen package is from the older source commit and does not package those current hardening modules. The Owner Chinese path therefore does not consume current Recorder Discovery V2 authority either.",
+      "Current repository test_package.py explicitly contains a fail-closed freshness test requiring every current PYLAUNCH runtime blob to equal the package manifest blob; the discovery_v2.py assertion is deterministically false at testedHead.",
+      "This blocks formal integration/release confidence for any downstream consumer reached through the Owner Chinese one-click package."
+    ],
+    "minimalReproduction": {
+      "steps": [
+        "Read parallel/OWNER_ONECLICK/package_manifest.json at testedHead and inspect files[path=parallel/PYLAUNCH/wof_launcher/discovery_v2.py].gitBlobSha.",
+        "Read the current Git blob SHA of parallel/PYLAUNCH/wof_launcher/discovery_v2.py at testedHead.",
+        "Compare them: manifest=cee0bdef0fe461ab0cb003e6ae198db8c19a5ec2, current=ec9d27bfe26557a11187a23853893b898a3366d1.",
+        "Run PackageTests.test_current_pylaunch_runtime_cannot_outgrow_package from parallel/OWNER_ONECLICK/test_package.py in a checkout of testedHead; the manifest freshness assertion for current PYLAUNCH is expected to fail closed.",
+        "Trace parallel/OWNER_ONECLICK/bootstrap_v2.ps1: it downloads package_manifest.json from main, takes manifest.baseUrl, then downloads manifest.files from that immutable old commit, proving the Owner path would install the stale runtime rather than current HEAD."
+      ],
+      "expected": "Owner package represents current Discovery V2 authority/generation runtime.",
+      "actual": "Owner package deterministically selects historical runtime blobs from 7b10867f14f59ca9ab95c0fa6d30530008409371."
+    },
+    "requiredFix": "Refresh parallel/OWNER_ONECLICK/package_manifest.json (and package freshness tests/constants as applicable) to a sourceCommit/blobs that include the current PYLAUNCH parentFrame authority + generation-cache fixes and current Recorder Discovery V2/hardening runtime dependencies; then rerun Owner One-Click integrity/Windows Chinese-path CI and this current-head audit on the post-refresh HEAD.",
+    "writeOwnership": "Fix is outside this audit lane's allowed write scope. This lane must not modify parallel/OWNER_ONECLICK/** or component implementations."
+  },
+  "componentBlobs": {
+    "BROWSER_FLEET/fleet_discovery_v2.py": "ecf0fb7a5fa19f4c1d2953ec3fee2fc0ec174b10",
+    "BROWSER_FLEET/fleet_manager.py": "0a76597bc4788c5aec820510cbf2a909769591b5",
+    "BROWSER_FLEET/fleet_owner_zh_cn.py": "7ddefc8d3a624e52b07eae11dc1534523662839a",
+    "PYLAUNCH/wof_launcher/discovery_v2.py": "ec9d27bfe26557a11187a23853893b898a3366d1",
+    "PYLAUNCH/wof_launcher/monitor.py": "4430f7e927265cd3366fd70ce560c375aa878993",
+    "PYLAUNCH/wof_launcher/cdp.py": "def308bed2a5609be1da26505a15d621395b66aa",
+    "PYLAUNCH/wof_launcher/probe.py": "789a6849b826b35542b22d56a4d2ca3628d285a1",
+    "WOF052L_RECORDER/discovery_v2_sync.py": "a66731dbf9dd1c6eac8666b2c42ebe8f3f61eddf",
+    "WOF052L_RECORDER/hardening_v2.py": "4ade786786ec815a0c165c82b25cf41e07f218db",
+    "WOF052L_RECORDER/owner_zh_cn.py": "0e0001b1b9e9ea1239450b1c2a14544ced580c1a",
+    "PROSPECTIVE_VALIDATOR/live_validator_v2.py": "512c6635d2a8c1bf99cd7f4a5e3f9e45b9b2b3d0",
+    "OWNER_ONECLICK/package_manifest.json": "fd535d8def1adb74151fdad65a06fda95877495e",
+    "OWNER_ONECLICK/test_package.py": "562b852fe08f095747ad5b023dafbe3925ac728a",
+    "OWNER_ONECLICK/bootstrap_v2.ps1": "5eac50776555bde73ed5e1924021d55d75adec1e"
+  },
+  "pinnedVsCurrent": [
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/discovery_v2.py",
+      "manifestBlob": "cee0bdef0fe461ab0cb003e6ae198db8c19a5ec2",
+      "currentBlob": "ec9d27bfe26557a11187a23853893b898a3366d1",
+      "status": "FAIL"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/monitor.py",
+      "manifestBlob": "5ee0ce9a84988d7841799d907ebdfe2a3e68ea56",
+      "currentBlob": "4430f7e927265cd3366fd70ce560c375aa878993",
+      "status": "FAIL"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/cdp.py",
+      "manifestBlob": "06480f3aa7ab9261d7f91ab09074e96b4a6befc9",
+      "currentBlob": "def308bed2a5609be1da26505a15d621395b66aa",
+      "status": "FAIL"
+    }
+  ],
+  "matrix": [
+    {
+      "surface": "PYLAUNCH parentFrameId direct-worker authority",
+      "status": "PASS_CURRENT_REPO_EVIDENCE",
+      "evidence": "current discovery_v2.py consumes Page.getFrameTree and parentFrameId; implementation regression test exists"
+    },
+    {
+      "surface": "PYLAUNCH generation identity cache",
+      "status": "PASS_CURRENT_REPO_EVIDENCE",
+      "evidence": "current discover() clears external identity cache at generation start; fix result records 28/28 deterministic regression"
+    },
+    {
+      "surface": "Owner-facing Chinese package consumes current PYLAUNCH authority/generation runtime",
+      "status": "FAIL_P1",
+      "evidence": "manifest/current Git blob mismatch plus fail-closed package freshness contract"
+    },
+    {
+      "surface": "Owner-facing Chinese package consumes current Recorder Discovery V2 hardening",
+      "status": "FAIL_P1",
+      "evidence": "current owner installs discovery_v2_sync + hardening_v2, while frozen historical package does not represent current hardening dependency set"
+    },
+    {
+      "surface": "remaining full/adversarial soak matrix",
+      "status": "NOT_RUN_STOP_CONDITION_A",
+      "evidence": "prompt requires immediate blocker write/stop when P0/P1 is found"
+    }
+  ],
+  "drift": {
+    "observedDuringAudit": true,
+    "startHead": "82e08b7bcebf4299781f1a6d9b04679e70789ce8",
+    "finalTestedHead": "b565af5d490182fb155c7fcc4ad47a2dc3445ce5",
+    "notes": [
+      "HEAD advanced during audit due concurrent lanes.",
+      "Relevant PYLAUNCH identity-cache result/claim closure landed; no Owner One-Click manifest refresh landed in the inspected drift window.",
+      "The final drift from 479c7b74095eab390329ef4a6e056cd25a01bced to b565af5d490182fb155c7fcc4ad47a2dc3445ce5 touched only stage-claim metadata, so the blocker surface was unchanged."
+    ]
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "workerReplacementOrWrap": false,
+    "implementationFilesModified": false
+  },
+  "processNotes": [
+    "The start prompt references parallel/PM/PM_DELIVERY_REASSESSMENT_GATE.md, which does not exist on current main. The present authoritative gate is parallel/PM/DELIVERY_REASSESSMENT_GATE.md and was read before closure.",
+    "The prior conformance result at testedHead 250ccae3be8430fd84875093fef700819d82cf6c preserved an earlier PYLAUNCH parentFrameId P1; current PYLAUNCH source now contains the intended parentFrame authority fix, so that old blocker was not reused as the current stop reason.",
+    "Stop condition A intentionally preempts spending time on the remaining soak permutations once this precise P1 cross-component blocker is established."
+  ]
+}
