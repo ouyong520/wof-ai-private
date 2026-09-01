@@ -51,60 +51,64 @@ no short join window
 - T18 BODY7512/TM4 -> A5440: production-shadow。
 - T18 BODY7520/TM4 -> A5424: production-shadow。
 
-## T23 state before WOF-048
+## T23 current
 - old BODY4920/B0 rule retired。
-- WOF-045 short candidate `S0/A6/B4 BODY4976 FE84868 NX83F20 V0 TM5 -> A4792` 在 WOF-046/047 新批次均 rawMatch0/signals0：zero coverage，不是 failure。
-- WOF-047 ordered tracer 在唯一 T23 房间记录8个 resolved cycles：A4792=3, A4920=3, A5888=2。
-- 单 state 明显 attack-ambiguous；当前研究必须使用 ordered tail/transition pair/triple。
-- WOF-048R 增加 active-edge retarget 修复和 `t23SequenceSummary`：timer-normalized TM* final/tail2/tail3、pair、triple。
+- WOF-045 short candidate `S0/A6/B4 BODY4976 FE84868 NX83F20 V0 TM5 -> A4792` 后续多批 rawMatch0/signals0；在无 T23 的批次属于 zero coverage，不是 failure。
+- WOF-047 ordered tracer 仍是最新正面 T23 sequence evidence：唯一 T23 房间 8 resolved cycles，A4792=3 / A4920=3 / A5888=2。
+- 单 state attack-ambiguous；必须使用 ordered tail / transition pair / triple。
+- active-edge retarget logging fix 与 exact-TM + TM* sequence summaries 保持启用。
 
-## WOF-048 — completed
-Batch `b-bdb16c09-b10`：
-- identity valid: WOF-048 / WOF-AI-PRIVATE / coordinator-v48
+## WOF-049 — completed
+Batch `b-106c5a3c-819`：
+- identity valid: WOF-049 / WOF-AI-PRIVATE / coordinator-v49
 - readOnly=true / ramWrites=0
-- 1 joined / 1 complete / 0 error / 0 interrupted
-- embedded WOF-048R identity passed
-- pure 3P room, player histogram `[0,0,0,495]`
-- 11997 polls / 39546 enemy samples / 164 ACTIVE edges
-- 19 signals / **19 strict** / 0 jitter / 0 late / 0 hard miss / 0 censored
+- 5 joined / 5 complete / 0 error / 0 interrupted
+- embedded WOF-049R identity passed
+- mixed player histogram `[27,1087,196,1134]`; room peakPlayers `3,1,3,1,3`
+- 60000 polls / 194328 enemy samples / 1166 ACTIVE edges
+- 106 signals / **106 strict** / 0 jitter / 0 late / 0 hard miss / 0 censored
 
-### WOF-048 production audit
-- T20: 6/6 strict A5136/target/side，lead481.0..799.5ms。
-- D867: 11/11 strict A3232/target/side，lead99.2..111.3ms，T33=1/T9=10。
-- D881: 2/2 strict A3232/target/side，lead99.9/109.3ms。
-- T16/T24/T18 had zero coverage in this room only; no negative evidence。
+### WOF-049 production audit
+- T16: 31/31 strict，lead10.0..21.6ms；本批 A6432=31/31，target/side31/31。
+- T20: 4/4 strict A5136/target/side，lead430.2..629.1ms。
+- D867: 13/13 strict A3232/target/side，lead29.9..120.1ms；T9=11/T33=2；P1/P2/P3 均覆盖。
+- D881: 4/4 strict A3232/target/side，lead100.0..108.8ms；本批 T11=4。
+- T24 A5440: 19/19 strict；T24 A5424: 21/21 strict，target21/21，side20/21；唯一 side mismatch 是 CENTER entry -> RIGHT ACTIVE，不是 hard miss。
+- T18 A5440: 7/7 strict；T18 A5424: 7/7 strict。
 
-### WOF-048 T23 result
-Dedicated trace probe had:
+### WOF-049 T23 result
+五个房间 **全部没有 T23**：
 ```text
-t23Samples = 0
+per-room t23Samples = 0
 attackZeroStarts = 0
 activeEdges = 0
 resolvedCycles = 0
 t23CycleTraces = []
 t23SequenceSummary.totalCycles = 0
 ```
-Therefore WOF-048 adds **no T23 discriminator evidence**. This is pure coverage absence, not a sequence-model failure. The WOF-048 retarget fix / TM* sequence summary were not exercised for T23 in this batch.
+aggregate type census 也没有 T23。故 WOF-049 没有新增 T23 discriminator evidence；这是 room/scene coverage absence，不是 sequence logic failure。
 
-## Current next — WOF-049
+## Current next — WOF-050
 ```text
-resume = wof-resume-dispatch-selector-v59
-nextCopyId = WOF-049
-nextScript = wof_future_danger_multiroom_coordinator_v49.js
-nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V49 JSON ===
-embedded = WOF-049R / wof_future_danger_cycle_validator_v49r.js
+resume = wof-resume-dispatch-selector-v60
+nextCopyId = WOF-050
+nextScript = wof_future_danger_multiroom_coordinator_v50.js
+nextMarker = === WOF FUTURE DANGER MULTIROOM COORDINATOR V50 JSON ===
+embedded = WOF-050R / wof_future_danger_cycle_validator_v50r.js
+IndexedDB = wof-future-danger-multiroom-v12
 ```
 
-### WOF-049 purpose
-- semantic repeat of WOF-048 sequence instrumentation with fresh IndexedDB v11。
-- continue all production audits。
-- continue T23 ordered traces + active-edge retarget logging + TM* sequence summary。
-- no new T23 rule is promoted before repeated attack-specific sequence evidence exists。
-- **Prefer several rooms, ideally up to5 in parallel**: WOF-048 had only one room and zero T23, so current bottleneck is scene/coverage probability rather than sampling logic。
+### WOF-050 purpose
+- semantic coverage-repeat of current production + T23 ordered-sequence instrumentation。
+- no production demotion; no T23 promotion。
+- keep active-edge retarget logging and exact-TM + TM* final/tail2/tail3/pair/triple summaries。
+- **Prefer up to5 rooms in parallel**；当前唯一瓶颈是拿到真正含 T23 的 scene/room。
+- 若出现 T23，优先比较 A4792/A4920/A5888 的 repeated ordered sequence families，再决定是否生成 prospective discriminator。
 
 Detailed reports:
 - `reports/WOF-047_ANALYSIS.md`
 - `reports/WOF-048_ANALYSIS.md`
+- `reports/WOF-049_ANALYSIS.md`
 
 ## 禁止误判
 - +0x70 = exact hitbox/damage onset ❌
@@ -114,4 +118,4 @@ Detailed reports:
 - T20 1250 / D867220 / D881135 = causal boundary ❌
 - retired fixed-lag T24 rules / old T23 BODY4920/B0 复活 ❌
 - zero coverage = forward failure ❌
-- 当前少量 T23 traces 就直接 promotion ❌
+- 当前 sparse T23 traces 直接 promotion ❌
