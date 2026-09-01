@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "ALPHA_FORMAL_INTEGRATION_ADVERSARIAL_REVIEW_V1",
+  "promptPath": "parallel/PM/ALPHA_FORMAL_INTEGRATION_ADVERSARIAL_REVIEW_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "86232a9857141072ee6d8bd354079a7a34822502",
+  "startedAtUtc": "2026-09-01T16:07:48Z"
+}
