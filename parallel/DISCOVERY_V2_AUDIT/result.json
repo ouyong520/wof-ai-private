@@ -1,0 +1,200 @@
+{
+  "schema": "wof-discovery-v2-cross-component-audit-v1",
+  "date": "2026-09-01",
+  "status": "DISCOVERY V2 CROSS-COMPONENT AUDIT COMPLETE",
+  "verdict": "BLOCKING_DRIFT_IDENTIFIED",
+  "componentCodeModified": false,
+  "writeScope": ["parallel/DISCOVERY_V2_AUDIT/**"],
+  "roles": {
+    "PYLAUNCH": "authoritative-worker-wasm-world921031-proof",
+    "BROWSER_FLEET": "cheap-discovery-indicator-only",
+    "WOF052L_RECORDER": "capture-admission-authority",
+    "PROSPECTIVE_VALIDATOR": "prospective-session-admission-authority"
+  },
+  "classificationCounts": {
+    "groupedP0Blockers": 1,
+    "groupedP1Risks": 4
+  },
+  "blockers": [
+    {
+      "id": "P0-PROSPECTIVE-LIVE-DISCOVERY",
+      "classification": "P0_INTEGRATION_BLOCKER",
+      "severity": "P0",
+      "component": "PROSPECTIVE_VALIDATOR",
+      "affectedMatrixRows": [2,4,5,6,7,8,9,14],
+      "problem": "Current live validator still relies on browser-level direct type=worker plus gstyphoon URL filtering and does not provide page-rooted auto-attach related topology, iframe->Worker discovery, URL-shape-tolerant candidate discovery, or unique page/Worker ambiguity rejection.",
+      "freshFixLane": "PROSPECTIVE_VALIDATOR_DISCOVERY_V2_SYNC",
+      "freshFixPrompt": "parallel/PM/PROSPECTIVE_VALIDATOR_DISCOVERY_V2_SYNC_START_PROMPT.md",
+      "ownership": ["parallel/PROSPECTIVE_VALIDATOR/**"],
+      "minimumAcceptance": [
+        "direct Worker backward compatibility",
+        "Target.setAutoAttach flatten=true from page sessions",
+        "related-target-only discovery",
+        "page -> iframe -> Worker",
+        "worker/shared_worker/service_worker candidates",
+        "URL shape variation without gstyphoon URL authority gate",
+        "WASM/heap readiness",
+        "exact World 921031 SHA-256 before prospective probe",
+        "missing/wrong/ambiguous Worker fail-closed",
+        "unique page/Worker association",
+        "reload/recreated Worker cleanup",
+        "two/ten-room endpoint isolation",
+        "candidate freeze/hash unchanged",
+        "discovery evidence cannot become prospective",
+        "read-only allowlist only",
+        "Simplified Chinese owner flow",
+        "returned websocket pinned to requested loopback endpoint"
+      ]
+    },
+    {
+      "id": "P1-ENDPOINT-CONFINEMENT",
+      "classification": "P1_DRIFT_RISK",
+      "severity": "P1",
+      "components": ["PYLAUNCH","WOF052L_RECORDER","PROSPECTIVE_VALIDATOR"],
+      "affectedMatrixRows": [1,8,9],
+      "referenceComponent": "BROWSER_FLEET",
+      "problem": "Browser Fleet pins each returned browser websocket to the assigned loopback port, while PYLAUNCH and base Recorder accept unrestricted CLI hosts and do not revalidate returned websocket host/port; Prospective constructs loopback hosts but also lacks same-port websocket pinning.",
+      "freshFixOwnership": [
+        {"lane":"PYLAUNCH_DISCOVERY_V2_ENDPOINT_GUARD","ownership":["parallel/PYLAUNCH/**"]},
+        {"lane":"WOF052L_DISCOVERY_V2_ENDPOINT_GUARD","ownership":["parallel/WOF052L_RECORDER/**"]},
+        {"lane":"PROSPECTIVE_VALIDATOR_DISCOVERY_V2_SYNC","ownership":["parallel/PROSPECTIVE_VALIDATOR/**"],"foldIntoExistingP0Lane":true}
+      ],
+      "minimumAcceptance": [
+        "loopback hosts only",
+        "returned websocket hostname is loopback",
+        "returned websocket port equals requested CDP port",
+        "no silent cross-room port fallback",
+        "regression for remote host rejection and cross-port websocket rejection"
+      ]
+    },
+    {
+      "id": "P1-URL-SCHEME-GATE",
+      "classification": "P1_DRIFT_RISK",
+      "severity": "P1",
+      "components": ["PYLAUNCH","BROWSER_FLEET","WOF052L_RECORDER","PROSPECTIVE_VALIDATOR"],
+      "affectedMatrixRows": [7,18],
+      "problem": "Browser Fleet can read-only probe an already-existing module-positive related Worker with a changed URL including the repository blob: test vector, while PYLAUNCH and Recorder reject blob:/data:/javascript: before module/exact-identity authority can decide. Prospective currently requires gstyphoon URL entirely.",
+      "freshFixOwnership": [
+        {"lane":"PYLAUNCH_DISCOVERY_V2_URL_GATE","ownership":["parallel/PYLAUNCH/**"]},
+        {"lane":"WOF052L_DISCOVERY_V2_URL_GATE","ownership":["parallel/WOF052L_RECORDER/**"]},
+        {"lane":"PROSPECTIVE_VALIDATOR_DISCOVERY_V2_SYNC","ownership":["parallel/PROSPECTIVE_VALIDATOR/**"],"foldIntoExistingP0Lane":true}
+      ],
+      "minimumAcceptance": [
+        "URL is diagnostic/hint only for already-existing attachable worker-like targets",
+        "module/heap plus exact World identity decide authoritative admission",
+        "ambiguous exact identities fail closed",
+        "no Worker replacement/wrap",
+        "no Blob/ObjectURL Worker creation or URL rewrite"
+      ]
+    },
+    {
+      "id": "P1-DIRECT-OPENERID-ASSOCIATION",
+      "classification": "P1_DRIFT_RISK",
+      "severity": "P1",
+      "components": ["PYLAUNCH","WOF052L_RECORDER"],
+      "affectedMatrixRows": [8,9],
+      "problem": "Direct fallback still treats Worker openerId as a page-association fallback even though WORKER_SURFACE audit identifies parentId/parentFrameId/page-rooted topology as the Worker parent model.",
+      "freshFixOwnership": [
+        {"lane":"PYLAUNCH_DISCOVERY_V2_DIRECT_ASSOCIATION","ownership":["parallel/PYLAUNCH/**"]},
+        {"lane":"WOF052L_DISCOVERY_V2_DIRECT_ASSOCIATION","ownership":["parallel/WOF052L_RECORDER/**"]}
+      ],
+      "minimumAcceptance": [
+        "do not use Worker openerId as parent authority",
+        "prefer parentId/parentFrameId when available",
+        "otherwise require one uniquely identified WOF page on the endpoint or fail closed",
+        "preserve direct Worker backward compatibility"
+      ]
+    },
+    {
+      "id": "P1-REGRESSION-GUARD-GAP",
+      "classification": "P1_DRIFT_RISK",
+      "severity": "P1",
+      "component": "REGRESSION_ORCH",
+      "affectedMatrixRows": [4,5,7,8,9,14,19],
+      "problem": "Global regression runs Recorder owner_zh_cn.py self-test rather than the official owner_v2_zh_cn.py integration entrypoint, and Prospective suite currently covers validator semantics but not live Discovery V2, so the current P0 cannot make the orchestrator fail.",
+      "freshFixLane": "REGRESSION_ORCH_DISCOVERY_V2_INTEGRATION_GUARD",
+      "ownership": ["parallel/REGRESSION_ORCH/**"],
+      "minimumAcceptance": [
+        "official Recorder V2 entrypoint is a required integration surface",
+        "Prospective Discovery V2 tests become safety-critical required path/command after component fix lands",
+        "existing evidence semantics tests remain",
+        "component endpoint/cross-port tests are included in global suites"
+      ]
+    }
+  ],
+  "matrix": [
+    {"id":1,"name":"localhost endpoint limit","classification":"P1_DRIFT_RISK"},
+    {"id":2,"name":"page identification / multiple-page ambiguity","classification":"P0_INTEGRATION_BLOCKER"},
+    {"id":3,"name":"direct Worker fallback","classification":"SAFE_COMPATIBILITY_DIFFERENCE"},
+    {"id":4,"name":"Target.setAutoAttach / related targets","classification":"P0_INTEGRATION_BLOCKER"},
+    {"id":5,"name":"iframe -> Worker","classification":"P0_INTEGRATION_BLOCKER"},
+    {"id":6,"name":"target lifecycle / recreated Worker","classification":"P0_INTEGRATION_BLOCKER"},
+    {"id":7,"name":"Worker URL mismatch tolerance","classification":"P0_INTEGRATION_BLOCKER"},
+    {"id":8,"name":"Worker -> page / endpoint association","classification":"P0_INTEGRATION_BLOCKER"},
+    {"id":9,"name":"multi-room / multi-tab / multi-port strict isolation","classification":"P0_INTEGRATION_BLOCKER"},
+    {"id":10,"name":"stale / reload / disconnect cleanup","classification":"SAFE_COMPATIBILITY_DIFFERENCE"},
+    {"id":11,"name":"WASM / heap readiness","classification":"EXPECTED_ROLE_DIFFERENCE"},
+    {"id":12,"name":"exact World 921031 SHA-256 authority differences","classification":"EXPECTED_ROLE_DIFFERENCE"},
+    {"id":13,"name":"wrong identity fail-closed","classification":"SAFE_COMPATIBILITY_DIFFERENCE"},
+    {"id":14,"name":"ambiguous Workers fail-closed","classification":"P0_INTEGRATION_BLOCKER"},
+    {"id":15,"name":"read-only CDP allowlist","classification":"SAFE_COMPATIBILITY_DIFFERENCE"},
+    {"id":16,"name":"Input.* / gameplay injection forbidden","classification":"SAFE_COMPATIBILITY_DIFFERENCE"},
+    {"id":17,"name":"ramWrites=0","classification":"SAFE_COMPATIBILITY_DIFFERENCE"},
+    {"id":18,"name":"no Worker replacement / Blob rewrite","classification":"SAFE_COMPATIBILITY_DIFFERENCE"},
+    {"id":19,"name":"owner-facing Simplified Chinese","classification":"SAFE_COMPATIBILITY_DIFFERENCE"},
+    {"id":20,"name":"evidence authority separation","classification":"EXPECTED_ROLE_DIFFERENCE"}
+  ],
+  "expectedRoleDifferences": [
+    "Browser Fleet remains cheap-indicator-only and must not run authoritative World identity on ordinary status refresh.",
+    "Fleet may expose multiple advisory Worker indicators/counts; admission authorities must fail closed on ambiguity.",
+    "Recorder evidence is capture evidence and defaults to discovery in Prospective adapters.",
+    "Prospective evidence requires a frozen candidate/session boundary.",
+    "PYLAUNCH remains the authoritative live Worker/WASM/World proof surface."
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false,
+    "blobWorkerRewrite": false,
+    "productionAutoPromotion": false
+  },
+  "auditedPaths": [
+    "parallel/WORKER_SURFACE/AUDIT.md",
+    "parallel/PYLAUNCH/wof_launcher/discovery_v2.py",
+    "parallel/PYLAUNCH/wof_launcher/cdp.py",
+    "parallel/PYLAUNCH/wof_launcher/browser.py",
+    "parallel/PYLAUNCH/launcher.py",
+    "parallel/PYLAUNCH/wof_launcher/monitor.py",
+    "parallel/BROWSER_FLEET/DISCOVERY_CONTRACT.md",
+    "parallel/BROWSER_FLEET/fleet_discovery_v2.py",
+    "parallel/BROWSER_FLEET/fleet_manager.py",
+    "parallel/WOF052L_RECORDER/discovery_v2_sync.py",
+    "parallel/WOF052L_RECORDER/recorder.py",
+    "parallel/WOF052L_RECORDER/fleet_recorder.py",
+    "parallel/PROSPECTIVE_VALIDATOR/live_validator.py",
+    "parallel/PROSPECTIVE_VALIDATOR/start_session.py",
+    "parallel/PROSPECTIVE_VALIDATOR/test_validator.py",
+    "parallel/REGRESSION_ORCH/manifest.json",
+    "parallel/PM/CHINESE_UI_UX_REQUIREMENT.md"
+  ],
+  "nextExecutionOrder": [
+    "Close P0-PROSPECTIVE-LIVE-DISCOVERY in the existing Prospective Validator Discovery V2 Sync lane.",
+    "Close PYLAUNCH and WOF-052L P1 endpoint, URL-gate, and direct-association hardening in separate write scopes.",
+    "Update REGRESSION_ORCH integration guards after component tests/blobs land.",
+    "Re-run this cross-component audit against the new blobs.",
+    "Only then hand the aligned stack to Unified Windows Live Proof Bundle; this audit requests no owner Browser operation."
+  ],
+  "stopCondition": {
+    "satisfied": true,
+    "statement": "DISCOVERY V2 CROSS-COMPONENT AUDIT COMPLETE",
+    "blockingDrift": true,
+    "exactBlockerIds": [
+      "P0-PROSPECTIVE-LIVE-DISCOVERY",
+      "P1-ENDPOINT-CONFINEMENT",
+      "P1-URL-SCHEME-GATE",
+      "P1-DIRECT-OPENERID-ASSOCIATION",
+      "P1-REGRESSION-GUARD-GAP"
+    ]
+  }
+}
