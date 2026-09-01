@@ -1,6 +1,6 @@
 {
   "schema": "wof-regression-orchestrator-manifest-v1",
-  "version": 2,
+  "version": 3,
   "ownerLanguage": "zh-CN",
   "guardRoots": [
     "parallel/REGRESSION_ORCH",
@@ -18,6 +18,7 @@
   ],
   "allowlistedTestPaths": [
     "parallel/REGRESSION_ORCH/tests/test_orchestrator.py",
+    "parallel/REGRESSION_ORCH/tests/test_runner.py",
     "parallel/PYLAUNCH/tests/test_discovery.py",
     "parallel/PYLAUNCH/tests/test_discovery_v2.py",
     "parallel/PYLAUNCH/tests/test_fleet_registry.py",
@@ -42,9 +43,13 @@
       "id": "orchestrator_selftest",
       "nameZh": "回归编排器自检",
       "safetyCritical": true,
-      "requiredPaths": ["parallel/REGRESSION_ORCH/tests/test_orchestrator.py"],
+      "requiredPaths": [
+        "parallel/REGRESSION_ORCH/tests/test_orchestrator.py",
+        "parallel/REGRESSION_ORCH/tests/test_runner.py"
+      ],
       "commands": [
-        {"cwd": ".", "argv": ["{python}", "parallel/REGRESSION_ORCH/tests/test_orchestrator.py"]}
+        {"cwd": ".", "argv": ["{python}", "parallel/REGRESSION_ORCH/tests/test_orchestrator.py"]},
+        {"cwd": ".", "argv": ["{python}", "parallel/REGRESSION_ORCH/tests/test_runner.py"]}
       ]
     },
     {
@@ -58,10 +63,10 @@
         "parallel/PYLAUNCH/tests/test_windows_proof.py"
       ],
       "commands": [
-        {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "tests/test_discovery.py"]},
-        {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "tests/test_discovery_v2.py"]},
-        {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "tests/test_fleet_registry.py"]},
-        {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "tests/test_windows_proof.py"]}
+        {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "-m", "unittest", "discover", "-s", "tests", "-p", "test_discovery.py", "-v"]},
+        {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "-m", "unittest", "discover", "-s", "tests", "-p", "test_discovery_v2.py", "-v"]},
+        {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "-m", "unittest", "discover", "-s", "tests", "-p", "test_fleet_registry.py", "-v"]},
+        {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "-m", "unittest", "discover", "-s", "tests", "-p", "test_windows_proof.py", "-v"]}
       ]
     },
     {
