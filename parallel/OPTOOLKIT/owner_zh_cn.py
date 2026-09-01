@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import builtins
-import re
 from pathlib import Path
 
 import toolkit
@@ -131,6 +130,30 @@ def translated_input(prompt: str = ""):
     return _ORIGINAL_INPUT(translate_prompt(prompt))
 
 
+class ChineseToolkit(toolkit.Toolkit):
+    """Only changes the owner-facing launch surface; core Toolkit behavior stays in toolkit.py."""
+
+    def component(self, key):
+        if key == "recorder":
+            print("\n[启动多房间采集器]")
+            entry = self.root / "parallel/WOF052L_RECORDER/owner_zh_cn.py"
+            if not entry.is_file():
+                print("没有找到多房间采集器中文入口。请先选择 1“更新项目”。")
+                return
+            out = self.results / "recorder"
+            out.mkdir(parents=True, exist_ok=True)
+            ok, detail = self.spawn(entry, ["--output-dir", str(out)])
+            if ok:
+                print("已启动：" + detail)
+                print("采集器结果目录：" + str(out))
+            else:
+                print("启动失败。")
+                print("游戏本身没有受到影响。")
+                print("技术详情：" + detail)
+            return
+        return super().component(key)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="WOF Windows 操作工具箱 — 简体中文 owner 界面")
     parser.add_argument("--root", required=True, help="WOF 项目根目录")
@@ -144,7 +167,7 @@ def main() -> int:
     builtins.print = translated_print
     builtins.input = translated_input
     try:
-        return toolkit.Toolkit(root).loop()
+        return ChineseToolkit(root).loop()
     except KeyboardInterrupt:
         print("\n已退出 WOF 工具箱。游戏本身没有受到影响。")
         return 130
