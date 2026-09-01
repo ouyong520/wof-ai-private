@@ -2,7 +2,11 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "ALPHA_TRANSPORT_REFERENCE_QA_V1",
   "promptPath": "parallel/PM/ALPHA_TRANSPORT_REFERENCE_QA_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "186465bc124df9dbd51223ab982feb8553dddc9b",
-  "startedAtUtc": "2026-09-01T14:37:33.998809Z"
+  "startedAtUtc": "2026-09-01T14:37:33.998809Z",
+  "blockerId": "STALE_INFLIGHT_COMPLETION_RELABELED_AFTER_REBIND",
+  "resultPath": "parallel/ALPHA_TRANSPORT_IMPL_QA/RESULT.md",
+  "resultCommit": "e77b6b10afc8e200fc6c002c26897a4ef58a2b37",
+  "requiredFreshFixOwnership": "new ALPHA_TRANSPORT_IMPL fix stage"
 }
