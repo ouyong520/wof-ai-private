@@ -25,9 +25,33 @@ or:
 RUN_WOF052L_RECORDER.cmd --output-dir D:\WOF_CAPTURE
 ```
 
+## Browser Fleet integration
+
+The one-click CMD now starts `fleet_recorder.py`, which is backward-compatible with the original recorder.
+
+If `%LOCALAPPDATA%\WOF Future Danger\Fleet\instances.json` contains Browser Fleet entries:
+
+- every numbered localhost CDP endpoint receives its own independent `RecorderManager`;
+- Fleet instance/profile/port isolation is preserved end-to-end;
+- losing/restarting one Browser endpoint finalizes or pauses only that endpoint's Worker sessions while the other recorder workers continue;
+- newly added Fleet manifest entries are discovered while the supervisor is running;
+- each child recorder keeps its own ordinary WOF-052L merged JSON;
+- supervisor shutdown also writes one fleet-level merged/index JSON with aggregate counts, room rows, T18 candidate sequence evidence, child run paths and safety fields.
+
+If the Fleet manifest is absent or has no entries, the wrapper automatically falls back to the original single-CDP recorder behavior described below.
+
+Fleet-specific controls:
+
+```bat
+RUN_WOF052L_RECORDER.cmd --fleet-manifest D:\path\to\instances.json
+RUN_WOF052L_RECORDER.cmd --ignore-browser-fleet
+```
+
+The Fleet manifest is advisory only. Every child independently probes its assigned localhost endpoint before CDP attachment. It never falls across to a different Fleet port when its assigned browser is down.
+
 ## Browser/CDP behavior
 
-Recorder first scans local Chrome/Edge CDP ports, preferring `9223` and `9222`.
+Without active Browser Fleet entries, Recorder first scans local Chrome/Edge CDP ports, preferring `9223` and `9222`.
 
 - If a compatible debug browser is already running (for example a browser started by the existing Python Launcher), Recorder attaches to it.
 - Otherwise Recorder launches a separate Chrome/Edge process with a persistent profile under `%LOCALAPPDATA%\WOF052LRecorder\BrowserProfile` and remote debugging enabled.
@@ -117,13 +141,17 @@ Room checkpoints are rewritten atomically while a room is live and removed after
 
 `runs/<run-id>_merged.json` is a rolling merged summary while Recorder is running and becomes the final merged summary on normal shutdown. It includes retained T18 candidate evidence across rooms, aggregate sequence summaries, room rollups, coverage and safety fields.
 
+In Browser Fleet mode there are child merged run files plus one fleet-level merged/index JSON on supervisor shutdown. The fleet index links every child run so detailed secondary evidence such as full T23 summaries remains available without duplicating all child payloads.
+
 ## CMD status
 
-The console continuously reports:
+The ordinary single-CDP console continuously reports:
 
 ```text
 Browser OK | Live rooms 7 | Completed 12 | T18 samples 3456 | Candidate 8 | A4704 3 | A4712 5 | T23 4 | READ ONLY / RAM writes 0
 ```
+
+Fleet mode additionally reports the number of manifest entries and active recorder workers.
 
 ## Safety contract
 
@@ -155,13 +183,13 @@ Expected:
 SELF-TEST PASS — WOF-052L recorder invariants and sequence aggregation
 ```
 
-This validates sequence aggregation, atomic JSON writes, no fixed duration in the Worker probe, and the read-only CDP method boundary.
+This validates sequence aggregation, atomic JSON writes, no fixed duration in the Worker probe, and the read-only CDP method boundary. `test_fleet_recorder.py` separately covers Fleet manifest parsing, localhost-only filtering and fail-open handling of absent/wrong manifests.
 
 ## Current proof boundary
 
 Repository/local self-test can prove the implementation and safety invariants, but it cannot manufacture a live Windows WOF Worker.
 
-The remaining live proof is minimal:
+For ordinary single-CDP use, the remaining live proof is minimal:
 
 1. double-click `RUN_WOF052L_RECORDER.cmd`;
 2. choose the output folder once (first run only);
@@ -169,5 +197,7 @@ The remaining live proof is minimal:
 4. observe `Live rooms` rise automatically and JSON/checkpoints appear;
 5. close/refresh one room and verify only that room moves to `Completed`;
 6. press `Ctrl+C` and verify `runs/<run-id>_merged.json`.
+
+For Browser Fleet proof, launch the Fleet first, then double-click the same Recorder CMD. It should show one recorder worker per Fleet entry without any Worker-console selection or pasted JavaScript.
 
 No Worker-console selection, pasted JavaScript, per-room Start action, fixed one-hour run, or repeated 120-second collection is part of WOF-052L anymore.
