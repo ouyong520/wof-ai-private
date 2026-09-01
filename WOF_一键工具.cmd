@@ -3,7 +3,13 @@ setlocal EnableExtensions
 chcp 65001 >nul 2>&1
 title WOF 一键工具
 
-set "BOOT_URL=https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/parallel/OWNER_ONECLICK/bootstrap_v2.ps1"
+rem CI/diagnostics may pin an exact bootstrap commit through WOF_BOOTSTRAP_URL.
+rem Normal owner use stays on main, with a random query string to avoid stale Raw CDN cache.
+if defined WOF_BOOTSTRAP_URL (
+  set "BOOT_URL=%WOF_BOOTSTRAP_URL%"
+) else (
+  set "BOOT_URL=https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/parallel/OWNER_ONECLICK/bootstrap_v2.ps1?cb=%RANDOM%_%RANDOM%"
+)
 set "BOOT_PS1=%TEMP%\WOF_owner_bootstrap_%RANDOM%_%RANDOM%.ps1"
 
 echo.
