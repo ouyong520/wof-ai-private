@@ -1,50 +1,127 @@
 // ==UserScript==
-// @name         WOF Future Danger Alpha RC3
-// @namespace    https://github.com/ouyong520/wof-ai-private
-// @version      0.3.0-rc3
-// @description  Session-bound WOF Alpha RC3 bootstrap for WOF / World 921031; injects read-only detector into gstyphoon Worker and HUD into page.
-// @match        *://*/*
+// @name         WOF Future Danger Alpha RC5 Safe Bootstrap
+// @namespace    wof-ai-private
+// @version      0.5.0-rc5
+// @description  Fail-open gameplay bootstrap: never replaces the game Worker; Alpha stays silent until a safe live-Worker transport pairs.
+// @match        https://www.webliero.com/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
-(()=>{
+
+(function(){
 'use strict';
-if(window.__WOF_ALPHA_BOOTSTRAP_RC3)return;
+const BOOTSTRAP='wof-alpha-bootstrap-rc5';
 const RELEASE='wof-alpha-rc3',SCHEMA='wof-alpha-v2';
 const RAW='https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/product/alpha/';
-const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);
-const session=[...bytes].map(x=>x.toString(16).padStart(2,'0')).join('');
-const config={release:RELEASE,schema:SCHEMA,session,channel:'wof-alpha-v2-'+session};
-window.__WOF_ALPHA_CONFIG=config;
-window.__WOF_ALPHA_BOOTSTRAP_RC3={release:RELEASE,session,workerIntercepted:false,hudLoaded:false,lastError:null};
+if(window.__WOF_ALPHA_BOOTSTRAP_RC5?.version===BOOTSTRAP)return;
 
-const NativeWorker=window.Worker;
-if(typeof NativeWorker==='function'){
-  function AlphaWorker(url,options){
-    let abs;try{abs=new URL(String(url),location.href).href;}catch(_){return new NativeWorker(url,options);}
-    if(!/(?:^|\/)gstyphoon(?:[^\/]*)\.js(?:[?#]|$)/i.test(abs))return new NativeWorker(url,options);
-    const loader=RAW+'wof_alpha_loader.js';
-    const cfg=JSON.stringify(config);
-    const classic=`self.__WOF_ALPHA_CONFIG=${cfg};\nimportScripts(${JSON.stringify(abs)});\nfetch(${JSON.stringify(loader)}+'?x='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('alpha loader '+r.status);return r.text();}).then(t=>(0,eval)(t)).catch(e=>console.error('WOF_ALPHA_RC3_WORKER_BOOTSTRAP_ERROR',e));`;
-    const moduleCode=`self.__WOF_ALPHA_CONFIG=${cfg};\nimport(${JSON.stringify(abs)}).then(()=>fetch(${JSON.stringify(loader)}+'?x='+Date.now(),{cache:'no-store'})).then(r=>{if(!r.ok)throw new Error('alpha loader '+r.status);return r.text();}).then(t=>(0,eval)(t)).catch(e=>console.error('WOF_ALPHA_RC3_WORKER_BOOTSTRAP_ERROR',e));`;
-    const code=options?.type==='module'?moduleCode:classic,blob=URL.createObjectURL(new Blob([code],{type:'text/javascript'}));
-    window.__WOF_ALPHA_BOOTSTRAP_RC3.workerIntercepted=true;
-    const w=new NativeWorker(blob,options);setTimeout(()=>URL.revokeObjectURL(blob),60000);return w;
-  }
-  AlphaWorker.prototype=NativeWorker.prototype;
-  Object.setPrototypeOf(AlphaWorker,NativeWorker);
-  window.Worker=AlphaWorker;
+function publishState(extra){
+  const state={
+    version:BOOTSTRAP,
+    release:RELEASE,
+    schema:SCHEMA,
+    session:null,
+    channel:null,
+    workerIntercepted:false,
+    workerReplacement:false,
+    gameWorkerUntouched:true,
+    transport:'external-live-worker-required',
+    attachState:'DISABLED',
+    listenerReady:false,
+    hudLoaded:false,
+    hudLoading:false,
+    lastError:null,
+    ...extra
+  };
+  window.__WOF_ALPHA_BOOTSTRAP_RC5=state;
+  // Compatibility alias for diagnostics that still look for the old bootstrap slot.
+  window.__WOF_ALPHA_BOOTSTRAP_RC3=state;
+  return state;
 }
+
+let session='';
+try{
+  const bytes=new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  session=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+}catch(e){
+  publishState({lastError:'secure session unavailable: '+String(e?.message||e)});
+  console.warn('[WOF Alpha RC5] disabled: secure session unavailable; game Worker left untouched');
+  return;
+}
+
+const channel='WOF_ALPHA_'+session;
+const state=publishState({session,channel,attachState:'WAITING_EXTERNAL_TRANSPORT'});
+window.__WOF_ALPHA_CONFIG={release:RELEASE,schema:SCHEMA,session,channel};
+
+let hudStartRequested=false;
+let hudWaitCount=0;
+let hudTimer=0;
+const gameSurfaceReady=()=>{
+  try{
+    const c=window.I_GF1TC&&window.I_GF1TC.I_V_2dContext?.canvas;
+    const gl=window.I_GF1TC?.I_V_WebGL;
+    return !!(c&&gl);
+  }catch(_){return false;}
+};
 
 async function loadHud(){
-  if(window.__WOF_ALPHA_BOOTSTRAP_RC3.hudLoaded)return;
-  if(!(window.I_GF1TC||document.getElementById('whathis'))||!window.I_fdC8Q)return;
+  if(state.attachState!=='PAIRED'||state.hudLoaded||state.hudLoading)return;
+  if(!gameSurfaceReady()){
+    if(++hudWaitCount<=150)hudTimer=setTimeout(loadHud,100);
+    else state.lastError='paired detector seen but game surface was not ready';
+    return;
+  }
+  state.hudLoading=true;
   try{
-    const r=await fetch(RAW+'wof_alpha_loader.js?x='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('alpha loader '+r.status);
-    (0,eval)(await r.text());window.__WOF_ALPHA_BOOTSTRAP_RC3.hudLoaded=true;
-  }catch(e){window.__WOF_ALPHA_BOOTSTRAP_RC3.lastError=String(e?.stack||e);console.error('WOF_ALPHA_RC3_PAGE_BOOTSTRAP_ERROR',e);}
+    const r=await fetch(RAW+'wof_alpha_loader.js?x='+Date.now(),{cache:'no-store',credentials:'omit'});
+    if(!r.ok)throw new Error('loader HTTP '+r.status);
+    const text=await r.text();
+    (0,eval)(text);
+    if(!window.WOFALPHAHUD)throw new Error('page HUD did not attach');
+    state.hudLoaded=true;
+    state.lastError=null;
+  }catch(e){
+    state.hudLoaded=false;
+    state.lastError='page HUD attach failed: '+String(e?.message||e);
+    console.warn('[WOF Alpha RC5] '+state.lastError);
+  }finally{
+    state.hudLoading=false;
+  }
 }
-const poll=setInterval(()=>{loadHud();if(window.__WOF_ALPHA_BOOTSTRAP_RC3.hudLoaded)clearInterval(poll);},100);
-addEventListener('load',loadHud,{once:true});
-console.log('✅ WOF Alpha RC3 bootstrap armed before Worker creation · WOF / World 921031 · session',session.slice(0,8));
+
+function requestHud(){
+  if(hudStartRequested)return;
+  hudStartRequested=true;
+  loadHud();
+}
+
+let bc=null;
+try{
+  bc=new BroadcastChannel(channel);
+  bc.onmessage=e=>{
+    const m=e?.data;
+    if(!(m&&m.schema===SCHEMA&&m.session===session))return;
+    if(m.kind==='state'){
+      state.attachState='PAIRED';
+      state.lastError=null;
+      requestHud();
+    }else if(m.kind==='diag'){
+      state.attachState='DISABLED';
+      state.lastError=String(m.reason||m.status||'detector diagnostic');
+    }
+  };
+  state.listenerReady=true;
+}catch(e){
+  state.attachState='DISABLED';
+  state.lastError='transport listener unavailable: '+String(e?.message||e);
+  console.warn('[WOF Alpha RC5] '+state.lastError+'; game Worker left untouched');
+}
+
+window.addEventListener('pagehide',()=>{
+  try{if(hudTimer)clearTimeout(hudTimer);}catch(_){}
+  try{bc?.close();}catch(_){}
+},{once:true});
+
+console.log('[WOF Alpha RC5] safe bootstrap ready; native game Worker construction is untouched');
 })();
