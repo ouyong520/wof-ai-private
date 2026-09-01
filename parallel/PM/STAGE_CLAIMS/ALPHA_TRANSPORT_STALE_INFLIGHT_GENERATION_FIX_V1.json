@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "ALPHA_TRANSPORT_STALE_INFLIGHT_GENERATION_FIX_V1",
+  "promptPath": "parallel/PM/ALPHA_TRANSPORT_STALE_INFLIGHT_GENERATION_FIX_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "14264b454e1ccc47043099127798fc67e405fc88",
+  "startedAtUtc": "2026-09-01T14:56:00Z"
+}
