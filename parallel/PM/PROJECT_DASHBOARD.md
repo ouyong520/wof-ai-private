@@ -1,80 +1,81 @@
 # WOF Future Danger AI — Project Dashboard
 
-Snapshot: 2026-09-01 — Alpha RC audit
+Snapshot: 2026-09-01 — RC1 QA-blocked audit
 
 ## Executive status
 
-**Stage: Alpha RC / independent QA gate, with late research continuing separately.**
+**Stage: Alpha RC1 blocked by independent QA; RC2 repair stage now required.**
 
-A concrete Alpha RC1 now exists under `product/alpha/**`. The product implementation lane reports that its engineering stop condition is reached: six frozen rules only, isolated release runtime, fail-closed layout guard, live target/retarget, WebGL HUD, packaging and release-artifact regression are present. The release regression reconstructs the audited WOF-051 production subset at 143/143 resolved signals with zero hard-miss equivalent in the fixtures.
+Alpha RC1 is a real narrow candidate, but independent QA found one P0 and three P1 release blockers. Therefore RC1 must not advance to human Browser acceptance yet.
 
-This is not yet an Alpha release. Two release gates remain: independent Alpha QA and one real Browser owner acceptance run. The RC report explicitly notes that the repository does not retain the raw WOF-051 per-poll stream, so its 143/143 regression is a canonical fixture reconstruction rather than a raw Browser replay.
+The blockers are concrete and bounded:
+- runtime/build identity is only a layout check and can fail open on an unsupported lookalike revision;
+- same-type same-slot replacement can inherit a prior enemy watch;
+- HUD silently renders only the first simultaneous warning;
+- the supported load path still assumes researcher-level manual Worker-console selection.
 
-Research state also improved: COVERAGE normalized the type notation and corrected the old T23 accounting error; current retained EFIELD material contains canonical T1 (0x01) through T31 (0x1F), including T23 (0x17). COVERAGE concludes human recap is not required. SEQMINER continues to refine ordered features but requests no recapture. WOF-052 still has no Browser run/result.
+Frozen-rule fidelity itself passed QA, including T16 danger-only semantics and exclusion of the ambiguous T18 BODY4728 A4704-specific candidate.
+
+Research/accounting lanes are no longer the bottleneck. COVERAGE is complete and says human recap NO. SEQMINER has exhausted the current retained corpus to its safe boundary and requests no recapture.
 
 ## Project metrics
 
 | Dimension | Status | Meaning |
 |---|---|---|
-| Reverse engineering foundation | READY | sufficient for narrow product release work |
-| Collector / retained raw | READY / STOP BROAD COLLECTION | reusable baseline exists; no generic recap justified |
-| BASECAP | READY | complete for current baseline |
-| GEO | CORE READY / ON DEMAND | no current Alpha blocker |
-| EFIELD | READY / STOP GENERIC | bounded high-value mapping complete |
-| RAWMINE | READY / PARKED | reopen only for a concrete question |
-| normalized enemy type census | STRONG LOCAL ACCOUNTING | retained corpus observes canonical T1..T31; scene semantics remain incomplete |
-| attack coverage | NARROW | six conservative Alpha freeze rules; breadth is a Beta/v1 issue |
-| ordered-sequence research | MID-DISCOVERY | ordered context is mandatory for T18/T23 ambiguity; no new production promotion yet |
-| target/retarget | STRONG IMPLEMENTATION / HUMAN CHECK PENDING | RC regression covers live retarget/side; real Browser visual check remains |
-| production rules | 6 FROZEN IN RC1 | exact Alpha subset only |
-| Alpha readiness | **RC1 / QA + HUMAN ACCEPTANCE PENDING** | implementation work is no longer the main blocker |
-| Beta readiness | MID | requires broader validated common-event coverage and product polish |
-| v1 readiness | EARLY-MID | requires stable Beta and defensible breadth denominator |
+| reverse-engineering foundation | READY | sufficient for narrow product work |
+| collector / retained raw | READY / STOP BROAD COLLECTION | no generic recap justified |
+| frozen Alpha rules | 6 / FIDELITY QA PASS | release set itself is not the current blocker |
+| runtime identity | **P0 BLOCKED** | needs positive supported-build recognition, not layout-only signature |
+| enemy episode lifecycle | **P1 BLOCKED** | same-type slot replacement can inherit a warning |
+| simultaneous warning HUD | **P1 BLOCKED** | current HUD silently drops warnings after first row |
+| user bootstrap | **P1 BLOCKED** | current path still assumes manual live Worker console selection |
+| read-only / no input | STATIC QA PASS | real Browser interference check remains later |
+| target / retarget / side | CORE QA PASS / LIFECYCLE BLOCKED | live target logic good; episode transfer risk must be fixed |
+| Alpha readiness | **RC1 BLOCKED -> RC2 REQUIRED** | no human acceptance yet |
+| Beta readiness | MID | unchanged; broader work waits for Alpha closure |
+| v1 readiness | EARLY-MID | unchanged |
 
 ## Current lane state
 
-### PRODUCT / ALPHA — RC1 REACHED / WAIT FOR QA
+### ALPHA QA RC1 — COMPLETE AT BLOCKED
 
-`product/alpha/ALPHA_RC_REPORT.md` declares `wof-alpha-rc1` and says only real Browser owner acceptance remains from the implementation owner's perspective.
+QA produced `parallel/ALPHAQA/AUDIT_STATUS.md`, `FINDINGS.md` and an independent adversarial harness. This stage is complete; do not keep extending the same RC1 QA thread.
 
-PM adds one independent gate before spending owner Browser time: `parallel/ALPHAQA/**` must independently audit the RC. The QA bootstrap already exists at `parallel/PM/ALPHA_QA_START_PROMPT.md`.
+### PRODUCT / ALPHA RC2 — START NOW / P0
 
-### ALPHA QA — START NOW / P0
+New implementation stage bootstrap:
+- `parallel/PM/ALPHA_RC2_FIX_START_PROMPT.md`
 
-Read-only audit of `product/alpha/**`. QA writes only under `parallel/ALPHAQA/**`. It must either PASS with no open P0/P1 or return an exact blocking defect list to the Alpha developer.
+It owns `product/alpha/**` repairs and must close all four QA blockers without widening the production rule set.
 
-No `parallel/ALPHAQA/**` result exists yet at this snapshot.
+### ALPHA RUNTIME IDENTITY AUDIT — START NOW / PARALLEL P0
 
-### MAINLINE WOF-052 — HUMAN-GATED / P1 FOR ALPHA, P0 RESEARCH
+Read-only supporting lane bootstrap:
+- `parallel/PM/ALPHA_RUNTIME_IDENTITY_AUDIT_START_PROMPT.md`
 
-The coordinator exists, but no WOF-052 result has landed. T18 BODY4728 remains attack-ambiguous and excluded from RC1. WOF-052 is useful research but no longer blocks Alpha RC1.
+It searches retained Browser evidence for a real positive supported-build identifier and writes only under `parallel/ALPHAID/**`.
 
-### COVERAGE — REFRESH COMPLETE / PARK
+### COVERAGE — COMPLETE / PARK
 
-Canonical notation is now `T<decimal> (0xHH)`. The retained corpus observes T1..T31. The previous `T23=0` conclusion was a notation artifact: canonical T23 (0x17) has 2,140 retained samples. Current stop decision: **human recap required: NO**.
+Normalized refresh complete; T23 notation error corrected; human recap required NO.
 
-### SEQMINER — CURRENT CORPUS NEAR SAFE STOP / NO RECAP
+### SEQMINER — CURRENT CORPUS EXHAUSTED / PARK
 
-Latest work strengthens ordered feature contracts and cross-state timer progression. It requests no Collector recapture. Browser validation remains the correct next evidence step for attack-specific promotion.
+v3 contract is ready. No generic offline step or recapture is justified until a reopen trigger appears.
 
-### BASECAP / GEO / EFIELD / RAWMINE / SWEEPATLAS — STOP OR ON DEMAND
+### MAINLINE WOF-052 — DEFER HUMAN TIME UNTIL ALPHA RELEASE GATE
 
-No broad collection or generic field research is justified.
+Still useful for post-Alpha rule expansion, but not an Alpha blocker.
 
 ## Current biggest bottlenecks
 
-1. **Independent Alpha QA** — falsify RC1 before human acceptance.
-2. **Real Browser Alpha acceptance** — only after QA has no open P0/P1.
-3. **WOF-052 ordered T18 Browser evidence** — important for post-Alpha rule expansion, not required for RC1.
-
-## Current biggest risks
-
-1. RC1 regression is fixture reconstruction, not replay of retained raw WOF-051 polls.
-2. Browser identity guard is conservative layout-based, not a cryptographic ROM hash.
-3. Independent QA has not yet produced a result; developer self-tests alone are not enough for release approval.
+1. close ALPHAQA-001 positive runtime/build identity;
+2. close ALPHAQA-002/003/004 in RC2;
+3. fresh independent QA retest of RC2;
+4. only then one real Browser Alpha acceptance.
 
 ## Current product judgment
 
-**Do not open more discovery lanes. Move Alpha through QA, then one short real Browser acceptance.**
+**Do not spend owner gameplay time yet. Run RC2 fixes and the identity audit in parallel, then retest.**
 
-COVERAGE should stop rather than request recap. SEQMINER should stop when its current contract/materialization work is exhausted. Correct narrow release is now more valuable than adding speculative rules before Alpha.
+The project should close completed work threads rather than keep them alive: COVERAGE, SEQMINER and RC1 QA can stop now.
