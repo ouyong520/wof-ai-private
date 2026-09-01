@@ -1,51 +1,63 @@
-# WOF Alpha RC3 Browser Acceptance Prep — Status
+# WOF Alpha Transport-Aware Browser Acceptance V2 — Prep Status
 
 Updated: 2026-09-01
 
 ## Preparation verdict
 
-**PREP COMPLETE — FINAL OWNER ACCEPTANCE NOT YET AUTHORIZED**
+**ACCEPTANCE PREP READY — WAITING FOR TRANSPORT INTEGRATION**
 
-The Browser acceptance support lane has reached its stop condition:
+The old RC3-era acceptance package has been superseded by a transport-aware V2 preparation package.
 
-- the final owner operation is reduced to normal game refresh + one acceptance button click;
-- one auxiliary same-origin tab, its reload and closure are automated;
-- the owner does not need to select the Worker Console or inspect a list of Console fields;
-- a single summary JSON provides `PASS`, `FAIL` or `INCOMPLETE` Browser-acceptance evidence;
-- rare attacks are not required merely to certify infrastructure;
-- all writes in this preparation lane are confined to `parallel/ALPHAACCEPT/**`.
+## Why acceptance is not runnable yet
 
-## Current external blocker
+This prep lane does not pretend the Safe Transport already exists.
 
-Fresh independent RC3 QA remains:
+Current external blockers are outside `parallel/ALPHAACCEPT/**`:
 
-**BLOCKED / P1 — HUMAN BROWSER ACCEPTANCE NOT READY**
+1. PYLAUNCH still requires one fresh real Windows proof after the Worker-discovery v2 repository fix;
+2. Safe Transport Integration must then be implemented from the PM contract;
+3. product regression + transport integration tests + PYLAUNCH tests must all PASS before the bounded real Browser acceptance is authorized.
 
-Blocking finding: `ALPHAQA-RC3-001` — a paired runtime `diag` does not immediately invalidate a prior warning in the current HUD; the stale warning can remain visible for up to 1500 ms.
+RC5 itself is not blocked by the old RC3 diagnostic issue. Fresh RC5 independent QA already says:
 
-Therefore there is currently **no owner action requested**.
+`PASS — RC5 ROOM-ENTRY REPAIR QA`
 
-The owner acceptance package becomes runnable only after a product fix and a fresh independent QA verdict exactly equal to:
+and preserves immediate current-diag invalidation, 1500 ms ordinary stale behavior, exact World 921031 identity, the two T18 production rules, fail-open gameplay, and read-only/no-input requirements.
 
-`PASS — READY FOR ONE REAL BROWSER ACCEPTANCE`
+## Prepared acceptance surfaces
 
-## Prepared artifacts
+V2 now has:
 
-- `README.md`
-- `ACCEPTANCE_PLAN.md`
-- `OPERATOR_STEPS.md`
-- `RESULT_SCHEMA.md`
-- `wof_alpha_acceptance.user.js`
+- exact acceptance matrix;
+- fixed driver/collector handoff contract;
+- machine-readable fixture vectors;
+- compact final JSON schema;
+- stdlib-only result validator;
+- transport-aware page collector;
+- Simplified-Chinese owner steps/UI;
+- explicit negative checks for old generation/wrong nonce;
+- explicit reconnect/rebind freshness checks;
+- explicit gameplay liveness/owner playability confirmation;
+- explicit safety fields `readOnly=true`, `ramWrites=0`, `inputInjection=false`.
 
-## Support helper scope
+## No owner action now
 
-The helper observes the real RC3 page/Worker pairing through the existing random session/channel, captures the accepted World 921031 identity signature, samples actual Alpha WebGL callbacks around their original execution, coordinates an auxiliary real game tab plus reload, validates naturally observed current T18 warning rows, measures catastrophic HUD callback overhead, and emits one result JSON.
+Do **not** ask the owner to run Browser acceptance yet.
 
-It does not access game RAM, inject gameplay input, implement attack research, modify product code, or declare Alpha released.
+The future integration stage may authorize the run only after its own stop condition is:
 
-## Remaining sequence
+`INTEGRATION IMPLEMENTED — READY FOR BOUNDED REAL BROWSER ACCEPTANCE`
 
-1. product engineering fixes `ALPHAQA-RC3-001` outside this lane;
-2. fresh independent RC3 QA reruns;
-3. only on QA PASS, owner performs the one bounded Browser acceptance described here;
-4. PM/release owner consumes the resulting JSON and decides the next release action.
+At that point the acceptance flow is already specified and should be wired to the fixed V2 driver contract rather than redesigned.
+
+## Files modified by this prep lane
+
+Only `parallel/ALPHAACCEPT/**`.
+
+No `product/alpha/**` modification.
+No `parallel/PYLAUNCH/**` modification.
+No WOF-052L modification.
+
+## Stop condition
+
+**ACCEPTANCE PREP READY — WAITING FOR TRANSPORT INTEGRATION**

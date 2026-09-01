@@ -1,67 +1,94 @@
-# WOF Alpha RC3 — Browser Acceptance Preparation
+# WOF Alpha — Transport-Aware Browser Acceptance V2 Preparation
 
-Status: **PREPARED / DO NOT RUN FINAL ACCEPTANCE UNTIL FRESH RC3 QA PASSES**
+Updated: 2026-09-01
 
-This lane contains support-only tooling for the bounded owner Browser acceptance of `wof-alpha-rc3`.
+Status: **ACCEPTANCE PREP READY — WAITING FOR TRANSPORT INTEGRATION**
 
-It does **not** modify `product/alpha/**`, does **not** certify RC3, and does **not** declare Alpha released.
+This directory is the support-only preparation lane for the bounded real-Browser acceptance that follows the Safe Transport Integration offline PASS.
 
-## Current gate
+It does **not** modify `product/alpha/**`, does **not** implement the transport, does **not** modify WOF-052L, and does **not** declare Alpha released.
 
-At the time this preparation was written, fresh independent RC3 QA is **BLOCKED / P1** by `ALPHAQA-RC3-001`: a runtime diagnostic can leave a prior warning visible for up to 1500 ms. Final owner Browser acceptance must wait for the product fix and a fresh QA verdict exactly equal to:
+## Current authoritative gates
 
-`PASS — READY FOR ONE REAL BROWSER ACCEPTANCE`
+Already accepted and not reopened here:
 
-## Goal of this lane
+- fresh RC5 independent QA: `PASS — RC5 ROOM-ENTRY REPAIR QA`;
+- exact supported build: `wof / Warriors of Fate (World 921031)`;
+- exact 1 MiB CPU-logical SHA-256:
+  `5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`;
+- only two current-level T18 production rules;
+- F1-F4 quarantined;
+- same-type slot reuse carries no warning history;
+- current valid `diag` immediately invalidates warning authority;
+- ordinary no-diag stale boundary is exactly 1500 ms;
+- read-only / `ramWrites=0` / `inputInjection=false`;
+- no `window.Worker` replacement/wrapping and no Blob/Data/ObjectURL game Worker.
 
-Reduce the final real-Browser work to one short run with no manual inspection of many Console values.
+Current external sequence remains:
 
-Install the normal Alpha userscript plus the support-only acceptance userscript in this directory. After the QA gate is open, refresh the game page and click the acceptance helper's single **Run RC3 Browser Acceptance** button.
+1. PYLAUNCH real Windows Browser/page/Worker/WASM/World proof passes while the room remains playable;
+2. Safe Transport Integration is implemented and all offline/mock gates pass;
+3. this V2 bounded Browser acceptance runs once;
+4. PM decides whether Alpha may release.
 
-The helper then:
+Until step 2 is complete, the V2 helper intentionally reports **等待安全 Transport 集成** rather than pretending acceptance can run.
 
-- confirms document-start bootstrap intercepted the real `gstyphoon*.js` Worker;
-- confirms the page HUD is paired to the same random RC3 session;
-- listens to the live session-bound detector stream;
-- requires the accepted World 921031 identity signature that is emitted only after exact full-program SHA-256 validation;
-- records any runtime diagnostic and fails the run if one occurs;
-- validates every naturally observed warning is one of the two current-level T18 rules and has sane target/side/current-evidence fields;
-- checks the real HUD draw hook is active and captures WebGL state immediately before/after real HUD callback execution;
-- measures real HUD callback cost during those samples;
-- opens one auxiliary same-origin game tab from the operator click, proves its RC3 session/channel differs from the primary tab, reloads it automatically, proves a fresh session is created, then closes it;
-- records legacy-HUD takeover evidence when legacy `WOFHUD` was present;
-- emits one final machine-readable JSON object in the page UI and `window.__WOF_ALPHA_ACCEPTANCE_RESULT`.
+## Prepared V2 artifacts
 
-No rare attack reproduction is required. If neither active T18 condition occurs naturally, attack-warning coverage is reported as `NOT_EXERCISED` rather than treated as an infrastructure failure.
+- `ACCEPTANCE_PLAN.md` — exact real-Browser acceptance matrix and PASS/FAIL rules.
+- `ACCEPTANCE_DRIVER_CONTRACT.md` — fixed handoff contract for the future PYLAUNCH integration/acceptance driver.
+- `OPERATOR_STEPS.md` — Simplified-Chinese minimal owner workflow; no DevTools/Worker Console/pasted JS.
+- `RESULT_SCHEMA.md` — compact `wof-alpha-browser-acceptance-v2` JSON contract.
+- `fixtures/transport_acceptance_v2.json` — machine-readable constants and required scenario vectors.
+- `validate_acceptance_result.py` — stdlib-only final JSON validator for QA/PM.
+- `wof_alpha_acceptance.user.js` — support-only page collector/UI prepared for current-pair transport metadata and lifecycle evidence.
 
-## Files
+## What V2 is prepared to prove
 
-- `ACCEPTANCE_PLAN.md` — exact scope, automatic checks, pass rules and exclusions.
-- `OPERATOR_STEPS.md` — the smallest owner procedure.
-- `RESULT_SCHEMA.md` — unambiguous JSON contract.
-- `wof_alpha_acceptance.user.js` — support-only one-click acceptance helper.
+The final bounded run must cover:
 
-## Identity authority
+- `transportVersion`, page `session`, `pairGeneration`, `pairNonce`;
+- Browser / WOF page / native Worker / WASM heap / exact World 921031 status;
+- detector-local identity accepted;
+- first valid **current-pair** state is what gives HUD authority;
+- ordinary stale behavior: fresh through 1500 ms, silent after 1500 ms (exact 1500/1501 boundary remains an offline integration gate; Browser run records bounded live evidence);
+- current-pair `diag` clears warning authority immediately;
+- reconnect/rebind creates a fresh generation + nonce;
+- old generation / wrong nonce messages are rejected;
+- gameplay remains fail-open through attach/stop/rebind;
+- `readOnly=true`, `ramWrites=0`, `inputInjection=false`;
+- room remains playable;
+- one compact final acceptance JSON.
 
-Supported Browser build:
+An already-approved T18 warning is exercised only when practical with an existing bounded fixture. No new attack research is created to manufacture one.
 
-- MAME set: `wof`
-- `Warriors of Fate (World 921031)`
-- exact full 1 MiB CPU-logical SHA-256: `5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`
-- accepted runtime signature: `wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8`
+## Owner UX
 
-The helper does not implement a second ROM locator/hash algorithm. Instead it verifies that the real Worker produced the RC3 accepted signature. In current RC3 source, that state stream is unreachable until the full 1 MiB digest has been computed once and accepted by exact equality; sparse vector/dispatch/layout evidence cannot produce the signature.
+Owner-facing text in this lane is Simplified Chinese by default. Machine JSON keys/schema/version values remain English for compatibility.
+
+The intended final operation is one bounded run from the integrated Launcher/Toolkit path:
+
+`进入 WOF 房间 -> 确认当前可正常操作并点击一次“开始验收” -> 自动完成 -> 返回一个 JSON`
+
+No DevTools, Worker Console, manual JavaScript paste, RAM inspection, or gameplay-input injection is part of the flow.
 
 ## Safety boundary
 
-This support lane does not:
+This lane never:
 
-- write game RAM;
-- inject keyboard/mouse/gameplay input;
-- replace the Alpha detector/core/HUD;
-- promote quarantined F1–F4 rules;
-- add WOF-052/T23/T24/Beta behavior;
-- certify attack coverage;
-- declare release readiness.
+- writes game RAM;
+- injects keyboard/mouse/controller/gameplay input;
+- changes game speed;
+- replaces/wraps `window.Worker`;
+- creates or rewrites the native game Worker;
+- adds warning rules or attack research;
+- modifies `product/alpha/**`;
+- modifies WOF-052L.
 
-Read-only/no-input product guarantees remain part of fresh independent QA. The Browser helper adds real-runtime evidence for bootstrap, pairing, identity acceptance, WebGL behavior, isolation/reload and catastrophic-overhead absence.
+Synthetic stale/old-pair fixtures are support-only message/control tests and never mutate the game heap or gameplay controls.
+
+## Stop condition
+
+Repository-side acceptance preparation is complete.
+
+**ACCEPTANCE PREP READY — WAITING FOR TRANSPORT INTEGRATION**
