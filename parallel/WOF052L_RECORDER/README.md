@@ -1,66 +1,74 @@
-# WOF-052L Automatic Multi-Room Event Recorder
+# WOF-052L 自动多房间事件采集器
 
-Windows/Python research recorder for the PM-approved WOF-052L long-capture stage.
+这是 PM 已批准的 WOF-052L 长时间只读采集工具。正常 owner 工作流默认使用简体中文。
 
-## Owner workflow
+## 你实际怎么用
 
-1. Double-click `RUN_WOF052L_RECORDER.cmd`.
-2. On the first run only, choose the folder where capture JSON should be stored.
-3. Use the Chrome/Edge window attached/launched by Recorder and open/close WOF rooms normally.
-4. Do nothing per room. Supported `gstyphoon*.js` Workers are discovered and attached automatically after their WASM heap is live.
-5. Leave Recorder running for minutes, hours, or overnight.
-6. Press `Ctrl+C` when finished. Recorder finalizes every live room and writes the merged run JSON automatically.
+1. 双击 `RUN_WOF052L_RECORDER.cmd`。
+2. 第一次运行时，选择保存 JSON 的目录。
+3. 在采集器连接/启动的 Chrome 或 Edge 中正常进入 WOF 房间。
+4. 不需要逐个房间点“开始”。支持的 `gstyphoon*.js` Worker 会在 WASM/heap 就绪后自动发现和连接。
+5. 可以运行几分钟、几小时或过夜。
+6. 完成时按 `Ctrl+C`。采集器会结束所有在线房间，并自动写入最终合并 JSON。
 
-The remembered output folder is stored in `%LOCALAPPDATA%\WOF052LRecorder\settings.json`.
+记住的保存目录位于：
 
-To change it later:
+`%LOCALAPPDATA%\WOF052LRecorder\settings.json`
+
+以后要重新选择目录：
 
 ```bat
 RUN_WOF052L_RECORDER.cmd --reset-output
 ```
 
-or:
+或者直接指定：
 
 ```bat
 RUN_WOF052L_RECORDER.cmd --output-dir D:\WOF_CAPTURE
 ```
 
-## Browser Fleet integration
+中文路径同样支持，例如：
 
-The one-click CMD now starts `fleet_recorder.py`, which is backward-compatible with the original recorder.
+```bat
+RUN_WOF052L_RECORDER.cmd --output-dir "D:\WOF采集结果"
+```
 
-If `%LOCALAPPDATA%\WOF Future Danger\Fleet\instances.json` contains Browser Fleet entries:
+## Browser Fleet 多房间模式
 
-- every numbered localhost CDP endpoint receives its own independent `RecorderManager`;
-- Fleet instance/profile/port isolation is preserved end-to-end;
-- losing/restarting one Browser endpoint finalizes or pauses only that endpoint's Worker sessions while the other recorder workers continue;
-- newly added Fleet manifest entries are discovered while the supervisor is running;
-- each child recorder keeps its own ordinary WOF-052L merged JSON;
-- supervisor shutdown also writes one fleet-level merged/index JSON with aggregate counts, room rows, T18 candidate sequence evidence, child run paths and safety fields.
+正常双击 CMD 会经过中文 owner 入口 `owner_zh_cn.py`，底层继续复用现有 `fleet_recorder.py` / `recorder.py`，不改变采集逻辑。
 
-If the Fleet manifest is absent or has no entries, the wrapper automatically falls back to the original single-CDP recorder behavior described below.
+如果 `%LOCALAPPDATA%\WOF Future Danger\Fleet\instances.json` 中存在 Browser Fleet 房间：
+- 每个编号的 localhost CDP endpoint 都拥有独立 `RecorderManager`；
+- 房间/profile/端口隔离保持不变；
+- 一个浏览器房间重启或断开，只影响它自己的 Worker session；
+- 其他房间继续采集；
+- 新加入的 Fleet 房间会自动发现；
+- 每个子采集器保留自己的合并 JSON；
+- 停止时另外生成一个 Fleet 总合并/index JSON。
 
-Fleet-specific controls:
+如果没有 Fleet manifest，工具会自动使用原有单浏览器模式。
+
+可选高级参数：
 
 ```bat
 RUN_WOF052L_RECORDER.cmd --fleet-manifest D:\path\to\instances.json
 RUN_WOF052L_RECORDER.cmd --ignore-browser-fleet
 ```
 
-The Fleet manifest is advisory only. Every child independently probes its assigned localhost endpoint before CDP attachment. It never falls across to a different Fleet port when its assigned browser is down.
+## 浏览器连接行为
 
-## Browser/CDP behavior
+没有 Browser Fleet 时，采集器会扫描本机 Chrome/Edge CDP 端口，优先 `9223` 和 `9222`。
 
-Without active Browser Fleet entries, Recorder first scans local Chrome/Edge CDP ports, preferring `9223` and `9222`.
+- 如果已有兼容浏览器在运行，直接连接；
+- 否则可以启动独立 Chrome/Edge；
+- 在该浏览器正常进入 WOF 房间即可；
+- 不替换 `window.Worker`；
+- 不创建 Blob Worker；
+- 不改写 Worker URL；
+- 只有真实 `gstyphoon*.js` Worker 和 WASM/CPS RAM 就绪后才附加；
+- 连接失败是 fail-open：游戏不受影响，采集器继续等待/重试。
 
-- If a compatible debug browser is already running (for example a browser started by the existing Python Launcher), Recorder attaches to it.
-- Otherwise Recorder launches a separate Chrome/Edge process with a persistent profile under `%LOCALAPPDATA%\WOF052LRecorder\BrowserProfile` and remote debugging enabled.
-- Open WOF rooms in that browser window.
-- Recorder never replaces `window.Worker`, never creates Blob Workers, and never rewrites Worker URLs.
-- It attaches only after a real `gstyphoon*.js` Worker exists and its WASM/CPS RAM is ready.
-- Failure to connect/attach is fail-open: the game/browser is not modified and Recorder keeps waiting/retrying.
-
-Optional controls:
+可选参数：
 
 ```bat
 RUN_WOF052L_RECORDER.cmd --cdp-port 9223
@@ -70,61 +78,63 @@ RUN_WOF052L_RECORDER.cmd --no-launch-browser
 RUN_WOF052L_RECORDER.cmd --game-url https://example.invalid/your-wof-page
 ```
 
-## Room lifecycle
+## 中文状态说明
 
-Every supported Worker target owns an independent recorder state.
+单浏览器模式会持续显示类似：
 
-- New Worker: exact World 921031 identity is verified, then capture starts automatically.
-- Room closed / refreshed / Worker recreated: only that Worker is finalized.
-- Other rooms continue.
-- A replacement Worker is a fresh room session and joins automatically.
-- New rooms may join at any time.
-- There is no one-hour or 120-second stop timer.
-- Design is not capped at five rooms; practical limits are browser/PC resources.
+```text
+浏览器 已连接 | 在线房间 7 | 已完成房间 12 | T18 样本 3456 | 候选周期 8 | A4704 3 | A4712 5 | T23 周期 4 | 只读模式 开启 / 游戏内存写入 0
+```
 
-Each room is accepted only after exact CPU-logical ROM SHA-256 matches:
+Fleet 模式还会显示：
+- 集群房间数量；
+- 正在运行的采集进程数量；
+- 每个 Fleet 房间的浏览器连接状态。
+
+错误会先显示中文说明，再显示：
+
+`技术详情：...`
+
+这样普通操作不要求看懂英文异常栈。
+
+## 房间生命周期
+
+每个支持的 Worker 都是独立采集状态：
+- 新 Worker：先严格确认 World 921031，再自动开始；
+- 房间关闭 / 刷新 / Worker 重建：只结束该 Worker；
+- 其他房间继续；
+- 替换出来的新 Worker 会作为新 session 自动加入；
+- 新房间可随时加入；
+- 没有固定一小时或 120 秒自动停止；
+- 实际房间数量主要受浏览器/电脑资源限制。
+
+严格身份仍是：
+
+`Warriors of Fate (World 921031)`
+
+完整 CPU-logical ROM SHA-256：
 
 `5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`
 
-which is the established `Warriors of Fate (World 921031)` identity.
+## 保存的数据
 
-## Stored data
+采集器不会保存长时间逐帧完整 RAM 历史。
 
-Recorder does **not** save full per-frame RAM histories.
+主要保存：
+- T18 `BODY4728/A4/B2/TM1 -> A4704 / A4712` 有序证据；
+- T18/T23 有界序列证据；
+- enemy type / attack 频率；
+- 玩家数量与 target 样本；
+- bounded descriptor+attack edge；
+- 场景/敌人类型集合覆盖；
+- 每房间 checkpoint 和最终 JSON；
+- 全局 rolling / final merged JSON。
 
-The Worker probe polls compact fields at 10 ms and stores counters plus event-level traces.
+所有 ordered discovery 都仍然只是研究证据，不会自动提升为 Alpha 产品规则。
 
-Mandatory WOF-052 target:
+## 输出文件
 
-`T18 BODY4728/A4/B2/TM1 -> eventual A4704 vs A4712`
-
-For candidate-containing T18 `attack=0 -> ACTIVE` cycles it preserves:
-
-- ordered distinct pre-ACTIVE states;
-- the exact candidate state indexes;
-- eventual ACTIVE attack;
-- target/side and retarget history, including target change at the ACTIVE edge;
-- lead times;
-- exact final / tail2 / tail3;
-- timer-normalized `TM*` final / tail2 / tail3;
-- transition-pair / transition-triple summaries grouped by eventual attack.
-
-Secondary compact evidence:
-
-- enemy type sample counts;
-- `type|ACTIVE attack` frequency;
-- other T18 zero->ACTIVE traces;
-- T23 ordered zero->ACTIVE traces, including natural A5888 cycles;
-- 0P/1P/2P/3P occupancy samples;
-- target samples / retarget counts;
-- bounded descriptor+attack edge examples;
-- bounded enemy-type-set coverage as a scene/encounter coverage proxy.
-
-All ordered discoveries are research evidence only. This tool does not promote Alpha/product rules.
-
-## Files written
-
-Under the configured output folder:
+保存目录下：
 
 ```text
 rooms/
@@ -137,67 +147,57 @@ runs/
   <run-id>_merged.json
 ```
 
-Room checkpoints are rewritten atomically while a room is live and removed after that room has a successful final JSON. If the Recorder or PC crashes, the last checkpoint remains on disk.
+内部 JSON key / schema 为了兼容继续使用英文，例如：
+- `schema`
+- `runId`
+- `status`
+- `counts`
+- `readOnly`
+- `ramWrites`
+- `inputInjection`
+- `rooms`
 
-`runs/<run-id>_merged.json` is a rolling merged summary while Recorder is running and becomes the final merged summary on normal shutdown. It includes retained T18 candidate evidence across rooms, aggregate sequence summaries, room rollups, coverage and safety fields.
+中文化只发生在你看到的 CLI、窗口、错误和说明层，不改机器消费格式。
 
-In Browser Fleet mode there are child merged run files plus one fleet-level merged/index JSON on supervisor shutdown. The fleet index links every child run so detailed secondary evidence such as full T23 summaries remains available without duplicating all child payloads.
+## 安全边界
 
-## CMD status
-
-The ordinary single-CDP console continuously reports:
-
-```text
-Browser OK | Live rooms 7 | Completed 12 | T18 samples 3456 | Candidate 8 | A4704 3 | A4712 5 | T23 4 | READ ONLY / RAM writes 0
-```
-
-Fleet mode additionally reports the number of manifest entries and active recorder workers.
-
-## Safety contract
-
-Hard invariants:
-
+固定安全约束：
 - `readOnly=true`
 - `ramWrites=0`
 - `inputInjection=false`
-- no keyboard/controller injection
-- no game speed changes
-- no Worker replacement/interception
-- no Alpha bootstrap dependency
-- no `product/alpha/**` dependency
-- no full-frame long-duration raw dump
+- 不注入键盘/手柄输入；
+- 不改游戏速度；
+- 不替换/拦截 Worker；
+- 不依赖 Alpha bootstrap；
+- 不修改 `product/alpha/**`；
+- 不做长时间完整 raw RAM dump。
 
-The Python CDP client has an explicit method allowlist limited to target discovery/attach/detach and `Runtime.enable` / `Runtime.evaluate`.
+Python CDP client 仍然只允许 target discovery/attach/detach、`Runtime.enable` 和 `Runtime.evaluate` 等现有只读方法。
 
-## Self-test
+## 离线自检
 
-Without opening a browser:
+不打开浏览器也可以执行：
 
 ```bat
 RUN_WOF052L_RECORDER.cmd --self-test
 ```
 
-Expected:
+中文默认输出：
 
 ```text
-SELF-TEST PASS — WOF-052L recorder invariants and sequence aggregation
+自检通过 — WOF-052L 采集器安全约束与序列汇总正常
 ```
 
-This validates sequence aggregation, atomic JSON writes, no fixed duration in the Worker probe, and the read-only CDP method boundary. `test_fleet_recorder.py` separately covers Fleet manifest parsing, localhost-only filtering and fail-open handling of absent/wrong manifests.
+自检继续验证序列汇总、原子 JSON 写入、无固定采集时长和只读 CDP method 边界。
 
-## Current proof boundary
+## 真人验证
 
-Repository/local self-test can prove the implementation and safety invariants, but it cannot manufacture a live Windows WOF Worker.
+单浏览器模式：
+1. 双击 `RUN_WOF052L_RECORDER.cmd`；
+2. 第一次选择保存目录；
+3. 打开一个或多个 WOF 房间；
+4. 观察“在线房间”自动增加并出现 JSON/checkpoint；
+5. 关闭/刷新一个房间，确认只有该房间进入“已完成”；
+6. 按 `Ctrl+C`，确认 `runs/<run-id>_merged.json`。
 
-For ordinary single-CDP use, the remaining live proof is minimal:
-
-1. double-click `RUN_WOF052L_RECORDER.cmd`;
-2. choose the output folder once (first run only);
-3. open one or more WOF rooms in the attached/launched browser;
-4. observe `Live rooms` rise automatically and JSON/checkpoints appear;
-5. close/refresh one room and verify only that room moves to `Completed`;
-6. press `Ctrl+C` and verify `runs/<run-id>_merged.json`.
-
-For Browser Fleet proof, launch the Fleet first, then double-click the same Recorder CMD. It should show one recorder worker per Fleet entry without any Worker-console selection or pasted JavaScript.
-
-No Worker-console selection, pasted JavaScript, per-room Start action, fixed one-hour run, or repeated 120-second collection is part of WOF-052L anymore.
+Browser Fleet 模式：先启动 Fleet，再双击同一个 Recorder CMD。应自动为每个 Fleet endpoint 启动独立采集，不需要 Worker Console，也不需要粘贴 JavaScript。
