@@ -58,14 +58,49 @@ def _probe_target(client: CdpClient, target_id: str, expression: str, *, await_p
         session.close()
 
 
+def _frame_ids_from_tree(result: dict[str, Any]) -> list[str]:
+    frame_ids: set[str] = set()
+
+    def walk(node: Any) -> None:
+        if not isinstance(node, dict):
+            return
+        frame = node.get("frame")
+        if isinstance(frame, dict):
+            frame_id = frame.get("id")
+            if isinstance(frame_id, str) and frame_id:
+                frame_ids.add(frame_id)
+        children = node.get("childFrames")
+        if isinstance(children, list):
+            for child in children:
+                walk(child)
+
+    walk(result.get("frameTree"))
+    return sorted(frame_ids)
+
+
 def _probe_page(client: CdpClient, t: dict[str, Any]) -> dict[str, Any]:
     out = dict(t)
+    session: CdpSession | None = None
     try:
-        value = _probe_target(client, str(t.get("targetId") or ""), PAGE_PROBE)
-        if isinstance(value, dict):
-            out["wofPageProbe"] = value
+        session = client.attach(str(t.get("targetId") or ""))
+        try:
+            value = _eval(session, PAGE_PROBE)
+            if isinstance(value, dict):
+                out["wofPageProbe"] = value
+        except CdpError as exc:
+            out["pageProbeError"] = str(exc)
+        try:
+            frame_ids = _frame_ids_from_tree(session.request("Page.getFrameTree"))
+            if frame_ids:
+                out["cdpFrameIds"] = frame_ids
+        except CdpError as exc:
+            out["frameIdentityError"] = str(exc)
     except CdpError as exc:
         out["pageProbeError"] = str(exc)
+        out["frameIdentityError"] = str(exc)
+    finally:
+        if session:
+            session.close()
     return out
 
 
@@ -169,6 +204,18 @@ def _related_rows(client: CdpClient, page: dict[str, Any], *, identity_timeout: 
             root.close()
 
 
+def _page_frame_ids(page: dict[str, Any]) -> set[str]:
+    frame_ids: set[str] = set()
+    probe = page.get("wofPageProbe") if isinstance(page.get("wofPageProbe"), dict) else {}
+    for candidate in (page.get("frameId"), probe.get("frameId")):
+        if isinstance(candidate, str) and candidate:
+            frame_ids.add(candidate)
+    cdp_frame_ids = page.get("cdpFrameIds")
+    if isinstance(cdp_frame_ids, (list, tuple, set)):
+        frame_ids.update(frame_id for frame_id in cdp_frame_ids if isinstance(frame_id, str) and frame_id)
+    return frame_ids
+
+
 def _direct_page(worker: dict[str, Any], pages: list[dict[str, Any]]) -> dict[str, Any] | None:
     parent_id = worker.get("parentId")
     if parent_id:
@@ -178,11 +225,7 @@ def _direct_page(worker: dict[str, Any], pages: list[dict[str, Any]]) -> dict[st
 
     parent_frame_id = worker.get("parentFrameId")
     if parent_frame_id:
-        linked = []
-        for page in pages:
-            probe = page.get("wofPageProbe") if isinstance(page.get("wofPageProbe"), dict) else {}
-            if page.get("frameId") == parent_frame_id or probe.get("frameId") == parent_frame_id:
-                linked.append(page)
+        linked = [page for page in pages if parent_frame_id in _page_frame_ids(page)]
         if len(linked) == 1:
             return linked[0]
         if len(linked) > 1:
@@ -204,7 +247,17 @@ def _diag(targets: list[dict[str, Any]], pages: list[dict[str, Any]], *, path: s
         "typeCounts": counts,
         "targets": [_summary(t) for t in targets[:32]],
         "workerUrlHints": [{"targetId": t.get("targetId"), "scheme": _url_scheme_hint(t), "url": t.get("url")} for t in workers[:32]],
-        "pageSignals": [{"targetId": p.get("targetId"), "score": _page_score(p), "url": p.get("url"), "probe": p.get("wofPageProbe")} for p in pages],
+        "pageSignals": [
+            {
+                "targetId": p.get("targetId"),
+                "score": _page_score(p),
+                "url": p.get("url"),
+                "probe": p.get("wofPageProbe"),
+                "frameIds": sorted(_page_frame_ids(p)),
+                "frameIdentityError": p.get("frameIdentityError"),
+            }
+            for p in pages
+        ],
         "relatedTopology": topology or [],
         "readOnly": True,
         "ramWrites": 0,
