@@ -2,7 +2,13 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "PROSPECTIVE_VALIDATOR_LIVE_AMBIGUITY_QA_V1",
   "promptPath": "parallel/PM/PROSPECTIVE_VALIDATOR_LIVE_AMBIGUITY_QA_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "c1347a4a6cc5c1da97c77e733c617f294263080e",
-  "startedAtUtc": "2026-09-01T14:36:55Z"
+  "startedAtUtc": "2026-09-01T14:36:55Z",
+  "completedAtUtc": "2026-09-01T14:49:26Z",
+  "resultPath": "parallel/PROSPECTIVE_VALIDATOR_QA_LIVE_AMBIGUITY/RESULT.md",
+  "resultCommit": "97227b4dead33d3aa283d5a570f0754d924737ee",
+  "machineResultPath": "parallel/PROSPECTIVE_VALIDATOR_QA_LIVE_AMBIGUITY/QA_RESULT.json",
+  "stopCondition": "PASS — PROSPECTIVE VALIDATOR LIVE AMBIGUITY P0 FRESH QA",
+  "ownerAction": "NO"
 }
