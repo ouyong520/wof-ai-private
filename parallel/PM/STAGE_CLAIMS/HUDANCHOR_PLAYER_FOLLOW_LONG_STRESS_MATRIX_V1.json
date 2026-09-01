@@ -2,7 +2,14 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "HUDANCHOR_PLAYER_FOLLOW_LONG_STRESS_MATRIX_V1",
   "promptPath": "parallel/PM/HUDANCHOR_PLAYER_FOLLOW_LONG_STRESS_MATRIX_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "25ab37b92e6c36b3346f35c5aff4cdbd2b8e8099",
-  "startedAtUtc": "2026-09-01T15:07:48Z"
+  "startedAtUtc": "2026-09-01T15:07:48Z",
+  "completedAtUtc": "2026-09-01T15:14:23Z",
+  "testedHead": "1b6387e0061120d27820cbc02a4682292237c785",
+  "sutPath": "parallel/HUDANCHOR_PLAYER_FOLLOW/src/player_follow_reference.js",
+  "sutBlob": "4beb7f8d4c9f815e125ed795aca536f02562f5d1",
+  "resultPath": "parallel/HUDANCHOR_PLAYER_FOLLOW_LONG_STRESS/RESULT.md",
+  "resultCommit": "09e2a9a2fdb0d5a165e28e79364de69c2f248d72",
+  "blocker": "invalid/non-finite projection confidence authorizes anchored rendering instead of fixed-HUD fail-closed fallback"
 }
