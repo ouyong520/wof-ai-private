@@ -1,8 +1,8 @@
 # WOF Future Danger AI — Release Readiness
 
-Updated: 2026-09-01 — RC5 room-entry P0 fully closed; Alpha now waits on one real PYLAUNCH Windows proof
+Updated: 2026-09-01 — RC5 startup repair accepted; real Windows proof now exposes a PYLAUNCH Worker-discovery blocker
 
-## Alpha — **BLOCKED / SAFE TRANSPORT PROOF REQUIRED**
+## Alpha — **BLOCKED / PYLAUNCH REAL WORKER DISCOVERY FIX REQUIRED**
 
 Confirmed PASS:
 - RC4 product regression;
@@ -11,13 +11,34 @@ Confirmed PASS:
 - owner real-Browser room entry with RC5 enabled;
 - fresh independent RC5 room-entry repair QA.
 
-Fresh RC5 QA verdict:
+RC5 verdict remains:
 
 **PASS — RC5 ROOM-ENTRY REPAIR QA**
 
-Therefore the former P0 `Alpha prevents room entry` is fully CLOSED. No more RC5 repair/QA stage is required unless new contrary evidence appears.
+The former P0 `Alpha prevents room entry` is fully closed.
 
-This does not make Alpha release-ready. RC5 remains intentionally warning-silent without a proven safe live-Worker transport.
+## New real Windows evidence
+
+The owner ran the PYLAUNCH one-click proof against real Chrome 151 and a real WOF room.
+
+Confirmed:
+- Browser/CDP connected successfully;
+- game can enter and run normally;
+- `read_only=true`;
+- `ram_writes=0`;
+- `input_injection=false`.
+
+Failed:
+- WOF page discovery;
+- native game Worker discovery;
+- WASM/heap discovery;
+- World 921031 acceptance.
+
+Exact diagnostic:
+
+`identity_reason = "no gstyphoon worker target"`
+
+Therefore the current P0 is no longer "proof not yet run". It is a concrete **real Chromium/WOF target-discovery defect in PYLAUNCH**.
 
 ## Gate status
 
@@ -27,37 +48,48 @@ This does not make Alpha release-ready. RC5 remains intentionally warning-silent
 | Fresh RC4 independent QA | PASS |
 | RC5 product regression | PASS |
 | Real host room entry with RC5 | PASS |
-| Fresh RC5 room-entry QA | **PASS** |
+| Fresh RC5 room-entry QA | PASS |
 | Python Launcher foundation | DONE |
-| PYLAUNCH one-CMD proof automation | READY |
-| Real Windows CDP/live-Worker proof | **PENDING / CURRENT P0** |
-| Alpha transport integration | BLOCKED ON PROOF |
+| Chrome/CDP real Windows connection | PASS |
+| Game remains playable while Launcher attached | PASS |
+| Real WOF page/native Worker discovery | **FAIL / CURRENT P0** |
+| Real WASM/heap discovery | BLOCKED ON WORKER DISCOVERY |
+| Real World 921031 proof | BLOCKED ON WORKER DISCOVERY |
+| Safe Transport Integration Contract | READY |
+| Alpha transport implementation | BLOCKED ON PYLAUNCH FIX + PROOF |
 | Integrated Browser acceptance | PAUSED |
 | Alpha release | BLOCKED |
 
 ## Current transport route
 
-Primary candidate remains:
+Intended route remains:
 
-`Python/EXE Launcher -> localhost Chrome/Edge CDP -> already-native gstyphoon Worker -> WASM/heap -> exact World 921031 identity`
+`Python/EXE Launcher -> localhost Chrome/Edge CDP -> already-native WOF Worker -> WASM/heap -> exact World 921031 identity`
 
-The proof has been reduced to one owner Windows run:
-- `parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd`
-- one continuously generated result file: `parallel/PYLAUNCH/WINDOWS_PROOF_STATUS.json`
-
-Automated PASS requires Browser / WOF page / Worker / WASM-heap / World 921031 / READ ONLY-RAM writes 0 simultaneously, plus owner confirmation that the real room remains playable.
+The architecture is still preferred because the game stayed playable and the localhost CDP connection itself succeeded. The immediate repair is target discovery/association, not a return to Worker replacement or page-start interception.
 
 ## Required sequence
 
-1. owner runs the one-CMD PYLAUNCH Windows proof;
-2. if PASS, open a fresh Alpha transport-integration implementation stage using the proven non-replacing path;
-3. run integrated regression;
-4. run bounded real Browser acceptance for actual detector/HUD/warnings;
-5. PM makes Alpha release decision.
+1. fresh PYLAUNCH Worker-discovery fix;
+2. one new minimal real Windows proof reaches Browser/page/Worker/WASM/World/read-only simultaneously while game remains playable;
+3. fresh Alpha safe transport integration implementation using the already-written contract;
+4. integrated regression PASS;
+5. bounded real Browser acceptance for actual detector/HUD/warnings;
+6. PM Alpha release decision.
+
+## Acceleration tool status
+
+Repository-side implementation reached stop condition for:
+- Browser Fleet Manager — READY, live proof pending;
+- WOF-052L Recorder — READY, live proof pending;
+- Operator Toolkit V1 — READY;
+- Safe Transport Integration Prep/Contract — READY.
+
+Owner-facing Simplified Chinese pass and one-click download/bootstrap are now separate acceleration stages.
 
 ## Retained safety requirements
 
-Must remain true through transport integration:
+Must remain true through the PYLAUNCH fix and later integration:
 - exact `wof / World 921031` full-program SHA-256 authority;
 - only two current-level T18 production rules;
 - F1-F4 quarantined;
@@ -69,8 +101,9 @@ Must remain true through transport integration:
 - read-only / no gameplay input injection for Alpha;
 - WebGL restoration;
 - base game continues when transport cannot attach;
-- no return to `window.Worker` replacement / Blob Worker interception.
+- no `window.Worker` replacement / Blob Worker interception;
+- no native Chrome process-memory hook.
 
 ## Current release judgment
 
-**Alpha is not releasable yet. RC5 startup compatibility is now fully accepted; the remaining immediate product gate is one real Windows proof that the safe CDP path can attach to the native WOF Worker/WASM without harming gameplay.**
+**Alpha is not releasable yet. The startup compatibility problem is solved; the current concrete blocker is that PYLAUNCH connects to real Chrome but does not yet discover the real WOF runtime Worker topology.**
