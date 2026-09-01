@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "WOF052L_RECORDER_HARDENING_QA_V1",
+  "promptPath": "parallel/PM/WOF052L_RECORDER_HARDENING_QA_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "45e288851cdc536006b4363156b1ba5e4e6a2d62",
+  "startedAtUtc": "2026-09-01T14:15:00Z"
+}
