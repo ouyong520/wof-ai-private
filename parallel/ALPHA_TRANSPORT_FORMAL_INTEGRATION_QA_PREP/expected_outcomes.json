@@ -1,0 +1,130 @@
+{
+  "schema": "wof-alpha-formal-integration-qa-expected-v1",
+  "stageId": "ALPHA_TRANSPORT_FORMAL_INTEGRATION_QA_PREP_V1",
+  "contract": {
+    "applicationSchema": "wof-alpha-v2",
+    "release": "wof-alpha-rc3",
+    "transportVersion": "wof-alpha-safe-transport-v1",
+    "identitySignature": "wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8",
+    "goldenSha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
+    "staleMs": 1500,
+    "heartbeatMaxMs": 250,
+    "safety": {
+      "readOnly": true,
+      "ramWrites": 0,
+      "inputInjection": false,
+      "workerReplacement": false,
+      "blobRewrite": false,
+      "gamePostMessageControl": false,
+      "heapWrites": false,
+      "assistMode": false
+    }
+  },
+  "sutSeam": {
+    "export": "FORMAL_INTEGRATION_QA_SEAM",
+    "schema": "wof-alpha-formal-integration-qa-sut-v1",
+    "requiredFunctions": ["createScenarioDriver"],
+    "driverFunctions": ["reset", "runScenario"]
+  },
+  "cases": [
+    {
+      "id": "FIQA-01-normal-attach-publish-clear",
+      "requirement": "normal adapter attach -> warning publish -> clear",
+      "injection": {"action": "normalAttachPublishClear", "warningRule": "T18_5440_CYCLE_BODY7512_TM4_LEVEL_90"},
+      "success": {"attach.ok": true, "publish.accepted": true, "publish.visibleWarnings": 1, "clear.accepted": true, "clear.visibleWarnings": 0, "gameplayPlayable": true},
+      "forbidden": [{"path": "publish.foreignAuthorityAccepted", "equals": true}, {"path": "clear.visibleWarnings", "gt": 0}]
+    },
+    {
+      "id": "FIQA-02-no-adapter-discovery",
+      "requirement": "no adapter/discovery unavailable -> silent fail-closed, game unaffected",
+      "injection": {"action": "adapterUnavailable"},
+      "success": {"attach.ok": false, "warningAuthority": false, "visibleWarnings": 0, "gameplayPlayable": true},
+      "forbidden": [{"path": "gameplayBlocked", "equals": true}, {"path": "visibleWarnings", "gt": 0}]
+    },
+    {
+      "id": "FIQA-03-old-unresolved-after-rebind",
+      "requirement": "old unresolved completion after pair rebind -> rejected",
+      "injection": {"action": "rebindWithOldCompletionLate"},
+      "success": {"oldCompletion.accepted": false, "oldCompletion.published": false, "freshSlotStillOwned": true, "gameplayPlayable": true},
+      "forbidden": [{"path": "oldCompletion.clearedFreshSlot", "equals": true}, {"path": "oldCompletion.published", "equals": true}]
+    },
+    {
+      "id": "FIQA-04-new-generation-survives-old-return",
+      "requirement": "new generation completion remains live after old completion returns",
+      "injection": {"action": "newGenerationAfterOldReturns"},
+      "success": {"oldCompletion.accepted": false, "newCompletion.accepted": true, "newCompletion.pairGeneration": 2, "newCompletion.visibleWarnings": 1},
+      "forbidden": [{"path": "newCompletion.lostAuthority", "equals": true}, {"path": "newCompletion.visibleWarnings", "equals": 0}]
+    },
+    {
+      "id": "FIQA-05-runtime-epoch-revoke",
+      "requirement": "runtime epoch reset revokes prior tick authority",
+      "injection": {"action": "runtimeEpochResetDuringTick"},
+      "success": {"priorCompletion.accepted": false, "freshCompletion.accepted": true, "warningAuthorityRestoredOnlyByFreshPair": true},
+      "forbidden": [{"path": "priorCompletion.published", "equals": true}]
+    },
+    {
+      "id": "FIQA-06-worker-replacement-reinstall-revoke",
+      "requirement": "Worker replacement/reinstall revokes prior authority",
+      "injection": {"action": "workerReplacedOrReinstalledDuringTick"},
+      "success": {"priorCompletion.accepted": false, "replacementCompletion.accepted": true, "priorWorkerPublications": 0},
+      "forbidden": [{"path": "priorCompletion.published", "equals": true}, {"path": "priorWorkerPublications", "gt": 0}]
+    },
+    {
+      "id": "FIQA-07-pair-session-nonce-mismatch",
+      "requirement": "session/pair-generation/pair-nonce mismatch rejected",
+      "injection": {"action": "foreignPairMessages"},
+      "success": {"sessionMismatchAccepted": false, "generationMismatchAccepted": false, "nonceMismatchAccepted": false, "visibleWarnings": 0},
+      "forbidden": [{"path": "visibleWarnings", "gt": 0}]
+    },
+    {
+      "id": "FIQA-08-disconnect-reconnect-clear",
+      "requirement": "disconnect/reconnect clears stale state",
+      "injection": {"action": "disconnectReconnect"},
+      "success": {"beforeDisconnect.visibleWarnings": 1, "afterDisconnect.visibleWarnings": 0, "afterDisconnect.warningAuthority": false, "afterReconnect.oldStateAccepted": false, "afterReconnect.freshStateAccepted": true},
+      "forbidden": [{"path": "afterReconnect.oldStateVisible", "equals": true}]
+    },
+    {
+      "id": "FIQA-09-heartbeat-staleness-clear-change",
+      "requirement": "heartbeat/staleness and warning clear/change timing preserved",
+      "injection": {"action": "timingBoundaries", "heartbeatMaxMs": 250, "staleMs": 1500},
+      "success": {"heartbeat.at249Published": false, "heartbeat.at250Published": true, "stale.at1500Visible": true, "stale.at1501Visible": false, "clear.immediate": true, "change.immediate": true},
+      "forbidden": [{"path": "stale.at1501Visible", "equals": true}, {"path": "clear.immediate", "equals": false}, {"path": "change.immediate", "equals": false}]
+    },
+    {
+      "id": "FIQA-10-unsupported-identity-admission",
+      "requirement": "unsupported identity/admission never produces warning",
+      "injection": {"action": "unsupportedIdentity", "sha256": "0000000000000000000000000000000000000000000000000000000000000000"},
+      "success": {"attach.ok": false, "warningAuthority": false, "visibleWarnings": 0, "gameplayPlayable": true},
+      "forbidden": [{"path": "visibleWarnings", "gt": 0}, {"path": "warningAuthority", "equals": true}]
+    },
+    {
+      "id": "FIQA-11-one-inflight-no-catchup",
+      "requirement": "one-in-flight/no-catch-up/queueDepth=0 invariants",
+      "injection": {"action": "overlapTickPressure", "overlapAttempts": 8},
+      "success": {"maxInFlight": 1, "skippedTicks": 8, "queueDepthBeforeFinish": 0, "queueDepthAfterFinish": 0, "catchUpBurst": false},
+      "forbidden": [{"path": "maxInFlight", "gt": 1}, {"path": "queueDepthAfterFinish", "gt": 0}, {"path": "catchUpBurst", "equals": true}]
+    },
+    {
+      "id": "FIQA-12-owner-facing-chinese-status",
+      "requirement": "Chinese owner-facing failure/status surfaces where integrated path exposes them",
+      "injection": {"action": "ownerFacingFailureStatus"},
+      "success": {"ownerFacing.exposed": true, "ownerFacing.language": "zh-CN", "ownerFacing.warningAuthority": false, "gameplayPlayable": true},
+      "contains": {"ownerFacing.statusText": ["传输", "不可用"]},
+      "forbidden": [{"path": "ownerFacing.statusText", "equals": ""}, {"path": "ownerFacing.warningAuthority", "equals": true}]
+    },
+    {
+      "id": "FIQA-13-exact-safety-invariants",
+      "requirement": "exact safety invariants",
+      "injection": {"action": "reportSafetyInvariants"},
+      "success": {"safety.readOnly": true, "safety.ramWrites": 0, "safety.inputInjection": false, "safety.workerReplacement": false, "safety.blobRewrite": false, "safety.gamePostMessageControl": false, "safety.heapWrites": false, "safety.assistMode": false},
+      "forbidden": [{"path": "safety.ramWrites", "gt": 0}, {"path": "safety.inputInjection", "equals": true}, {"path": "safety.workerReplacement", "equals": true}, {"path": "safety.blobRewrite", "equals": true}]
+    },
+    {
+      "id": "FIQA-14-rc5-bootstrap-game-unaffected",
+      "requirement": "current RC5/bootstrap failure leaves game path unaffected",
+      "injection": {"action": "bootstrapTransportFailure"},
+      "success": {"gameplayPlayable": true, "gameWorkerUntouched": true, "workerIntercepted": false, "blobWorkerCreated": false, "warningAuthority": false, "visibleWarnings": 0},
+      "forbidden": [{"path": "gameplayPlayable", "equals": false}, {"path": "workerIntercepted", "equals": true}, {"path": "blobWorkerCreated", "equals": true}, {"path": "visibleWarnings", "gt": 0}]
+    }
+  ]
+}
