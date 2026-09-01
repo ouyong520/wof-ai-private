@@ -51,6 +51,7 @@ Beta requires:
 - broader multi-room/scene validation;
 - simple configuration and clear supported-version messaging;
 - user-facing HUD polish and warning prioritization when multiple enemies are dangerous;
+- **player-anchored warning placement:** compute a stable screen-space anchor above the currently threatened P1/P2/P3 character and keep the warning following that character through movement, jumping/depth changes and camera scrolling. This must use a proven Browser camera/screen-coordinate transform (or equivalent native projection evidence), not guessed DOM/world coordinates or color/pixel tracking. Until that transform is reliable, the fixed in-game HUD remains the safe fallback;
 - acceptable runtime overhead and no gameplay interference;
 - automated regression checks for frozen production rules;
 - release packaging/install/update instructions appropriate for non-research users.
