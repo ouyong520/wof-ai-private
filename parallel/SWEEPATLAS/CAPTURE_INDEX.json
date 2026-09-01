@@ -1,5 +1,5 @@
 {
-  "version": "wof-sweepatlas-capture-index-v1",
+  "version": "wof-sweepatlas-capture-index-v2",
   "updated": "2026-09-01",
   "namespace": "WinKawaks-local-discovery-only",
   "stageSceneWaveLabelsAvailable": false,
@@ -13,35 +13,64 @@
     "requireRawArtifact": true,
     "requireRemoteContentShaMatchCapturesManifest": true
   },
-  "trustedPrimaryCorpus": [
-    {"taskId":"BASECAP-B00-idle-8s60-20260901-0510Z","category":"BASECAP","status":"PASS","taskBlobSha":"9743cf0a1762b1d0f595cb2639e1ffe1f8b50bb8","rawPath":"captures/BASECAP-B00-idle-8s60-20260901-0510Z.jsonl.gz","rawContentSha":"50973af7f1eae740bac3d8edfc8b939774c0f769","samples":480,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
-    {"taskId":"BASECAP-B12R-facing-delayed-30s60-20260901-0527Z","category":"BASECAP","status":"PASS","taskBlobSha":"881d8a73802a4221936bf15dbd479d2326ebedd0","rawPath":"captures/BASECAP-B12R-facing-delayed-30s60-20260901-0527Z.jsonl.gz","rawContentSha":"cbc16faba4b4001603b809c483438953d3071cc8","samples":1800,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
-    {"taskId":"BASECAP-B13R-standing-attack-ungated-60s60-20260901-0543Z","category":"BASECAP","status":"PASS","taskBlobSha":"995a5349742aa35125822d8c7c424d7015a02b45","rawPath":"captures/BASECAP-B13R-standing-attack-ungated-60s60-20260901-0543Z.jsonl.gz","rawContentSha":"6d0254825a85a93779327b9c585d29cf948dfc54","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
-    {"taskId":"BASECAP-B13-attack-12s60-20260901-0558Z","category":"BASECAP","status":"PASS","taskBlobSha":"5f4eba115057e3feed97e03bdb205dade7bd98d1","rawPath":"captures/BASECAP-B13-attack-12s60-20260901-0558Z.jsonl.gz","rawContentSha":"26678ce036d63d2414af306bc99471a16ca8513c","samples":720,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
-    {"taskId":"BASECAP-B20-camera-scroll-16s60-20260901-0559Z","category":"BASECAP","status":"PASS","taskBlobSha":"0de63c648dad1bebbafd5f81b3b9cc01fe26184b","rawPath":"captures/BASECAP-B20-camera-scroll-16s60-20260901-0559Z.jsonl.gz","rawContentSha":"9854590afd48d5462d3bc4f1eab424d0e0b3242d","samples":960,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
-    {"taskId":"BASECAP-B40-P2-xy-16s60-20260901-0600Z","category":"BASECAP","status":"PASS","taskBlobSha":"5aa3fbbeb226ee411327ead0177e347841977a78","rawPath":"captures/BASECAP-B40-P2-xy-16s60-20260901-0600Z.jsonl.gz","rawContentSha":"8c3fb2250ee759d28c5455de7ed48ca64522fcb7","samples":960,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
-    {"taskId":"BASECAP-B40-P3-xy-16s60-20260901-0601Z","category":"BASECAP","status":"PASS","taskBlobSha":"c54ea1e777e4004501bad37cf8f350da8d65f7ea","rawPath":"captures/BASECAP-B40-P3-xy-16s60-20260901-0601Z.jsonl.gz","rawContentSha":"f20e1a3f048d4c868877fd1c2422dab2fe0ff953","samples":960,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
-    {"taskId":"EFIELD-001-baseline-30s60","category":"EFIELD","status":"PASS","taskBlobSha":"46523e9c0f7322329c9bfa884515df848140c208","rawPath":"captures/EFIELD-001-baseline-30s60.jsonl.gz","rawContentSha":"0d3bfa6ca5899a28b960452256d2cc32eddf9894","samples":1800,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
-    {"taskId":"EFIELD-002-natural-diversity-60s60","category":"EFIELD","status":"PASS","taskBlobSha":"b3d42d327d5a452031a647481fffae495f80f0ce","rawPath":"captures/EFIELD-002-natural-diversity-60s60.jsonl.gz","rawContentSha":"001edd523f14e029bb4e6fbb7e3523fd6fa5b38a","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
-    {"taskId":"EFIELD-003-passive-retarget-60s60","category":"EFIELD","status":"PASS","taskBlobSha":"acb475dc253ab599b196f80651e18a2ffa2f2914","rawPath":"captures/EFIELD-003-passive-retarget-60s60.jsonl.gz","rawContentSha":"047112b0271db8471c6d7b4d9102c001dca21d7d","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
-    {"taskId":"EFIELD-004-passive-lifecycle-retarget-60s60","category":"EFIELD","status":"PASS","taskBlobSha":"ca594286a9aed1539f7fae0a8c23d32a84195e72","rawPath":"captures/EFIELD-004-passive-lifecycle-retarget-60s60.jsonl.gz","rawContentSha":"3311e307e54d106930c759f5682b47f5eb9e60f6","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
-    {"taskId":"EFIELD-005R-cross-session-target-60s60","category":"EFIELD","status":"PASS","taskBlobSha":"7e1f286020cf514744ef2da888b7156570cd0262","rawPath":"captures/EFIELD-005R-cross-session-target-60s60.jsonl.gz","rawContentSha":"0178ede923253eb449007d391c0703151bb1d328","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
-    {"taskId":"EFIELD-005-cross-session-target-60s60","category":"EFIELD","status":"PASS","taskBlobSha":"58a6c6903c1e5eafe8de4cad2445644f04fc3968","rawPath":"captures/EFIELD-005-cross-session-target-60s60.jsonl.gz","rawContentSha":"128288637f1cb92d5b87e3c5b6f66722fc0df5a2","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
-    {"taskId":"EFIELD-006-cross-session-lifecycle-target-60s60","category":"EFIELD","status":"PASS","taskBlobSha":"408094da46422cd5e8cb41ac42671062c52b3bbf","rawPath":"captures/EFIELD-006-cross-session-lifecycle-target-60s60.jsonl.gz","rawContentSha":"5df2d624fa385a6240643ce1fa6923ab2b116e18","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
-    {"taskId":"RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z","category":"RAWMINE","status":"PASS","taskBlobSha":"3d91bb9b77e3618500db9bde8b2145d909d4b441","rawPath":"captures/RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z.jsonl.gz","rawContentSha":"23dc46fa180a3aedc20ed5ff0a7a3af9ef29f421","samples":2400,"stage":null,"scene":null,"wave":null,"labelSource":"controlled geometry task only"}
+  "rawBackedTaskAudit": [
+    {"taskId":"BASECAP-B00-idle-8s60-20260901-0510Z","family":"BASECAP","taskBlobSha":"9743cf0a1762b1d0f595cb2639e1ffe1f8b50bb8","status":"PASS","samples":480,"rawPath":"captures/BASECAP-B00-idle-8s60-20260901-0510Z.jsonl.gz","rawContentSha":"50973af7f1eae740bac3d8edfc8b939774c0f769","atlasClass":"PRIMARY"},
+    {"taskId":"BASECAP-B12-facing-minimal-8s60-20260901-0518Z","family":"BASECAP","taskBlobSha":"507dcea58e58dd65fc6d39ad929caf8f7963639e","status":"PASS","samples":480,"rawPath":"captures/BASECAP-B12-facing-minimal-8s60-20260901-0518Z.jsonl.gz","rawContentSha":"6e9bd92ed72f632feaf8882a59a67bef071a2a94","atlasClass":"RETAINED_RETRY_SUPERSEDED_BY_B12R"},
+    {"taskId":"BASECAP-B12R-facing-delayed-30s60-20260901-0527Z","family":"BASECAP","taskBlobSha":"881d8a73802a4221936bf15dbd479d2326ebedd0","status":"PASS","samples":1800,"rawPath":"captures/BASECAP-B12R-facing-delayed-30s60-20260901-0527Z.jsonl.gz","rawContentSha":"cbc16faba4b4001603b809c483438953d3071cc8","atlasClass":"PRIMARY_CANONICAL_FACING"},
+    {"taskId":"BASECAP-B13R-standing-attack-ungated-60s60-20260901-0543Z","family":"BASECAP","taskBlobSha":"995a5349742aa35125822d8c7c424d7015a02b45","status":"PASS","samples":3600,"rawPath":"captures/BASECAP-B13R-standing-attack-ungated-60s60-20260901-0543Z.jsonl.gz","rawContentSha":"6d0254825a85a93779327b9c585d29cf948dfc54","atlasClass":"PRIMARY_CONTROL"},
+    {"taskId":"BASECAP-B13-attack-12s60-20260901-0558Z","family":"BASECAP","taskBlobSha":"5f4eba115057e3feed97e03bdb205dade7bd98d1","status":"PASS","samples":720,"rawPath":"captures/BASECAP-B13-attack-12s60-20260901-0558Z.jsonl.gz","rawContentSha":"26678ce036d63d2414af306bc99471a16ca8513c","atlasClass":"PRIMARY_CANONICAL_SHORT_ATTACK"},
+    {"taskId":"BASECAP-B20-camera-scroll-16s60-20260901-0559Z","family":"BASECAP","taskBlobSha":"0de63c648dad1bebbafd5f81b3b9cc01fe26184b","status":"PASS","samples":960,"rawPath":"captures/BASECAP-B20-camera-scroll-16s60-20260901-0559Z.jsonl.gz","rawContentSha":"9854590afd48d5462d3bc4f1eab424d0e0b3242d","atlasClass":"PRIMARY_CONTROL"},
+    {"taskId":"BASECAP-B40-P2-xy-16s60-20260901-0600Z","family":"BASECAP","taskBlobSha":"5aa3fbbeb226ee411327ead0177e347841977a78","status":"PASS","samples":960,"rawPath":"captures/BASECAP-B40-P2-xy-16s60-20260901-0600Z.jsonl.gz","rawContentSha":"8c3fb2250ee759d28c5455de7ed48ca64522fcb7","atlasClass":"PRIMARY_CONTROL"},
+    {"taskId":"BASECAP-B40-P3-xy-16s60-20260901-0601Z","family":"BASECAP","taskBlobSha":"c54ea1e777e4004501bad37cf8f350da8d65f7ea","status":"PASS","samples":960,"rawPath":"captures/BASECAP-B40-P3-xy-16s60-20260901-0601Z.jsonl.gz","rawContentSha":"f20e1a3f048d4c868877fd1c2422dab2fe0ff953","atlasClass":"PRIMARY_CONTROL"},
+
+    {"taskId":"EFIELD-001-baseline-30s60","family":"EFIELD","taskBlobSha":"46523e9c0f7322329c9bfa884515df848140c208","status":"PASS","samples":1800,"rawPath":"captures/EFIELD-001-baseline-30s60.jsonl.gz","rawContentSha":"0d3bfa6ca5899a28b960452256d2cc32eddf9894","atlasClass":"PRIMARY_NATURAL_GAMEPLAY"},
+    {"taskId":"EFIELD-002-natural-diversity-60s60","family":"EFIELD","taskBlobSha":"b3d42d327d5a452031a647481fffae495f80f0ce","status":"PASS","samples":3600,"rawPath":"captures/EFIELD-002-natural-diversity-60s60.jsonl.gz","rawContentSha":"001edd523f14e029bb4e6fbb7e3523fd6fa5b38a","atlasClass":"PRIMARY_NATURAL_GAMEPLAY"},
+    {"taskId":"EFIELD-003-passive-retarget-60s60","family":"EFIELD","taskBlobSha":"acb475dc253ab599b196f80651e18a2ffa2f2914","status":"PASS","samples":3600,"rawPath":"captures/EFIELD-003-passive-retarget-60s60.jsonl.gz","rawContentSha":"047112b0271db8471c6d7b4d9102c001dca21d7d","atlasClass":"PRIMARY_NATURAL_GAMEPLAY"},
+    {"taskId":"EFIELD-004-passive-lifecycle-retarget-60s60","family":"EFIELD","taskBlobSha":"ca594286a9aed1539f7fae0a8c23d32a84195e72","status":"PASS","samples":3600,"rawPath":"captures/EFIELD-004-passive-lifecycle-retarget-60s60.jsonl.gz","rawContentSha":"3311e307e54d106930c759f5682b47f5eb9e60f6","atlasClass":"PRIMARY_NATURAL_GAMEPLAY"},
+    {"taskId":"EFIELD-005R-cross-session-target-60s60","family":"EFIELD","taskBlobSha":"7e1f286020cf514744ef2da888b7156570cd0262","status":"PASS","samples":3600,"rawPath":"captures/EFIELD-005R-cross-session-target-60s60.jsonl.gz","rawContentSha":"0178ede923253eb449007d391c0703151bb1d328","atlasClass":"PRIMARY_NATURAL_GAMEPLAY"},
+    {"taskId":"EFIELD-005-cross-session-target-60s60","family":"EFIELD","taskBlobSha":"58a6c6903c1e5eafe8de4cad2445644f04fc3968","status":"PASS","samples":3600,"rawPath":"captures/EFIELD-005-cross-session-target-60s60.jsonl.gz","rawContentSha":"128288637f1cb92d5b87e3c5b6f66722fc0df5a2","atlasClass":"PRIMARY_NATURAL_GAMEPLAY"},
+    {"taskId":"EFIELD-006-cross-session-lifecycle-target-60s60","family":"EFIELD","taskBlobSha":"408094da46422cd5e8cb41ac42671062c52b3bbf","status":"PASS","samples":3600,"rawPath":"captures/EFIELD-006-cross-session-lifecycle-target-60s60.jsonl.gz","rawContentSha":"5df2d624fa385a6240643ce1fa6923ab2b116e18","atlasClass":"PRIMARY_NATURAL_GAMEPLAY"},
+
+    {"taskId":"GEO-0001-dynamic-baseline-20260831-1517Z","family":"GEO","taskBlobSha":"2b46254ed336dddef0c40d9dcf63ec32039bff38","status":"PASS","samples":600,"rawPath":"captures/GEO-0001-dynamic-baseline-20260831-1517Z.jsonl.gz","rawContentSha":"43b757806a13a52cd819ce480f93499313abc6dd","atlasClass":"RETAINED_SUPPORT"},
+    {"taskId":"GEO-0003-natural-geometry-10s60-20260831-1549Z","family":"GEO","taskBlobSha":"3a1e4a87b37bc048192897a9018aa62f8e6d8229","status":"PASS","samples":600,"rawPath":"captures/GEO-0003-natural-geometry-10s60-20260831-1549Z.jsonl.gz","rawContentSha":"ba128be42cab1b9dbd29be836ac174f7f5f8768e","atlasClass":"RETAINED_SUPPORT"},
+    {"taskId":"GEO-0004-action-diversity-10s60-20260831-1604Z","family":"GEO","taskBlobSha":"08c6ecf15a276d31e28108cc4322226ffa8d6961","status":"PASS","samples":600,"rawPath":"captures/GEO-0004-action-diversity-10s60-20260831-1604Z.jsonl.gz","rawContentSha":"dc8ebcc19def37be256e7f36ae6fbb941cd4f189","atlasClass":"RETAINED_SUPPORT"},
+    {"taskId":"GEO-0006-passive-geometry-camera-20s60-20260831-1657Z","family":"GEO","taskBlobSha":"c0215fddaae8c995ab2c0c78d02cf2614b541a21","status":"PASS","samples":1200,"rawPath":"captures/GEO-0006-passive-geometry-camera-20s60-20260831-1657Z.jsonl.gz","rawContentSha":"6806ac54a3928e82f81a0afb9d0e760c11e4c7ad","atlasClass":"RETAINED_SUPPORT"},
+    {"taskId":"GEO-0008-p1-depth-only-5s60-20260831-2115Z","family":"GEO","taskBlobSha":"177ca63865714623037e8ff1a097a7698e3bf75e","status":"PASS","samples":300,"rawPath":"captures/GEO-0008-p1-depth-only-5s60-20260831-2115Z.jsonl.gz","rawContentSha":"eaa5c99e69fd5a1eb5e0d139ac711288f1fa00db","atlasClass":"RETAINED_COVERAGE_FAILURE_NOT_NEGATIVE_EVIDENCE"},
+    {"taskId":"GEO-0009-p1-depth-visible-traverse-8s60-20260901-0024Z","family":"GEO","taskBlobSha":"3b5b892ee75c4b29634a161c34c8b7b5bad0eab4","status":"PASS","samples":480,"rawPath":"captures/GEO-0009-p1-depth-visible-traverse-8s60-20260901-0024Z.jsonl.gz","rawContentSha":"5f74d95d01b0b7757fd4796f3e87012fd26bba59","atlasClass":"RETAINED_SUPPORT"},
+    {"taskId":"GEO-0010-p1-attribution-depth-calibration-10s60-20260901-0033Z","family":"GEO","taskBlobSha":"cae503ec7fbaff99ea791d6f57eb376a52afef7a","status":"PASS","samples":600,"rawPath":"captures/GEO-0010-p1-attribution-depth-calibration-10s60-20260901-0033Z.jsonl.gz","rawContentSha":"b254868883a6d36198387d5c670674641d609142","atlasClass":"RETAINED_SUPPORT_WITH_OPERATOR_SEQUENCE_CAVEAT"},
+    {"taskId":"GEO-0011-p1-attribution-depth-calibration-10s60-20260901-0038Z","family":"GEO","taskBlobSha":"1bec16e281eb064337f93249b8cb52934b470f48","status":"PASS","samples":600,"rawPath":"captures/GEO-0011-p1-attribution-depth-calibration-10s60-20260901-0038Z.jsonl.gz","rawContentSha":"6fc881d5d3be7587b222b7320ce2706cad1ec290","atlasClass":"RETAINED_SUPPORT"},
+    {"taskId":"GEO-0012-p2-same-xy-offsets-12s60-20260901-0054Z","family":"GEO","taskBlobSha":"a491357a1800710e618867eba5692279670852f5","status":"PASS","samples":720,"rawPath":"captures/GEO-0012-p2-same-xy-offsets-12s60-20260901-0054Z.jsonl.gz","rawContentSha":"c3fba5aecd7a4f0dda998835c5f96c8a592d01f9","atlasClass":"RETAINED_ACQUISITION_ATTRIBUTION_FAILURE_NOT_NEGATIVE_EVIDENCE"},
+    {"taskId":"GEO-0013-p2-attribution-depth-long-35s60-20260901-0104Z","family":"GEO","taskBlobSha":"7c4ff7922e9464fe0b5db063902f2665af9dc2ac","status":"PASS","samples":2100,"rawPath":"captures/GEO-0013-p2-attribution-depth-long-35s60-20260901-0104Z.jsonl.gz","rawContentSha":"44b67ca48e4449e7d25d0647bc58b812a3c6eb91","atlasClass":"ANOMALOUS_LOW_DISTINCT_FRAME_COUNT","distinctRawFrameCount":3},
+
+    {"taskId":"RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z","family":"RAWMINE","taskBlobSha":"c630db7f31366f03e1e1b8565c9d2b5a95bdcf90","status":"PASS","samples":481,"rawPath":"captures/RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z.jsonl.gz","rawContentSha":"2a33e6543e91e4ca0d041805e0ee792c9fb47f4c","atlasClass":"RETAINED_COVERAGE_FAILURE_NOT_NEGATIVE_EVIDENCE"},
+    {"taskId":"RAWMINE-004-p1-attribution-depth-redo-10s60-20260901-0037Z","family":"RAWMINE","taskBlobSha":"2bbf106e67ace13feabd4cb5fe1154fb25d5b6c5","status":"PASS","samples":600,"rawPath":"captures/RAWMINE-004-p1-attribution-depth-redo-10s60-20260901-0037Z.jsonl.gz","rawContentSha":"625c37f2966631c730f704e681092b574eacc215","atlasClass":"RETAINED_ATTRIBUTION_FAILURE_NOT_NEGATIVE_EVIDENCE"},
+    {"taskId":"RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z","family":"RAWMINE","taskBlobSha":"3d91bb9b77e3618500db9bde8b2145d909d4b441","status":"PASS","samples":2400,"rawPath":"captures/RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z.jsonl.gz","rawContentSha":"23dc46fa180a3aedc20ed5ff0a7a3af9ef29f421","atlasClass":"PRIMARY_SUPPORT"}
   ],
-  "additionalRetainedRawFamilies": ["GEO-*","RAWMINE-001-*","RAWMINE-004-*"],
-  "excludedOrNonAtlasArtifacts": [
-    {"path":"captures/collector-live-smoke-20260831-2228.jsonl.gz","reason":"tiny collector smoke artifact; not a gameplay atlas capture"},
-    {"path":"captures/collector-p4-delivery-001.jsonl.gz","reason":"delivery/smoke artifact; not a gameplay atlas capture"},
-    {"taskId":"BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z","reason":"status/catalog history marks the timing-racy attempt non-canonical; later B13R/B13 are retained instead"}
+  "manifestOnlyExcluded": [
+    {"path":"captures/collector-live-smoke-20260831-2228.jsonl.gz","rawContentSha":"30ff25c7abd107b8c4b40d98ad0bed06a6384cf2","reason":"tiny collector smoke artifact; not a gameplay atlas capture"},
+    {"path":"captures/collector-p4-delivery-001.jsonl.gz","rawContentSha":"70fd9d762be275e37c78de290cf02c0eb67f91ea","reason":"delivery/smoke artifact; not a gameplay atlas capture"}
+  ],
+  "taskWithoutRetainedAtlasRaw": [
+    {"taskId":"BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z","reason":"timing-racy noncanonical history; no retained raw in current captures manifest; later B13R/B13 supersede it"}
   ],
   "auditFindings": {
+    "rawBackedTaskCount": 28,
+    "manifestOnlyExcludedCount": 2,
+    "identityMismatches": 0,
+    "passFailuresAmongRawBackedTasks": 0,
+    "rawMissingForRawBackedTasks": 0,
     "missingFullSweepSeries": true,
     "missingAuthoritativeStageLabels": true,
     "missingAuthoritativeSceneLabels": true,
     "missingAuthoritativeWaveLabels": true,
-    "duplicateOrRetryFamiliesObserved": ["BASECAP-B12 -> BASECAP-B12R","BASECAP-B13 timing-racy attempts -> B13R/B13","EFIELD-005R / EFIELD-005 cross-session adjacent replication runs"],
-    "rawMissingForTrustedEntries": false
+    "anomalies": [
+      {"taskId":"GEO-0013-p2-attribution-depth-long-35s60-20260901-0104Z","finding":"2100 samples but only 3 distinct raw frames; mechanically PASS but unsuitable as normal dynamic atlas evidence"}
+    ],
+    "retryFamilies": [
+      "BASECAP-B12 -> BASECAP-B12R",
+      "BASECAP-B13 delayed/timing-racy history -> B13R/B13",
+      "GEO/RAWMINE repeated P1 depth calibration attempts",
+      "EFIELD-005R and EFIELD-005 are separate retained cross-session replication raws"
+    ]
   }
 }
