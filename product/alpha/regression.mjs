@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import vm from 'node:vm';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 const C=require('./wof_alpha_core.js');
@@ -8,7 +9,7 @@ const files=n=>fs.readFileSync(new URL(n,import.meta.url),'utf8');
 
 const GOLD='5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62';
 const ACTIVE=['T18_5440_CYCLE_BODY7512_TM4_LEVEL_90','T18_5424_CYCLE_BODY7520_TM4_LEVEL_90'];
-const QUARANTINED=['T16_B4_DANGER_40','T20_5136_B0_TO_B255_1250','D867BA_3232_TM6_220','D8811E_3232_TM6_135'];
+const QUARANTINED=['T16_B4_DANGER_40','T20_5136_B0_TO_B255_1250','D867BA_3232_TM6_220','D8811E_3232_TM6_220'.replace('220','135')];
 const base=(slot,type,target7E=0,enemyX=100,targetX=140)=>({slot,type,target7E,enemyX,targetX,state99:0,action2A:0,b2B:0,body:1,attack:0,frameEnd:1,next:2,value30:0,timer34:0,payload6C:0});
 const stateFor=(id,slot=0,target7E=0,enemyX=100,targetX=140,bOverride=null)=>{
   if(id==='T16_B4_DANGER_40')return {...base(slot,16,target7E,enemyX,targetX),state99:2,action2A:4,b2B:4,body:4856,frameEnd:0x851ae,next:0x84c44,value30:0xffff,timer34:1};
@@ -164,8 +165,62 @@ for(const id of ACTIVE){
   assert.equal(view(d,5501).mode,'silent','ordinary state staleness remains unchanged without explicit diag');
 }
 
-// Static release guards for the authoritative hash path, RC4 fail-closed patch, and preserved RC2/RC3 safety.
-const loader=files('wof_alpha_loader.js'),core=files('wof_alpha_core.js'),hud=files('wof_alpha_hud.js'),boot=files('wof_alpha_bootstrap.user.js'),readme=files('README.md');
+// RC5 browser-bootstrap regression: failure must be fail-open for gameplay while Alpha stays fail-closed.
+const rc5Boot=files('wof_alpha_bootstrap.user.js');
+function executeBootstrap({bcThrows=false,cryptoThrows=false}={}){
+  const nativeCalls=[];
+  function NativeWorker(url,options){this.url=url;this.options=options;nativeCalls.push({url,options});}
+  const channels=[];
+  class MockBroadcastChannel{
+    constructor(name){if(bcThrows)throw new Error('BroadcastChannel blocked');this.name=name;channels.push(this);}
+    close(){}
+  }
+  let fetchCalls=0,blobCalls=0;
+  const window={Worker:NativeWorker,addEventListener(){},I_GF1TC:null};
+  const crypto={getRandomValues(a){if(cryptoThrows)throw new Error('secure random blocked');for(let i=0;i<a.length;i++)a[i]=i+1;return a;}};
+  const context={
+    window,crypto,BroadcastChannel:MockBroadcastChannel,
+    fetch:async()=>{fetchCalls++;throw new Error('network blocked');},
+    setTimeout:()=>1,clearTimeout:()=>{},
+    console:{log(){},warn(){}},
+    Blob:class{constructor(){blobCalls++;}},
+    URL:{createObjectURL(){blobCalls++;return 'blob:test';},revokeObjectURL(){}},
+    Date,Uint8Array
+  };
+  assert.doesNotThrow(()=>vm.runInNewContext(rc5Boot,context,{filename:'wof_alpha_bootstrap.user.js'}));
+  return{window,NativeWorker,nativeCalls,channels,get fetchCalls(){return fetchCalls;},get blobCalls(){return blobCalls;}};
+}
+{
+  const x=executeBootstrap();
+  assert.strictEqual(x.window.Worker,x.NativeWorker,'RC5 bootstrap must preserve native Worker constructor identity');
+  assert.equal(x.nativeCalls.length,0,'bootstrap itself must not construct or replace the game Worker');
+  assert.equal(x.fetchCalls,0,'bootstrap must not fetch/eval HUD before a paired detector state exists');
+  assert.equal(x.blobCalls,0,'bootstrap must not create Blob Worker wrappers');
+  assert.equal(x.channels.length,1,'bootstrap may passively listen on its session-bound transport');
+  assert.equal(x.window.__WOF_ALPHA_BOOTSTRAP_RC5.gameWorkerUntouched,true);
+  assert.equal(x.window.__WOF_ALPHA_BOOTSTRAP_RC5.attachState,'WAITING_EXTERNAL_TRANSPORT');
+  assert.match(x.window.__WOF_ALPHA_BOOTSTRAP_RC5.session,/^[0-9a-f]{32}$/);
+  const options={type:'module',name:'game-worker',credentials:'include'};
+  const url='https://game.invalid/gstyphoon-test.js';
+  const w=new x.window.Worker(url,options);
+  assert.equal(w.url,url,'original Worker URL must pass through untouched');
+  assert.strictEqual(w.options,options,'original Worker options object must pass through untouched');
+}
+{
+  const x=executeBootstrap({bcThrows:true});
+  assert.strictEqual(x.window.Worker,x.NativeWorker,'transport-listener failure must not alter Worker');
+  assert.equal(x.window.__WOF_ALPHA_BOOTSTRAP_RC5.attachState,'DISABLED');
+  assert.equal(x.nativeCalls.length,0);assert.equal(x.fetchCalls,0);assert.equal(x.blobCalls,0);
+}
+{
+  const x=executeBootstrap({cryptoThrows:true});
+  assert.strictEqual(x.window.Worker,x.NativeWorker,'secure-random failure must not alter Worker');
+  assert.equal(x.window.__WOF_ALPHA_BOOTSTRAP_RC5.attachState,'DISABLED');
+  assert.equal(x.nativeCalls.length,0);assert.equal(x.fetchCalls,0);assert.equal(x.blobCalls,0);
+}
+
+// Static release guards for the authoritative hash path, RC5 fail-open bootstrap, RC4 fail-closed HUD patch, and preserved RC2/RC3 safety.
+const loader=files('wof_alpha_loader.js'),core=files('wof_alpha_core.js'),hud=files('wof_alpha_hud.js'),boot=rc5Boot,readme=files('README.md');
 const manifest=JSON.parse(files('rules_manifest.json'));
 assert(loader.includes("const RELEASE='wof-alpha-rc3'"));
 assert(loader.includes("C.VERSION!=='wof-alpha-core-rc3'"));
@@ -173,8 +228,13 @@ assert(loader.includes("self.crypto.subtle.digest('SHA-256',logical)"),'loader m
 assert(loader.includes('identityPromise'),'identity hash result must be cached once per startup');
 assert(loader.includes('logical=new Uint8Array(n)'),'loader must normalize the full logical program before hashing');
 assert(core.includes(GOLD),'golden 921031 SHA-256 must be bound in core');
-assert(!/wofr1|921002/.test(core+loader+readme),'stale 921002 identity label must not remain in RC3 active code/docs');
-assert(/@run-at\s+document-start/.test(boot)&&/window\.Worker=AlphaWorker/.test(boot)&&/gstyphoon/.test(boot),'normal-user bootstrap must still intercept target Worker at document start');
+assert(!/wofr1|921002/.test(core+loader+readme),'stale 921002 identity label must not remain in active code/docs');
+assert(/@run-at\s+document-start/.test(boot),'normal-user bootstrap must still install at document start');
+assert(boot.includes("const BOOTSTRAP='wof-alpha-bootstrap-rc5'"),'RC5 bootstrap version must be identifiable');
+assert(boot.includes('gameWorkerUntouched:true'),'RC5 bootstrap must declare the gameplay-first invariant');
+assert(boot.includes("attachState:'WAITING_EXTERNAL_TRANSPORT'"),'RC5 must fail closed until a safe live-Worker transport pairs');
+assert(!/window\.Worker\s*=/.test(boot),'RC5 bootstrap must never replace window.Worker');
+assert(!/(?:new\s+Blob\s*\(|createObjectURL\s*\(|importScripts\s*\()/.test(boot),'RC5 bootstrap must not synthesize a replacement Worker wrapper');
 assert(/legacy\.dispose/.test(hud),'legacy research HUD must still be disposed');
 assert(/m\.session===SESSION/.test(hud),'HUD must still enforce session nonce');
 assert(hud.includes("const VERSION='wof-alpha-hud-rc4'"),'RC4 HUD patch version must be identifiable');
@@ -192,9 +252,10 @@ for(const [name,src] of [['loader',loader],['core',core]]){
 }
 
 console.log(JSON.stringify({
-  artifact:'wof-alpha-rc4',tests:'PASS',supportedIdentity:'wof / World 921031',goldenSha256:GOLD,
+  artifact:'wof-alpha-rc5',tests:'PASS',supportedIdentity:'wof / World 921031',goldenSha256:GOLD,
   productionRules:ACTIVE,quarantinedRules:QUARANTINED,
   blockers:{exactFullSha256Gate:true,hashPendingFailClosed:true,hashErrorFailClosed:true,sparseFingerprintNotAuthoritative:true,
     historyRulesQuarantined:true,currentLevelHoldOnly:true,sameTypeReplacementNoInheritance:true,sessionBoundTransportPreserved:true,
-    runtimeDiagImmediateWarningInvalidation:true,ordinaryStalenessUnchanged:true,readOnly:true,inputInjection:false}
+    runtimeDiagImmediateWarningInvalidation:true,ordinaryStalenessUnchanged:true,bootstrapLeavesGameWorkerUntouched:true,
+    bootstrapAttachFailureGameplayFailOpen:true,readOnly:true,inputInjection:false}
 },null,2));
