@@ -1,0 +1,56 @@
+{
+  "schema": "wof-prospective-validator-live-ambiguity-p0-fix-result-v1",
+  "stageId": "PROSPECTIVE_VALIDATOR_LIVE_AMBIGUITY_P0_FIX_V1",
+  "updatedAt": "2026-09-01",
+  "status": "READY_FOR_FRESH_QA_RETEST",
+  "stopCondition": "PROSPECTIVE VALIDATOR LIVE AMBIGUITY P0 FIX READY — READY FOR FRESH QA RETEST",
+  "p0Invariant": {
+    "positiveAuditGapSeconds": 0,
+    "livePagesSkippedBeforeEvidenceIngest": false,
+    "drainOutsideFreshFullTopologyAudit": false,
+    "exactPageWorkerPairMustBePositivelyReproved": true,
+    "ambiguousRoomFinalizedBeforeDrain": true,
+    "unverifiedRoomFinalizedBeforeDrain": true,
+    "failedAuditMayDeferBufferedEvidenceIntoLaterDrain": false,
+    "remoteCleanupPayloadMayEnterProspectiveIngest": false
+  },
+  "fixture": "fixtures/live_unique_to_shared_worker.json",
+  "regression": {
+    "suite": "test_live_ambiguity_p0_fix.py",
+    "targetedCases": 4,
+    "targetedPassed": 4,
+    "targetedFailed": 0,
+    "executionMode": "repository-equivalent extracted production control-flow smoke plus syntax/static audit",
+    "cases": [
+      "unique-to-shared Worker finalizes before any drain",
+      "two pages / two distinct Workers remain independent after exact pair reproof",
+      "topology reproof failure censors instead of deferring buffered evidence",
+      "remote cleanup payload is discarded and cannot affect prospective counters"
+    ]
+  },
+  "independentQaReproduction": {
+    "priorAuditIntervalSeconds": 10,
+    "fixedAuditIntervalSeconds": 0,
+    "oldConditionalLivePageSkipPatternPresent": false,
+    "priorUnsafeWindowPredicateNow": false
+  },
+  "preserved": {
+    "exactWorld921031Identity": true,
+    "freezeHash": true,
+    "discoveryOnlyExclusion": true,
+    "conservativeGates": true,
+    "researchOnly": true,
+    "productionPromotionAllowed": false,
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false,
+    "blobRewrite": false
+  },
+  "files": {
+    "live_validator_v2.py": "512c6635d2a8c1bf99cd7f4a5e3f9e45b9b2b3d0",
+    "test_live_ambiguity_p0_fix.py": "b3e4e3e447022b1c2317a713f96ebebe1d72db5e",
+    "fixtures/live_unique_to_shared_worker.json": "65de7e60381900f8d0e9cb8028668a6a1ccca0ff"
+  },
+  "ownerBrowserRequired": false
+}
