@@ -32,6 +32,7 @@ EXACT = {
     "6 Run Live Proof": "6 运行真人 Windows 验证",
     "7 Collect Diagnostics": "7 收集诊断信息",
     "8 Package Results": "8 自动整理并打包结果",
+    "8 打包结果": "8 自动整理并打包结果",
     "9 Open Results Folder": "9 打开结果目录",
     "0 Exit": "0 退出",
     "\n[Update Project]": "\n[更新项目]",
