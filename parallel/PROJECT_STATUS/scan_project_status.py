@@ -10,7 +10,7 @@ import sys
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Sequence
 
 SCHEMA = "wof-project-status-v1"
 RESULT_PATTERNS = (
@@ -180,7 +180,9 @@ def section_after_heading(text: str, headings: Sequence[str], max_lines: int = 6
 def git_recent_commits(repo: Path, limit: int) -> list[CommitInfo]:
     sep = "\x1f"
     rec = "\x1e"
-    fmt = f"%H{sep}%aI{sep}%s{rec}"
+    # Prefix each commit header with a record separator. With --name-only the
+    # changed files follow that header until the next record separator.
+    fmt = f"{rec}%H{sep}%aI{sep}%s"
     try:
         p = subprocess.run(
             ["git", "-C", str(repo), "log", f"-n{limit}", f"--pretty=format:{fmt}", "--name-only"],
@@ -347,7 +349,6 @@ def build_status(repo: Path, commit_limit: int = 60) -> dict:
     active_text = read_text(pm_dir / "ACTIVE_PRIORITIES.md")
     owner_text = read_text(pm_dir / "OWNER_ACTIONS.md")
     release_text = read_text(pm_dir / "RELEASE_READINESS.md")
-    chinese_text = read_text(pm_dir / "CHINESE_UI_UX_REQUIREMENT.md")
 
     prompts = find_prompts(repo)
     prompt_texts = {p.name: read_text(p) for p in prompts}
@@ -426,7 +427,8 @@ def build_status(repo: Path, commit_limit: int = 60) -> dict:
     data = {
         "schema": SCHEMA,
         "generated_at": generated,
-        "repository_root": str(repo),
+        "repository_root": ".",
+        "repository_name": repo.name,
         "source_head": head,
         "safety": {
             "read_only_scanner": True,
