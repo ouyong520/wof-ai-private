@@ -1,0 +1,146 @@
+(async()=>{
+'use strict';
+const COPY_ID='WOF-051R';
+const PROJECT='WOF-AI-PRIVATE';
+const VERSION='wof-future-danger-cycle-validator-v51r';
+const MARKER='=== WOF FUTURE DANGER CYCLE VALIDATOR V51R JSON ===';
+const BASE={copyId:'WOF-051R',project:'WOF-AI-PRIVATE',version:'wof-future-danger-cycle-validator-v51r',marker:MARKER};
+const SRC='https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/wof_future_danger_cycle_validator_v48r.js';
+console.log(`[${COPY_ID}] ${PROJECT} ${VERSION}`);
+
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const good=v=>!!(v&&v.HEAPU8 instanceof Uint8Array&&v.HEAPU32 instanceof Uint32Array&&v.HEAPU8.buffer===v.HEAPU32.buffer);
+async function ensureModule(){
+  if(good(self._0x515056))return self._0x515056;
+  const until=performance.now()+8000;
+  while(performance.now()<until){
+    for(const k of Object.getOwnPropertyNames(self)){
+      let v;try{v=self[k]}catch(_){continue}
+      if(good(v)){self._0x515056=v;self.__WOF_MODULE_GLOBAL_KEY=k;return v;}
+    }
+    await sleep(50);
+  }
+  throw new Error(`[${COPY_ID}] WASM module not found. Select a live gstyphoon.js Worker.`);
+}
+const MOD=await ensureModule(),M=MOD.HEAPU8,R=MOD.HEAPU32?.[0x2e39e4>>>2]>>>0;
+if(!R)throw new Error(`[${COPY_ID}] CPS RAM base missing`);
+const B=a=>M[R+((((a-0xFF0000)&0xffff)^1))]>>>0;
+const U16=a=>((B(a)<<8)|B(a+1))>>>0;
+const U32=a=>(B(a)*0x1000000+B(a+1)*0x10000+B(a+2)*0x100+B(a+3))>>>0;
+const S32=a=>{const v=U32(a);return v>=0x80000000?v-0x100000000:v;};
+const X=a=>Math.round(S32(a+4)/65536);
+const ENEMY=0xFFC0BC,STRIDE=0xE0,SLOTS=20;
+const PBASE={0:0xFFBE1C,4:0xFFBEFC,8:0xFFBFDC},PN={0:'P1',4:'P2',8:'P3'};
+const side=dx=>dx==null?null:dx<-4?'LEFT':dx>4?'RIGHT':'CENTER';
+function snap(i){
+  const a=ENEMY+i*STRIDE,type=U16(a+0x20);
+  if(type>=47)return null;
+  const fe=U32(a+0x12),nx=U32(a+0x2C);
+  if(!fe&&!nx)return null;
+  const t=U16(a+0x7E),pb=PBASE[t],ex=X(a),tx=pb?X(pb):null,dx=tx==null?null:tx-ex;
+  return{slot:i,type,target7E:t,target:PN[t]||null,side:side(dx),state99:B(a+0x99),action2A:B(a+0x2A),b2B:B(a+0x2B),body:U16(a+0x6E),attack:U16(a+0x70),frameEnd:fe,next:nx,value30:U32(a+0x30),timer34:U16(a+0x34),payload6C:U16(a+0x6C)};
+}
+const r1=x=>Math.round(x*10)/10;
+const RULE={
+  id:'T18_4704_BODY4728_A4_B2_TM1_LEVEL_80',
+  status:'prospective-cycle-level-candidate',
+  horizon:80,
+  tail:250,
+  expected:4704,
+  base:s=>s&&s.type===18&&s.attack===0&&s.state99===0&&s.action2A===4&&s.b2B===2&&s.body===4728&&s.frameEnd===0x8b660&&s.next===0x8b204&&s.value30===0xffff&&s.timer34===1&&s.payload6C===4736
+};
+function emptyRule(r){
+  return{rule:r.id,status:r.status,horizonMs:r.horizon,tailMs:r.tail,jitterToleranceMs:15,signals:0,evaluable:0,strictHit:0,jitterBandHit:0,realLateHit:0,hardMiss:0,censored:0,expectedAttack:0,expectedAttackTotal:0,targetSame:0,targetTotal:0,sideSame:0,sideTotal:0,leads:[],attackCounts:[],entryTargetCounts:{},entrySideCounts:{},entryTypeCounts:{},strictRate:null,jitterCorrectedRate:null,tailHitRate:null,expectedAttackRate:null,targetSameRate:null,sideStableRate:null};
+}
+function finalize(st,attackMap){
+  st.leads.sort((a,b)=>a-b);
+  st.attackCounts=[...attackMap.entries()].map(([attack,count])=>({attack:+attack,count})).sort((a,b)=>b.count-a.count);
+  st.strictRate=st.evaluable?+(st.strictHit/st.evaluable).toFixed(3):null;
+  st.jitterCorrectedRate=st.evaluable?+((st.strictHit+st.jitterBandHit)/st.evaluable).toFixed(3):null;
+  st.tailHitRate=st.evaluable?+((st.strictHit+st.jitterBandHit+st.realLateHit)/st.evaluable).toFixed(3):null;
+  st.expectedAttackRate=st.expectedAttackTotal?+(st.expectedAttack/st.expectedAttackTotal).toFixed(3):null;
+  st.targetSameRate=st.targetTotal?+(st.targetSame/st.targetTotal).toFixed(3):null;
+  st.sideStableRate=st.sideTotal?+(st.sideSame/st.sideTotal).toFixed(3):null;
+  return st;
+}
+async function runT18A4704Probe(){
+  const DURATION=120000,INTERVAL=10,start=performance.now(),prev=new Map(),cycleSeq=new Map(),armed=new Map(),watches=[],attackMap=new Map(),st=emptyRule(RULE);
+  let wid=0;
+  const diag={polls:0,enemySamples:0,activeEdges:0,signals:0,strictHits:0,jitterBandHits:0,realLateHits:0,hardMisses:0,censored:0,retargets:0,rawMatchSamples:{[RULE.id]:0},transitionEntries:{[RULE.id]:0}};
+  const censorSlot=i=>{for(const w of watches){if(w.resolved||w.slot!==i)continue;w.resolved=true;st.censored++;diag.censored++;}};
+  const deadlines=t=>{for(const w of watches){if(w.resolved)continue;if(t-w.at>RULE.tail){w.resolved=true;st.evaluable++;st.hardMiss++;diag.hardMisses++;}}};
+  const arm=(s,t)=>{
+    const c=cycleSeq.get(s.slot)||0,k=`${s.slot}|${RULE.id}`;
+    if(armed.get(k)===c)return;
+    armed.set(k,c);
+    diag.transitionEntries[RULE.id]++;diag.signals++;st.signals++;
+    st.entryTargetCounts[s.target]=(st.entryTargetCounts[s.target]||0)+1;
+    st.entrySideCounts[s.side]=(st.entrySideCounts[s.side]||0)+1;
+    st.entryTypeCounts['T'+s.type]=(st.entryTypeCounts['T'+s.type]||0)+1;
+    watches.push({id:++wid,slot:s.slot,type:s.type,cycle:c,at:t,entryTarget7E:s.target7E,entrySide:s.side,resolved:false,retargets:[]});
+  };
+  await new Promise(resolve=>{
+    const id=setInterval(()=>{
+      const t=performance.now()-start;diag.polls++;deadlines(t);
+      for(let i=0;i<SLOTS;i++){
+        const s=snap(i),p=prev.get(i)||null;
+        if(!s){if(p)censorSlot(i);prev.delete(i);continue;}
+        diag.enemySamples++;
+        if(p&&p.type!==s.type){censorSlot(i);cycleSeq.set(i,(cycleSeq.get(i)||0)+1);}
+        if(s.attack===0&&(!p||p.type!==s.type||p.attack!==0))cycleSeq.set(i,(cycleSeq.get(i)||0)+1);
+        if(RULE.base(s)){diag.rawMatchSamples[RULE.id]++;arm(s,t);}
+        for(const w of watches){
+          if(w.resolved||w.slot!==i||w.type!==s.type)continue;
+          const last=w.retargets.at(-1)?.to7E??w.entryTarget7E;
+          if(last!==s.target7E){w.retargets.push({rel:r1(t-w.at),from7E:last,to7E:s.target7E});diag.retargets++;}
+        }
+        if(p&&p.type===s.type&&p.attack===0&&s.attack!==0){
+          diag.activeEdges++;
+          for(const w of watches){
+            if(w.resolved||w.slot!==i||w.type!==s.type)continue;
+            const lead=t-w.at;if(lead<0||lead>RULE.tail)continue;
+            w.resolved=true;st.evaluable++;st.leads.push(r1(lead));st.expectedAttackTotal++;
+            if(s.attack===RULE.expected)st.expectedAttack++;
+            st.targetTotal++;if(w.entryTarget7E===s.target7E)st.targetSame++;
+            if(w.entrySide!=null&&s.side!=null){st.sideTotal++;if(w.entrySide===s.side)st.sideSame++;}
+            attackMap.set(s.attack,(attackMap.get(s.attack)||0)+1);
+            if(lead<=RULE.horizon){st.strictHit++;diag.strictHits++;}
+            else if(lead<=RULE.horizon+15){st.jitterBandHit++;diag.jitterBandHits++;}
+            else{st.realLateHit++;diag.realLateHits++;}
+          }
+          cycleSeq.set(i,(cycleSeq.get(i)||0)+1);
+        }
+        prev.set(i,s);
+      }
+      if(t>=DURATION){clearInterval(id);resolve();}
+    },INTERVAL);
+  });
+  for(let i=0;i<SLOTS;i++)censorSlot(i);
+  finalize(st,attackMap);
+  return{actualDurationMs:r1(performance.now()-start),diagnostics:diag,ruleStats:{[RULE.id]:st}};
+}
+
+let code=await fetch(SRC+'?x='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('WOF-051R base validator fetch '+r.status);return r.text();});
+code=code
+  .replaceAll('WOF-048','WOF-051')
+  .replaceAll('V48','V51')
+  .replaceAll('wof-future-danger-cycle-validator-v48r','wof-future-danger-cycle-validator-v51r')
+  .replaceAll('__WOF_V48R_RESULT','__WOF_V51R_RESULT')
+  .replaceAll('=== WOF FUTURE DANGER CYCLE VALIDATOR V48R JSON ===','=== WOF FUTURE DANGER CYCLE VALIDATOR V51R JSON ===');
+const finalAnchor="self.__WOF_V51R_RESULT=base;\nconsole.log(MARKER);console.log(JSON.stringify(base,null,2));return base;";
+if(!code.includes(finalAnchor))throw new Error(`[${COPY_ID}] base output suppression anchor not found`);
+code=code.replace(finalAnchor,"self.__WOF_V51R_RESULT=base;return base;");
+const [base,probe]=await Promise.all([(0,eval)(code),runT18A4704Probe()]);
+if(!base||base.copyId!==BASE.copyId||base.project!==BASE.project||base.version!==BASE.version||base.expectedMarker!==BASE.marker||base.readOnly!==true||base.ramWrites!==0)throw new Error(`[${COPY_ID}] embedded identity mismatch`);
+Object.assign(base.ruleStats,probe.ruleStats);
+base.t18A4704ProbeDiagnostics=probe.diagnostics;
+base.diagnostics.rawMatchSamples=base.diagnostics.rawMatchSamples||{};
+base.diagnostics.transitionEntries=base.diagnostics.transitionEntries||{};
+for(const [id,n] of Object.entries(probe.diagnostics.rawMatchSamples))base.diagnostics.rawMatchSamples[id]=n;
+for(const [id,n] of Object.entries(probe.diagnostics.transitionEntries))base.diagnostics.transitionEntries[id]=n;
+for(const k of ['signals','strictHits','jitterBandHits','realLateHits','hardMisses','censored','retargets'])base.diagnostics[k]=Number(base.diagnostics[k]||0)+Number(probe.diagnostics[k]||0);
+base.model.t18A4704Policy='WOF-050 broad same-cycle miner found T18 A4704 signature S0/A4/B2 BODY4728 FE8B660 NX8B204 VFFFF TM1 P6C4736 in 18 resolved cycles, target/side 18/18, with last-seen lead29.6..51.1ms. WOF-051 prospectively level-arms this exact state once per zero->ACTIVE cycle at an 80ms audit horizon / 250ms tail. Discovery evidence is not promotion; require prospective repeated confirmation.';
+base.model.t18Policy='Existing T18 A5440/A5424 production-shadows remain valid. WOF-050 observed one clean correct tail hit for each beyond the legacy 90ms audit horizon (A5440 138.6ms; A5424 128.5ms), with expected attack/target/side all preserved. Therefore 90ms is an audit label, not a causal boundary; no demotion.';
+self.__WOF_V51R_RESULT=base;
+console.log(MARKER);console.log(JSON.stringify(base,null,2));return base;
+})().catch(e=>{console.error('[WOF-051R] ERROR',e);throw e;});
