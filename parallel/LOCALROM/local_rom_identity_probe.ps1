@@ -61,8 +61,7 @@ $knownNames = $knownNames | Select-Object -Unique
 
 $zipFiles = @()
 foreach ($root in $roots) {
-    $preferred = @(Get-ChildItem -LiteralPath $root -File -Filter 'wof*.zip' -ErrorAction SilentlyContinue)
-    $zipFiles += $preferred
+    $zipFiles += @(Get-ChildItem -LiteralPath $root -File -Filter 'wof*.zip' -ErrorAction SilentlyContinue)
 }
 $zipFiles = @($zipFiles | Sort-Object FullName -Unique)
 
@@ -183,7 +182,7 @@ if ($titleSet) {
         $reason = 'WinKawaks title identifies a set, but its canonical program pair was not found/hash-matched in the normal local ROM locations.'
     }
 }
-elif ($matchedSets.Count -eq 1) {
+elseif ($matchedSets.Count -eq 1) {
     $loadedSet = $matchedSets[0].set
     $verdict = $matchedSets[0].browserRelation
     $reason = 'Exactly one canonical WOF program pair was found, but the live WinKawaks title did not expose a recognized revision label.'
