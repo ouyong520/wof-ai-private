@@ -7,7 +7,7 @@ STRIDE=0xE0; PLAYERS=3; ENEMIES=20; BLOCK=STRIDE*(PLAYERS+ENEMIES)
 FLAG_MASK=0x001C0000
 FIELDS={
  "type":(0x24,1),"pulse28":(0x28,1),"action2d":(0x2D,1),"state2e":(0x2E,1),
- "cursor":(0x2F,4),"timer34":(0x34,1),"mode35":(0x35,1),"gate37":(0x37,1),
+ "cursor":(0x2F,4),"timer34":(0x34,1),"mode35":(0x35,1),"gate37":(0x37,1),"timer42":(0x42,1),
  "assoc_ptr":(0x3D,2),"fine6c":(0x6C,1),"target":(0x6D,2),"fine70":(0x70,1),
  "phase72":(0x72,1),"coarse73":(0x73,1),"coarse77":(0x77,1),"flag99":(0x99,1),
  "profile_b0":(0xB0,1),"profile_b4":(0xB4,1),"profile_b6":(0xB6,1),
@@ -15,7 +15,7 @@ FIELDS={
 }
 CORE=("type","action2d","state2e","logical_cursor","cursor_flags","mode35","gate37",
       "fine6c","fine70","phase72","coarse73","coarse77")
-CTX=("target","assoc_ptr","assoc_c6","split_ref","sync_cc","profile_b0","profile_b4",
+CTX=("target","assoc_ptr","assoc_c6","split_ref","sync_cc","timer42","profile_b0","profile_b4",
      "profile_b6","pulse28","flag99","walk_b9","walk_timer_bb")
 
 def u(buf,off,w,signed=False): return int.from_bytes(buf[off:off+w],"big",signed=signed)
@@ -85,13 +85,21 @@ def new_distinct(fi,st):
     return {"frameStart":fi,"frameEnd":fi,"dwellFrames":1,
             "timerStart":st["timer34"],"timerEnd":st["timer34"],
             "timerMin":st["timer34"],"timerMax":st["timer34"],
+            "timer42Start":st["timer42"],"timer42End":st["timer42"],
+            "timer42Min":st["timer42"],"timer42Max":st["timer42"],
+            "positiveTimer34Reloads":[],
             "timer1Frames":int(st["timer34"]==1),
             "terminalTimer1Frames":int(st["timer34"]==1),**st}
 
 def extend_distinct(x,fi,st):
     x["frameEnd"]=fi; x["dwellFrames"]=max(1,fi-x["frameStart"]+1)
+    prev34=x["timerEnd"]
+    if st["timer34"]>prev34:
+        x["positiveTimer34Reloads"].append({"frameOffset":fi-x["frameStart"],"from":prev34,"to":st["timer34"]})
     x["timerEnd"]=st["timer34"]; x["timerMin"]=min(x["timerMin"],st["timer34"])
     x["timerMax"]=max(x["timerMax"],st["timer34"])
+    x["timer42End"]=st["timer42"]; x["timer42Min"]=min(x["timer42Min"],st["timer42"])
+    x["timer42Max"]=max(x["timer42Max"],st["timer42"])
     if st["timer34"]==1:
         x["timer1Frames"]+=1; x["terminalTimer1Frames"]+=1
     else: x["terminalTimer1Frames"]=0
@@ -163,16 +171,20 @@ def mine(paths,attack_offset=None,attack_width=2,endian="big"):
     for c in cycles:
         for st in c["states"]:
             ceil=ceilings[st["logical_cursor"]]; st["timerCeiling"]=ceil
-            for src,dst in (("timerStart","timerStartBucket"),("timerEnd","timerEndBucket"),("timerMin","timerMinBucket")):
+            for src,dst in (("timerStart","timerStartBucket"),("timerEnd","timerEndBucket"),("timerMin","timerMinBucket"),("timerMax","timerMaxBucket")):
                 st[dst]=timer_bucket(max(0,ceil-st[src]))
             st["terminalTimer1Bucket"]=hold_bucket(st["terminalTimer1Frames"])
     meta["unresolved"]=dict(meta["unresolved"]); meta["sceneLabelQuality"]=dict(meta.get("sceneLabelQuality",{}))
     return cycles,meta
 
 def exact_state(st):
-    return core(st)+(st["timerStart"],st["timerEnd"],st["timerMin"],st["timerMax"],st["terminalTimer1Frames"])
+    reloads=tuple((r["frameOffset"],r["from"],r["to"]) for r in st["positiveTimer34Reloads"])
+    return core(st)+(st["timerStart"],st["timerEnd"],st["timerMin"],st["timerMax"],
+                     st["terminalTimer1Frames"],reloads,st["timer42Start"],st["timer42End"])
 def norm_state(st):
-    return core(st)+(st["timerStartBucket"],st["timerEndBucket"],st["timerMinBucket"],st["terminalTimer1Bucket"])
+    first=st["positiveTimer34Reloads"][0]["frameOffset"] if st["positiveTimer34Reloads"] else -1
+    return core(st)+(st["timerStartBucket"],st["timerEndBucket"],st["timerMinBucket"],st["timerMaxBucket"],
+                     st["terminalTimer1Bucket"],len(st["positiveTimer34Reloads"]),first)
 
 def features(c):
     C=[core(x) for x in c["states"]]; X=[context(x) for x in c["states"]]
@@ -200,7 +212,7 @@ def branchpoints(cycles):
             k=sgn(x); attacks[k][a]+=1
             nxt[k][a][sgn(seq[i+1]) if i+1<len(seq) else "<EVENT_NEXT>"]+=1
             prv[k][a][sgn(seq[i-1]) if i else "<CYCLE_START>"]+=1
-            st=c["states"][i]; timers[k][a][sgn((st["timerStart"],st["timerEnd"],st["terminalTimer1Frames"]))]+=1
+            st=c["states"][i]; timers[k][a][sgn((st["timerStart"],st["timerEnd"],st["timerMax"],st["terminalTimer1Frames"],st["positiveTimer34Reloads"]))]+=1
     out=[]
     for k,dist in attacks.items():
         if len(dist)<2: continue
