@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "HUDANCHOR_PLAYER_FOLLOW_CONFIDENCE_FAILCLOSED_FIX_V1",
+  "promptPath": "parallel/PM/HUDANCHOR_PLAYER_FOLLOW_CONFIDENCE_FAILCLOSED_FIX_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "6e453a467608430e1c9610511df458ab3c62505b",
+  "startedAtUtc": "2026-09-01T15:39:00Z"
+}
