@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "WOF052L_RECORDER_LIVE_TOPOLOGY_IDENTITY_QA_V1",
+  "promptPath": "parallel/PM/WOF052L_RECORDER_LIVE_TOPOLOGY_IDENTITY_QA_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "ed529e8498a5d95a465a283eb141aca5777af0a2",
+  "startedAtUtc": "2026-09-01T15:11:00Z"
+}
