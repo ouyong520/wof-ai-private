@@ -32,7 +32,7 @@ status()
 begin({ ownerConfirmedPlayable: true })
 mark(name, detail?)
 snapshot()
-postNegative(kind, overrides?)
+postNegative(kind)
 finalize(driverEvidence)
 reset()
 ```
@@ -75,7 +75,7 @@ negative-probes
 final
 ```
 
-### `postNegative(kind, overrides?)`
+### `postNegative(kind)`
 
 Posts a support-only synthetic `state` or `diag` to the product BroadcastChannel using a deliberately old generation or wrong nonce.
 
@@ -130,9 +130,21 @@ The future integration driver supplies one object:
     "staleProbe": "PASS|OFFLINE_GATE_ONLY|FAIL|INCOMPLETE",
     "currentDiagStop": "PASS|FAIL|INCOMPLETE",
     "rebind": "PASS|FAIL|INCOMPLETE"
+  },
+  "firstCurrentPairState": {
+    "hudAuthorityOnlyAfterState": true
+  },
+  "stale1500": {
+    "browserObservedSilentAfter1500": true
+  },
+  "rebind": {
+    "freshStateObserved": true,
+    "oldAuthorityInherited": false
   }
 }
 ```
+
+`stale1500.browserObservedSilentAfter1500` may be `null` only when `actions.staleProbe` is `OFFLINE_GATE_ONLY`; the exact 1500/1501 offline gate must still be `PASS`.
 
 No driver field may claim a game RAM write or injected input was used to create evidence.
 
@@ -179,7 +191,17 @@ A `state` also requires a valid increasing `seq` for that generation.
 
 Foreign/old/wrong-nonce messages are logged as rejected evidence and must not be counted as current-pair state or diag.
 
-## 6. Stale probe contract
+## 6. First-state authority evidence
+
+The integration driver must independently prove that the page/HUD does not gain current warning authority before the first valid current-pair `state` and pass:
+
+```json
+{"firstCurrentPairState":{"hudAuthorityOnlyAfterState":true}}
+```
+
+The collector supplies the observed first accepted state and sequence; the driver supplies the before/after authority observation because the integration harness controls the bind/install boundary.
+
+## 7. Stale probe contract
 
 Exact timing semantics are verified offline. Real Browser probing must not invent a new threshold.
 
@@ -194,7 +216,7 @@ Preferred integrated driver operation:
 
 If the transport cannot expose this support-only operation without weakening production safety, use `OFFLINE_GATE_ONLY` in the real Browser result and retain exact offline PASS as mandatory.
 
-## 7. Diagnostic stop / rebind contract
+## 8. Diagnostic stop / rebind contract
 
 The driver uses only the approved Alpha agent control plane:
 
@@ -209,9 +231,16 @@ Rebind must create:
 
 - strictly greater `pairGeneration`;
 - fresh `pairNonce`;
-- no stale sequence/warning inheritance.
+- a fresh accepted current-pair state;
+- no stale sequence/warning authority inheritance.
 
-## 8. Owner interaction
+The driver records the last two facts explicitly as:
+
+```json
+{"rebind":{"freshStateObserved":true,"oldAuthorityInherited":false}}
+```
+
+## 9. Owner interaction
 
 The final owner interaction must remain:
 
