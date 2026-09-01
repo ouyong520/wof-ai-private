@@ -2,7 +2,13 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "WOF052L_10ROOM_ENDURANCE_SIM_V1",
   "promptPath": "parallel/PM/WOF052L_10ROOM_ENDURANCE_SIM_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "ff002df0f23a3dff6f44275ffd5a093145bb806f",
-  "startedAtUtc": "2026-09-01T13:43:00Z"
+  "startedAtUtc": "2026-09-01T13:43:00Z",
+  "completedAtUtc": "2026-09-01T14:02:43Z",
+  "resultPath": "parallel/WOF052L_ENDURANCE_SIM/RESULT.md",
+  "matrixPath": "parallel/WOF052L_ENDURANCE_SIM/ENDURANCE_MATRIX.json",
+  "entrypoint": "parallel/WOF052L_ENDURANCE_SIM/RUN_WOF052L_10ROOM_ENDURANCE_SIM.cmd",
+  "resultCommit": "5bd8fcfd76625d5dae3265fb28820a88687c3a4d",
+  "stopCondition": "WOF052L 10-ROOM ENDURANCE SIM READY"
 }
