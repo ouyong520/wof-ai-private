@@ -2,7 +2,17 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "HUDANCHOR_PLAYER_FOLLOW_REFERENCE_IMPL_V1",
   "promptPath": "parallel/PM/HUDANCHOR_PLAYER_FOLLOW_REFERENCE_IMPL_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "ac26e96b62c0950641afd2e092fd26e1f128eeff",
-  "startedAtUtc": "2026-09-01T14:08:32Z"
+  "startedAtUtc": "2026-09-01T14:08:32Z",
+  "completedAtUtc": "2026-09-01T14:17:04Z",
+  "resultPath": "parallel/HUDANCHOR_PLAYER_FOLLOW/RESULT.md",
+  "resultCommit": "e54fff50df6f053bc8207cdd12a2de954b6df83a",
+  "test": {
+    "command": "npm test",
+    "status": "PASS",
+    "passed": 15,
+    "total": 15,
+    "fixture": "SYNTHETIC_ONLY_NOT_BROWSER_PROOF"
+  }
 }
