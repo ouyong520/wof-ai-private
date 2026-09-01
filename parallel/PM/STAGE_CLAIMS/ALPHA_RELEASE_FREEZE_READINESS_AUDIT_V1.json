@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "ALPHA_RELEASE_FREEZE_READINESS_AUDIT_V1",
+  "promptPath": "parallel/PM/ALPHA_RELEASE_FREEZE_READINESS_AUDIT_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "5d60c2d5aed9adde23e670da3542fac39c6d1d05",
+  "startedAtUtc": "2026-09-01T16:10:26Z"
+}
