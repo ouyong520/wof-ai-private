@@ -1,0 +1,38 @@
+{
+  "schema": "pylqa-startup-attestation-fixtures-v1",
+  "configuredEndpoint": {"host": "127.0.0.1", "port": 9223},
+  "valid": [
+    {"Browser": "Chrome/136.0", "webSocketDebuggerUrl": "ws://127.0.0.1:9223/devtools/browser/chrome"},
+    {"Browser": "Edg/136.0", "webSocketDebuggerUrl": "ws://localhost:9223/devtools/browser/edge"},
+    {"Browser": "Chromium/136.0", "webSocketDebuggerUrl": "ws://127.0.0.1:9223/devtools/browser/chromium"}
+  ],
+  "invalidBrowserMetadata": [
+    {},
+    {"Browser": null},
+    {"Browser": ""},
+    {"Browser": "   "},
+    {"Browser": 123},
+    {"Browser": "Firefox/130"},
+    {"Browser": "Chrome/"},
+    {"Browser": "Chrome//136"},
+    {"Browser": "Chrome/136 bad"},
+    {"Browser": "Chrome/136/extra"}
+  ],
+  "invalidWebsocketUrls": [
+    "ws://192.168.1.9:9223/devtools/browser/qa",
+    "ws://127.0.0.1:9333/devtools/browser/qa",
+    "ws://127.0.0.1:9223/devtools/page/qa",
+    "ws://127.0.0.1:9223/devtools/worker/qa",
+    "ws://127.0.0.1:9223/devtools/browser/",
+    "ws://127.0.0.1:9223/devtools/browser/qa/extra",
+    "ws://user@127.0.0.1:9223/devtools/browser/qa",
+    "ws://127.0.0.1:9223/devtools/browser/qa?q=1",
+    "ws://127.0.0.1:9223/devtools/browser/qa#fragment"
+  ],
+  "generationCases": [
+    "reconnect must discard endpoint metadata and identity cache",
+    "stable websocket URL must retain only metadata from the current fresh /json/version attestation",
+    "same targetId in a later runtime generation must be re-probed",
+    "fresh attestation rejection must immediately invalidate stale client/endpoint/identity authority"
+  ]
+}
