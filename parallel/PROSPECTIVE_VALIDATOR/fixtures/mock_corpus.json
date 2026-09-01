@@ -1,0 +1,29 @@
+{
+  "schema": "wof-prospective-corpus-v1",
+  "runId": "mock-prospective-framework-v1",
+  "evidenceClass": "prospective",
+  "safety": {"readOnly": true, "ramWrites": 0, "inputInjection": false, "windowWorkerReplacement": false},
+  "traces": [
+    {"roomId": "t18-room-a", "activeAttack": 4704, "leadMs": 80.0, "targetStable": true, "sideStable": true, "retargets": [], "states": [
+      {"signature": "S0/A4/B2|BODY4728|FE8b660|NX8b204|Vffff|TM1|P6C4736"},
+      {"signature": "S0/A6/B4|BODY4728|FE8b660|NX8b204|Vffff|TM2|P6C4736"}
+    ]},
+    {"roomId": "t18-room-b", "activeAttack": 4704, "leadMs": 140.0, "targetStable": true, "sideStable": true, "retargets": [], "states": [
+      {"signature": "S0/A4/B2|BODY4728|FE8b660|NX8b204|Vffff|TM1|P6C4736"},
+      {"signature": "S0/A6/B4|BODY4728|FE8b660|NX8b204|Vffff|TM3|P6C4736"}
+    ]},
+    {"roomId": "t23-room-a", "activeAttack": 5888, "leadMs": 90.0, "targetStable": true, "sideStable": true, "states": [
+      {"signature": "S0/A8/B2|BODY4936|FE84060|NX83c60|Vffff|TM3|P6C4944"},
+      {"signature": "S0/A2/B0|BODY4936|FE84060|NX83c60|Vffff|TM2|P6C4944"},
+      {"signature": "S0/A6/B4|BODY4936|FE84060|NX83c60|Vffff|TM1|P6C4944"}
+    ]},
+    {"roomId": "t23-room-b", "activeAttack": 5888, "leadMs": 170.0, "targetStable": true, "sideStable": false, "retargets": [{"from7E": 0, "to7E": 4}], "states": [
+      {"signature": "S0/A8/B2|BODY4936|FE84060|NX83c60|Vffff|TM4|P6C4944"},
+      {"signature": "S0/A2/B0|BODY4936|FE84060|NX83c60|Vffff|TM2|P6C4944"},
+      {"signature": "S0/A6/B4|BODY4936|FE84060|NX83c60|Vffff|TM1|P6C4944"}
+    ]},
+    {"roomId": "current-room", "activeAttack": 5440, "leadMs": 70.0, "targetStable": true, "sideStable": true, "states": [
+      {"signature": "S0/A4/B0|BODY7512|FE84868|NX83c56|V1|TM4|P6C0"}
+    ]}
+  ]
+}
