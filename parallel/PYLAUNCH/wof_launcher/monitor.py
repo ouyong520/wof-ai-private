@@ -62,6 +62,9 @@ class LauncherMonitor:
 
     def _connect(self, endpoint: BrowserEndpoint) -> None:
         if self._client: self._client.close()
+        # A replacement browser-level CDP connection is a new authority generation.
+        # Invalidate every identity decision before the new client can be observed.
+        self._client = None; self._endpoint = None; self._last_worker_id = None; self._last_identity = None; self._identity_cache.clear()
         client = CdpClient(endpoint.websocket_url, timeout=5.0); client.connect(); self._client = client; self._endpoint = endpoint
         self.status.update(browser_connected=True, browser_name=endpoint.browser, browser_endpoint=endpoint.http_base, state="WAITING_WOF", last_error=None); self._notify()
 
