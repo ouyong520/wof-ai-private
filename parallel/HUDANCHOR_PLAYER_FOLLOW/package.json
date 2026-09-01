@@ -1,0 +1,9 @@
+{
+  "name": "wof-hudanchor-player-follow-reference",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Presentation-only player-follow HUDANCHOR reference implementation with synthetic regression fixtures.",
+  "scripts": {
+    "test": "node test/synthetic_regression.js"
+  }
+}
