@@ -13,6 +13,16 @@ from typing import Any
 from urllib.parse import urlsplit
 
 
+_SUPPORTED_BROWSER_PRODUCTS = {
+    "chrome",
+    "chromium",
+    "edge",
+    "edg",
+    "microsoft edge",
+}
+_BROWSER_WS_PREFIX = "/devtools/browser/"
+
+
 @dataclass(frozen=True)
 class BrowserEndpoint:
     host: str
@@ -25,7 +35,7 @@ class BrowserEndpoint:
         return f"http://{self.host}:{self.port}"
 
 
-def _http_json(url: str, timeout: float = 0.8) -> dict[str, Any]:
+def _http_json(url: str, timeout: float = 0.8) -> Any:
     request = urllib.request.Request(url, headers={"User-Agent": "WOF-Future-Danger-Launcher/0.1"})
     with urllib.request.urlopen(request, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8"))
@@ -41,6 +51,20 @@ def is_loopback_host(host: str) -> bool:
         return False
 
 
+def browser_metadata_supported(browser: Any) -> bool:
+    if not isinstance(browser, str):
+        return False
+    value = browser.strip()
+    if not value or any(ord(ch) < 0x20 for ch in value):
+        return False
+    product, separator, version = value.partition("/")
+    if product.strip().casefold() not in _SUPPORTED_BROWSER_PRODUCTS:
+        return False
+    if separator and not version.strip():
+        return False
+    return True
+
+
 def websocket_matches_endpoint(websocket_url: str, host: str, port: int) -> bool:
     if not is_loopback_host(host):
         return False
@@ -48,24 +72,53 @@ def websocket_matches_endpoint(websocket_url: str, host: str, port: int) -> bool
         parsed = urlsplit(websocket_url)
         ws_host = parsed.hostname
         ws_port = parsed.port
+        configured_port = int(port)
     except (TypeError, ValueError):
         return False
     if parsed.scheme not in {"ws", "wss"} or not ws_host or ws_port is None:
         return False
-    return is_loopback_host(ws_host) and ws_port == int(port)
+    if parsed.username is not None or parsed.password is not None or parsed.query or parsed.fragment:
+        return False
+    if not is_loopback_host(ws_host) or ws_port != configured_port:
+        return False
+    if not parsed.path.startswith(_BROWSER_WS_PREFIX):
+        return False
+    browser_id = parsed.path[len(_BROWSER_WS_PREFIX) :]
+    return bool(browser_id) and "/" not in browser_id and not any(ch.isspace() for ch in browser_id)
+
+
+def probe_endpoint_diagnostic(host: str, port: int) -> tuple[BrowserEndpoint | None, str | None]:
+    if not is_loopback_host(host):
+        return None, "启动浏览器校验拒绝：CDP 主机必须是本机 loopback 地址。"
+    try:
+        payload = _http_json(f"http://{host}:{port}/json/version")
+    except (urllib.error.URLError, OSError):
+        return None, None
+    except (ValueError, UnicodeError):
+        return None, "启动浏览器校验拒绝：/json/version 不是有效 JSON。"
+    if not isinstance(payload, dict):
+        return None, "启动浏览器校验拒绝：/json/version 必须返回 JSON 对象。"
+
+    browser = payload.get("Browser")
+    if not isinstance(browser, str) or not browser.strip():
+        return None, "启动浏览器校验拒绝：/json/version 缺少有效 Browser 元数据。"
+    browser = browser.strip()
+    if not browser_metadata_supported(browser):
+        return None, f"启动浏览器校验拒绝：Browser 元数据不是受支持的 Chrome/Chromium/Edge 系列：{browser!r}。"
+
+    websocket_url = payload.get("webSocketDebuggerUrl")
+    if not isinstance(websocket_url, str) or not websocket_url.strip():
+        return None, "启动浏览器校验拒绝：/json/version 缺少 browser-level webSocketDebuggerUrl。"
+    websocket_url = websocket_url.strip()
+    if not websocket_matches_endpoint(websocket_url, host, port):
+        return None, "启动浏览器校验拒绝：webSocketDebuggerUrl 必须是同一 loopback 端口上的 /devtools/browser/<id> 端点。"
+
+    return BrowserEndpoint(host=host, port=int(port), browser=browser, websocket_url=websocket_url), None
 
 
 def probe_endpoint(host: str, port: int) -> BrowserEndpoint | None:
-    if not is_loopback_host(host):
-        return None
-    try:
-        payload = _http_json(f"http://{host}:{port}/json/version")
-    except (OSError, ValueError, urllib.error.URLError):
-        return None
-    ws = payload.get("webSocketDebuggerUrl")
-    if not isinstance(ws, str) or not websocket_matches_endpoint(ws, host, port):
-        return None
-    return BrowserEndpoint(host=host, port=port, browser=str(payload.get("Browser") or "Chromium"), websocket_url=ws)
+    endpoint, _ = probe_endpoint_diagnostic(host, port)
+    return endpoint
 
 
 def browser_candidates(preference: str = "auto") -> list[Path]:
@@ -137,13 +190,21 @@ def launch_debug_browser(
     return subprocess.Popen(args, close_fds=True)
 
 
-def wait_for_endpoint(host: str, port: int, timeout: float = 8.0) -> BrowserEndpoint | None:
+def wait_for_endpoint_diagnostic(host: str, port: int, timeout: float = 8.0) -> tuple[BrowserEndpoint | None, str | None]:
     if not is_loopback_host(host):
-        return None
+        return None, "启动浏览器校验拒绝：CDP 主机必须是本机 loopback 地址。"
     deadline = time.monotonic() + timeout
+    last_rejection: str | None = None
     while time.monotonic() < deadline:
-        endpoint = probe_endpoint(host, port)
+        endpoint, rejection = probe_endpoint_diagnostic(host, port)
         if endpoint:
-            return endpoint
+            return endpoint, None
+        if rejection:
+            last_rejection = rejection
         time.sleep(0.2)
-    return None
+    return None, last_rejection
+
+
+def wait_for_endpoint(host: str, port: int, timeout: float = 8.0) -> BrowserEndpoint | None:
+    endpoint, _ = wait_for_endpoint_diagnostic(host, port, timeout)
+    return endpoint
