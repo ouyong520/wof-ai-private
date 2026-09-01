@@ -1,0 +1,48 @@
+{
+  "schema": "wof-prospective-validator-live-ambiguity-regression-v1",
+  "id": "live-unique-to-shared-worker-transition",
+  "purpose": "Verify a live room is censored/finalized before any further prospective drain once Worker-to-page ownership becomes ambiguous.",
+  "initial": {
+    "t": 100.0,
+    "connectedRoom": {
+      "pageTargetId": "page-a",
+      "workerTargetId": "worker-shared"
+    },
+    "lastTopologyAudit": 100.0
+  },
+  "transition": {
+    "t": 101.0,
+    "newPageTargetId": "page-b",
+    "workerTargetId": "worker-shared",
+    "meaning": "the same exact Worker is now associated with page-a and page-b"
+  },
+  "adversarialPoll": {
+    "t": 105.0,
+    "expected": {
+      "fullTopologyReproofBeforeDrain": true,
+      "roomFinalizedBeforeDrain": true,
+      "prospectiveDrainCountAfterAmbiguity": 0,
+      "postAmbiguityProspectiveIngestCount": 0
+    }
+  },
+  "scanFailure": {
+    "expected": {
+      "roomFinalizedBeforeAnyLaterDrain": true,
+      "reason": "worker-association-unverified",
+      "bufferedEvidenceMayNotBeDeferredIntoALaterSuccessfulAudit": true
+    }
+  },
+  "control": {
+    "twoPagesTwoDistinctWorkers": {
+      "expectedIndependent": true,
+      "eachDrainRequiresExactPairReproof": true
+    }
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false,
+    "blobRewrite": false
+  }
+}
