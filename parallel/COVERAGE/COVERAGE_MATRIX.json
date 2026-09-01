@@ -1,220 +1,171 @@
 {
-  "schemaVersion": "wof_coverage_matrix_v1",
+  "schemaVersion": "wof_coverage_matrix_v2",
   "snapshot": {
     "date": "2026-09-01",
-    "aiPrivateBaseCommit": "204c3995ac9b1b04683ad3cbcfa8c8f7a51bad75",
-    "bridgeCommit": "e3676d79a38ac23e572af69d23d560c01bd6777d"
+    "aiPrivateCommit": "b523ca969f1aecddf6c7eb751b3b392a485921d6",
+    "bridgeCommit": "e3676d79a38ac23e572af69d23d560c01bd6777d",
+    "refreshReason": "ingest current SWEEPATLAS/SEQMINER and normalize enemy type notation"
   },
   "scope": {
     "lane": "COVERAGE",
-    "evidenceClass": "WINKAWAKS_LOCAL_DISCOVERY_ONLY",
-    "browserProductionProof": false,
-    "productionShadowAuthority": "MAINLINE",
-    "zeroCoverageMeansRuleFailure": false
+    "evidenceClass": "mixed-accounting; WinKawaks-local discovery plus explicitly separated Browser validation evidence",
+    "writeBoundary": "parallel/COVERAGE/** only",
+    "browserProductionAuthority": "MAINLINE",
+    "humanRecapRequired": false
   },
-  "statusLegend": {
-    "GOOD": "Direct usable coverage exists for the stated dimension.",
-    "LOW": "Direct evidence exists but is sparse.",
-    "MISSING": "No current evidence exists for an explicitly requested or known candidate.",
-    "CONFOUNDED": "Raw or status exists but the intended acquisition or attribution cannot isolate the requested dimension.",
-    "LABEL_UNKNOWN": "Evidence may exist, but the semantic label or requested cross-tab is not materialized."
+  "normalization": {
+    "canonicalTypeNotation": "T<decimal> (0xHH)",
+    "identitySource": "enemy type byte value; WinKawaks local anchor +0x24 U8",
+    "oldHexStyleLabelsDeprecated": true,
+    "examples": {
+      "Browser T18": "T18 (0x12)",
+      "Browser T23": "T23 (0x17)",
+      "Browser T16": "T16 (0x10)",
+      "Browser T20": "T20 (0x14)",
+      "old COVERAGE T17": "raw 0x17 = T23 (0x17), not decimal T17"
+    }
   },
   "inputs": {
     "BASECAP": true,
     "GEO": true,
     "EFIELD": true,
     "RAWMINE": true,
-    "SWEEPATLAS": false,
-    "SEQMINER": false
+    "SWEEPATLAS": true,
+    "SEQMINER": true,
+    "bridgeTaskStatusResultCaptureLedger": true
   },
-  "dedupeRule": "One canonical gameplay capture identity per taskId/raw filename. Reuse across lanes or analyses does not create a new capture. Failed attempts are provenance rows, not samples.",
-  "audit": {
+  "provenanceAudit": {
+    "bridgeHeadUnchangedSinceOldCoverageSnapshot": true,
+    "bridgeHead": "e3676d79a38ac23e572af69d23d560c01bd6777d",
     "rawArtifactsTotal": 30,
-    "gameplayRawArtifactsMechanicalSuccess": 28,
-    "testRawExcluded": 2,
+    "mechanicallySuccessfulGameplayRaws": 28,
+    "collectorPlatformTestRawsExcluded": 2,
     "successfulGameplayProvenanceComplete": 28,
-    "successfulGameplayProvenanceExpected": 28,
     "failedGameplayAcquisitionAttempts": 7,
-    "failedWithArchivedTaskSpec": 2,
-    "failedStatusOnlyWithoutRetainedTaskSpec": 5
-  },
-  "globalEvidence": {
-    "efieldCaptures": 7,
-    "efieldFrames": 23400,
-    "enemyObjectSamples": 468000,
-    "typePresentSamples": 60271,
-    "typeAbsentSamples": 407729,
-    "lifecycleEpisodes": 1604,
-    "lifecycleEnterBoundaries": 74,
-    "lifecycleExitBoundaries": 74,
-    "structuralNonzeroExecutorFrames": 44905,
-    "structuralNonzeroExecutorEpisodes": 271,
-    "semanticActiveCycles": null,
-    "semanticActiveCyclesStatus": "LABEL_UNKNOWN",
-    "confirmedLiveTargetChanges": 8,
-    "sessions": 2,
+    "failedAttemptsCountedAsSamples": 0,
     "gameMemoryWrites": 0
   },
-  "dimensionStatus": {
-    "stage": {"status": "LABEL_UNKNOWN", "reason": "No authoritative stage labels in the audited raw/task/result corpus."},
-    "scene": {"status": "LABEL_UNKNOWN", "reason": "No authoritative scene atlas; acquisition-purpose labels are not game-scene labels."},
-    "wave": {"status": "LABEL_UNKNOWN", "reason": "No authoritative wave labels."},
-    "capture": {"status": "GOOD", "reason": "28 mechanically successful gameplay captures retained and deduplicated by taskId/raw identity."},
-    "playerCountConfig": {"status": "LABEL_UNKNOWN", "reason": "Not consistently materialized as an authoritative per-capture label."},
-    "enemyType": {"status": "GOOD_LOW", "reason": "31 observed Txx codes have a sample census; 14 are LOW by the coverage-only threshold."},
-    "attack": {"status": "GOOD_LABEL_UNKNOWN", "reason": "Structural coarse executor/attack-family evidence exists; semantic attack naming remains LABEL_UNKNOWN."},
-    "activeCycleCount": {"status": "LABEL_UNKNOWN", "reason": "Current EFIELD outputs do not establish a semantic ACTIVE/hitbox/damage state."},
-    "targetP1P2P3": {"status": "GOOD", "reason": "Aggregate live-target and association layers cover P1/P2/P3 across all 60,271 type-present samples."},
-    "leftRightGeometryDiversity": {"status": "GOOD", "reason": "GEO owner lane closes P1 X/Y, P2/P3 same-offset structure, facing and top/bottom; historical intended manipulations can still be CONFOUNDED."},
-    "sequenceFamily": {"status": "LABEL_UNKNOWN", "reason": "SEQMINER is absent and no semantic ordered-sequence atlas exists in current inputs."},
-    "rareBranch": {"status": "LOW", "reason": "Coarse structural family enemy+0x73=0x1E has only 42 frames; semantic identity is unknown."},
-    "bossOrdinaryEnemy": {"status": "LABEL_UNKNOWN", "reason": "No authoritative boss/ordinary labels."},
-    "rawArtifactAvailability": {"status": "GOOD", "reason": "All 28 successful gameplay taskIds have matching raw artifacts."},
-    "labelQuality": {"status": "LABEL_UNKNOWN", "reason": "Mechanical acquisition labels are sufficient for some conditions, but stage/scene/wave/boss and several semantic axes are absent."},
-    "captureValidity": {"status": "GOOD", "reason": "28 successful gameplay raws have complete task/status/result/raw provenance; condition-level confounds are tracked separately."}
+  "globalEvidence": {
+    "efieldRuns": 7,
+    "sessions": 2,
+    "frames": 23400,
+    "enemySlotSamples": 468000,
+    "typePresentSamples": 60271,
+    "typeAbsentSamples": 407729,
+    "distinctNonzeroTypes": 31,
+    "allNonzeroByteValues01to1FObserved": true,
+    "sameTypeEpisodes": 1604,
+    "typeEnterBoundaries": 74,
+    "typeExitBoundaries": 74,
+    "confirmedLiveTargetChanges": 8,
+    "structuralAttackExecutorEpisodes": 271,
+    "stageSceneWaveLabelsAvailable": false,
+    "fullLabeledSweepSeriesPresent": false
   },
-  "enemyTypes": [
-    {"type":"T18","samples":12866,"sampleStatus":"GOOD"},
-    {"type":"T10","samples":9210,"sampleStatus":"GOOD"},
-    {"type":"T08","samples":7293,"sampleStatus":"GOOD"},
-    {"type":"T19","samples":6807,"sampleStatus":"GOOD"},
-    {"type":"T09","samples":2894,"sampleStatus":"GOOD"},
-    {"type":"T07","samples":2670,"sampleStatus":"GOOD"},
-    {"type":"T16","samples":2309,"sampleStatus":"GOOD"},
-    {"type":"T15","samples":2285,"sampleStatus":"GOOD"},
-    {"type":"T17","samples":2140,"sampleStatus":"GOOD"},
-    {"type":"T11","samples":2002,"sampleStatus":"GOOD"},
-    {"type":"T0B","samples":1102,"sampleStatus":"GOOD"},
-    {"type":"T1A","samples":1060,"sampleStatus":"GOOD"},
-    {"type":"T13","samples":1013,"sampleStatus":"GOOD"},
-    {"type":"T14","samples":686,"sampleStatus":"GOOD"},
-    {"type":"T0A","samples":645,"sampleStatus":"GOOD"},
-    {"type":"T1B","samples":591,"sampleStatus":"GOOD"},
-    {"type":"T12","samples":528,"sampleStatus":"GOOD"},
-    {"type":"T05","samples":495,"sampleStatus":"LOW"},
-    {"type":"T0D","samples":470,"sampleStatus":"LOW"},
-    {"type":"T0C","samples":469,"sampleStatus":"LOW"},
-    {"type":"T0E","samples":411,"sampleStatus":"LOW"},
-    {"type":"T02","samples":408,"sampleStatus":"LOW"},
-    {"type":"T06","samples":354,"sampleStatus":"LOW"},
-    {"type":"T04","samples":300,"sampleStatus":"LOW"},
-    {"type":"T1D","samples":272,"sampleStatus":"LOW"},
-    {"type":"T1C","samples":188,"sampleStatus":"LOW"},
-    {"type":"T0F","samples":187,"sampleStatus":"LOW"},
-    {"type":"T01","samples":173,"sampleStatus":"LOW"},
-    {"type":"T03","samples":160,"sampleStatus":"LOW"},
-    {"type":"T1F","samples":150,"sampleStatus":"LOW"},
-    {"type":"T1E","samples":133,"sampleStatus":"LOW"},
-    {"type":"T23","samples":0,"sampleStatus":"MISSING","note":"Explicit COVERAGE exemplar only. Expected full-game membership is not established; zero coverage is not rule failure."}
-  ],
-  "perTypeRequestedFields": {
-    "lifecycleEpisodes": {"value": null, "status": "LABEL_UNKNOWN", "reason": "Current read-only outputs do not materialize a per-Txx lifecycle-episode cross-tab."},
-    "semanticActiveCycles": {"value": null, "status": "LABEL_UNKNOWN", "reason": "Semantic ACTIVE state is not established."},
-    "attackKinds": {"value": null, "status": "LABEL_UNKNOWN", "reason": "Per-Txx attack-kind cross-tab is not materialized and semantic attack naming is not established."},
-    "targetCoverageP1P2P3": {"value": null, "status": "LABEL_UNKNOWN", "reason": "Per-Txx target cross-tab is not materialized."},
-    "sceneCoverage": {"value": null, "status": "LABEL_UNKNOWN", "reason": "No authoritative scene labels are available."}
+  "priorityTypes": {
+    "T16 (0x10)": {
+      "localSamples": 9210,
+      "retargetEvidence": "same-type P3->P2 plus replacement-boundary arrival at P3->P1",
+      "browserEvidence": "WOF-051: 98/98 strict danger; A6432=97/A4840=1; target/side 98/98",
+      "status": "LOCAL_GOOD + BROWSER_STRONG"
+    },
+    "T18 (0x12)": {
+      "localSamples": 528,
+      "localOrderedEvidence": "delayed dwell reload example at EFIELD-005 f3524 s19",
+      "browserEvidence": "A5440 4/4 strict; A5424 4/4 strict; BODY4728 anchor produced A4704 and A4712, so ordered discriminator still needed",
+      "status": "LOCAL_GOOD + BROWSER_PARTIAL_ORDERED_GAP"
+    },
+    "T20 (0x14)": {
+      "localSamples": 686,
+      "browserEvidence": "WOF-051: 5/5 strict A5136/target/side",
+      "status": "LOCAL_GOOD + BROWSER_STRONG"
+    },
+    "T23 (0x17)": {
+      "localSamples": 2140,
+      "localOrderedEvidence": "delayed dwell reload example at EFIELD-005R f1263 s17",
+      "browserEvidence": "WOF-047 resolved cycles A4792=3/A4920=3/A5888=2; WOF-049/050/051 rooms had zero T23 scene coverage",
+      "status": "LOCAL_GOOD + BROWSER_ORDERED_DISCOVERY; scene availability variable"
+    },
+    "T24 (0x18)": {
+      "localSamples": 12866,
+      "browserEvidence": "production-shadow candidates BODY7512/TM3->A5440 and BODY7520/TM4->A5424 exist; WOF-051 had zero T24 coverage",
+      "status": "LOCAL_GOOD + BROWSER_RULE_EXISTS_ZERO_LATEST_ROOM_COVERAGE"
+    }
   },
-  "attackEvidence": [
-    {"field":"enemy+0x73","value":"0x00","frames":15366,"status":"GOOD","semanticLabelStatus":"LABEL_UNKNOWN","note":"Structural zero/background family."},
-    {"field":"enemy+0x73","value":"0x0A","frames":27486,"status":"GOOD","semanticLabelStatus":"LABEL_UNKNOWN"},
-    {"field":"enemy+0x73","value":"0x1B","frames":16651,"status":"GOOD","semanticLabelStatus":"LABEL_UNKNOWN"},
-    {"field":"enemy+0x73","value":"0x0B","frames":726,"status":"GOOD","semanticLabelStatus":"LABEL_UNKNOWN","note":"Relatively sparse structural family."},
-    {"field":"enemy+0x73","value":"0x1E","frames":42,"status":"LOW","semanticLabelStatus":"LABEL_UNKNOWN","note":"Rare structural family in the current corpus."}
+  "perType": [
+    {"type":"T1 (0x01)","typeDecimal":1,"typeHex":"0x01","samples":173,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T2 (0x02)","typeDecimal":2,"typeHex":"0x02","samples":408,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T3 (0x03)","typeDecimal":3,"typeHex":"0x03","samples":160,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T4 (0x04)","typeDecimal":4,"typeHex":"0x04","samples":300,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T5 (0x05)","typeDecimal":5,"typeHex":"0x05","samples":495,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T6 (0x06)","typeDecimal":6,"typeHex":"0x06","samples":354,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T7 (0x07)","typeDecimal":7,"typeHex":"0x07","samples":2670,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":["T7 (0x07) -> T16 (0x10), P3->P1 @ EFIELD-004 f2961 s17"],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T8 (0x08)","typeDecimal":8,"typeHex":"0x08","samples":7293,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T9 (0x09)","typeDecimal":9,"typeHex":"0x09","samples":2894,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":1,"sameTypeTargetChangeEvidence":["P3->P1 @ EFIELD-003 f3322 s19"],"replacementBoundaryRetargetEvidence":["T27 (0x1B) -> T9 (0x09), P2->P1 @ EFIELD-004 f2961 s18"],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T10 (0x0A)","typeDecimal":10,"typeHex":"0x0A","samples":645,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T11 (0x0B)","typeDecimal":11,"typeHex":"0x0B","samples":1102,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":1,"sameTypeTargetChangeEvidence":["P1->P3 @ EFIELD-003 f492 s17"],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T12 (0x0C)","typeDecimal":12,"typeHex":"0x0C","samples":469,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T13 (0x0D)","typeDecimal":13,"typeHex":"0x0D","samples":470,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T14 (0x0E)","typeDecimal":14,"typeHex":"0x0E","samples":411,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T15 (0x0F)","typeDecimal":15,"typeHex":"0x0F","samples":187,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T16 (0x10)","typeDecimal":16,"typeHex":"0x10","samples":9210,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":1,"sameTypeTargetChangeEvidence":["P3->P2 @ EFIELD-003 f1827 s17"],"replacementBoundaryRetargetEvidence":["T7 (0x07) -> T16 (0x10), P3->P1 @ EFIELD-004 f2961 s17"],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T17 (0x11)","typeDecimal":17,"typeHex":"0x11","samples":2002,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T18 (0x12)","typeDecimal":18,"typeHex":"0x12","samples":528,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"TYPE_SPECIFIC_LOCAL_EXAMPLE + BROWSER_PROSPECTIVE_AMBIGUITY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T19 (0x13)","typeDecimal":19,"typeHex":"0x13","samples":1013,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T20 (0x14)","typeDecimal":20,"typeHex":"0x14","samples":686,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T21 (0x15)","typeDecimal":21,"typeHex":"0x15","samples":2285,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T22 (0x16)","typeDecimal":22,"typeHex":"0x16","samples":2309,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":1,"sameTypeTargetChangeEvidence":["P3->P1 @ EFIELD-002 f2167 s19"],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T23 (0x17)","typeDecimal":23,"typeHex":"0x17","samples":2140,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"TYPE_SPECIFIC_LOCAL_EXAMPLE + BROWSER_ORDERED_RESOLVED_CYCLES","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T24 (0x18)","typeDecimal":24,"typeHex":"0x18","samples":12866,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":1,"sameTypeTargetChangeEvidence":["P1->P3 @ EFIELD-002 f3155 s17"],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T25 (0x19)","typeDecimal":25,"typeHex":"0x19","samples":6807,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":1,"sameTypeTargetChangeEvidence":["P1->P3 @ EFIELD-002 f3416 s18"],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T26 (0x1A)","typeDecimal":26,"typeHex":"0x1A","samples":1060,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T27 (0x1B)","typeDecimal":27,"typeHex":"0x1B","samples":591,"sampleDensity":"GOOD","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":["T27 (0x1B) -> T9 (0x09), P2->P1 @ EFIELD-004 f2961 s18"],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T28 (0x1C)","typeDecimal":28,"typeHex":"0x1C","samples":188,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T29 (0x1D)","typeDecimal":29,"typeHex":"0x1D","samples":272,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T30 (0x1E)","typeDecimal":30,"typeHex":"0x1E","samples":133,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"},
+    {"type":"T31 (0x1F)","typeDecimal":31,"typeHex":"0x1F","samples":150,"sampleDensity":"LOW","lifecycleEpisodes":null,"lifecycleEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","targetOccupancy":{"P1":null,"P2":null,"P3":null,"status":"ANALYSIS_MATERIALIZATION_GAP"},"sameTypeTargetChanges":0,"sameTypeTargetChangeEvidence":[],"replacementBoundaryRetargetEvidence":[],"structuralAttackExecutorEpisodes":null,"structuralAttackExecutorEpisodesStatus":"ANALYSIS_MATERIALIZATION_GAP","orderedSequenceEvidence":"GLOBAL_EXECUTOR_TOPOLOGY_ONLY","stageSceneWave":"UNKNOWN","bossOrdinary":"UNKNOWN","provenance":"SWEEPATLAS over 7 retained EFIELD raws; no stage/scene/wave label"}
   ],
-  "attackFineEvidence": {
-    "field": "enemy+0x6C",
-    "counts": {"0x00":15366,"0xE0":27486,"0x40":11432,"0x50":2358,"0x48":1517,"0x58":1344,"0x90":726,"0x78":28,"0x70":14},
-    "coarseMapping": {"0x00":"0x00","0xE0":"0x0A","0x40":"0x1B","0x48":"0x1B","0x50":"0x1B","0x58":"0x1B","0x90":"0x0B","0x70":"0x1E","0x78":"0x1E"},
-    "semanticLabelStatus": "LABEL_UNKNOWN"
+  "gapClasses": {
+    "physicalDataGap": {
+      "status": "NO_BOUNDED_PRODUCT_CRITICAL_RECAP_PROVEN",
+      "items": [
+        "No authoritative labeled full-game BASECAP-SWEEP series exists; this is a real missing labeled-corpus capability, but a broad replay is not justified by current Product/Beta/v1 priorities.",
+        "No specific scene/condition has been proven both necessary and unrecoverable from retained raw with bounded collection cost."
+      ]
+    },
+    "analysisMaterializationGap": {
+      "status": "OPEN",
+      "items": [
+        "lifecycle episode counts per normalized type",
+        "P1/P2/P3 dwell/occupancy counts per normalized type",
+        "structural attack/executor episode counts per normalized type",
+        "full type x executor/attack contingency table"
+      ],
+      "recaptureRequired": false
+    },
+    "labelSemanticGap": {
+      "status": "OPEN",
+      "items": [
+        "authoritative stage/scene/wave labels",
+        "boss/ordinary and human enemy names",
+        "semantic ACTIVE/hitbox/damage cycle definition in WinKawaks",
+        "exact WinKawaks-local move/attack label"
+      ],
+      "recaptureRequiredByDefault": false
+    },
+    "browserValidationGap": {
+      "status": "OPEN",
+      "items": [
+        "WOF-052 ordered T18 post-anchor discriminator remains human Browser gated",
+        "T23 broader prospective validation only when cost-effective scene coverage appears",
+        "release-artifact regression/retarget/identity guard remain Product/MAINLINE concerns, not COVERAGE capture tasks"
+      ]
+    }
   },
-  "targetEvidence": {
-    "sampleUniverse": 60271,
-    "liveTarget": {"P1":46865,"P2":2967,"P3":10439,"status":"GOOD"},
-    "associationPointer": {"P1":18091,"P2":17494,"P3":24686,"status":"GOOD"},
-    "perTypeCrossTabStatus": "LABEL_UNKNOWN",
-    "confirmedLiveTargetChanges": 8
-  },
-  "captureInventory": [
-    {"taskId":"BASECAP-B00-idle-8s60-20260901-0510Z","lane":"BASECAP","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"BASECAP-B12-facing-minimal-8s60-20260901-0518Z","lane":"BASECAP","mechanicalValidity":"GOOD","intendedDimensionStatus":"CONFOUNDED","note":"Initial facing label is noncanonical because READY-to-capture timing was unsafe."},
-    {"taskId":"BASECAP-B12R-facing-delayed-30s60-20260901-0527Z","lane":"BASECAP","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD","note":"Canonical facing acquisition."},
-    {"taskId":"BASECAP-B13-attack-12s60-20260901-0558Z","lane":"BASECAP","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD","note":"Canonical attack acquisition."},
-    {"taskId":"BASECAP-B13R-standing-attack-ungated-60s60-20260901-0543Z","lane":"BASECAP","mechanicalValidity":"GOOD","intendedDimensionStatus":"CONFOUNDED","note":"Manual attack label is noncanonical because operator gate was disabled."},
-    {"taskId":"BASECAP-B20-camera-scroll-16s60-20260901-0559Z","lane":"BASECAP","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"BASECAP-B40-P2-xy-16s60-20260901-0600Z","lane":"BASECAP","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"BASECAP-B40-P3-xy-16s60-20260901-0601Z","lane":"BASECAP","mechanicalValidity":"GOOD","intendedDimensionStatus":"CONFOUNDED","note":"Canonical acquisition; current RAWMINE player-object geometry interpretation did not isolate a usable P3 dynamic."},
-    {"taskId":"EFIELD-001-baseline-30s60","lane":"EFIELD","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"EFIELD-002-natural-diversity-60s60","lane":"EFIELD","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"EFIELD-003-passive-retarget-60s60","lane":"EFIELD","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"EFIELD-004-passive-lifecycle-retarget-60s60","lane":"EFIELD","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"EFIELD-005-cross-session-target-60s60","lane":"EFIELD","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"EFIELD-005R-cross-session-target-60s60","lane":"EFIELD","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"EFIELD-006-cross-session-lifecycle-target-60s60","lane":"EFIELD","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"GEO-0001-dynamic-baseline-20260831-1517Z","lane":"GEO","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"GEO-0003-natural-geometry-10s60-20260831-1549Z","lane":"GEO","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"GEO-0004-action-diversity-10s60-20260831-1604Z","lane":"GEO","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"GEO-0006-passive-geometry-camera-20s60-20260831-1657Z","lane":"GEO","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"GEO-0008-p1-depth-only-5s60-20260831-2115Z","lane":"GEO","mechanicalValidity":"GOOD","intendedDimensionStatus":"CONFOUNDED","note":"Intended P1 depth manipulation not visible."},
-    {"taskId":"GEO-0009-p1-depth-visible-traverse-8s60-20260901-0024Z","lane":"GEO","mechanicalValidity":"GOOD","intendedDimensionStatus":"CONFOUNDED"},
-    {"taskId":"GEO-0010-p1-attribution-depth-calibration-10s60-20260901-0033Z","lane":"GEO","mechanicalValidity":"GOOD","intendedDimensionStatus":"CONFOUNDED"},
-    {"taskId":"GEO-0011-p1-attribution-depth-calibration-10s60-20260901-0038Z","lane":"GEO","mechanicalValidity":"GOOD","intendedDimensionStatus":"CONFOUNDED"},
-    {"taskId":"GEO-0012-p2-same-xy-offsets-12s60-20260901-0054Z","lane":"GEO","mechanicalValidity":"GOOD","intendedDimensionStatus":"CONFOUNDED","note":"No controlled P2 trajectory isolated."},
-    {"taskId":"GEO-0013-p2-attribution-depth-long-35s60-20260901-0104Z","lane":"GEO","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD"},
-    {"taskId":"RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z","lane":"RAWMINE","mechanicalValidity":"GOOD","intendedDimensionStatus":"CONFOUNDED"},
-    {"taskId":"RAWMINE-004-p1-attribution-depth-redo-10s60-20260901-0037Z","lane":"RAWMINE","mechanicalValidity":"GOOD","intendedDimensionStatus":"CONFOUNDED"},
-    {"taskId":"RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z","lane":"RAWMINE","mechanicalValidity":"GOOD","intendedDimensionStatus":"GOOD","note":"Accepted P1 depth confirmation."}
-  ],
-  "captureInventoryDefaults": {
-    "task": true,
-    "status": true,
-    "result": true,
-    "raw": true,
-    "stage": null,
-    "stageStatus": "LABEL_UNKNOWN",
-    "scene": null,
-    "sceneStatus": "LABEL_UNKNOWN",
-    "wave": null,
-    "waveStatus": "LABEL_UNKNOWN",
-    "playerCountConfig": null,
-    "playerCountConfigStatus": "LABEL_UNKNOWN",
-    "bossOrOrdinary": null,
-    "bossOrOrdinaryStatus": "LABEL_UNKNOWN",
-    "rawPathPattern": "captures/<taskId>.jsonl.gz"
-  },
-  "failedAttempts": [
-    {"taskId":"BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z","lane":"BASECAP","retainedTaskSpec":false,"result":false,"raw":false,"status":"CONFOUNDED"},
-    {"taskId":"EFIELD-007-passive-proximity-association-60s60","lane":"EFIELD","retainedTaskSpec":true,"result":false,"raw":false,"status":"CONFOUNDED"},
-    {"taskId":"EFIELD-008-discovery-probe-snapshot","lane":"EFIELD","retainedTaskSpec":true,"result":false,"raw":false,"status":"CONFOUNDED"},
-    {"taskId":"EFIELD-009-discovery-candidate-diagnostic-snapshot","lane":"EFIELD","retainedTaskSpec":false,"result":false,"raw":false,"status":"CONFOUNDED"},
-    {"taskId":"GEO-0002-p1-facing-right-static-20260831-1534Z","lane":"GEO","retainedTaskSpec":false,"result":false,"raw":false,"status":"CONFOUNDED"},
-    {"taskId":"GEO-0005-camera-scroll-right-8s60-20260831-1619Z","lane":"GEO","retainedTaskSpec":false,"result":false,"raw":false,"status":"CONFOUNDED"},
-    {"taskId":"GEO-0007-p1-horizontal-only-5s60-20260831-2038Z","lane":"GEO","retainedTaskSpec":false,"result":false,"raw":false,"status":"CONFOUNDED"}
-  ],
-  "gaps": [
-    {"id":"GAP-STAGE-SCENE-WAVE","status":"LABEL_UNKNOWN","kind":"label","physicalRecapNow":false},
-    {"id":"GAP-BOSS-ORDINARY","status":"LABEL_UNKNOWN","kind":"label","physicalRecapNow":false},
-    {"id":"GAP-SEMANTIC-ACTIVE","status":"LABEL_UNKNOWN","kind":"semantic","physicalRecapNow":false},
-    {"id":"GAP-PER-TYPE-CROSSTABS","status":"LABEL_UNKNOWN","kind":"materialization","physicalRecapNow":false},
-    {"id":"GAP-SEQUENCE-FAMILY","status":"LABEL_UNKNOWN","kind":"missing-owner-output","physicalRecapNow":false},
-    {"id":"GAP-T23-CURRENT-CORPUS","status":"MISSING","kind":"coverage","physicalRecapNow":false,"note":"0 samples in current EFIELD corpus only; expected universe unknown."},
-    {"id":"GAP-RARE-0x1E","status":"LOW","kind":"coverage","physicalRecapNow":false,"note":"42 structural coarse-family frames."},
-    {"id":"GAP-LOW-TXX","status":"LOW","kind":"coverage","physicalRecapNow":false,"types":["T05","T0D","T0C","T0E","T02","T06","T04","T1D","T1C","T0F","T01","T03","T1F","T1E"]},
-    {"id":"GAP-CONFOUNDED-HISTORICAL-CAPTURES","status":"CONFOUNDED","kind":"capture-condition","physicalRecapNow":false}
-  ],
-  "minimalRecapPlan": {
-    "humanRecapRequired": false,
-    "selectedScenes": [],
-    "selectedWaves": [],
+  "recapDecision": {
+    "humanRecapRequired": "NO",
     "collectorTasksCreated": 0,
-    "minimumPhysicalRecapSet": [],
-    "status": "GOOD",
-    "reason": "The dominant residual gaps are labels and unmaterialized cross-tabs. Without authoritative stage/scene/wave/boss labels there is no defensible scene-to-gap incidence matrix for set-cover selection. Existing owner lanes do not justify a generic resweep.",
-    "recomputeTriggers": [
-      "SWEEPATLAS becomes available",
-      "SEQMINER becomes available",
-      "authoritative stage/scene/wave/boss labels arrive",
-      "new EFIELD/RAWMINE outputs materialize per-Txx cross-tabs",
-      "new bridge task/status/result/raw artifacts arrive"
-    ]
+    "selectedSceneSet": [],
+    "reason": "Current residuals are analysis/materialization, semantics/labels, or Browser validation. The one physically absent broad labeled full-game sweep is not a bounded minimal recap and is explicitly not justified now."
   }
 }
