@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "wof-alpha-transport-mock-fixtures-v1",
+  "constants": {
+    "applicationSchema": "wof-alpha-v2",
+    "release": "wof-alpha-rc3",
+    "transportVersion": "wof-alpha-safe-transport-v1",
+    "snapshotSchema": "wof-alpha-snapshot-v1",
+    "identitySignature": "wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8",
+    "goldenSha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
+    "staleMs": 1500,
+    "heartbeatMaxMs": 250
+  },
+  "pairs": {
+    "a1": {"session":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","pairGeneration":1,"pairNonce":"cccccccccccccccccccccccccccccccc"},
+    "a2": {"session":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","pairGeneration":2,"pairNonce":"dddddddddddddddddddddddddddddddd"},
+    "b1": {"session":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","pairGeneration":1,"pairNonce":"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}
+  },
+  "warnings": {
+    "t18a": {"ruleId":"T18_5440_CYCLE_BODY7512_TM4_LEVEL_90","freezeStatus":"freeze-candidate","releaseStatus":"alpha-rc3-current-level","warningClass":"ATTACK","attackSpecific":true,"attack":5440,"target":"P1","target7E":0,"sourceSide":"RIGHT","threatSide":"LEFT","timingClass":"IMMINENT","validatedLeadLabel":"about-approved","publication":"hold-only-current-level","evidence":"fresh-current-sample","slot":0,"type":18},
+    "t18b": {"ruleId":"T18_5424_CYCLE_BODY7520_TM4_LEVEL_90","freezeStatus":"freeze-candidate","releaseStatus":"alpha-rc3-current-level","warningClass":"ATTACK","attackSpecific":true,"attack":5424,"target":"P2","target7E":4,"sourceSide":"LEFT","threatSide":"RIGHT","timingClass":"IMMINENT","validatedLeadLabel":"about-approved","publication":"hold-only-current-level","evidence":"fresh-current-sample","slot":1,"type":18}
+  },
+  "detectorFrames": {
+    "warningA": {"slotIdentity":"type18-slot0-a","targetIndex":0,"warnings":["t18a"]},
+    "neutralReplacement": {"slotIdentity":"type18-slot0-b","targetIndex":0,"warnings":[]},
+    "matchingReplacement": {"slotIdentity":"type18-slot0-c","targetIndex":0,"warnings":["t18a"]},
+    "invalidTarget": {"slotIdentity":"type18-slot0-d","targetIndex":12,"warnings":[]},
+    "sideFlip": {"slotIdentity":"type18-slot0-a","targetIndex":0,"warnings":["t18a"],"warningOverrides":{"t18a":{"sourceSide":"LEFT","threatSide":"RIGHT"}}},
+    "twoWarnings": {"slotIdentity":"multi","targetIndex":0,"warnings":["t18a","t18b"]},
+    "excludedBody4728": {"slotIdentity":"type18-slot2-excluded","targetIndex":0,"warnings":[]},
+    "quarantinedF1": {"slotIdentity":"f1","targetIndex":0,"warnings":[]},
+    "quarantinedF2": {"slotIdentity":"f2","targetIndex":0,"warnings":[]},
+    "quarantinedF3": {"slotIdentity":"f3","targetIndex":0,"warnings":[]},
+    "quarantinedF4": {"slotIdentity":"f4","targetIndex":0,"warnings":[]}
+  },
+  "identityProbes": {
+    "valid": {"moduleOk":true,"heapOk":true,"candidateCount":1,"hashStatus":"accepted","sha256":"5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62","readOnly":true,"ramWrites":0,"inputInjection":false},
+    "pending": {"moduleOk":true,"heapOk":true,"candidateCount":1,"hashStatus":"pending","sha256":null,"readOnly":true,"ramWrites":0,"inputInjection":false},
+    "missing": {"moduleOk":true,"heapOk":true,"candidateCount":1,"hashStatus":"missing","readOnly":true,"ramWrites":0,"inputInjection":false},
+    "malformed": {"moduleOk":true,"heapOk":true,"candidateCount":1,"hashStatus":"accepted","sha256":"xyz","readOnly":true,"ramWrites":0,"inputInjection":false},
+    "mutated": {"moduleOk":true,"heapOk":true,"candidateCount":1,"hashStatus":"accepted","sha256":"5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f63","readOnly":true,"ramWrites":0,"inputInjection":false},
+    "ambiguous": {"moduleOk":true,"heapOk":true,"candidateCount":2,"hashStatus":"accepted","sha256":"5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62","readOnly":true,"ramWrites":0,"inputInjection":false}
+  },
+  "targetSets": {
+    "one": [{"id":"w1","type":"worker","url":"https://game.example/gstyphoon.abc.js","page":"p1","associationExact":true,"moduleOk":true,"identityOk":true}],
+    "zero": [],
+    "twoAmbiguous": [
+      {"id":"w1","type":"worker","url":"https://game.example/gstyphoon.a.js","page":"p1","associationExact":false,"moduleOk":true,"identityOk":true},
+      {"id":"w2","type":"worker","url":"https://game.example/gstyphoon.b.js","page":"p1","associationExact":false,"moduleOk":true,"identityOk":true}
+    ],
+    "wrong": [{"id":"x1","type":"iframe","url":"https://game.example/gstyphoon.a.js","page":"p1","associationExact":true,"moduleOk":true,"identityOk":true}],
+    "twoTabsExact": [
+      {"id":"w1","type":"worker","url":"https://game.example/gstyphoon.a.js","page":"p1","associationExact":true,"moduleOk":true,"identityOk":true},
+      {"id":"w2","type":"worker","url":"https://game.example/gstyphoon.b.js","page":"p2","associationExact":true,"moduleOk":true,"identityOk":true}
+    ],
+    "twoTabsAmbiguous": [
+      {"id":"w1","type":"worker","url":"https://game.example/gstyphoon.a.js","page":null,"associationExact":false,"moduleOk":true,"identityOk":true},
+      {"id":"w2","type":"worker","url":"https://game.example/gstyphoon.b.js","page":null,"associationExact":false,"moduleOk":true,"identityOk":true}
+    ]
+  },
+  "rc5Baseline": {
+    "windowWorkerIdentityPreserved": true,
+    "blobWorker": false,
+    "workerUrlRewrite": false,
+    "workerOptionsRewrite": false,
+    "prePairHudFetch": false,
+    "gameplayFailOpen": true,
+    "legacyHudTeardown": true,
+    "webglStateRestoration": true,
+    "rc5IndependentQaPass": true,
+    "rc4AdversarialPass": true
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "workerReplacement": false,
+    "blobRewrite": false,
+    "gamePostMessageControl": false,
+    "heapWrites": false,
+    "assistMode": false,
+    "allowedCdpMethods": ["Target.getTargets","Target.attachToTarget","Target.detachFromTarget","Runtime.enable","Runtime.evaluate"]
+  }
+}
