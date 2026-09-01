@@ -2,7 +2,16 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "UNIFIED_LIVE_PROOF_FRESHNESS_FIX_V1",
   "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_FRESHNESS_FIX_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "17dee3d751cd2b9f5206db9e2c2032ec9f003b8b",
-  "startedAtUtc": "2026-09-01T14:14:00Z"
+  "startedAtUtc": "2026-09-01T14:14:00Z",
+  "resultPath": "parallel/LIVE_PROOF_BUNDLE/FRESHNESS_FIX_RESULT.md",
+  "statusPath": "parallel/LIVE_PROOF_BUNDLE/FRESHNESS_FIX_STATUS.json",
+  "resultCommit": "0ea66b07c2cee05ce0c5470964e4fca760f7aaed",
+  "implementationCommits": [
+    "ef7b1123279c8affec07799bb49b62dac882fc50",
+    "a42cf32b05fdb8ddbcc34e83ea1b918ab280f201"
+  ],
+  "verdict": "UNIFIED LIVE PROOF FRESHNESS FIX READY — READY FOR FRESH INDEPENDENT QA",
+  "ownerActionRequired": false
 }
