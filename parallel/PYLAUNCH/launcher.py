@@ -7,6 +7,7 @@ import threading
 import time
 from pathlib import Path
 
+from wof_launcher.fleet import select_fleet_instance
 from wof_launcher.monitor import LauncherMonitor
 from wof_launcher.proof import write_proof_json
 from wof_launcher.state import StatusStore
@@ -25,11 +26,31 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--no-tray", action="store_true", help="CLI diagnostics mode")
     p.add_argument("--once", action="store_true", help="With --no-tray, print one status snapshot and exit")
     p.add_argument("--proof-json", help="Continuously write a compact read-only Windows proof JSON snapshot")
+    fleet = p.add_mutually_exclusive_group()
+    fleet.add_argument("--fleet-auto", action="store_true", help="Attach to the first live Browser Fleet instance")
+    fleet.add_argument("--fleet-instance", type=int, help="Attach to one numbered live Browser Fleet instance")
+    p.add_argument("--fleet-manifest", help="Optional Browser Fleet instances.json path")
     return p.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    if args.fleet_auto or args.fleet_instance is not None:
+        selected = select_fleet_instance(
+            Path(args.fleet_manifest).expanduser() if args.fleet_manifest else None,
+            instance_id=args.fleet_instance,
+            live_only=True,
+        )
+        if selected is None:
+            which = f"#{args.fleet_instance}" if args.fleet_instance is not None else "any live instance"
+            print(f"Browser Fleet {which} not found; game/browser is unaffected", file=sys.stderr)
+            return 3
+        args.host = selected.host
+        args.port = selected.port
+        args.attach_only = True
+        if not args.profile_dir:
+            args.profile_dir = str(selected.profile_dir)
+
     status = StatusStore()
     stop = threading.Event()
     tray_holder: dict[str, TrayApp] = {}
