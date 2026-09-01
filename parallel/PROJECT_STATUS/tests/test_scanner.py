@@ -61,6 +61,19 @@ Fresh stage A:
         self.assertEqual(len(risks), 1)
         self.assertIn("worker-discovery", risks[0]["shared_topics"])
 
+    def test_git_recent_commits_includes_changed_files(self):
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.name", "Test"], cwd=repo, check=True)
+            (repo / "a.txt").write_text("a", encoding="utf-8")
+            subprocess.run(["git", "add", "."], cwd=repo, check=True)
+            subprocess.run(["git", "commit", "-m", "first"], cwd=repo, check=True, capture_output=True)
+            commits = scanner.git_recent_commits(repo, 10)
+            self.assertEqual(commits[0].subject, "first")
+            self.assertEqual(commits[0].files, ["a.txt"])
+
     def test_selects_most_recent_result_for_lane(self):
         with tempfile.TemporaryDirectory() as td:
             repo = Path(td)
