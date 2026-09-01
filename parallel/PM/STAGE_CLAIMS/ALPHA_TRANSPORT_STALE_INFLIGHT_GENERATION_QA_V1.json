@@ -2,7 +2,12 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "ALPHA_TRANSPORT_STALE_INFLIGHT_GENERATION_QA_V1",
   "promptPath": "parallel/PM/ALPHA_TRANSPORT_STALE_INFLIGHT_GENERATION_QA_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "1be09d7f14e18d5aaa3721dff74df5df02a94063",
-  "startedAtUtc": "2026-09-01T15:16:36Z"
+  "startedAtUtc": "2026-09-01T15:16:36Z",
+  "completedAtUtc": "2026-09-01T15:27:25Z",
+  "verdict": "PASS",
+  "resultPath": "parallel/ALPHA_TRANSPORT_QA_STALE_GENERATION/RESULT.md",
+  "summaryPath": "parallel/ALPHA_TRANSPORT_QA_STALE_GENERATION/summary.json",
+  "resultCommit": "82e21a13b521f887e68bcb6c0b841040e5c61fb6"
 }
