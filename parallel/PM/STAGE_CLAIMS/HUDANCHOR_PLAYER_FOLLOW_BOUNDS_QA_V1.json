@@ -1,0 +1,7 @@
+{
+  "stageId": "HUDANCHOR_PLAYER_FOLLOW_BOUNDS_QA_V1",
+  "status": "ACTIVE",
+  "claimedBy": "ChatGPT",
+  "scope": "parallel/HUDANCHOR_PLAYER_FOLLOW_BOUNDS_QA/**",
+  "note": "Fresh independent bounds QA per HUDANCHOR_PLAYER_FOLLOW_BOUNDS_QA_START_PROMPT.md"
+}
