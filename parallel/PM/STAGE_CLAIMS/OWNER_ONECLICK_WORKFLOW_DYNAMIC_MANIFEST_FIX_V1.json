@@ -2,7 +2,16 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "OWNER_ONECLICK_WORKFLOW_DYNAMIC_MANIFEST_FIX_V1",
   "promptPath": "parallel/PM/OWNER_ONECLICK_WORKFLOW_DYNAMIC_MANIFEST_FIX_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "69b45d9fef6b67ed025b6e2d5359e848e778cbda",
-  "startedAtUtc": "2026-09-01T14:31:00Z"
+  "startedAtUtc": "2026-09-01T14:31:00Z",
+  "resultPath": ".github/workflows/owner-oneclick-package.yml",
+  "resultCommit": "2aae28a372426ee06557a89c77766d640334ba8f",
+  "validation": {
+    "actionsRunId": 33520816747,
+    "windowsOneclick": "PASS",
+    "dynamicManifestRegression": "PASS",
+    "staleManifestFailClosed": "PASS_EXPECTED_FAILURE"
+  },
+  "ownerAction": "NO"
 }
