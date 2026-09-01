@@ -4,6 +4,7 @@ import re
 import time
 from dataclasses import dataclass
 from typing import Any
+from urllib.parse import urlsplit
 
 from .cdp import CdpClient, CdpError, CdpSession
 from .probe import GSTYPHOON_RE, IDENTITY_PROBE, LIGHT_WORKER_PROBE, PAGE_PROBE
@@ -27,13 +28,21 @@ def _summary(t: dict[str, Any]) -> dict[str, Any]:
     return {k: t.get(k) for k in keys if t.get(k) not in (None, "")}
 
 
-def _worker_compatible(t: dict[str, Any], *, related: bool = False) -> bool:
+def _url_scheme_hint(t: dict[str, Any]) -> str:
     url = str(t.get("url") or "")
-    if url.lower().startswith(("blob:", "data:", "javascript:")):
-        return False
+    try:
+        scheme = urlsplit(url).scheme.lower()
+    except ValueError:
+        scheme = ""
+    return scheme or "none"
+
+
+def _worker_compatible(t: dict[str, Any], *, related: bool = False) -> bool:
+    # Discovery V2 observes already-existing attachable Worker targets. URL shape is
+    # diagnostic only; runtime readiness + exact World identity are the authority.
     if t.get("type") in WORKER_TYPES:
         return True
-    return related and bool(GSTYPHOON_RE.search(url))
+    return related and bool(GSTYPHOON_RE.search(str(t.get("url") or "")))
 
 
 def _eval(session: CdpSession, expression: str, *, await_promise: bool = False, timeout: float = 8.0) -> Any:
@@ -79,6 +88,11 @@ def _unique_page(pages: list[dict[str, Any]]) -> dict[str, Any] | None:
     best = max(score for _, score in scored)
     winners = [p for p, score in scored if score == best and (score > 0 or len(pages) == 1)]
     return winners[0] if len(winners) == 1 else None
+
+
+def _unique_wof_page(pages: list[dict[str, Any]]) -> dict[str, Any] | None:
+    candidates = [p for p in pages if _page_score(p) > 0]
+    return candidates[0] if len(candidates) == 1 else None
 
 
 def _identity_on_session(session: CdpSession, target_id: str, *, timeout: float, cache: dict[str, dict[str, Any]] | None) -> dict[str, Any]:
@@ -137,7 +151,7 @@ def _related_rows(client: CdpClient, page: dict[str, Any], *, identity_timeout: 
                     continue
                 depth = parent[1] + 1
                 tid = str(info.get("targetId") or "")
-                topology.append({**_summary(info), "depth": depth, "attachedFromTargetId": parent[0].target_id})
+                topology.append({**_summary(info), "depth": depth, "attachedFromTargetId": parent[0].target_id, "urlSchemeHint": _url_scheme_hint(info)})
                 child = CdpSession(client, tid, child_sid)
                 sessions[child_sid] = (child, depth)
                 if _worker_compatible(info, related=True) and tid and tid not in seen_targets:
@@ -156,13 +170,26 @@ def _related_rows(client: CdpClient, page: dict[str, Any], *, identity_timeout: 
 
 
 def _direct_page(worker: dict[str, Any], pages: list[dict[str, Any]]) -> dict[str, Any] | None:
-    for key in ("parentId", "openerId"):
-        relation = worker.get(key)
-        if relation:
-            linked = [p for p in pages if p.get("targetId") == relation]
-            if len(linked) == 1:
-                return linked[0]
-    return _unique_page(pages)
+    parent_id = worker.get("parentId")
+    if parent_id:
+        linked = [p for p in pages if p.get("targetId") == parent_id]
+        if len(linked) == 1:
+            return linked[0]
+
+    parent_frame_id = worker.get("parentFrameId")
+    if parent_frame_id:
+        linked = []
+        for page in pages:
+            probe = page.get("wofPageProbe") if isinstance(page.get("wofPageProbe"), dict) else {}
+            if page.get("frameId") == parent_frame_id or probe.get("frameId") == parent_frame_id:
+                linked.append(page)
+        if len(linked) == 1:
+            return linked[0]
+        if len(linked) > 1:
+            return None
+
+    # openerId is intentionally not parent authority for Worker targets.
+    return _unique_wof_page(pages)
 
 
 def _diag(targets: list[dict[str, Any]], pages: list[dict[str, Any]], *, path: str, topology: list[dict[str, Any]] | None = None) -> dict[str, Any]:
@@ -170,16 +197,20 @@ def _diag(targets: list[dict[str, Any]], pages: list[dict[str, Any]], *, path: s
     for t in targets:
         kind = str(t.get("type") or "unknown")
         counts[kind] = counts.get(kind, 0) + 1
+    workers = [t for t in targets if t.get("type") in WORKER_TYPES]
     return {
         "path": path,
         "targetCount": len(targets),
         "typeCounts": counts,
         "targets": [_summary(t) for t in targets[:32]],
+        "workerUrlHints": [{"targetId": t.get("targetId"), "scheme": _url_scheme_hint(t), "url": t.get("url")} for t in workers[:32]],
         "pageSignals": [{"targetId": p.get("targetId"), "score": _page_score(p), "url": p.get("url"), "probe": p.get("wofPageProbe")} for p in pages],
         "relatedTopology": topology or [],
         "readOnly": True,
         "ramWrites": 0,
         "inputInjection": False,
+        "workerReplacement": False,
+        "urlRewrite": False,
     }
 
 
@@ -188,6 +219,10 @@ def discover(client: CdpClient, *, identity_timeout: float = 20.0, identity_cach
     if not isinstance(raw, list):
         raise CdpError("Target.getTargets returned malformed targetInfos")
     targets = [dict(t) for t in raw if isinstance(t, dict)]
+    live_target_ids = {str(t.get("targetId") or "") for t in targets if t.get("targetId")}
+    if identity_cache is not None:
+        for stale_id in [key for key in identity_cache if key not in live_target_ids]:
+            identity_cache.pop(stale_id, None)
     pages = [_probe_page(client, t) for t in targets if t.get("type") == "page"]
 
     supported: list[tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]] = []
