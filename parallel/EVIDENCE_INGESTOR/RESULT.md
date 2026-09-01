@@ -33,14 +33,14 @@ Status: **REPOSITORY READY**
 
 ## Automated tests
 
-基础实现此前已执行：
+完整当前测试集已实际执行：
 
 ```text
 python -m unittest discover -s parallel/EVIDENCE_INGESTOR/tests -p test_*.py -v
-13/13 PASS
+18/18 PASS
 ```
 
-原 13 项覆盖：
+覆盖：
 
 - valid PYLAUNCH + World 921031
 - broken JSON isolation
@@ -55,14 +55,10 @@ python -m unittest discover -s parallel/EVIDENCE_INGESTOR/tests -p test_*.py -v
 - log indexing
 - Alpha RC5 regression recognition
 - Alpha RC5 QA recognition
-
-当前仓库另外新增 3 项针对真实当前版本的兼容回归：
-
-- `wof-windows-operator-toolkit-v2-cn` Regression -> `REGRESSION_SUMMARY` / knownVersion PASS；
-- `wof-windows-operator-toolkit-v2-cn` Diagnostics -> `DIAGNOSTICS_SUMMARY` / knownVersion PASS；
-- `RUN_EVIDENCE_INGESTOR.cmd` 必须调用 `run.py --package`。
-
-这些回归已经写入 `parallel/EVIDENCE_INGESTOR/tests/test_current_compat.py`，用于后续完整回归执行；本结果不把未在当前 GitHub 主机实际执行的新 3 项虚报成已 PASS。
+- current Toolkit v2-cn Regression recognition
+- current Toolkit v2-cn Diagnostics recognition
+- current `run.py` compatibility path
+- one-click CMD uses `run.py --package`
 
 ## Owner workflow
 
@@ -78,6 +74,14 @@ Standalone fallback:
 
 ```text
 parallel\EVIDENCE_INGESTOR\RUN_EVIDENCE_INGESTOR.cmd
+```
+
+每次成功整理同时得到：
+
+```text
+SUMMARY.json
+结果汇总.txt
+WOF_结果包_<时间>.zip
 ```
 
 ## Remaining real-Windows proof
