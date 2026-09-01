@@ -1,7 +1,9 @@
 {
   "stageId": "HUDANCHOR_PLAYER_FOLLOW_BOUNDS_QA_V1",
-  "status": "ACTIVE",
+  "status": "COMPLETE",
   "claimedBy": "ChatGPT",
   "scope": "parallel/HUDANCHOR_PLAYER_FOLLOW_BOUNDS_QA/**",
-  "note": "Fresh independent bounds QA per HUDANCHOR_PLAYER_FOLLOW_BOUNDS_QA_START_PROMPT.md"
+  "result": "parallel/HUDANCHOR_PLAYER_FOLLOW_BOUNDS_QA/RESULT.md",
+  "terminalStatus": "PASS — HUDANCHOR PLAYER-FOLLOW BOUNDS FRESH QA — BOUNDS CLOSED; WAITING PROJECTION PROOF",
+  "ownerAction": "NO"
 }
