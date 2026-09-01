@@ -48,3 +48,50 @@ jobs:
 
       - name: Operator Toolkit and Chinese CLI smoke tests
         run: python -m unittest discover -s parallel/OPTOOLKIT/tests -p 'test_*.py' -v
+
+  windows-utf8-smoke:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Recorder dependency
+        shell: pwsh
+        run: python -m pip install --disable-pip-version-check -r parallel/WOF052L_RECORDER/requirements.txt
+
+      - name: Real CMD UTF-8 Chinese output smoke
+        shell: cmd
+        run: |
+          chcp 65001 >nul
+          set PYTHONUTF8=1
+          set PYTHONIOENCODING=utf-8
+          python -c "print('简体中文 CMD 输出正常')"
+
+      - name: PowerShell UTF-8 and Chinese path smoke
+        shell: pwsh
+        run: |
+          $env:PYTHONUTF8='1'
+          $env:PYTHONIOENCODING='utf-8'
+          python -c "from pathlib import Path; import os,json; p=Path(os.environ['RUNNER_TEMP'])/'中文路径'/'状态.json'; p.parent.mkdir(parents=True,exist_ok=True); p.write_text(json.dumps({'schema':'owner-ux-smoke-v1','status':'PASS','readOnly':True,'ramWrites':0,'display':'中文路径正常'},ensure_ascii=False),encoding='utf-8'); x=json.loads(p.read_text(encoding='utf-8')); assert x['status']=='PASS' and x['ramWrites']==0 and x['display']=='中文路径正常'; print('简体中文 PowerShell/路径 输出正常')"
+
+      - name: Compile Chinese owner frontends on Windows
+        shell: pwsh
+        run: |
+          python -m py_compile parallel/BROWSER_FLEET/fleet_owner_zh_cn.py
+          python -m py_compile parallel/WOF052L_RECORDER/owner_zh_cn.py
+          python -m py_compile parallel/OPTOOLKIT/owner_zh_cn.py
+
+      - name: WOF-052L Chinese self-test on Windows
+        working-directory: parallel/WOF052L_RECORDER
+        shell: pwsh
+        run: python owner_zh_cn.py --self-test
+
+      - name: Operator Toolkit Chinese smoke tests on Windows
+        shell: pwsh
+        run: python -m unittest discover -s parallel/OPTOOLKIT/tests -p 'test_*.py' -v
