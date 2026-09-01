@@ -10,14 +10,12 @@ Double-click:
 
 `RUN_WOF_FLEET.cmd`
 
-First run only:
-1. choose `auto`, `chrome`, or `edge`;
-2. optionally paste the WOF page/room URL to remember it.
-
-Every later run:
+The normal path is now exactly:
 1. double-click the CMD;
-2. enter `1`, `5`, `10`, or another count up to 50;
-3. the tool launches that many isolated windows and arranges them on the primary screen.
+2. enter `1`, `5`, `10`, or another count up to 50 (blank defaults to 10);
+3. the tool automatically finds Chrome/Edge, launches that many isolated windows, and arranges them on the primary screen.
+
+No first-run Browser/URL setup is required. With no configured WOF URL the windows open as WOF-ready `about:blank` windows so the owner can navigate normally. Optional saved Browser/URL defaults can still be set later with `fleet_manager.py configure`.
 
 The console numbers each instance and shows:
 - Browser/CDP;
@@ -74,7 +72,9 @@ Top-level safety fields are always:
 - `inputInjection: false`;
 - `windowWorkerReplacement: false`.
 
-`parallel/PYLAUNCH/wof_launcher/fleet.py` is the shared stdlib reader. PYLAUNCH can attach to the first live fleet endpoint with `--fleet-auto`, or a numbered endpoint with `--fleet-instance N`. WOF-052L can import the same reader and enumerate all live entries.
+`parallel/PYLAUNCH/wof_launcher/fleet.py` is the shared stdlib reader. PYLAUNCH can attach to the first live fleet endpoint with `--fleet-auto`, or a numbered endpoint with `--fleet-instance N`.
+
+WOF-052L's `fleet_recorder.py` reads the same manifest and pins one independent recorder manager to each Fleet endpoint. Missing Fleet entries fall back to the original single-CDP recorder path.
 
 The Fleet Manager's Worker status is intentionally only a cheap HTTP target-list indicator. Authoritative Worker/WASM/heap/World-921031 validation stays in PYLAUNCH's existing read-only CDP probe.
 
@@ -92,7 +92,7 @@ One-off browser selection / URL:
 py -3 fleet_manager.py start 5 --interactive --browser edge --game-url "https://YOUR-WOF-PAGE/"
 ```
 
-Reconfigure remembered defaults:
+Optional saved defaults:
 
 ```bat
 py -3 fleet_manager.py configure
@@ -129,6 +129,8 @@ py -3 -m unittest discover parallel\PYLAUNCH\tests -v
 
 Repository-side offline coverage checks window tiling, count/port guards, independent profile/port allocation, settings persistence, manifest safety fields, and fleet registry selection.
 
+WOF-052L also includes `parallel\WOF052L_RECORDER\test_fleet_recorder.py` for Fleet manifest parsing/localhost filtering.
+
 ## Remaining real Windows proof
 
 The only remaining Fleet proof is bounded:
@@ -136,7 +138,7 @@ The only remaining Fleet proof is bounded:
 1. double-click `RUN_WOF_FLEET.cmd`;
 2. enter `10`;
 3. confirm 10 windows appear and are tiled;
-4. enter/join WOF normally in at least two windows (or use the remembered WOF URL);
+4. enter/join WOF normally in at least two windows (or optionally configure a remembered WOF URL beforehand);
 5. press `S` and confirm each relevant row independently reaches Browser `OK`, page `OK`, and Worker `OK` when its room is running;
 6. restart one instance with `R` and confirm the others stay running;
 7. close all with `A`.
