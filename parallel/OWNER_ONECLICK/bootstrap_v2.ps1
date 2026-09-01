@@ -2,6 +2,11 @@ param(
     [switch]$UpdateOnly
 )
 
+# Backward compatibility: packaged Toolkit v2 historically calls the stable CMD with
+# "--update-only". Windows PowerShell leaves that GNU-style token in $args instead
+# of binding it to the [switch] above, so normalize it here before doing any work.
+if ($args -contains '--update-only') { $UpdateOnly = $true }
+
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
