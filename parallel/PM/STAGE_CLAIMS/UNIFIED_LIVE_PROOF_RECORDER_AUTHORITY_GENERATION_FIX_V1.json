@@ -2,7 +2,15 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_FIX_V1",
   "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_FIX_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "86232a9857141072ee6d8bd354079a7a34822502",
-  "startedAtUtc": "2026-09-01T16:07:51Z"
+  "startedAtUtc": "2026-09-01T16:07:51Z",
+  "implementationCommit": "443eca7b591fa2331e71d2bd6e91643b90b9765d",
+  "statusPath": "parallel/LIVE_PROOF_BUNDLE/RECORDER_AUTHORITY_GENERATION_FIX_STATUS.json",
+  "resultPath": "parallel/LIVE_PROOF_BUNDLE/RECORDER_AUTHORITY_GENERATION_FIX_RESULT.md",
+  "resultCommit": "1d39b59ec3d966a2063407dc7059a2dd1d78bcfd",
+  "classification": "ACCEPTED_WAITING_GATE",
+  "completedAtUtc": "2026-09-01T16:23:58Z",
+  "ownerActionRequired": false,
+  "stopCondition": "UNIFIED RECORDER AUTHORITY GENERATION FIX READY — READY FOR FRESH QA"
 }
