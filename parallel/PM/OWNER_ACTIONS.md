@@ -1,75 +1,67 @@
 # WOF Future Danger AI — Owner Actions
 
-Updated: 2026-09-01 — RC2 rejected by PM review / RC3 preparation
+Updated: 2026-09-01 — RC3 candidate complete / fresh QA next
 
-## Current owner action required: YES — one read-only World 921031 Browser identity probe
+## Current owner action required: YES — stage/thread management only
 
-The first ALPHAID probe did not fail due to user error. It positively identified the current Browser program as:
+The Browser identity probe is complete and accepted.
+No additional Browser ROM probe is required now.
 
-```text
-MAME set: wof
-Warriors of Fate (World 921031)
-main-program SHA-1 halves:
-10b8cb53a4600e3e76f471a3eee8a600e93096fc
-52c2d05279623d93b27856e6b76830796a089eae
-```
+Authoritative supported Browser program:
+- `wof / Warriors of Fate (World 921031)`
+- full 1 MiB CPU-logical SHA-256:
+  `5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`
 
-It also reported the historical live dispatch delta `+52 / +0x34`, matching prior Browser ROM work (`4e6f32865302d2ed390f129b5c66123fdf5f04d0`).
+RC3 has produced a candidate and its own product regression passes.
 
-PM therefore treats the old `wofr1 / World 921002` label as a stale/unverified project label for this Browser lineage. Do not switch ROMs to satisfy it.
+## Action O1 — close the RC3 implementation thread
 
-## Action O1 — Run the corrected 921031 probe
+The RC3 implementation thread has reached its stop condition.
+Do not ask it to continue testing or certifying its own release.
 
-In the same live `gstyphoon.js` Worker Console, paste this one line:
+## Action O2 — open a fresh independent RC3 QA thread
 
-```js
-fetch("https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/parallel/PM/wof_runtime_identity_921031_probe.js?"+Date.now()).then(r=>r.text()).then(s=>(0,eval)(s))
-```
+Use:
 
-This is read-only. It does not write game RAM and does not control the player.
+`parallel/PM/ALPHA_RC3_QA_START_PROMPT.md`
 
-Return the single JSON object printed at the end.
+The fresh QA thread must:
+- read current RC3 artifacts;
+- write only under `parallel/ALPHAQA_RC3/**`;
+- not modify `product/alpha/**`;
+- independently audit exact 921031 SHA-256 gating, two-rule stateless lifecycle policy, session isolation, multi-threat HUD, bootstrap, legacy teardown, target/side, UNKNOWN silence, read-only/no-input and discovery-rule exclusion;
+- stop at PASS-for-one-Browser-acceptance or a concrete P0/P1 blocker.
 
-Success requires:
-- `accepted == true`
-- `readOnly == true`
-- `ramWrites == 0`
-- `canonical.world921031Match == true`
-- `fullCpuLogicalSha256 == repeatCpuLogicalSha256`
-- `stable == true`
+## Parallel support threads
 
-That full SHA-256 becomes the golden Browser program identity for the next Alpha candidate.
+### Local WinKawaks ROM Identity
 
-## RC2 stage decision
+Current status: one minimal read-only local hash probe remains.
+Strong retained evidence points to local `World 921002`, but cryptographic proof is still pending.
 
-The RC2 implementation thread produced a candidate, but PM review rejected it before final Browser QA for two reasons documented in `parallel/PM/RC2_REVIEW_BLOCKERS.md`:
+Run only the exact one-command probe supplied by that support thread when requested. No gameplay or recollection is needed.
 
-1. P0 identity guard still uses sparse vector/dispatch evidence and can mislabel the actual 921031 runtime as 921002.
-2. P1 lifecycle handling still permits history-derived previous/current logic without positive same-enemy continuity and therefore does not fully implement the ALPHALIFE conservative policy.
+### Runtime Speed / Timing
 
-A fresh implementation stage is already prepared at:
+Continue independently. No owner action yet unless that lane reduces the question to one minimal timing test.
 
-`parallel/PM/ALPHA_RC3_FIX_START_PROMPT.md`
+### Player-Anchored HUD
 
-Do not revive the completed RC2 implementation chat.
+Beta-support lane may be opened/continued independently using:
 
-## Work-thread cleanup
+`parallel/PM/PLAYER_ANCHORED_HUD_START_PROMPT.md`
 
-The following current-stage work threads have reached their stop points and may be closed:
-- Alpha RC2 implementation — candidate produced, then rejected by PM review.
-- Runtime Identity audit — method/probe defined; PM now owns the corrected one-shot binding.
-- Enemy Lifecycle audit — implementation-ready conservative policy complete.
-- Normal-user Bootstrap audit — implementation recommendation complete.
-
-After the 921031 probe succeeds, open one fresh **Alpha RC3 Fix** thread using `ALPHA_RC3_FIX_START_PROMPT.md`.
+It must not modify Alpha product code.
 
 ## Do not do yet
 
-- Do not run final Alpha Browser acceptance.
-- Do not resume WOF-052 as a release blocker.
-- Do not perform broad Browser/WinKawaks collection.
-- Do not switch the game ROM to 921002 merely to fit the old label.
+- Do not run final Alpha Browser acceptance before fresh RC3 QA passes.
+- Do not restart WOF-052 as an Alpha blocker.
+- Do not perform broad Browser or WinKawaks recollection.
+- Do not revive RC2 or RC3 implementation threads after their stages are complete.
 
 ## Next PM trigger
 
-Paste the corrected 921031 probe JSON here. PM will record the golden digest, route it into RC3, then start the fresh repair stage.
+After the fresh RC3 QA writes its verdict to GitHub, PM will either:
+- open a fresh next fix stage for any P0/P1 blocker; or
+- issue one exact bounded Browser acceptance procedure and then decide Alpha release.
