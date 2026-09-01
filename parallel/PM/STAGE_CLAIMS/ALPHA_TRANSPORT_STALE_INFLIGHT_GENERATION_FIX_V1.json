@@ -2,7 +2,9 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "ALPHA_TRANSPORT_STALE_INFLIGHT_GENERATION_FIX_V1",
   "promptPath": "parallel/PM/ALPHA_TRANSPORT_STALE_INFLIGHT_GENERATION_FIX_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "14264b454e1ccc47043099127798fc67e405fc88",
-  "startedAtUtc": "2026-09-01T14:56:00Z"
+  "startedAtUtc": "2026-09-01T14:56:00Z",
+  "resultPath": "parallel/ALPHA_TRANSPORT_IMPL/RESULT.md",
+  "resultCommit": "0b572e9c097b6ed6fcbcc3069b92c9b2e714fdfc"
 }
