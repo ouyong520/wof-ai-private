@@ -10,6 +10,7 @@ function run(script) {
   if (x.stderr) process.stderr.write(x.stderr);
   if (x.status !== 0) process.exit(x.status || 1);
 }
+run('stale_inflight_generation_regression.mjs');
 run('selftest.mjs');
 run('acceptance_adapter.mjs');
 const selftest = JSON.parse(fs.readFileSync(path.join(here, 'selftest_result.json'), 'utf8'));
@@ -19,4 +20,4 @@ result.selftest = { status: selftest.status, passCount: selftest.passCount, fail
 result.status = selftest.status === 'PASS' && result.failCount === 0 ? 'PASS' : 'FAIL';
 result.repositoryStatus = result.status === 'PASS' ? 'ALPHA TRANSPORT REFERENCE IMPLEMENTATION READY FOR INTEGRATION' : 'ALPHA TRANSPORT REFERENCE IMPLEMENTATION NOT READY';
 fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
-console.log(JSON.stringify({ status: result.status, selftest: result.selftest.status, contract: `${result.passCount}/${result.vectorCount}`, repositoryStatus: result.repositoryStatus }));
+console.log(JSON.stringify({ status: result.status, selftest: selftest.status, contract: `${result.passCount}/${result.vectorCount}`, repositoryStatus: result.repositoryStatus }));
