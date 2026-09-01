@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "WOF_ASSIST_ONECLICK_MOVE_COMMAND_REVERSE_V1",
+  "promptPath": "parallel/PM/WOF_ASSIST_ONECLICK_MOVE_COMMAND_REVERSE_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "13e919e0926038bae474d4fe9bd48566a26d1917",
+  "startedAtUtc": "2026-09-01T16:17:04Z"
+}
