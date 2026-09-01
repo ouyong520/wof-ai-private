@@ -12,7 +12,7 @@ captures/<taskId>.jsonl.gz
 
 Never reuse a task ID or overwrite historical raw.
 
-For operator-gated short-action scenes, also read `parallel/BASECAP/OPERATOR_GATE_TIMING_NOTE.md`. Collector v1 polls at 10 s by default, so `READY accepted -> immediately act` is not timing-safe. BASECAP now uses a 12 s post-READY no-input delay inside a longer capture window for such scenes.
+For operator-gated scenes, read both `parallel/BASECAP/OPERATOR_GATE_TIMING_NOTE.md` and `parallel/BASECAP/OPERATOR_ACTION_SEMANTICS.md`. Collector v1 polls at 10 s by default, so `READY accepted -> immediately act` is not timing-safe. BASECAP uses a 12 s post-READY no-input delay inside a longer capture window. Every manual action must separately state key-down behavior, release behavior, post-release wait, repetition count, and forbidden controls.
 
 ## Phase-1 coverage
 
@@ -21,8 +21,8 @@ For operator-gated short-action scenes, also read `parallel/BASECAP/OPERATOR_GAT
 | B00 stationary idle | **COVERED / VALID** | `BASECAP-B00-idle-8s60-20260901-0510Z`; gated stationary no-input baseline, 480 frames, retained raw. |
 | B10 P1 horizontal-only | **COVERED AS LABELED PHASE** | `RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z`, operator-confirmed first phase: visible repeated RIGHT/LEFT for roughly 15 s; no attack/jump/extra action; P2/P3 untouched. |
 | B11 P1 floor/depth-only | **COVERED** | Same `RAWMINE-005`, operator-confirmed second phase: visible repeated UP/DOWN for roughly 20 s; P2/P3 untouched. GEO treats this as the closing P1 Y/depth run. |
-| B12 facing/minimal displacement | **RETRY QUEUED / NOT YET VALID** | `BASECAP-B12-facing-minimal-8s60-20260901-0518Z` is mechanically PASS but non-canonical because its immediate-after-READY action instruction was exposed to the Collector 10 s poll race. Retry: `BASECAP-B12R-facing-delayed-30s60-20260901-0527Z`. |
-| B13 action/animation diversity with position stable | **MISSING** | `GEO-0004` is ungated; exact actions/position stability cannot be recovered reliably enough. |
+| B12 facing/minimal displacement | **COVERED / VALID** | `BASECAP-B12R-facing-delayed-30s60-20260901-0527Z`; timing-robust delayed protocol, 1800 frames, retained raw. |
+| B13 action/animation diversity with position stable | **QUEUED / NOT YET VALID** | `BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z`; delayed protocol with four isolated ordinary-attack taps and no intentional directional input. |
 | B20 camera-scroll discriminator | **MISSING** | Old gated camera task has no retained canonical raw; passive `GEO-0006` does not prove a scroll episode occurred. |
 | B30 ordinary gameplay/combat diversity | **COVERED for natural-gameplay diversity** | `EFIELD-003-passive-retarget-60s60`. Do not reinterpret it as a tightly controlled attack sequence. |
 | B31 enemy lifecycle diversity | **COVERED for typed-enemy episode enter/exit diversity** | `EFIELD-003`: 11 type-enter + 11 type-exit edges. Do not rename these exact edges as semantic spawn/death without EFIELD evidence. |
@@ -31,26 +31,48 @@ For operator-gated short-action scenes, also read `parallel/BASECAP/OPERATOR_GAT
 
 ## Pending Collector task
 
-### BASECAP-B12R-facing-delayed-30s60-20260901-0527Z
+### BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z
 status: QUEUED / NOT VALID  
-queuePath: `tasks/queue/BASECAP-B12R-facing-delayed-30s60-20260901-0527Z.json`  
-createdAtUtc: `2026-09-01T05:27:00Z`  
-requestedRawPath: `captures/BASECAP-B12R-facing-delayed-30s60-20260901-0527Z.jsonl.gz`  
-operatorGate: `required=true`; exact READY acceptance must name this taskId. After acceptance, operator must provide **12 seconds of no input** before the facing sequence.  
-operatorActionDuringCapture: after the 12 s delay, briefly tap LEFT and release, remain still about 2 s; briefly tap RIGHT and release, remain still about 2 s; repeat once if practical. No UP/DOWN, attack, jump, other action, or P2/P3 input.  
+queuePath: `tasks/queue/BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z.json`  
+createdAtUtc: `2026-09-01T05:36:00Z`  
+requestedRawPath: `captures/BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z.jsonl.gz`  
+operatorGate: `required=true`; exact READY acceptance must name this taskId. READY helper window may then be closed; `START_WOF_COLLECTOR.bat` must remain open. After exact READY acceptance, operator must provide **12 seconds of no game input** before the attack sequence.  
+operatorActionDuringCapture: after the 12 s delay, perform four isolated ordinary-attack taps. Each tap means key-down then immediate release, **not a hold**. After taps 1, 2, and 3, release all game controls and remain idle for about 2 s. After tap 4, release immediately and provide no further game input until capture ends. No directional input, jump, other action buttons, or P2/P3 input. If the attack animation itself causes minor automatic displacement, do not correct it with movement keys.  
 durationSeconds: `30.0`  
 hz: `60.0`  
 uploadRawStream: `true`  
 layout: P1 + P2 + P3 + 20 enemies; stride `0xE0`; 5152 bytes/frame  
-intentionalChangedVariables: P1 facing via minimal LEFT/RIGHT taps; minimal incidental horizontal displacement.  
-intentionalHeldStableVariables: depth input absent; attacks/jump/other actions absent; camera intended not to scroll; P2/P3 untouched.  
-intendedReuseQuestions: B12 facing/minimal-displacement discrimination; facing-state candidate screening against B00/B10/B11.  
-knownConfounders: exact action frames are operator-timed rather than explicitly marked in the raw. The 12 s delay is a control-plane workaround for Collector's 10 s poll loop; it is designed to ensure the short action occurs after formal capture start.  
-labelSourceEvidence: authoritative queue task plus future matching PASS result/raw; no scene label may be inferred from raw numeric values alone.  
-validationRequiredBeforePromotion: matching `taskId` + `taskBlobSha`, result `PASS`, `writesGameMemory=false`, zero read/frame-size errors, retained gzip raw, and operator protocol completion.  
-notes: do not queue B13/B20 until this retry is completed or conclusively invalidated.
+intentionalChangedVariables: P1 ordinary-attack/action animation state.  
+intentionalHeldStableVariables: no intentional horizontal/depth movement; no jump/other actions; camera intended not to scroll; P2/P3 untouched.  
+intendedReuseQuestions: B13 action/animation-vs-idle discriminator; action-state candidate screening against B00/B10/B11/B12.  
+knownConfounders: exact attack frames are operator-timed rather than explicitly marked in raw; some character attacks may include small built-in animation displacement. The delayed protocol ensures the operator actions occur after formal capture start, but does not create frame-exact event markers.  
+labelSourceEvidence: authoritative queue task plus future matching PASS result/raw and operator completion. No scene label may be inferred from raw numeric values alone.  
+validationRequiredBeforePromotion: matching `taskId` + task blob SHA, result `PASS`, `writesGameMemory=false`, zero read/frame-size errors, retained gzip raw, and operator protocol completion.  
+notes: do not queue B20 until B13 is completed or conclusively invalidated.
 
 ## VALID reusable captures
+
+### BASECAP-B12R-facing-delayed-30s60-20260901-0527Z
+status: VALID  
+rawPath: `captures/BASECAP-B12R-facing-delayed-30s60-20260901-0527Z.jsonl.gz`  
+capturedAtUtc: `2026-09-01T05:30:00.518197+00:00` (Collector completion timestamp)  
+taskBlobSha: `881d8a73802a4221936bf15dbd479d2326ebedd0`  
+ROM/game/session: WOF WinKawaks local-discovery capture; exact ROM filename/build not separately retained. Collector session: `WinKawaks.exe`, pid `6968`, RAM base `0xB1AFDFC`, mapping `xor3`, fresh discovery `immutable-player-structure-v2`, unique candidate, cached RAM base not used as discovery input.  
+playerOccupancy: P1 intentionally controlled; P2/P3 explicitly left untouched. Exact joined/occupied state is not separately recorded.  
+preCaptureScene: P1 in a safe open place with no combat and no intentional camera scrolling.  
+operatorGate: `required=true`; label `BASECAP B12R facing minimal displacement delayed protocol`. Exact READY acceptance was required, followed by a 12 s no-input delay to avoid Collector v1's 10 s poll race.  
+operatorActionDuringCapture: after the 12 s delay, short LEFT tap then release and approximately 2 s idle; short RIGHT tap then release and approximately 2 s idle; sequence repeated once if practical. Task semantics define tap as a brief press/release rather than a hold. No UP/DOWN, attack, jump, other action, or P2/P3 input.  
+durationSeconds: `30.0`; `1800` frames  
+hz: target `60.0`; achieved `59.997`  
+layout: P1 + P2 + P3 + 20 enemies; stride `0xE0`; 5152 bytes/frame  
+intentionalChangedVariables: P1 facing through minimal LEFT/RIGHT taps; minimal incidental horizontal displacement.  
+intentionalHeldStableVariables: depth input absent; attacks/jump/other actions absent; camera intended not to scroll; P2/P3 untouched.  
+intendedReuseQuestions: B12 facing/minimal-displacement discrimination; facing candidate screening against B00/B10/B11.  
+knownConfounders: action frames are operator-timed and not explicitly marked in raw. The 12 s delay guarantees a Collector poll opportunity before operator action but does not create frame-exact labels. Minimal horizontal displacement is intentional but not guaranteed to be zero.  
+labelSourceEvidence: authoritative queue task `tasks/queue/BASECAP-B12R-facing-delayed-30s60-20260901-0527Z.json`; matching DONE status and PASS result; retained raw artifact. Operator completion was confirmed in chat after following the delayed task instructions. No label is inferred from raw numeric values.  
+supersedes: canonical use of `BASECAP-B12-facing-minimal-8s60-20260901-0518Z`, whose immediate-after-READY protocol was timing-unsafe.  
+supersededBy: none  
+notes: result `PASS`; `readOnly=true`; `writesGameMemory=false`; raw uploaded; `readErrors=0`; `frameSizeErrors=0`; `distinctRawFrameCount=1695`; original stream bytes `19019530`; original SHA256 `c54ffc9a438f6256ddc23e6b38ba10ff87ab6c276d87e629fe4a2d005ce7cd4e`; compressed bytes `217103`; compressed SHA256 `985ed543577d2bbdc8b3b2c21e4777b45d653e531c4d0fa91ea5fdb0b58c24e2`; retained content SHA `cbc16faba4b4001603b809c483438953d3071cc8`.
 
 ### BASECAP-B00-idle-8s60-20260901-0510Z
 status: VALID  
@@ -134,4 +156,4 @@ notes: `readOnly=true`; `writesGameMemory=false`; raw uploaded; `readErrors=0`; 
 
 ## Next-step rule
 
-B00/B10/B11 are covered. Current only active gap task is B12R. Do not queue B13 or B20 until B12R is completed or conclusively invalidated. For later short-action operator-gated scenes, use the delayed protocol from `OPERATOR_GATE_TIMING_NOTE.md` rather than immediate-after-READY actions.
+B00/B10/B11/B12 are covered. Current only active gap task is B13. Do not queue B20 until B13 is completed or conclusively invalidated. For later operator-gated scenes, use the delayed protocol from `OPERATOR_GATE_TIMING_NOTE.md` and the unambiguous input wording from `OPERATOR_ACTION_SEMANTICS.md`.
