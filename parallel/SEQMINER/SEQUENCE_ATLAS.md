@@ -6,7 +6,7 @@ No entry here is a Browser production rule.
 
 ## Corpus and coverage
 
-`parallel/SWEEPATLAS/**` is now present. Its capture index confirms that the retained repository corpus is broad but is **not** the intended labeled full-game sweep:
+`parallel/SWEEPATLAS/**` is present. Its capture index confirms that the retained repository corpus is broad but is **not** the intended labeled full-game sweep:
 
 ```text
 stageSceneWaveLabelsAvailable = false
@@ -111,7 +111,7 @@ For `02005E9A`:
 - flag `0x100000`: 210/210 -> `E0,00,38,0A,00`;
 - flag `0x140000`: rare `70/78 ... 1E` family.
 
-SEQMINER v2 therefore includes cursor flags in the core signature.
+SEQMINER v3 therefore includes cursor flags in the core signature.
 
 ## Phase-path atlas
 
@@ -149,7 +149,7 @@ Literal `TM1` is not enough because some records wait at 1:
 | `02008BE0` | 355 | 2 | 276 |
 | `0200906E` | 46 | 2 | 1518 |
 
-SEQMINER v2 therefore records exact timer start/end/min/max plus `terminalTimer1Frames` and a normalized hold bucket.
+SEQMINER v3 records exact timer start/end/min/max plus `terminalTimer1Frames` and a normalized hold bucket.
 
 ### Reload-context holdout guardrail
 
@@ -206,7 +206,22 @@ T23 / 0x17: EFIELD-005R f1263 s17, rec 02006158, B6=2C, C6=1, 34 8->9
 
 These examples prove the mechanism is reachable by both priority types; they do **not** connect it to Browser A4704/A4712/A4792/A4920/A5888.
 
-The apparent loaded-value purity of `record+type+B6` is not promoted: 48 such groups contain 44 singletons, so the 0.942 in-sample concentration is dominated by sparse memorization. SEQMINER v2 instead records the exact positive-reload sequence and a normalized family (`reload count`, `first reload offset`, timer range, `+0x42` context) for future exact-outcome grouping.
+The apparent loaded-value purity of `record+type+B6` is not promoted: 48 such groups contain 44 singletons, so the 0.942 in-sample concentration is dominated by sparse memorization.
+
+### v3 representation correction
+
+The 52/52 `+0x35` coincidence exposes an important compression boundary: because `+0x35` belongs to the core state, the positive `+0x34` load may occur exactly when the old core state ends and a new one begins. A reload list attached only to one compressed state can therefore miss the canonical delayed-load edge.
+
+v3 records every **zero-prefix positive timer reload** independently of compressed-state boundaries and emits four feature families:
+
+```text
+timer34_reload_exact
+timer34_reload_norm
+cross_core_reload_exact
+cross_core_reload_norm
+```
+
+Each edge preserves pre/post core, cursor, mode35, phase, timer42, exact timer values, record-normalized timer buckets, reload magnitude family and any timer1 hold immediately before the reload. The future nonzero event frame is excluded from these predictor features.
 
 ## `+0x35` independent branch progression
 
@@ -228,7 +243,20 @@ Structural alignment:
 - `FF->02` frequently accompanies `0A -> 1B`;
 - `01->FF` frequently accompanies `1B -> 0A`.
 
-Mode history stays in pair/triple signatures and is not collapsed into timer34.
+Mode history stays in pair/triple/reload signatures and is not collapsed into timer34.
+
+## Support and loop semantics
+
+Confidence is cycle-based:
+
+```text
+one signature in one resolved cycle = at most one support unit
+one ambiguous anchor in one resolved cycle = at most one attack-support unit
+```
+
+Repeated loop visits remain available separately as raw occurrence diagnostics. They never create independent evidence merely because a script loop revisits the same state several times before one future event.
+
+Capture filename fallback is provenance, not explicit scene evidence. Future explicit `stage/scene/sceneId/room/wave` dimensions are preserved together.
 
 ## Local T18 / T23 retained examples
 
@@ -279,10 +307,10 @@ The first state also occurs in A4792, directly proving that order adds informati
 
 Rank upward with same-cycle support, outcome purity, independent captures, authoritative scene labels when they truly exist, multiple targets, timer-normalized stability, delayed-reload/terminal-hold stability, and ability to split a known ambiguous anchor.
 
-Rank downward for one-cycle purity, one-capture-only support, exact-timer brittleness, sparse record/type/profile memorization, target/profile confounding, capture filename masquerading as a scene, or structural `+0x73` proxy being treated as an exact attack.
+Rank downward for one-cycle purity, one-capture-only support, exact-timer brittleness, sparse record/type/profile memorization, target/profile confounding, capture filename masquerading as a scene, repeated loop visits masquerading as independent support, or structural `+0x73` proxy being treated as an exact attack.
 
 ## Current boundary
 
 The current corpus is sufficient to exhaust structural order, timer/reload, mode and branch topology, but not to emit a trustworthy all-game `Txx -> exact move-valued activeAttack -> attack-specific pair/triple` matrix because both a labeled full-sweep series and a proven exact local move/attack field are absent.
 
-No recapture is requested. `seqminer.py` v2 is ready to regenerate exact tables automatically when either missing condition is resolved.
+No recapture is requested. `seqminer.py` v3 and `FEATURE_CONTRACT.json` are ready to regenerate exact tables automatically when either missing condition is resolved.
