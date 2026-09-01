@@ -57,7 +57,6 @@ def state(e):
     d={n:u(e,o,w) for n,(o,w) in FIELDS.items()}
     d["logical_cursor"]=d["cursor"] & ~FLAG_MASK
     d["cursor_flags"]=d["cursor"] & FLAG_MASK
-    # Proven EFIELD split encoding: high byte +0x6F, low byte +0x68.
     d["split_ref"]=(e[0x6F]<<8)|e[0x68]
     d["x"]=u(e,0x07,4,True); d["y"]=u(e,0x0B,4,True)
     return d
@@ -133,26 +132,29 @@ def mine(paths,attack_offset=None,attack_width=2,endian="big"):
                     if cur is None:
                         cur={"source":os.path.basename(path),"scene":sc,"sceneLabelQuality":quality,
                              "slot":slot,"guard":g,"type":st["type"],"start_frame":fi,
-                             "last_zero_frame":fi,"target_start":st["target"],"target_changes":[],
-                             "association_changes":[],"split_ref_changes":[],"states":[]}
+                             "last_zero_frame":fi,"target_start":st["target"],"last_target":st["target"],
+                             "last_assoc_c6":st["assoc_c6"],"last_split_ref":st["split_ref"],
+                             "target_changes":[],"association_changes":[],"split_ref_changes":[],"states":[]}
                         active[slot]=cur
-                    if st["target"]!=cur["target_start"] and (not cur["target_changes"] or cur["target_changes"][-1]["target"]!=st["target"]):
-                        cur["target_changes"].append({"frame":fi,"target":st["target"]})
-                    if cur["states"]:
-                        p=cur["states"][-1]
-                        if p["assoc_c6"]!=st["assoc_c6"]:
-                            cur["association_changes"].append({"frame":fi,"from":p["assoc_c6"],"to":st["assoc_c6"]})
-                        if p["split_ref"]!=st["split_ref"]:
-                            cur["split_ref_changes"].append({"frame":fi,"from":p["split_ref"],"to":st["split_ref"]})
+                    if st["target"]!=cur["last_target"]:
+                        cur["target_changes"].append({"frame":fi,"from":cur["last_target"],"to":st["target"]})
+                        cur["last_target"]=st["target"]
+                    if st["assoc_c6"]!=cur["last_assoc_c6"]:
+                        cur["association_changes"].append({"frame":fi,"from":cur["last_assoc_c6"],"to":st["assoc_c6"]})
+                        cur["last_assoc_c6"]=st["assoc_c6"]
+                    if st["split_ref"]!=cur["last_split_ref"]:
+                        cur["split_ref_changes"].append({"frame":fi,"from":cur["last_split_ref"],"to":st["split_ref"]})
+                        cur["last_split_ref"]=st["split_ref"]
                     if not cur["states"] or core(cur["states"][-1])!=core(st): cur["states"].append(new_distinct(fi,st))
                     else: extend_distinct(cur["states"][-1],fi,st)
                     cur["last_zero_frame"]=fi
                 else:
                     if cur and cur["states"]:
                         cur["active_frame"]=fi; cur["eventual_attack"]=ev; cur["target_end"]=st["target"]
-                        if st["target"]!=cur["target_start"] and (not cur["target_changes"] or cur["target_changes"][-1]["target"]!=st["target"]):
-                            cur["target_changes"].append({"frame":fi,"target":st["target"],"atEventEdge":True})
-                        cur["target_stable"]=(cur["target_start"]==st["target"] and not cur["target_changes"])
+                        if st["target"]!=cur["last_target"]:
+                            cur["target_changes"].append({"frame":fi,"from":cur["last_target"],"to":st["target"],"atEventEdge":True})
+                            cur["last_target"]=st["target"]
+                        cur["target_stable"]=not cur["target_changes"]
                         cur["active_state"]=st; cycles.append(cur)
                     active.pop(slot,None)
         meta["frames"][os.path.basename(path)]=frames
