@@ -2,7 +2,10 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "WOF052L_RECORDER_HARDENING_QA_V1",
   "promptPath": "parallel/PM/WOF052L_RECORDER_HARDENING_QA_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "45e288851cdc536006b4363156b1ba5e4e6a2d62",
-  "startedAtUtc": "2026-09-01T14:15:00Z"
+  "startedAtUtc": "2026-09-01T14:15:00Z",
+  "resultPath": "parallel/WOF052L_RECORDER_QA_HARDENING/RESULT.md",
+  "resultCommit": "3bf0aaaf859cfe75bd236520ed5b943f60da23ba",
+  "blocker": "P0 live-live shared Worker transition can continue evidence polling before next live-topology audit; P1 recreated Worker can inherit stale cached World identity authority"
 }
