@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP_V1",
+  "promptPath": "parallel/PM/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "2f1778ac51b5ecd8d36810379fc8442551fc40c6",
+  "startedAtUtc": "2026-09-01T16:08:00Z"
+}
