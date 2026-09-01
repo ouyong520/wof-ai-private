@@ -1,0 +1,202 @@
+{
+  "schema": "wof-regression-orchestrator-manifest-v1",
+  "version": 1,
+  "ownerLanguage": "zh-CN",
+  "guardRoots": [
+    "parallel/REGRESSION_ORCH",
+    "parallel/PYLAUNCH",
+    "parallel/BROWSER_FLEET",
+    "parallel/WOF052L_RECORDER",
+    "parallel/PROSPECTIVE_VALIDATOR",
+    "parallel/OWNER_UX",
+    "parallel/OWNER_ONECLICK",
+    "parallel/OPTOOLKIT",
+    "parallel/EVIDENCE_INGESTOR",
+    "parallel/PROJECT_STATUS",
+    "parallel/ALPHAQA_RC5",
+    "product/alpha"
+  ],
+  "allowlistedTestPaths": [
+    "parallel/REGRESSION_ORCH/tests/test_orchestrator.py",
+    "parallel/PYLAUNCH/tests/test_discovery.py",
+    "parallel/PYLAUNCH/tests/test_discovery_v2.py",
+    "parallel/PYLAUNCH/tests/test_fleet_registry.py",
+    "parallel/PYLAUNCH/tests/test_windows_proof.py",
+    "parallel/BROWSER_FLEET/tests/test_fleet_manager.py",
+    "parallel/WOF052L_RECORDER/test_fleet_recorder.py",
+    "parallel/PROSPECTIVE_VALIDATOR/test_validator.py",
+    "parallel/OPTOOLKIT/tests/test_chinese_owner_ux.py",
+    "parallel/OPTOOLKIT/tests/test_toolkit.py",
+    "parallel/OWNER_ONECLICK/test_package.py",
+    "parallel/EVIDENCE_INGESTOR/tests/test_current_compat.py",
+    "parallel/EVIDENCE_INGESTOR/tests/test_ingestor.py",
+    "parallel/PROJECT_STATUS/tests/test_scanner.py",
+    "product/alpha/regression.mjs",
+    "parallel/ALPHAQA_RC5/independent_bootstrap_retest.mjs"
+  ],
+  "suites": [
+    {
+      "id": "orchestrator_selftest",
+      "nameZh": "回归编排器自检",
+      "safetyCritical": true,
+      "requiredPaths": ["parallel/REGRESSION_ORCH/tests/test_orchestrator.py"],
+      "commands": [
+        {"cwd": ".", "argv": ["{python}", "parallel/REGRESSION_ORCH/tests/test_orchestrator.py"]}
+      ]
+    },
+    {
+      "id": "pylaunch_offline",
+      "nameZh": "PYLAUNCH Discovery / Proof 离线回归",
+      "safetyCritical": true,
+      "requiredPaths": [
+        "parallel/PYLAUNCH/tests/test_discovery.py",
+        "parallel/PYLAUNCH/tests/test_discovery_v2.py",
+        "parallel/PYLAUNCH/tests/test_fleet_registry.py",
+        "parallel/PYLAUNCH/tests/test_windows_proof.py"
+      ],
+      "commands": [
+        {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "tests/test_discovery.py"]},
+        {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "tests/test_discovery_v2.py"]},
+        {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "tests/test_fleet_registry.py"]},
+        {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "tests/test_windows_proof.py"]}
+      ]
+    },
+    {
+      "id": "browser_fleet",
+      "nameZh": "Browser Fleet 离线回归",
+      "safetyCritical": true,
+      "requiredPaths": ["parallel/BROWSER_FLEET/tests/test_fleet_manager.py"],
+      "commands": [
+        {"cwd": "parallel/BROWSER_FLEET", "argv": ["{python}", "tests/test_fleet_manager.py"]}
+      ]
+    },
+    {
+      "id": "wof052l_recorder",
+      "nameZh": "WOF-052L Recorder 自检 / Fleet 回归",
+      "safetyCritical": true,
+      "requiredPaths": [
+        "parallel/WOF052L_RECORDER/owner_zh_cn.py",
+        "parallel/WOF052L_RECORDER/test_fleet_recorder.py"
+      ],
+      "commands": [
+        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "owner_zh_cn.py", "--self-test"]},
+        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "test_fleet_recorder.py"]}
+      ]
+    },
+    {
+      "id": "prospective_validator",
+      "nameZh": "Prospective Validator 离线回归",
+      "safetyCritical": true,
+      "requiredPaths": ["parallel/PROSPECTIVE_VALIDATOR/test_validator.py"],
+      "commands": [
+        {"cwd": "parallel/PROSPECTIVE_VALIDATOR", "argv": ["{python}", "test_validator.py"]}
+      ]
+    },
+    {
+      "id": "owner_chinese_ux",
+      "nameZh": "Owner 简体中文 UX 离线回归",
+      "safetyCritical": false,
+      "requiredPaths": [
+        "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py",
+        "parallel/WOF052L_RECORDER/owner_zh_cn.py",
+        "parallel/OPTOOLKIT/owner_zh_cn.py",
+        "parallel/OPTOOLKIT/toolkit.py",
+        "parallel/OPTOOLKIT/tests/test_chinese_owner_ux.py"
+      ],
+      "commands": [
+        {"cwd": ".", "argv": ["{python}", "-m", "py_compile", "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py", "parallel/WOF052L_RECORDER/owner_zh_cn.py", "parallel/OPTOOLKIT/owner_zh_cn.py", "parallel/OPTOOLKIT/toolkit.py"]},
+        {"cwd": ".", "argv": ["{python}", "-m", "unittest", "-v", "parallel.OPTOOLKIT.tests.test_chinese_owner_ux"]}
+      ]
+    },
+    {
+      "id": "owner_chinese_windows_smoke",
+      "nameZh": "Owner 简体中文 Windows CMD 自检",
+      "safetyCritical": false,
+      "platforms": ["win32"],
+      "platformOptional": true,
+      "requiredPaths": ["parallel/WOF052L_RECORDER/RUN_WOF052L_RECORDER.cmd"],
+      "commands": [
+        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{cmd}", "/d", "/c", "call", "RUN_WOF052L_RECORDER.cmd", "--self-test"]}
+      ]
+    },
+    {
+      "id": "owner_oneclick",
+      "nameZh": "Owner One-Click 安装包回归",
+      "safetyCritical": true,
+      "requiredExecutables": ["git"],
+      "requiredPaths": ["parallel/OWNER_ONECLICK/test_package.py"],
+      "commands": [
+        {"cwd": ".", "argv": ["{python}", "parallel/OWNER_ONECLICK/test_package.py"]}
+      ]
+    },
+    {
+      "id": "operator_toolkit",
+      "nameZh": "Operator Toolkit 回归",
+      "safetyCritical": true,
+      "requiredPaths": [
+        "parallel/OPTOOLKIT/tests/test_toolkit.py",
+        "parallel/OPTOOLKIT/tests/test_chinese_owner_ux.py"
+      ],
+      "commands": [
+        {"cwd": ".", "argv": ["{python}", "parallel/OPTOOLKIT/tests/test_toolkit.py"]},
+        {"cwd": ".", "argv": ["{python}", "parallel/OPTOOLKIT/tests/test_chinese_owner_ux.py"]}
+      ]
+    },
+    {
+      "id": "evidence_ingestor",
+      "nameZh": "Evidence Ingestor 回归",
+      "safetyCritical": true,
+      "requiredPaths": [
+        "parallel/EVIDENCE_INGESTOR/tests/test_current_compat.py",
+        "parallel/EVIDENCE_INGESTOR/tests/test_ingestor.py"
+      ],
+      "commands": [
+        {"cwd": ".", "argv": ["{python}", "parallel/EVIDENCE_INGESTOR/tests/test_current_compat.py"]},
+        {"cwd": ".", "argv": ["{python}", "parallel/EVIDENCE_INGESTOR/tests/test_ingestor.py"]}
+      ]
+    },
+    {
+      "id": "project_status",
+      "nameZh": "Project Status Scanner 回归",
+      "safetyCritical": true,
+      "requiredPaths": ["parallel/PROJECT_STATUS/tests/test_scanner.py"],
+      "commands": [
+        {"cwd": ".", "argv": ["{python}", "parallel/PROJECT_STATUS/tests/test_scanner.py"]}
+      ]
+    },
+    {
+      "id": "alpha_rc5_product_regression",
+      "nameZh": "Alpha RC5 Product Regression",
+      "safetyCritical": true,
+      "requiredExecutables": ["node"],
+      "requiredPaths": ["product/alpha/regression.mjs"],
+      "commands": [
+        {"cwd": "product/alpha", "argv": ["{node}", "regression.mjs"]}
+      ]
+    },
+    {
+      "id": "alpha_rc5_independent_qa",
+      "nameZh": "Alpha RC5 Independent QA Harness",
+      "safetyCritical": true,
+      "requiredExecutables": ["node"],
+      "requiredPaths": ["parallel/ALPHAQA_RC5/independent_bootstrap_retest.mjs"],
+      "commands": [
+        {"cwd": "parallel/ALPHAQA_RC5", "argv": ["{node}", "independent_bootstrap_retest.mjs"]}
+      ]
+    }
+  ],
+  "manualProofs": [
+    {
+      "id": "pylaunch_windows_live_proof",
+      "nameZh": "PYLAUNCH 真人 Windows / Browser Proof",
+      "status": "NOT_RUN",
+      "reasonZh": "按安全边界不自动启动游戏、不执行真人 Browser 证明。"
+    },
+    {
+      "id": "alpha_browser_acceptance",
+      "nameZh": "Alpha 真人 Browser Acceptance",
+      "status": "NOT_RUN",
+      "reasonZh": "仅运行现有离线 harness；真人 Browser acceptance 保留为人工证明。"
+    }
+  ]
+}
