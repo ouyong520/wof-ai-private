@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         WOF Future Danger Alpha RC5 Safe Bootstrap
-// @namespace    wof-ai-private
+// @namespace    https://github.com/ouyong520/wof-ai-private
 // @version      0.5.0-rc5
 // @description  Fail-open gameplay bootstrap: never replaces the game Worker; Alpha stays silent until a safe live-Worker transport pairs.
-// @match        https://www.webliero.com/*
+// @match        *://*/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
