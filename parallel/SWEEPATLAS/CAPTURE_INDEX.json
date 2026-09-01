@@ -14,228 +14,34 @@
     "requireRemoteContentShaMatchCapturesManifest": true
   },
   "trustedPrimaryCorpus": [
-    {
-      "taskId": "BASECAP-B00-idle-8s60-20260901-0510Z",
-      "category": "BASECAP",
-      "status": "PASS",
-      "taskBlobSha": "9743cf0a1762b1d0f595cb2639e1ffe1f8b50bb8",
-      "rawPath": "captures/BASECAP-B00-idle-8s60-20260901-0510Z.jsonl.gz",
-      "rawContentSha": "50973af7f1eae740bac3d8edfc8b939774c0f769",
-      "samples": 480,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "task/operator protocol only"
-    },
-    {
-      "taskId": "BASECAP-B12R-facing-delayed-30s60-20260901-0527Z",
-      "category": "BASECAP",
-      "status": "PASS",
-      "taskBlobSha": "881d8a73802a4221936bf15dbd479d2326ebedd0",
-      "rawPath": "captures/BASECAP-B12R-facing-delayed-30s60-20260901-0527Z.jsonl.gz",
-      "rawContentSha": "cbc16faba4b4001603b809c483438953d3071cc8",
-      "samples": 1800,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "task/operator protocol only"
-    },
-    {
-      "taskId": "BASECAP-B13-attack-12s60-20260901-0558Z",
-      "category": "BASECAP",
-      "status": "PASS",
-      "taskBlobSha": "5f4eba115057e3feed97e03bdb205dade7bd98d1",
-      "rawPath": "captures/BASECAP-B13-attack-12s60-20260901-0558Z.jsonl.gz",
-      "rawContentSha": "26678ce036d63d2414af306bc99471a16ca8513c",
-      "samples": 720,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "task/operator protocol only"
-    },
-    {
-      "taskId": "BASECAP-B13R-standing-attack-ungated-60s60-20260901-0543Z",
-      "category": "BASECAP",
-      "status": "PASS",
-      "rawPath": "captures/BASECAP-B13R-standing-attack-ungated-60s60-20260901-0543Z.jsonl.gz",
-      "rawContentSha": "6d0254825a85a93779327b9c585d29cf948dfc54",
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "BASECAP retained corpus"
-    },
-    {
-      "taskId": "BASECAP-B20-camera-scroll-16s60-20260901-0559Z",
-      "category": "BASECAP",
-      "status": "PASS",
-      "taskBlobSha": "0de63c648dad1bebbafd5f81b3b9cc01fe26184b",
-      "rawPath": "captures/BASECAP-B20-camera-scroll-16s60-20260901-0559Z.jsonl.gz",
-      "rawContentSha": "9854590afd48d5462d3bc4f1eab424d0e0b3242d",
-      "samples": 960,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "task/operator protocol only"
-    },
-    {
-      "taskId": "BASECAP-B40-P2-xy-16s60-20260901-0600Z",
-      "category": "BASECAP",
-      "status": "PASS",
-      "taskBlobSha": "5aa3fbbeb226ee411327ead0177e347841977a78",
-      "rawPath": "captures/BASECAP-B40-P2-xy-16s60-20260901-0600Z.jsonl.gz",
-      "rawContentSha": "8c3fb2250ee759d28c5455de7ed48ca64522fcb7",
-      "samples": 960,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "task/operator protocol only"
-    },
-    {
-      "taskId": "BASECAP-B40-P3-xy-16s60-20260901-0601Z",
-      "category": "BASECAP",
-      "status": "PASS",
-      "taskBlobSha": "c54ea1e777e4004501bad37cf8f350da8d65f7ea",
-      "rawPath": "captures/BASECAP-B40-P3-xy-16s60-20260901-0601Z.jsonl.gz",
-      "rawContentSha": "f20e1a3f048d4c868877fd1c2422dab2fe0ff953",
-      "samples": 960,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "task/operator protocol only"
-    },
-    {
-      "taskId": "EFIELD-001-baseline-30s60",
-      "category": "EFIELD",
-      "status": "PASS",
-      "taskBlobSha": "46523e9c0f7322329c9bfa884515df848140c208",
-      "rawPath": "captures/EFIELD-001-baseline-30s60.jsonl.gz",
-      "rawContentSha": "0d3bfa6ca5899a28b960452256d2cc32eddf9894",
-      "samples": 1800,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "natural gameplay; no stage label in task"
-    },
-    {
-      "taskId": "EFIELD-002-natural-diversity-60s60",
-      "category": "EFIELD",
-      "status": "PASS",
-      "taskBlobSha": "b3d42d327d5a452031a647481fffae495f80f0ce",
-      "rawPath": "captures/EFIELD-002-natural-diversity-60s60.jsonl.gz",
-      "rawContentSha": "001edd523f14e029bb4e6fbb7e3523fd6fa5b38a",
-      "samples": 3600,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "natural gameplay; no stage label in task"
-    },
-    {
-      "taskId": "EFIELD-003-passive-retarget-60s60",
-      "category": "EFIELD",
-      "status": "PASS",
-      "rawPath": "captures/EFIELD-003-passive-retarget-60s60.jsonl.gz",
-      "rawContentSha": "047112b0271db8471c6d7b4d9102c001dca21d7d",
-      "samples": 3600,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "natural gameplay; no stage label in task"
-    },
-    {
-      "taskId": "EFIELD-004-passive-lifecycle-retarget-60s60",
-      "category": "EFIELD",
-      "status": "PASS",
-      "taskBlobSha": "ca594286a9aed1539f7fae0a8c23d32a84195e72",
-      "rawPath": "captures/EFIELD-004-passive-lifecycle-retarget-60s60.jsonl.gz",
-      "rawContentSha": "3311e307e54d106930c759f5682b47f5eb9e60f6",
-      "samples": 3600,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "natural gameplay; no stage label in task"
-    },
-    {
-      "taskId": "EFIELD-005-cross-session-target-60s60",
-      "category": "EFIELD",
-      "status": "PASS",
-      "taskBlobSha": "58a6c6903c1e5eafe8de4cad2445644f04fc3968",
-      "rawPath": "captures/EFIELD-005-cross-session-target-60s60.jsonl.gz",
-      "rawContentSha": "128288637f1cb92d5b87e3c5b6f66722fc0df5a2",
-      "samples": 3600,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "natural gameplay; no stage label in task"
-    },
-    {
-      "taskId": "EFIELD-005R-cross-session-target-60s60",
-      "category": "EFIELD",
-      "status": "PASS",
-      "taskBlobSha": "7e1f286020cf514744ef2da888b7156570cd0262",
-      "rawPath": "captures/EFIELD-005R-cross-session-target-60s60.jsonl.gz",
-      "rawContentSha": "0178ede923253eb449007d391c0703151bb1d328",
-      "samples": 3600,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "natural gameplay; no stage label in task"
-    },
-    {
-      "taskId": "EFIELD-006-cross-session-lifecycle-target-60s60",
-      "category": "EFIELD",
-      "status": "PASS",
-      "taskBlobSha": "408094da46422cd5e8cb41ac42671062c52b3bbf",
-      "rawPath": "captures/EFIELD-006-cross-session-lifecycle-target-60s60.jsonl.gz",
-      "rawContentSha": "5df2d624fa385a6240643ce1fa6923ab2b116e18",
-      "samples": 3600,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "natural gameplay; no stage label in task"
-    },
-    {
-      "taskId": "RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z",
-      "category": "RAWMINE",
-      "status": "PASS",
-      "taskBlobSha": "3d91bb9b77e3618500db9bde8b2145d909d4b441",
-      "rawPath": "captures/RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z.jsonl.gz",
-      "rawContentSha": "23dc46fa180a3aedc20ed5ff0a7a3af9ef29f421",
-      "samples": 2400,
-      "stage": null,
-      "scene": null,
-      "wave": null,
-      "labelSource": "controlled geometry task only"
-    }
+    {"taskId":"BASECAP-B00-idle-8s60-20260901-0510Z","category":"BASECAP","status":"PASS","taskBlobSha":"9743cf0a1762b1d0f595cb2639e1ffe1f8b50bb8","rawPath":"captures/BASECAP-B00-idle-8s60-20260901-0510Z.jsonl.gz","rawContentSha":"50973af7f1eae740bac3d8edfc8b939774c0f769","samples":480,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
+    {"taskId":"BASECAP-B12R-facing-delayed-30s60-20260901-0527Z","category":"BASECAP","status":"PASS","taskBlobSha":"881d8a73802a4221936bf15dbd479d2326ebedd0","rawPath":"captures/BASECAP-B12R-facing-delayed-30s60-20260901-0527Z.jsonl.gz","rawContentSha":"cbc16faba4b4001603b809c483438953d3071cc8","samples":1800,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
+    {"taskId":"BASECAP-B13R-standing-attack-ungated-60s60-20260901-0543Z","category":"BASECAP","status":"PASS","taskBlobSha":"995a5349742aa35125822d8c7c424d7015a02b45","rawPath":"captures/BASECAP-B13R-standing-attack-ungated-60s60-20260901-0543Z.jsonl.gz","rawContentSha":"6d0254825a85a93779327b9c585d29cf948dfc54","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
+    {"taskId":"BASECAP-B13-attack-12s60-20260901-0558Z","category":"BASECAP","status":"PASS","taskBlobSha":"5f4eba115057e3feed97e03bdb205dade7bd98d1","rawPath":"captures/BASECAP-B13-attack-12s60-20260901-0558Z.jsonl.gz","rawContentSha":"26678ce036d63d2414af306bc99471a16ca8513c","samples":720,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
+    {"taskId":"BASECAP-B20-camera-scroll-16s60-20260901-0559Z","category":"BASECAP","status":"PASS","taskBlobSha":"0de63c648dad1bebbafd5f81b3b9cc01fe26184b","rawPath":"captures/BASECAP-B20-camera-scroll-16s60-20260901-0559Z.jsonl.gz","rawContentSha":"9854590afd48d5462d3bc4f1eab424d0e0b3242d","samples":960,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
+    {"taskId":"BASECAP-B40-P2-xy-16s60-20260901-0600Z","category":"BASECAP","status":"PASS","taskBlobSha":"5aa3fbbeb226ee411327ead0177e347841977a78","rawPath":"captures/BASECAP-B40-P2-xy-16s60-20260901-0600Z.jsonl.gz","rawContentSha":"8c3fb2250ee759d28c5455de7ed48ca64522fcb7","samples":960,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
+    {"taskId":"BASECAP-B40-P3-xy-16s60-20260901-0601Z","category":"BASECAP","status":"PASS","taskBlobSha":"c54ea1e777e4004501bad37cf8f350da8d65f7ea","rawPath":"captures/BASECAP-B40-P3-xy-16s60-20260901-0601Z.jsonl.gz","rawContentSha":"f20e1a3f048d4c868877fd1c2422dab2fe0ff953","samples":960,"stage":null,"scene":null,"wave":null,"labelSource":"task/operator protocol only"},
+    {"taskId":"EFIELD-001-baseline-30s60","category":"EFIELD","status":"PASS","taskBlobSha":"46523e9c0f7322329c9bfa884515df848140c208","rawPath":"captures/EFIELD-001-baseline-30s60.jsonl.gz","rawContentSha":"0d3bfa6ca5899a28b960452256d2cc32eddf9894","samples":1800,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
+    {"taskId":"EFIELD-002-natural-diversity-60s60","category":"EFIELD","status":"PASS","taskBlobSha":"b3d42d327d5a452031a647481fffae495f80f0ce","rawPath":"captures/EFIELD-002-natural-diversity-60s60.jsonl.gz","rawContentSha":"001edd523f14e029bb4e6fbb7e3523fd6fa5b38a","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
+    {"taskId":"EFIELD-003-passive-retarget-60s60","category":"EFIELD","status":"PASS","taskBlobSha":"acb475dc253ab599b196f80651e18a2ffa2f2914","rawPath":"captures/EFIELD-003-passive-retarget-60s60.jsonl.gz","rawContentSha":"047112b0271db8471c6d7b4d9102c001dca21d7d","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
+    {"taskId":"EFIELD-004-passive-lifecycle-retarget-60s60","category":"EFIELD","status":"PASS","taskBlobSha":"ca594286a9aed1539f7fae0a8c23d32a84195e72","rawPath":"captures/EFIELD-004-passive-lifecycle-retarget-60s60.jsonl.gz","rawContentSha":"3311e307e54d106930c759f5682b47f5eb9e60f6","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
+    {"taskId":"EFIELD-005R-cross-session-target-60s60","category":"EFIELD","status":"PASS","taskBlobSha":"7e1f286020cf514744ef2da888b7156570cd0262","rawPath":"captures/EFIELD-005R-cross-session-target-60s60.jsonl.gz","rawContentSha":"0178ede923253eb449007d391c0703151bb1d328","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
+    {"taskId":"EFIELD-005-cross-session-target-60s60","category":"EFIELD","status":"PASS","taskBlobSha":"58a6c6903c1e5eafe8de4cad2445644f04fc3968","rawPath":"captures/EFIELD-005-cross-session-target-60s60.jsonl.gz","rawContentSha":"128288637f1cb92d5b87e3c5b6f66722fc0df5a2","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
+    {"taskId":"EFIELD-006-cross-session-lifecycle-target-60s60","category":"EFIELD","status":"PASS","taskBlobSha":"408094da46422cd5e8cb41ac42671062c52b3bbf","rawPath":"captures/EFIELD-006-cross-session-lifecycle-target-60s60.jsonl.gz","rawContentSha":"5df2d624fa385a6240643ce1fa6923ab2b116e18","samples":3600,"stage":null,"scene":null,"wave":null,"labelSource":"natural gameplay; no stage label in task"},
+    {"taskId":"RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z","category":"RAWMINE","status":"PASS","taskBlobSha":"3d91bb9b77e3618500db9bde8b2145d909d4b441","rawPath":"captures/RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z.jsonl.gz","rawContentSha":"23dc46fa180a3aedc20ed5ff0a7a3af9ef29f421","samples":2400,"stage":null,"scene":null,"wave":null,"labelSource":"controlled geometry task only"}
   ],
-  "additionalRetainedRawFamilies": [
-    "GEO-*",
-    "RAWMINE-001-*",
-    "RAWMINE-004-*"
-  ],
+  "additionalRetainedRawFamilies": ["GEO-*","RAWMINE-001-*","RAWMINE-004-*"],
   "excludedOrNonAtlasArtifacts": [
-    {
-      "path": "captures/collector-live-smoke-20260831-2228.jsonl.gz",
-      "reason": "tiny collector smoke artifact; not a gameplay atlas capture"
-    },
-    {
-      "path": "captures/collector-p4-delivery-001.jsonl.gz",
-      "reason": "delivery/smoke artifact; not a gameplay atlas capture"
-    },
-    {
-      "taskId": "BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z",
-      "reason": "status/catalog history marks the timing-racy attempt non-canonical; later B13R/B13 are retained instead"
-    }
+    {"path":"captures/collector-live-smoke-20260831-2228.jsonl.gz","reason":"tiny collector smoke artifact; not a gameplay atlas capture"},
+    {"path":"captures/collector-p4-delivery-001.jsonl.gz","reason":"delivery/smoke artifact; not a gameplay atlas capture"},
+    {"taskId":"BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z","reason":"status/catalog history marks the timing-racy attempt non-canonical; later B13R/B13 are retained instead"}
   ],
   "auditFindings": {
     "missingFullSweepSeries": true,
     "missingAuthoritativeStageLabels": true,
     "missingAuthoritativeSceneLabels": true,
     "missingAuthoritativeWaveLabels": true,
-    "duplicateOrRetryFamiliesObserved": [
-      "BASECAP-B12 -> BASECAP-B12R",
-      "BASECAP-B13 timing-racy attempts -> B13R/B13",
-      "EFIELD-005R / EFIELD-005 cross-session adjacent replication runs"
-    ],
+    "duplicateOrRetryFamiliesObserved": ["BASECAP-B12 -> BASECAP-B12R","BASECAP-B13 timing-racy attempts -> B13R/B13","EFIELD-005R / EFIELD-005 cross-session adjacent replication runs"],
     "rawMissingForTrustedEntries": false
   }
 }
