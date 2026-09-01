@@ -1,0 +1,27 @@
+{
+  "schema": "wof-alpha-current-head-acceptance-failures-v1",
+  "policy": "first-real-failure-is-retained; missing evidence is never promoted to PASS",
+  "classes": [
+    {"code": "RELEASE_GATES_NOT_GREEN", "resultClass": "BLOCKED", "retryPolicy": "do-not-enter-owner-window", "messageZh": "发布门槛尚未全部通过；不要启动真人验收。"},
+    {"code": "BROWSER_ATTESTATION", "resultClass": "BLOCKED", "retryPolicy": "fix-environment-only", "messageZh": "浏览器/CDP 启动态校验未通过；仅允许本机受支持 Browser 的 browser-level CDP。"},
+    {"code": "DISCOVERY_IDENTITY", "resultClass": "FAIL", "retryPolicy": "preserve-first-failure", "messageZh": "未唯一确认 WOF World 921031 page/原生 Worker/WASM/完整身份。"},
+    {"code": "PAIR_BIND", "resultClass": "FAIL", "retryPolicy": "preserve-first-failure", "messageZh": "当前 session/generation/nonce 配对失败或旧 authority 无法确认撤销。"},
+    {"code": "DETECTOR_IDENTITY", "resultClass": "FAIL", "retryPolicy": "preserve-first-failure", "messageZh": "detector-local World 921031 身份未确认；Launcher Gate A 不能替代 Gate B。"},
+    {"code": "FIRST_STATE", "resultClass": "INCOMPLETE", "retryPolicy": "one-retry-after-explicit-environment-fix", "messageZh": "未在有界窗口看到首个 current-pair state；不伪造 PASS。"},
+    {"code": "CLEAR_REBIND", "resultClass": "FAIL", "retryPolicy": "preserve-first-failure", "messageZh": "clear/rebind 后旧 warning authority 未被撤销，或新 pair 未严格刷新。"},
+    {"code": "NEGATIVE_PAIR", "resultClass": "FAIL", "retryPolicy": "preserve-first-failure", "messageZh": "旧 generation 或错误 nonce 的 support-only probe 未被严格拒绝。"},
+    {"code": "WARNING_ROW", "resultClass": "FAIL", "retryPolicy": "preserve-first-failure", "messageZh": "出现合同外 warning row、未知 ruleId 或历史 carry-over 字段。"},
+    {"code": "SAFETY", "resultClass": "FAIL", "retryPolicy": "preserve-first-failure", "messageZh": "readOnly/ramWrites/inputInjection/Worker replacement 安全字段不满足合同。"},
+    {"code": "ENVIRONMENT", "resultClass": "INCOMPLETE", "retryPolicy": "one-retry-after-explicit-environment-fix", "messageZh": "运行环境中断或缺失；未把缺失证据伪装成产品失败或 PASS。"}
+  ],
+  "nonFailure": {
+    "naturalWarningNotObserved": {
+      "resultClass": "NOT_EXERCISED",
+      "messageZh": "有界窗口内未自然出现批准的 T18 warning；不得为验收制造攻击或注入输入。"
+    },
+    "liveStaleProbeUnavailable": {
+      "resultClass": "OFFLINE_GATE_ONLY",
+      "messageZh": "不为真人验收新增危险的 publication suppression；精确 1500/1501 由离线冻结 gate 证明。"
+    }
+  }
+}
