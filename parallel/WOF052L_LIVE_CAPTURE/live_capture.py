@@ -143,7 +143,9 @@ def main() -> int:
     try:
         import recorder
         import discovery_v2_sync
+        import hardening_v2
         discovery_v2_sync.install(recorder)
+        hardening_v2.install(recorder, discovery_v2_sync)
         import fleet_recorder
         from owner_zh_cn import choose_output_dir_zh
         from fleet_owner_zh_cn import ChineseFleetManager
