@@ -54,11 +54,13 @@ Reason: current lane artifacts mix Browser decimal T numbers and local hex-style
 
 No coverage or recap decision may compare raw T labels across lanes without numeric normalization.
 
-## 2026-09-01 — D010: No new parallel AI lane
+## 2026-09-01 — D010: No additional research lane
 
-Decision: do not add another lane now.
+Decision at initial audit: do not add another research lane.
 
-Reason: existing lanes already cover acquisition, geometry, fields, generic mining, atlas, sequence and coverage. Current bottleneck is integration into Browser validation and product release, not missing lane ownership.
+Reason: acquisition, geometry, fields, generic mining, atlas, sequence and coverage already have owners. Current bottleneck is integration into Browser validation and product release, not missing research ownership.
+
+This remains in force for research lanes.
 
 ## 2026-09-01 — D011: Alpha coverage philosophy
 
@@ -69,3 +71,23 @@ Release emphasis: low false positive, target/retarget correctness, read-only saf
 ## 2026-09-01 — D012: v1 is not 100% attack completion
 
 Decision: v1 coverage target will be defined against an authoritative common dangerous-event denominator after COVERAGE is refreshed. Rare unsupported branches may remain silent if explicitly outside claimed support.
+
+## 2026-09-01 — D013: Start one bounded PRODUCT / ALPHA implementation workstream
+
+Decision: add one **product implementation workstream**, while continuing to forbid new research lanes.
+
+Why this is justified:
+1. Alpha productization is already an approved project track, not new research scope.
+2. MAINLINE still owns WOF-052 prospective research and should not become the release-code owner.
+3. Existing WebGL HUD and production-shadow assets make implementation immediately actionable.
+4. Production/experimental isolation is an Alpha release blocker; separate implementation ownership reduces leakage risk.
+5. Inputs are explicit: PM freeze spec + audited Browser sources.
+6. Outputs are explicit: release runtime, frozen manifest, HUD integration, regression, Alpha RC.
+7. Stop condition is explicit: stop when an Alpha RC exists and only real-Browser acceptance remains.
+
+Reference:
+- `parallel/PM/ALPHA_FREEZE_SPEC.md`
+- `parallel/PM/ALPHA_ENGINEERING_TASKS.md`
+- `parallel/PM/PRODUCT_ALPHA_START_PROMPT.md`
+
+This decision supersedes any reading of D010 that would block product implementation; D010 continues to block extra research lanes.
