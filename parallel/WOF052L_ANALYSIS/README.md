@@ -106,6 +106,9 @@ python -m unittest -v test_analyzer.py
 - target/side instability；
 - World 921031 identity gate；
 - merged/room 去重与 T23/rare detail 补全；
+- identical per-room trace 的 room 隔离；
+- partial Fleet + child merged 不重复计数；
+- 缺少 safety 元数据必须阻断“已解决”；
 - T18 零覆盖必须输出“仍不足”。
 
 ## 安全边界
