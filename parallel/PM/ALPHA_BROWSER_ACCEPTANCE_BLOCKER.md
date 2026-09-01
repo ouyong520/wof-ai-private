@@ -6,12 +6,13 @@ Status: **REAL BROWSER ACCEPTANCE FAILED BEFORE RUN**
 
 ## Owner-observed A/B result
 
-During the authorized post-RC4 real Browser acceptance setup:
+During the authorized post-RC4 real Browser acceptance setup, the owner performed a stronger three-way isolation:
 
-1. `WOF Alpha Browser Acceptance Loader` disabled, `WOF Future Danger Alpha RC3` enabled -> owner reports the game still cannot enter the room.
-2. Both WOF userscripts disabled -> owner reports the game can enter the game/room normally.
+1. `WOF Alpha Browser Acceptance Loader` disabled, `WOF Future Danger Alpha RC3` enabled -> game cannot enter the room.
+2. `WOF Alpha Browser Acceptance Loader` enabled, `WOF Future Danger Alpha RC3` disabled -> game can enter the room.
+3. Both WOF userscripts disabled -> game can enter normally.
 
-Therefore the acceptance helper is not the sole cause. The normal Alpha bootstrap/product path is implicated by the minimal A/B isolation.
+This isolates the real-host blocker to the normal Alpha bootstrap/product attach path rather than the Browser Acceptance helper.
 
 ## Product impact
 
@@ -44,4 +45,4 @@ Only that stage may modify `product/alpha/**`.
 
 ## Owner action now
 
-Keep both WOF userscripts disabled for normal play. Do not repeat the failing room-entry test until RC5 provides a new candidate and exact retest instruction.
+Keep `WOF Future Danger Alpha RC3` disabled for normal play. The Browser Acceptance Loader alone is now proven not to block room entry, but there is no reason to keep it enabled until an RC5 candidate is ready. Do not repeat the failing room-entry test until RC5 provides a new candidate and exact retest instruction.
