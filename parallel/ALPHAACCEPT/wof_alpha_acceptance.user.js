@@ -144,7 +144,7 @@ function status(){
 }
 function resetRun(){
   obs.started=false;obs.startedAt=null;obs.ownerConfirmedPlayable=false;obs.marks=[];obs.currentStates=0;obs.currentDiags=0;obs.rejected=[];obs.firstState=null;obs.emptyStateSeen=false;
-  obs.identityAccepted=false;obs.identitySignature=null;obs.safetySeen=null;obs.warningRows=0;obs.invalidWarnings=[];obs.diags=[];obs.negative=[];obs.lastSeqByGeneration=new Map();obs.rafAtBegin=rafCount;obs.rafAtLastMark=rafCount;obs.lastError=null;
+  obs.identityAccepted=false;obs.identitySignature=null;obs.safetySeen=null;obs.warningRows=0;obs.invalidWarnings=[];obs.diags=[];obs.negative=[];obs.lastSeqByGeneration=new Map();obs.pairHistory=[];obs.currentPair=null;obs.rafAtBegin=rafCount;obs.rafAtLastMark=rafCount;obs.lastError=null;
   updatePair();
 }
 function begin(opts={}){
