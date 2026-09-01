@@ -1,128 +1,115 @@
 # WOF Future Danger AI — Active Priorities
 
-Updated: 2026-09-01 — real Windows proof found a PYLAUNCH Worker-discovery P0; acceleration tools reached repository-side stop conditions
+Updated: 2026-09-01 — post completed-wave PM audit
 
-## P0 — Fresh PYLAUNCH real Chrome Worker discovery fix
+Authoritative operating rules:
+- `parallel/PM/PM_CORE_OPERATING_CHARTER.md`
+- `parallel/PM/COMPLETED_WORK_PM_AUDIT_2026-09-01.md`
+- `parallel/PM/EXECUTION_QUEUE.md`
 
-Authoritative real Windows evidence:
-- Chrome 151 localhost CDP connected successfully;
-- owner entered a real WOF room and game remained playable;
-- `browser_connected=true`;
-- `read_only=true`, `ram_writes=0`, `input_injection=false`;
-- but `wof_page_found=false`, `worker_found=false`, `wasm_module_found=false`, `world_921031=false`;
-- exact diagnostic: `identity_reason="no gstyphoon worker target"`.
+## Product north star
 
-This is now the sole immediate Alpha P0.
+The product target is not “finish more tools”.
 
-Fresh stage:
-- `parallel/PM/PYLAUNCH_WORKER_DISCOVERY_FIX_START_PROMPT.md`
+Current path is:
 
-Goal:
-- fix real Chromium/WOF target discovery without DevTools or owner JS;
-- preserve unique page/Worker association and exact World 921031 gate;
-- keep game fail-open;
-- keep readOnly / ramWrites=0 / no input injection;
-- convert PYLAUNCH owner-facing UI/status/errors to Simplified Chinese;
-- return to one direct-download / one-double-click Windows proof.
+`trustworthy real-time danger warning -> broader validated coverage -> safe movement / safe path -> progressively lower damage -> eventual stable 0-damage clear objective`
 
-Do not run the old proof again until this fresh fix stage explicitly reports READY.
+WOF-052/WOF-052L is core evidence/R&D infrastructure supporting that target, not the final user product by itself.
 
-## CLOSED — RC5 independent room-entry repair QA
+## P0 — WOF-052L Recorder evidence ownership hardening
 
-Verdict remains:
+Later cross-component audit invalidated the earlier blanket `READY FOR 10-ROOM LONG CAPTURE` claim.
 
-**PASS — RC5 ROOM-ENTRY REPAIR QA**
+Current P0:
+- one exact supported shared Worker can be associated with >1 page and current Recorder logic may effectively select evidence ownership by scan order.
 
-The former `Alpha prevents room entry` P0 is fully closed. Do not reopen without contrary evidence.
-
-## READY / WAITING LIVE PROOF — Browser Fleet Manager
-
-Repository-side Browser Fleet implementation is complete:
-- one-click 1 / 5 / 10+ isolated Browser instances;
-- independent profiles and localhost CDP ports;
-- window layout;
-- independent restart/close;
-- shared manifest discoverable by PYLAUNCH/WOF-052L;
-- offline regression PASS.
-
-Do not request owner live proof yet. First finish the PYLAUNCH discovery fix and Chinese owner UX pass so one human run can validate the combined path.
-
-## READY / WAITING LIVE PROOF — WOF-052L automatic multi-room recorder
-
-Implementation is complete enough for live proof:
-- remembered save folder;
-- one CMD start;
-- automatic multi-room Worker discovery;
-- independent room/Worker lifecycle;
-- compact checkpoints/per-room/final merged JSON;
-- mandatory T18 ordered evidence + bounded secondary coverage;
-- no long raw dump;
-- read-only / no input injection.
-
-Do not start long collection yet. Real Worker discovery must first be proven on the owner machine.
-
-## READY — Operator Toolkit V1
-
-Repository-side Windows Operator Toolkit V1 is ready and integrates existing Launcher / Fleet / Recorder / regression / diagnostics paths.
-
-A fresh Chinese UX pass is now required before calling it owner-ready.
+Same fresh stage also closes related P1s in the same write domain:
+- endpoint confinement;
+- URL-scheme gate drift;
+- direct fallback/openerId association drift;
+- English-only long-capture runtime status found by independent QA.
 
 Fresh stage:
-- `parallel/PM/TOOLS_CHINESE_UX_PASS_START_PROMPT.md`
+- `parallel/PM/WOF052L_RECORDER_DISCOVERY_V2_HARDENING_START_PROMPT.md`
 
-This stage owns Browser Fleet / WOF-052L / Operator Toolkit owner-facing localization only; it must not touch PYLAUNCH while the P0 fix owns that directory.
+**Do not start 1h/2h/overnight capture until this closes and fresh QA retest passes.**
 
-## READY — Alpha Safe Transport Integration Contract
+## P0 — Prospective Validator evidence/gate hardening
 
-The full safe transport contract is implementation-ready:
-- `parallel/PM/ALPHA_SAFE_TRANSPORT_INTEGRATION_CONTRACT.md`
-- fresh implementation prompt already exists at `parallel/PM/ALPHA_SAFE_TRANSPORT_INTEGRATION_START_PROMPT.md`.
+Local Discovery V2 regression is useful (16/16 PASS) but not sufficient.
 
-Actual Alpha transport implementation remains BLOCKED until the real PYLAUNCH Worker/WASM/World proof passes.
-
-## P1 acceleration — Owner one-click package/bootstrap
+Current blockers:
+- cross-page shared Worker evidence ownership ambiguity;
+- READY manifests declare conservative `minDistinctTargets`, `minObservedTypes`, `requireLifecycleReset`, but current final Validator verdict does not execute them.
 
 Fresh stage:
-- `parallel/PM/OWNER_ONECLICK_PACKAGE_START_PROMPT.md`
+- `parallel/PM/PROSPECTIVE_VALIDATOR_DISCOVERY_V2_HARDENING_START_PROMPT.md`
 
-Goal:
-- one direct download link;
-- owner downloads one Chinese bootstrap CMD or tiny ZIP;
-- double-click installs/updates the current tools atomically;
-- no Git/GitHub Desktop/repository-directory knowledge required;
-- then open the Chinese WOF Toolkit.
+Must remain research-only; no automatic production promotion.
 
-This is a project-acceleration lane and may proceed in parallel.
+## P1 — PYLAUNCH authoritative Discovery V2 hardening
 
-## Project-wide owner UI rule
+The old real-Chrome `no gstyphoon worker target` defect was meaningfully addressed and 13/13 local regression passed.
 
-Authoritative requirement:
-- `parallel/PM/CHINESE_UI_UX_REQUIREMENT.md`
+Later cross-component audit still found P1 drift before another Owner proof:
+- endpoint host/port confinement;
+- existing Worker URL-scheme semantics;
+- direct fallback must not use Worker `openerId` as parent authority.
 
-All owner-facing tools must default to Simplified Chinese. Internal JSON keys/schema/code identifiers may remain English.
+Fresh stage:
+- `parallel/PM/PYLAUNCH_DISCOVERY_V2_HARDENING_START_PROMPT.md`
 
-## Browser acceptance / Alpha release
+**Owner live proof remains paused.**
 
-Full Browser acceptance remains PAUSED.
+## P1 — Unified Windows Live Proof fail-closed fix
 
-Required sequence now:
-1. fresh PYLAUNCH Worker-discovery fix;
-2. one new real Windows proof: Browser/page/Worker/WASM/World/read-only + game playable;
-3. fresh Alpha safe transport integration implementation;
-4. integrated regression;
-5. bounded real Browser acceptance for actual warning/HUD behavior;
-6. PM Alpha release decision.
+Development bundle initially reached repository READY, but fresh independent QA found a real P1:
+- retained fatal/blocker can coexist with final PASS;
+- stale PASS/admission after child exit can remain authoritative;
+- Owner playability Y/N may still be asked after a blocker.
 
-## Current fastest path
+Fresh stage:
+- `parallel/PM/UNIFIED_WINDOWS_LIVE_PROOF_FAILCLOSED_FIX_START_PROMPT.md`
 
-**PYLAUNCH Worker discovery fix -> one new Windows proof -> Alpha transport integration -> bounded Browser acceptance -> Alpha release decision**
+Until fresh fix + fresh QA pass, no unified Owner run is authorized.
 
-Parallel acceleration:
-- Chinese owner UX pass;
-- owner one-click package/bootstrap.
+## ACCEPTED / DO NOT OPTIMIZE NOW
 
-Parked at repository-side stop condition until live proof:
-- Browser Fleet;
-- WOF-052L Recorder;
-- Operator Toolkit core implementation;
-- Safe Transport Integration Prep/Contract.
+### Browser Fleet Discovery V2
+Repository-side 15/15 PASS. Fleet remains deliberately `cheap-indicator-only`; exact World identity remains consumer authority. Reopen only for a concrete later live defect.
+
+### Discovery V2 cross-component audit
+Audit completed successfully by finding precise P0/P1 ownership. Old audit thread is closed. After fixes, use a fresh retest stage.
+
+### Alpha Safe Transport Mock Harness
+67/67 PASS. Keep closed and consume when transport implementation starts.
+
+### Alpha Acceptance V2 Prep
+Ready and waiting for actual transport integration. Do not redesign now.
+
+### Beta manifest compilation
+Manifest set remains research-only and correctly keeps unresolved T18 branches NOT_READY. Fix Validator gate enforcement first, then fresh QA retest.
+
+### Owner one-click infrastructure
+Useful immutable/hash/Windows CI work exists. Do not keep refreshing intermediate packages while core components are changing; refresh once after the live-proof stack stabilizes.
+
+## WAITING GATES — next sequence
+
+After the four current P0/P1 stages:
+
+1. fresh Discovery V2 cross-component retest;
+2. Discovery V2 conformance final run / global regression guard refresh;
+3. fresh Unified Live Proof QA;
+4. decide how much Alpha Safe Transport implementation + mock QA can be completed before any Owner run;
+5. final repository preflight + one-click package refresh;
+6. only then one bounded real Windows/WOF run if an intrinsically real-runtime fact remains;
+7. transport integration QA / bounded Browser acceptance;
+8. Alpha release decision;
+9. then WOF-052L long capture / broader Beta evidence expansion.
+
+## Owner action
+
+**NO.**
+
+Repository-side code/audit/regression work remains. Owner must not be used as an exploratory debugger.
