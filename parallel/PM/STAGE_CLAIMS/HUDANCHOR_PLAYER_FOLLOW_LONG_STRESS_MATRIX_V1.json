@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "HUDANCHOR_PLAYER_FOLLOW_LONG_STRESS_MATRIX_V1",
+  "promptPath": "parallel/PM/HUDANCHOR_PLAYER_FOLLOW_LONG_STRESS_MATRIX_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "25ab37b92e6c36b3346f35c5aff4cdbd2b8e8099",
+  "startedAtUtc": "2026-09-01T15:07:48Z"
+}
