@@ -1,0 +1,62 @@
+name: Owner One-Click Package
+
+on:
+  push:
+    paths:
+      - 'WOF_一键工具.cmd'
+      - 'WOF_TOOLKIT.cmd'
+      - 'parallel/OWNER_ONECLICK/**'
+      - 'parallel/OPTOOLKIT/**'
+      - 'parallel/BROWSER_FLEET/**'
+      - 'parallel/WOF052L_RECORDER/**'
+  workflow_dispatch:
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate manifest and rollback contract
+        run: python parallel/OWNER_ONECLICK/test_package.py
+
+  windows-oneclick:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: First install through real Chinese CMD
+        shell: powershell
+        run: |
+          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP 'WOF 中文 路径\Local App Data'
+          New-Item -ItemType Directory -Path $env:LOCALAPPDATA -Force | Out-Null
+          cmd.exe /d /c "call WOF_一键工具.cmd --update-only"
+          if ($LASTEXITCODE -ne 0) { throw "first install failed: $LASTEXITCODE" }
+          $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
+          $current = Join-Path $root 'current.txt'
+          if (-not (Test-Path -LiteralPath $current)) { throw 'current.txt missing after first install' }
+          $version = (Get-Content -LiteralPath $current -Raw).Trim()
+          if ($version -ne '2026.09.01.2') { throw "unexpected installed version: $version" }
+          $release = Join-Path $root ('releases\' + $version)
+          foreach ($p in @('installed.ok','WOF_TOOLKIT.cmd','parallel\OPTOOLKIT\owner_zh_cn.py','parallel\WOF052L_RECORDER\owner_zh_cn.py','parallel\BROWSER_FLEET\fleet_owner_zh_cn.py')) {
+            if (-not (Test-Path -LiteralPath (Join-Path $release $p))) { throw "installed file missing: $p" }
+          }
+          if (Get-ChildItem -LiteralPath (Join-Path $root 'releases') -Directory -Filter '*.staging-*') { throw 'staging directory remained after successful install' }
+      - name: Re-run one-click updater and preserve installed version
+        shell: powershell
+        run: |
+          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP 'WOF 中文 路径\Local App Data'
+          cmd.exe /d /c "call WOF_一键工具.cmd --update-only"
+          if ($LASTEXITCODE -ne 0) { throw "second run failed: $LASTEXITCODE" }
+          $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
+          $version = (Get-Content -LiteralPath (Join-Path $root 'current.txt') -Raw).Trim()
+          if ($version -ne '2026.09.01.2') { throw "version changed unexpectedly: $version" }
+          if (-not (Test-Path -LiteralPath (Join-Path $root 'releases\2026.09.01.2\installed.ok'))) { throw 'last-known-good missing after second run' }
