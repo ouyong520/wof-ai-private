@@ -1,0 +1,41 @@
+{
+  "schema": "wof-unified-live-proof-preflight-v1",
+  "artifactKind": "repository-current-admission-example",
+  "date": "2026-09-01",
+  "result": "BLOCKED",
+  "preflightImplementationReady": true,
+  "stopCondition": "UNIFIED LIVE PROOF PREFLIGHT HARDENING READY — OWNER NOT NEEDED FOR REPOSITORY CHECKS",
+  "discoveryContractVersion": "wof-discovery-v2-hardened-capabilities-v1",
+  "blockers": [
+    {
+      "severity": "P1",
+      "component": "pylaunch",
+      "path": "parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/RESULT.md",
+      "id": "P1-STALE-TARGETID-IDENTITY-CACHE-AUTHORITY",
+      "detailZh": "PYLAUNCH fresh QA 仍阻断：旧 exact World identity authority 可能被复用到新的 browser/runtime generation。"
+    },
+    {
+      "severity": "P1",
+      "component": "liveProof",
+      "path": "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.json",
+      "id": "RECORDER_ARBITRARY_STDOUT_REFRESHES_STALE_ADMISSION",
+      "detailZh": "Unified freshness fresh QA 仍阻断：arbitrary Recorder stdout 可刷新旧 admission authority。"
+    }
+  ],
+  "gates": {
+    "repositoryChecksPassed": false,
+    "browserLaunchAllowed": false,
+    "ownerWofEntryAllowed": false,
+    "liveStageAllowed": false,
+    "longCaptureAutoStarted": false
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false
+  },
+  "ownerActionRequired": false,
+  "ownerSummaryZh": "Preflight hardening 已完成，但当前仓库仍有 fresh QA P1；真人入口应在 Browser 启动前自动 BLOCKED。你现在不需要进入 WOF。",
+  "note": "Runtime execution writes a fresh UNIFIED_PREFLIGHT_STATUS.json under the stable LOCALAPPDATA UnifiedLiveProof path with the exact snapshot commit, checks, commands and current blockers."
+}
