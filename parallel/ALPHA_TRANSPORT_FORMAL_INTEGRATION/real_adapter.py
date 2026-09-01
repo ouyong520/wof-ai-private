@@ -63,6 +63,15 @@ def _choice_supported(choice: TargetChoice) -> bool:
     )
 
 
+def _choice_identity_sha(choice: TargetChoice) -> str:
+    if not _choice_supported(choice) or not isinstance(choice.identity, dict):
+        raise RuntimeError("Discovery V2 未提供可绑定的精确 World 921031 身份证据")
+    sha = choice.identity.get("sha256")
+    if sha != GOLDEN_SHA:
+        raise RuntimeError("Discovery V2 World 921031 SHA-256 不匹配")
+    return str(sha)
+
+
 @dataclass(frozen=True)
 class ActiveBinding:
     page_id: str
@@ -192,21 +201,28 @@ const previous=self.__WOF_ALPHA_REAL_TRANSPORT;
 if(previous&&typeof previous.stop==='function'&&previous.stop('formal-rebind')!==true)throw new Error('旧 observer 未安全停止');
 self.__WOF_ALPHA_REAL_ADAPTER_BINDING={payload};
 (0,eval)({source});
-const deadline=Date.now()+12000;
+const deadline=Date.now()+30000;
 while(Date.now()<deadline){{
   const r=self.__WOF_ALPHA_REAL_TRANSPORT;
   if(r&&typeof r.status==='function'){{const s=r.status();if(s&&s.runtimeEpoch==={json.dumps(binding['runtimeEpoch'])})return s;}}
+  if(r&&r.running===false&&r.lastError)throw new Error(String(r.lastError));
   await new Promise(resolve=>setTimeout(resolve,25));
 }}
 throw new Error('正式 observer 启动超时');
 }})()"""
-        value = _eval(self.client, worker_id, expression, await_promise=True, timeout=15.0)
+        value = _eval(self.client, worker_id, expression, await_promise=True, timeout=35.0)
         if not isinstance(value, dict) or value.get("running") is not True:
             raise RuntimeError("原生 Worker observer 未进入运行态")
-        if value.get("identitySignature") != IDENTITY_SIGNATURE:
+        identity = value.get("identity")
+        if not isinstance(identity, dict) or identity.get("ok") is not True or identity.get("sha256") != GOLDEN_SHA:
+            raise RuntimeError("检测器本地最新 World 921031 SHA-256 身份证据不匹配")
+        if value.get("identitySignature") != IDENTITY_SIGNATURE or identity.get("identitySignature") != IDENTITY_SIGNATURE:
             raise RuntimeError("检测器本地身份签名不匹配")
         if not (
-            value.get("readOnly") is True
+            identity.get("readOnly") is True
+            and identity.get("ramWrites") == 0
+            and identity.get("inputInjection") is False
+            and value.get("readOnly") is True
             and value.get("ramWrites") == 0
             and value.get("inputInjection") is False
             and value.get("workerReplacement") is False
@@ -226,8 +242,9 @@ throw new Error('正式 observer 启动超时');
             worker = self._worker_status(current.worker_id)
         except Exception:
             return False
+        identity = worker.get("identity") if isinstance(worker, dict) else None
         return bool(
-            page and worker
+            page and worker and isinstance(identity, dict)
             and page.get("bound") is True
             and page.get("transportVersion") == TRANSPORT
             and page.get("session") == current.session
@@ -235,6 +252,9 @@ throw new Error('正式 observer 启动超时');
             and page.get("pairNonce") == current.pair_nonce
             and worker.get("running") is True
             and worker.get("identitySignature") == IDENTITY_SIGNATURE
+            and identity.get("ok") is True
+            and identity.get("sha256") == GOLDEN_SHA
+            and identity.get("identitySignature") == IDENTITY_SIGNATURE
             and worker.get("runtimeEpoch") == current.runtime_epoch
             and worker.get("session") == current.session
             and worker.get("pairGeneration") == current.pair_generation
@@ -253,6 +273,7 @@ throw new Error('正式 observer 启动超时');
         worker_id = _safe_target_id(choice.worker)
         if not page_id or not worker_id:
             raise RuntimeError("Discovery V2 缺少 page/Worker targetId")
+        discovery_identity_sha = _choice_identity_sha(choice)
 
         # Rebinding starts by revoking old warning/detector authority. If the same
         # live page/Worker cannot prove revocation, no new generation is created.
@@ -273,7 +294,9 @@ throw new Error('正式 observer 启动超时');
             "pairGeneration": int(page_binding["pairGeneration"]),
             "pairNonce": pair_nonce,
             "runtimeEpoch": runtime_epoch,
-            "launcherIdentitySha": GOLDEN_SHA,
+            # Preserve the exact Discovery measurement as provenance only. The
+            # installed native Worker must independently re-hash its current ROM.
+            "launcherIdentitySha": discovery_identity_sha,
         }
         try:
             self._install_worker(worker_id, binding)
