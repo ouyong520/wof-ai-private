@@ -122,7 +122,49 @@ for(const id of ACTIVE){
   assert.equal(model.count,2);assert.equal(model.groupCount,2);
 }
 
-// Static release guards for the new authoritative hash path and preserved RC2 packaging/safety.
+// RC4 fail-closed HUD transport regression. This mirrors the page HUD's exact accepted-message precedence.
+{
+  const STALE_MS=1500;
+  const warningRows=C.createEngine().step([stateFor(ACTIVE[0])],1000).warnings;
+  const make=()=>({lastMsg:null,lastRx:0,lastDiag:null});
+  const receive=(s,m,now)=>{
+    if(!(m&&m.schema===C.SCHEMA&&m.session===session))return false;
+    if(m.kind==='state'){s.lastMsg=m;s.lastRx=now;s.lastDiag=null;return true;}
+    if(m.kind==='diag'){s.lastMsg=null;s.lastRx=0;s.lastDiag={at:now,reason:m.reason||m.status||'diagnostic'};return true;}
+    return false;
+  };
+  const view=(s,now)=>{
+    const fresh=!!s.lastRx&&now-s.lastRx<=STALE_MS;
+    if(fresh){
+      const model=H.summarizeWarnings(Array.isArray(s.lastMsg?.warnings)?s.lastMsg.warnings:[]);
+      if(model.count)return{mode:'warning',warningCount:model.count,fresh};
+    }
+    if(s.lastDiag&&now-s.lastDiag.at<5000)return{mode:'diag',warningCount:0,fresh:false};
+    return{mode:'silent',warningCount:0,fresh};
+  };
+  const stateMsg={schema:C.SCHEMA,session,kind:'state',warnings:warningRows};
+  const diagMsg={schema:C.SCHEMA,session,kind:'diag',status:'DISABLED',reason:'runtime exception: test'};
+
+  const a=make();receive(a,stateMsg,1000);assert.equal(view(a,1000).warningCount,1);
+  receive(a,diagMsg,1001);
+  assert.equal(a.lastMsg,null,'accepted diag must revoke prior warning authority immediately');
+  assert.equal(a.lastRx,0,'accepted diag must revoke warning freshness immediately');
+  assert.deepEqual(view(a,1001),{mode:'diag',warningCount:0,fresh:false},'accepted diag must render diagnostic immediately');
+
+  const b=make();receive(b,stateMsg,2000);
+  assert.equal(receive(b,{...diagMsg,session:'ffffffffffffffffffffffffffffffff'},2001),false,'foreign-session diag ignored');
+  assert.equal(view(b,2001).mode,'warning','foreign-session diag must not clear paired warning');
+
+  const c=make();receive(c,stateMsg,3000);receive(c,diagMsg,3001);receive(c,stateMsg,3002);
+  assert.equal(view(c,3002).mode,'warning','later fresh paired state may become authoritative again');
+  assert.equal(c.lastDiag,null,'fresh paired state must not resurrect stale diagnostic/warning state');
+
+  const d=make();receive(d,stateMsg,4000);
+  assert.equal(view(d,5500).mode,'warning','ordinary state remains fresh through the existing 1500 ms boundary');
+  assert.equal(view(d,5501).mode,'silent','ordinary state staleness remains unchanged without explicit diag');
+}
+
+// Static release guards for the authoritative hash path, RC4 fail-closed patch, and preserved RC2/RC3 safety.
 const loader=files('wof_alpha_loader.js'),core=files('wof_alpha_core.js'),hud=files('wof_alpha_hud.js'),boot=files('wof_alpha_bootstrap.user.js'),readme=files('README.md');
 const manifest=JSON.parse(files('rules_manifest.json'));
 assert(loader.includes("const RELEASE='wof-alpha-rc3'"));
@@ -135,6 +177,9 @@ assert(!/wofr1|921002/.test(core+loader+readme),'stale 921002 identity label mus
 assert(/@run-at\s+document-start/.test(boot)&&/window\.Worker=AlphaWorker/.test(boot)&&/gstyphoon/.test(boot),'normal-user bootstrap must still intercept target Worker at document start');
 assert(/legacy\.dispose/.test(hud),'legacy research HUD must still be disposed');
 assert(/m\.session===SESSION/.test(hud),'HUD must still enforce session nonce');
+assert(hud.includes("const VERSION='wof-alpha-hud-rc4'"),'RC4 HUD patch version must be identifiable');
+assert(hud.includes("else if(m.kind==='diag'){lastMsg=null;lastRx=0;lastDiag={at:Date.now(),reason:m.reason||m.status||'diagnostic'};lastKey='';}"),'paired diag must clear lastMsg and lastRx before any later draw');
+assert(hud.includes('const STARTUP_MS=15000,STALE_MS=1500'),'ordinary RC3 stale timeout must remain unchanged');
 assert(!/warnings\?\.\[0\]|warnings\s*\[\s*0\s*\]/.test(hud),'HUD must not special-case only warning[0]');
 assert(/snapshot|snapGL/.test(hud)&&/restoreGL/.test(hud),'HUD must preserve GL state');
 assert.equal(manifest.artifactVersion,'wof-alpha-rc3');
@@ -147,8 +192,9 @@ for(const [name,src] of [['loader',loader],['core',core]]){
 }
 
 console.log(JSON.stringify({
-  artifact:'wof-alpha-rc3',tests:'PASS',supportedIdentity:'wof / World 921031',goldenSha256:GOLD,
+  artifact:'wof-alpha-rc4',tests:'PASS',supportedIdentity:'wof / World 921031',goldenSha256:GOLD,
   productionRules:ACTIVE,quarantinedRules:QUARANTINED,
   blockers:{exactFullSha256Gate:true,hashPendingFailClosed:true,hashErrorFailClosed:true,sparseFingerprintNotAuthoritative:true,
-    historyRulesQuarantined:true,currentLevelHoldOnly:true,sameTypeReplacementNoInheritance:true,sessionBoundTransportPreserved:true,readOnly:true,inputInjection:false}
+    historyRulesQuarantined:true,currentLevelHoldOnly:true,sameTypeReplacementNoInheritance:true,sessionBoundTransportPreserved:true,
+    runtimeDiagImmediateWarningInvalidation:true,ordinaryStalenessUnchanged:true,readOnly:true,inputInjection:false}
 },null,2));
