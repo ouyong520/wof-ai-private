@@ -1,0 +1,120 @@
+{
+  "sessions": {
+    "a": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "b": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "nonces": {
+    "a1": "11111111111111111111111111111111",
+    "a2": "22222222222222222222222222222222",
+    "b1": "33333333333333333333333333333333"
+  },
+  "pageConfigs": {
+    "a": {
+      "release": "wof-alpha-rc3",
+      "schema": "wof-alpha-v2",
+      "session": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "channel": "WOF_ALPHA_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "b": {
+      "release": "wof-alpha-rc3",
+      "schema": "wof-alpha-v2",
+      "session": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "channel": "WOF_ALPHA_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  },
+  "lifecycle": {
+    "a1": {
+      "connectionId": "cdp-9222-1",
+      "pageEpoch": 1,
+      "workerEpoch": 1
+    },
+    "a2": {
+      "connectionId": "cdp-9222-1",
+      "pageEpoch": 1,
+      "workerEpoch": 2
+    },
+    "reconnect": {
+      "connectionId": "cdp-9222-2",
+      "pageEpoch": 2,
+      "workerEpoch": 1
+    }
+  },
+  "choices": {
+    "valid": {
+      "page": {"targetId": "page-a", "type": "page", "url": "https://example.invalid/wof"},
+      "worker": {"targetId": "worker-a", "type": "shared_worker", "url": "blob:https://example.invalid/opaque-worker"},
+      "worker_probe": {"moduleOk": true, "heapOk": true, "readOnly": true, "ramWrites": 0, "inputInjection": false},
+      "identity": {
+        "ok": true,
+        "moduleOk": true,
+        "heapOk": true,
+        "candidateCount": 1,
+        "sha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
+        "readOnly": true,
+        "ramWrites": 0,
+        "inputInjection": false
+      },
+      "reason": null,
+      "diagnostics": {"path": "page-autoattach"}
+    },
+    "wrongWorld": {
+      "page": {"targetId": "page-a", "type": "page"},
+      "worker": {"targetId": "worker-a", "type": "worker", "url": "data:text/javascript,opaque"},
+      "worker_probe": {"moduleOk": true, "heapOk": true, "readOnly": true, "ramWrites": 0, "inputInjection": false},
+      "identity": {
+        "ok": false,
+        "moduleOk": true,
+        "heapOk": true,
+        "candidateCount": 1,
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "readOnly": true,
+        "ramWrites": 0,
+        "inputInjection": false
+      },
+      "reason": "full CPU-logical SHA-256 mismatch",
+      "diagnostics": {"path": "page-autoattach-incomplete"}
+    },
+    "missingHeap": {
+      "page": {"targetId": "page-a", "type": "page"},
+      "worker": {"targetId": "worker-a", "type": "service_worker", "url": "https://example.invalid/hashless"},
+      "worker_probe": {"moduleOk": true, "heapOk": false, "readOnly": true, "ramWrites": 0, "inputInjection": false},
+      "identity": null,
+      "reason": "related WOF Worker found; WASM module/heap not ready",
+      "diagnostics": {"path": "page-autoattach-incomplete"}
+    },
+    "unsafe": {
+      "page": {"targetId": "page-a", "type": "page"},
+      "worker": {"targetId": "worker-a", "type": "worker", "url": "https://example.invalid/gstyphoon.js"},
+      "worker_probe": {"moduleOk": true, "heapOk": true, "readOnly": true, "ramWrites": 0, "inputInjection": false},
+      "identity": {
+        "ok": true,
+        "moduleOk": true,
+        "heapOk": true,
+        "candidateCount": 1,
+        "sha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
+        "readOnly": false,
+        "ramWrites": 1,
+        "inputInjection": true
+      },
+      "reason": null,
+      "diagnostics": {"path": "page-autoattach"}
+    },
+    "validB": {
+      "page": {"targetId": "page-b", "type": "page"},
+      "worker": {"targetId": "worker-b", "type": "worker", "url": "https://example.invalid/gstyphoon.abc.js"},
+      "worker_probe": {"moduleOk": true, "heapOk": true, "readOnly": true, "ramWrites": 0, "inputInjection": false},
+      "identity": {
+        "ok": true,
+        "moduleOk": true,
+        "heapOk": true,
+        "candidateCount": 1,
+        "sha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
+        "readOnly": true,
+        "ramWrites": 0,
+        "inputInjection": false
+      },
+      "reason": null,
+      "diagnostics": {"path": "direct-worker"}
+    }
+  }
+}
