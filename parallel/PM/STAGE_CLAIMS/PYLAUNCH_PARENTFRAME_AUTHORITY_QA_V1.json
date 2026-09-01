@@ -2,7 +2,13 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "PYLAUNCH_PARENTFRAME_AUTHORITY_QA_V1",
   "promptPath": "parallel/PM/PYLAUNCH_PARENTFRAME_AUTHORITY_QA_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "c1347a4a6cc5c1da97c77e733c617f294263080e",
-  "startedAtUtc": "2026-09-01T14:36:00Z"
+  "startedAtUtc": "2026-09-01T14:36:00Z",
+  "finishedAtUtc": "2026-09-01T14:42:26Z",
+  "resultPath": "parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/RESULT.md",
+  "resultCommit": "38b6e7b1b8441100739584c04e547af8d5483aca",
+  "fixturePath": "parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/test_adversarial_generation_cache.py",
+  "fixtureCommit": "55075ce8749dd34092f9a460d70a3aa1d224cb8c",
+  "blocker": "P1-STALE-TARGETID-IDENTITY-CACHE-AUTHORITY"
 }
