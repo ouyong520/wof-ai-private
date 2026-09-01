@@ -2,7 +2,11 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "PROSPECTIVE_VALIDATOR_DISCOVERY_V2_HARDENING_QA_V1",
   "promptPath": "parallel/PM/PROSPECTIVE_VALIDATOR_DISCOVERY_V2_HARDENING_QA_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "c7587998c31fe1fcb87c58db11439399d7e12a05",
-  "startedAtUtc": "2026-09-01T13:53:00Z"
+  "startedAtUtc": "2026-09-01T13:53:00Z",
+  "completedAtUtc": "2026-09-01T13:58:00Z",
+  "resultPath": "parallel/PROSPECTIVE_VALIDATOR_QA_DISCOVERY_V2_HARDENING/RESULT.md",
+  "resultCommit": "92344881f39e1bd828ea17693c6eeee41159ea30",
+  "blocker": "P0 LIVE_TOPOLOGY_AMBIGUITY_AUDIT_GAP: a live room can continue prospective drain/ingest after Worker-to-page ownership becomes ambiguous until the next 10-second full topology audit"
 }
