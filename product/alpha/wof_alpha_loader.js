@@ -1,57 +1,130 @@
 (async()=>{
 'use strict';
-const RELEASE='wof-alpha-rc1';
-const BASE='https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/product/alpha/';
-const bust=u=>u+(u.includes('?')?'&':'?')+'x='+Date.now();
-const getText=async name=>{const r=await fetch(bust(BASE+name),{cache:'no-store'});if(!r.ok)throw new Error(name+' fetch '+r.status);return r.text();};
-const isWindow=typeof window!=='undefined'&&typeof document!=='undefined';
-if(isWindow){
+const RELEASE='wof-alpha-rc2';
+const SCHEMA='wof-alpha-v2';
+const RAW='https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/product/alpha/';
+const scope=typeof window!=='undefined'&&window===globalThis?window:self;
+const cfg=scope.__WOF_ALPHA_CONFIG;
+if(!cfg||typeof cfg.session!=='string'||cfg.session.length<16||typeof cfg.channel!=='string'||cfg.schema!==SCHEMA){
+  throw new Error('WOF Alpha RC2 requires the session-bound bootstrap; refusing unpaired manual load');
+}
+const SESSION=cfg.session,CHANNEL=cfg.channel;
+const load=async name=>{
+  const r=await fetch(RAW+name+'?rc2='+encodeURIComponent(RELEASE)+'&x='+Date.now(),{cache:'no-store'});
+  if(!r.ok)throw new Error('fetch '+name+' '+r.status);
+  (0,eval)(await r.text());
+};
+
+if(typeof window!=='undefined'&&window===globalThis){
   try{window.WOFALPHAHUD?.dispose?.();}catch(_){}
-  const code=await getText('wof_alpha_hud.js');(0,eval)(code);
-  window.WOFALPHA={release:RELEASE,mode:'top-hud',readOnly:true,inputInjection:false};
-  console.log('✅ WOF Alpha RC1 HUD loaded. Load the same Alpha loader in the live gstyphoon.js Worker.');
+  await load('wof_alpha_hud_model.js');
+  await load('wof_alpha_hud.js');
+  window.WOFALPHA={release:RELEASE,schema:SCHEMA,session:SESSION,mode:'page',status:()=>window.WOFALPHAHUD?.status?.()||null};
   return window.WOFALPHA;
 }
+
 try{self.__WOF_ALPHA_RUNTIME?.stop?.();}catch(_){}
-const CHANNEL='wof-alpha-v1',TICK_MS=10;
-const bc=new BroadcastChannel(CHANNEL);
-const publishDiagnostic=(state,reason,detail)=>{try{bc.postMessage({schema:CHANNEL,kind:'diagnostic',release:RELEASE,state,reason,detail:detail||null,sentAt:Date.now(),warnings:[]});}catch(_){};};
-try{
-  if(!self.WOFAlphaCore||self.WOFAlphaCore.VERSION!=='wof-alpha-core-rc1'){const code=await getText('wof_alpha_core.js');(0,eval)(code);}
-  const good=v=>!!(v&&v.HEAPU8 instanceof Uint8Array&&v.HEAPU32 instanceof Uint32Array&&v.HEAPU8.buffer===v.HEAPU32.buffer);
-  let moduleHit=null;
-  if(good(self._0x515056))moduleHit={key:'_0x515056',value:self._0x515056};
-  if(!moduleHit){for(const k of Object.getOwnPropertyNames(self)){let v;try{v=self[k]}catch(_){continue}if(good(v)){moduleHit={key:k,value:v};break;}}}
-  const MOD=moduleHit?.value||null,M=MOD?.HEAPU8||null,R=MOD?.HEAPU32?.[0x2e39e4>>>2]>>>0;
-  const heapOk=!!(M&&R&&R+0x10000<M.length);
-  const idx=a=>R+((((a-0xFF0000)&0xffff)^1));
-  const B=a=>{const i=idx(a);if(!M||i<0||i>=M.length)throw new Error('RAM read out of range');return M[i]>>>0;};
-  let selfIndexes=null;
-  if(heapOk){try{selfIndexes=[B(0xFFBE1C+0x7C),B(0xFFBEFC+0x7C),B(0xFFBFDC+0x7C)];}catch(_){selfIndexes=null;}}
-  const guard=self.WOFAlphaCore.validateIdentityProbe({moduleOk:!!moduleHit,ramBase:R,ramWithinHeap:heapOk,selfIndexes});
-  if(!guard.ok){publishDiagnostic('disabled','unsupported-runtime',guard.reasons.join('; '));self.__WOF_ALPHA_RUNTIME={release:RELEASE,running:false,guard,readOnly:true,ramWrites:0,inputInjection:false,status(){return this;},stop(){try{bc.close();}catch(_){}}};console.error('⛔ WOF Alpha disabled:',guard.reasons.join('; '));return self.__WOF_ALPHA_RUNTIME;}
-  const U16=a=>((B(a)<<8)|B(a+1))>>>0;
-  const U32=a=>(B(a)*0x1000000+B(a+1)*0x10000+B(a+2)*0x100+B(a+3))>>>0;
-  const S32=a=>{const v=U32(a);return v>=0x80000000?v-0x100000000:v;};
-  const X=a=>Math.round(S32(a+4)/65536);
-  const ENEMY=0xFFC0BC,STRIDE=0xE0,SLOTS=20,PBASE={0:0xFFBE1C,4:0xFFBEFC,8:0xFFBFDC},PN={0:'P1',4:'P2',8:'P3'};
-  function snap(slot){
-    const a=ENEMY+slot*STRIDE,type=U16(a+0x20);if(type>=47)return null;
-    const frameEnd=U32(a+0x12),next=U32(a+0x2C);if(!frameEnd&&!next)return null;
-    const target7E=U16(a+0x7E),pb=PBASE[target7E],enemyX=X(a),targetX=pb?X(pb):null;
-    return{slot,type,target7E,target:PN[target7E]||null,state99:B(a+0x99),action2A:B(a+0x2A),b2B:B(a+0x2B),body:U16(a+0x6E),attack:U16(a+0x70),frameEnd,next,value30:U32(a+0x30),timer34:U16(a+0x34),payload6C:U16(a+0x6C),enemyX,targetX};
+await load('wof_alpha_core.js');
+const C=self.WOFAlphaCore;
+if(!C||C.VERSION!=='wof-alpha-core-rc2'||C.SCHEMA!==SCHEMA)throw new Error('RC2 core identity mismatch');
+
+const good=v=>!!(v&&v.HEAPU8 instanceof Uint8Array&&v.HEAPU32 instanceof Uint32Array&&v.HEAPU8.buffer===v.HEAPU32.buffer);
+async function moduleFind(){
+  if(good(self._0x515056))return self._0x515056;
+  const until=performance.now()+8000;
+  while(performance.now()<until){
+    for(const k of Object.getOwnPropertyNames(self)){
+      let v;try{v=self[k];}catch(_){continue;}
+      if(good(v)){self._0x515056=v;self.__WOF_MODULE_GLOBAL_KEY=k;return v;}
+    }
+    await new Promise(r=>setTimeout(r,50));
   }
-  const engine=self.WOFAlphaCore.createEngine();let running=true,timer=null,lastSentAt=0,lastError=null;
-  const send=()=>{
-    if(!running)return;
-    try{
-      const snaps=[];for(let i=0;i<SLOTS;i++){const s=snap(i);if(s)snaps.push(s);}
-      const msg=engine.step(snaps,performance.now());msg.release=RELEASE;msg.identity=guard.signature;msg.readOnly=true;msg.ramWrites=0;msg.inputInjection=false;msg.sentAt=Date.now();bc.postMessage(msg);lastSentAt=msg.sentAt;
-    }catch(e){lastError=String(e?.stack||e);running=false;if(timer){clearInterval(timer);timer=null;}engine.clearAll();publishDiagnostic('disabled','runtime-exception',lastError);console.error('⛔ WOF Alpha fail-closed runtime exception',e);}
+  return null;
+}
+const MOD=await moduleFind();
+const bc=new BroadcastChannel(CHANNEL);
+const post=(kind,payload={})=>bc.postMessage({schema:SCHEMA,session:SESSION,kind,release:RELEASE,sentAt:Date.now(),...payload});
+if(!MOD){
+  post('diag',{status:'DISABLED',reason:'WASM module not found'});
+  self.__WOF_ALPHA_RUNTIME={release:RELEASE,running:false,readOnly:true,ramWrites:0,inputInjection:false,session:SESSION,stop(){try{bc.close();}catch(_){}}};
+  return self.__WOF_ALPHA_RUNTIME;
+}
+const M=MOD.HEAPU8,R=MOD.HEAPU32?.[0x2e39e4>>>2]>>>0;
+const B=a=>M[R+((((a-0xFF0000)&0xffff)^1))]>>>0;
+const U16=a=>((B(a)<<8)|B(a+1))>>>0;
+const U32=a=>(B(a)*0x1000000+B(a+1)*0x10000+B(a+2)*0x100+B(a+3))>>>0;
+const S32=a=>{const v=U32(a);return v>=0x80000000?v-0x100000000:v;};
+const X=a=>Math.round(S32(a+4)/65536);
+
+function m8(base,swap,o){return M[base+(swap?(o^1):o)]>>>0;}
+function m32(base,swap,o){return (m8(base,swap,o)*0x1000000+m8(base,swap,o+1)*0x10000+m8(base,swap,o+2)*0x100+m8(base,swap,o+3))>>>0;}
+async function locateRomFingerprint(){
+  const direct=[0x00,0xFF,0x62,0xEE,0x00,0x00,0x75,0x4A],swapped=[0xFF,0x00,0xEE,0x62,0x00,0x00,0x4A,0x75];
+  const expected=C.ROM_IDENTITY.dispatchEntries,off=C.ROM_IDENTITY.dispatchOffset;
+  const rawAt=p=>M[p]>>>0;
+  const match=(p,a)=>{if(p<0||p+a.length>M.length)return false;for(let i=0;i<a.length;i++)if(rawAt(p+i)!==a[i])return false;return true;};
+  const verify=(base,swap)=>{
+    if(m32(base,swap,0)!==C.ROM_IDENTITY.vectorSp||m32(base,swap,4)!==C.ROM_IDENTITY.vectorPc)return null;
+    if(base+off+expected.length*4>=M.length)return null;
+    const vals=expected.map((_,i)=>m32(base,swap,off+i*4));
+    const deltas=vals.map((v,i)=>(v-expected[i])|0),d=deltas[0];
+    if(!deltas.every(x=>x===d)||Math.abs(d)>C.ROM_IDENTITY.maxUniformDelta)return null;
+    return{source:'browser-wasm-rom',romBaseHeap:base,swap16:swap,vectorSp:C.ROM_IDENTITY.vectorSp,vectorPc:C.ROM_IDENTITY.vectorPc,
+      dispatchOffset:off,dispatchEntries:vals,uniformDelta:d};
   };
-  timer=setInterval(send,TICK_MS);send();
-  self.__WOF_ALPHA_RUNTIME={release:RELEASE,coreVersion:self.WOFAlphaCore.VERSION,identity:guard.signature,moduleKey:moduleHit.key,readOnly:true,ramWrites:0,inputInjection:false,get running(){return running;},status(){return{release:RELEASE,running,lastSentAt,lastError,identity:guard.signature,moduleKey:moduleHit.key,readOnly:true,ramWrites:0,inputInjection:false,engine:engine.diagnostics()};},stop(){running=false;if(timer){clearInterval(timer);timer=null;}engine.clearAll();try{bc.close();}catch(_){}}};
-  console.log('✅ WOF Alpha RC1 worker active | fail-closed | read-only |',guard.signature);
-  return self.__WOF_ALPHA_RUNTIME.status();
-}catch(e){publishDiagnostic('disabled','loader-exception',String(e?.stack||e));try{bc.close();}catch(_){}console.error('⛔ WOF Alpha loader failed closed',e);throw e;}
-})().catch(e=>console.error('WOF Alpha RC1',e));
+  const chunk=0x40000;
+  for(let start=0;start<M.length;start+=chunk){
+    const end=Math.min(M.length-8,start+chunk+8);
+    for(let p=start;p<end;p++){
+      if(rawAt(p)===direct[0]&&match(p,direct)){const z=verify(p,false);if(z)return z;}
+      if(rawAt(p)===swapped[0]&&match(p,swapped)){const z=verify(p,true);if(z)return z;}
+    }
+    if(start && start%(chunk*16)===0)await new Promise(r=>setTimeout(r,0));
+  }
+  return null;
+}
+
+let selfIndexes=null;
+try{selfIndexes=[U16(0xFFBE1C+0x7C),U16(0xFFBEFC+0x7C),U16(0xFFBFDC+0x7C)];}catch(_){}
+let romFingerprint=null;
+try{romFingerprint=await locateRomFingerprint();}catch(_){}
+const identity=C.validateIdentityProbe({
+  moduleOk:good(MOD),ramBase:R,ramWithinHeap:!!R&&R+0x10000<=M.length,selfIndexes,romFingerprint
+});
+if(!identity.ok){
+  post('diag',{status:'DISABLED',reason:'identity-fail: '+identity.reasons.join('; '),identity});
+  self.__WOF_ALPHA_RUNTIME={
+    release:RELEASE,running:false,readOnly:true,ramWrites:0,inputInjection:false,session:SESSION,identity,
+    stop(){try{bc.close();}catch(_){}},status(){return{release:RELEASE,running:false,session:SESSION,identity,readOnly:true,ramWrites:0,inputInjection:false};}
+  };
+  return self.__WOF_ALPHA_RUNTIME;
+}
+
+const ENEMY=0xFFC0BC,STRIDE=0xE0,SLOTS=20,PBASE={0:0xFFBE1C,4:0xFFBEFC,8:0xFFBFDC};
+function snap(i){
+  const a=ENEMY+i*STRIDE,type=U16(a+0x20);if(type>=47)return null;
+  const frameEnd=U32(a+0x12),next=U32(a+0x2C);if(!frameEnd&&!next)return null;
+  const target7E=U16(a+0x7E),pb=PBASE[target7E],enemyX=X(a),targetX=pb?X(pb):null;
+  return{slot:i,type,target7E,state99:B(a+0x99),action2A:B(a+0x2A),b2B:B(a+0x2B),body:U16(a+0x6E),attack:U16(a+0x70),
+    frameEnd,next,value30:U32(a+0x30),timer34:U16(a+0x34),payload6C:U16(a+0x6C),enemyX,targetX};
+}
+const engine=C.createEngine();
+let running=true,polls=0,lastError=null;
+const tick=()=>{
+  if(!running)return;
+  try{
+    const rows=[];for(let i=0;i<SLOTS;i++){const s=snap(i);if(s)rows.push(s);}
+    const state=engine.step(rows,performance.now());post('state',{...state,identitySignature:identity.signature});polls++;
+  }catch(e){
+    lastError=String(e?.stack||e);running=false;post('diag',{status:'DISABLED',reason:'runtime exception: '+lastError});
+  }
+};
+const timer=setInterval(tick,10);tick();
+self.__WOF_ALPHA_RUNTIME={
+  release:RELEASE,session:SESSION,identity,readOnly:true,ramWrites:0,inputInjection:false,
+  stop(){if(!running){try{clearInterval(timer);}catch(_){};try{bc.close();}catch(_){};return;}running=false;clearInterval(timer);try{bc.close();}catch(_){}},
+  status(){return{release:RELEASE,running,session:SESSION,identity,readOnly:true,ramWrites:0,inputInjection:false,polls,lastError,engine:engine.diagnostics()};}
+};
+console.log('✅ WOF Alpha RC2 detector running · positive ROM identity',identity.signature,'session',SESSION.slice(0,8));
+return self.__WOF_ALPHA_RUNTIME;
+})().catch(e=>{console.error('WOF_ALPHA_RC2_LOADER_ERROR',e);throw e;});
