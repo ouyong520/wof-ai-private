@@ -52,7 +52,7 @@ Current classification for `P1 +0x08`:
 
 **STRONG_CANDIDATE / NOT CONFIRMED / INSUFFICIENT_COVERAGE.**
 
-## GEO-0008 controlled result
+## Controlled attempt 1 — GEO-0008
 
 Task:
 
@@ -74,64 +74,94 @@ Identity verified:
 - original SHA256: `cf7bb9093f0389ac629e4937da866d8217a8eaf89ebf479f3797e821776678cb`
 - compressed SHA256: `81f30d0ff7d68d1bb98c09d20e11474d49023ac09bb0119941f45244d876a2b3`
 
-RAWMINE controlled-screen verdict:
+RAWMINE verdict:
 
 `CONTROLLED_RAW_NO_P1_DEPTH_MANIPULATION_EVIDENCE`
-
-Important interpretation:
 
 - reconstructed X (`+0x04/+0x0B`) changes: 0;
 - reconstructed Z (`+0x0C/+0x11`) changes: 0;
 - `+0x08` changes: 0;
-- no byte satisfies the manipulation guardrail of >=5 P1 changes, >=0.80 P1-specificity, and <=0.05 untouched-P2/P3 change rate;
-- therefore the capture is mechanically valid but the intended visible P1 depth traversal did not occur in the recorded player-object dynamics.
+- no byte satisfies the manipulation guardrail of >=5 P1 changes, >=0.80 P1-specificity, and <=0.05 untouched-P2/P3 change rate.
 
-This is **not negative evidence against `+0x08`**. GEO-0008 is an ineffective manipulation capture and cannot discriminate the Y field.
+Interpretation: mechanically valid capture, ineffective depth manipulation. This is **not negative evidence against `+0x08`**.
 
-## Next discriminator — one visible depth traverse only
+## Controlled attempt 2 — RAWMINE-001 cross-lane evidence
+
+Task:
+
+`RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z`
+
+GEO consumed this read-only cross-lane result as discovery evidence only. Identity verified:
+
+- `taskId = RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z`
+- `taskBlobSha = c630db7f31366f03e1e1b8565c9d2b5a95bdcf90`
+- collector result `PASS`
+- 8 s @ 60 Hz, 481 samples, achieved ~60.011 Hz
+- distinct raw frames: 433
+- read errors: 0
+- frame-size errors: 0
+- mapping: `xor3`
+- read-only: true
+- writes game memory: false
+- raw: `captures/RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z.jsonl.gz`
+- original SHA256: `62d9e7a48dbcaf5103d7e126d7a97860afb707db2934aa20c97c42134f4c5a79`
+- compressed SHA256: `4ae3e3fff35a56c5727cec152219aa15d294f0ac65e28a3d4f2de988622b62e5`
+
+The refreshed RAWMINE candidate screen commit `f3ec6cb984abd43c821038e59e666b644d039ee3` includes 13 raw runs and selects this retry as controlled depth attempt 2.
+
+Automated verdict remains:
+
+`CONTROLLED_RAW_NO_P1_DEPTH_MANIPULATION_EVIDENCE`
+
+For attempt 2:
+
+- X control: `PASS`, reconstructed X changes: 0;
+- Z control: `PASS`, Z changes: 0;
+- manipulation: `FAIL`;
+- `+0x08` events: 0.
+
+Interpretation: a second mechanically healthy capture again failed to contain a visible P1-specific depth trajectory in player-object evidence. This remains **coverage/manipulation failure**, not negative evidence against `+0x08`.
+
+## Current discriminator — GEO-0009 only
 
 Only question:
 
-**When P1 visibly traverses from the lower lane to the upper lane and back, which offset changes continuously with depth while confirmed X and the Z family remain stable?**
+**When P1 visibly traverses lower lane -> upper lane -> lower lane, which offset changes continuously with depth while confirmed X and Z remain stable?**
 
-Required operator behavior for the next usable controlled burst:
+Queued GEO-owned task:
 
-- open walkable area with obvious upper/lower floor-depth separation;
-- P1 only: hold UP long enough to produce a clearly visible depth displacement;
-- then hold DOWN long enough to return through a clearly visible distance;
-- repeat if capture time permits;
+`GEO-0009-p1-depth-visible-traverse-8s60-20260901-0024Z`
+
+Task purpose is explicitly limited to testing the P1 Y/floor-depth question and `U8(+0x08)` against orthogonal controls.
+
+Required operator behavior encoded in the task gate:
+
+- before READY, put P1 in a wide open walkable area where UP/DOWN visibly changes floor/depth lane;
+- P2/P3 idle;
+- run `READY_WOF_TASK.bat` only when ready to move immediately;
+- immediately HOLD UP continuously for about 3 seconds — do not tap — and visually ensure substantial upper/deeper-lane travel;
+- then HOLD DOWN continuously for about 3 seconds and visibly return toward the lower/near lane;
+- repeat the same traverse if time remains;
 - no LEFT/RIGHT;
 - no attack;
 - no jump;
-- P2/P3 untouched;
-- 6–8 seconds at 60 Hz is sufficient.
+- no other action;
+- P2/P3 untouched.
 
 Promotion rule for `+0x08`:
 
-If it shows repeated continuous small-step changes during UP/DOWN, reverses direction on the return traversal, while confirmed X composite is essentially stable, Z family is essentially stable, and P2/P3 `+0x08` are essentially stable, then promote directly to:
+If `+0x08` shows repeated continuous small-step changes during the actual UP/DOWN traverse, reverses direction on return, while confirmed X composite is essentially stable, Z family is essentially stable, and P2/P3 `+0x08` are essentially stable, promote directly to:
 
 `CONFIRMED — P1 floor/depth Y integer coordinate`
 
-Otherwise classify the evidence strictly as one of:
+Otherwise classify strictly as:
 
 - `CONFIRMED`
 - `STRONG_CANDIDATE`
 - `REJECTED`
 - `UNKNOWN`
 
-Do not reinterpret an ineffective operator manipulation as negative field evidence.
-
-## Current collector coordination
-
-A cross-lane RAWMINE operator-gated retry already exists and is currently first in the serialized Collector queue:
-
-`RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z`
-
-Its instructions are materially the same visible UP/DOWN-only discriminator described above, and RAWMINE remains evidence-only while GEO owns semantic promotion.
-
-Because Collector execution is serialized and duplicate operator-gated captures would answer the same single question, GEO does **not** queue a redundant `GEO-0009` while that cross-lane retry is active. GEO task IDs, when GEO itself submits the next task, must use the `GEO-*` prefix only.
-
-After the active retry completes, GEO must first consume the resulting RAWMINE evidence with clear task/result identity. If it yields a valid visible depth trajectory, use it as discovery evidence for the owner decision. Only if the GEO owner question still remains unresolved should a new minimal `GEO-0009-p1-depth-visible-traverse-*` task be submitted.
+Do not reinterpret another ineffective manipulation as negative field evidence.
 
 ## Stop condition
 
