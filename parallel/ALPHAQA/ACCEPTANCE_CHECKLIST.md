@@ -34,9 +34,11 @@ Legend: PASS / FAIL / PENDING-BROWSER / N/A
 
 - [x] PASS static — no game RAM assignment found.
 - [x] PASS static — no heap-alias `.set()` write found.
-- [x] PASS static — no keyboard/gameplay input injection found.
+- [x] PASS static — no keyboard/gameplay input injection found in the Alpha release files themselves.
 - [x] PASS static — worker exception stops warning runtime and clears engine state.
 - [x] PASS static — HUD wraps changed WebGL state in snapshot/restore/finally.
+- [ ] FAIL P1 — Alpha only hides an existing research `WOFHUD`; it does not dispose its legacy key listener/BroadcastChannel/resources (`ALPHAQA-006`).
+- [ ] FAIL P1 — add a legacy-HUD takeover test proving teardown occurs without destroying the persistent native WebGL bridge.
 - [ ] PENDING-BROWSER — verify HUD does not visibly corrupt game rendering.
 - [ ] PENDING-BROWSER — verify HUD draw/upload overhead is acceptable during real gameplay.
 - [ ] PENDING-BROWSER — verify repeated install/reload does not damage the emulator GL path.
@@ -66,6 +68,7 @@ Legend: PASS / FAIL / PENDING-BROWSER / N/A
 - [ ] FAIL P1 — same-type slot replacement is not safely invalidated (`ALPHAQA-002`).
 - [ ] FAIL P1 — HUD silently drops warning rows after the first simultaneous threat (`ALPHAQA-003`).
 - [ ] FAIL P0 — fixed origin-global warning channel is not isolated per Alpha page/runtime session (`ALPHAQA-005`).
+- [ ] FAIL P1 — top-page Alpha takeover leaves a prior research HUD partially live (`ALPHAQA-006`).
 - [ ] PENDING-BROWSER — scene-transition smoke test after lifecycle fix.
 
 ## F. Regression independence
@@ -76,6 +79,7 @@ Legend: PASS / FAIL / PENDING-BROWSER / N/A
 - [ ] FAIL expected — independent harness must become clean after P0/P1 fixes.
 - [x] PASS — QA explicitly treats the product 143-count replay as synthetic aggregate reconstruction, not retained raw Browser replay.
 - [ ] FAIL expected — RC2/fresh QA must add a deterministic two-session/foreign-message rejection test for `ALPHAQA-005`.
+- [ ] FAIL expected — RC2/fresh QA must add legacy research-HUD teardown coverage for `ALPHAQA-006`.
 
 ## G. Packaging / user path
 
@@ -98,6 +102,7 @@ QA PASS requires all of the following:
 - [ ] same-type replacement/scene lifecycle is safe;
 - [ ] simultaneous threats are not silently hidden;
 - [ ] two same-origin Alpha sessions cannot cross-contaminate warning/diagnostic state;
+- [ ] prior research HUD is fully torn down on Alpha takeover;
 - [ ] normal-user load path is acceptable;
 - [ ] short real-Browser HUD/retarget/reload acceptance passes.
 
