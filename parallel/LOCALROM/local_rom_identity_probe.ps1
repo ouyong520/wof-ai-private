@@ -32,8 +32,9 @@ function Get-StreamSha1([System.IO.Stream] $stream) {
     }
 }
 
-$names = @('WinKawaks', 'WinKawaks64', 'Kawaks')
-$proc = Get-Process -Name $names -ErrorAction SilentlyContinue | Sort-Object StartTime | Select-Object -First 1
+$proc = Get-Process -Name @('WinKawaks', 'WinKawaks64', 'Kawaks') -ErrorAction SilentlyContinue |
+    Sort-Object StartTime |
+    Select-Object -First 1
 if (-not $proc) {
     throw 'WinKawaks process not found. Start WinKawaks with WOF loaded, then rerun this same command. No gameplay is required.'
 }
@@ -61,15 +62,21 @@ $knownNames = $knownNames | Select-Object -Unique
 
 $zipFiles = @()
 foreach ($root in $roots) {
-    $zipFiles += @(Get-ChildItem -LiteralPath $root -File -Filter 'wof*.zip' -ErrorAction SilentlyContinue)
+    $leaf = Split-Path -Leaf $root
+    if ($leaf -match '^(?i:roms?)$') {
+        $zipFiles += @(Get-ChildItem -LiteralPath $root -Recurse -File -Filter 'wof*.zip' -ErrorAction SilentlyContinue)
+    }
+    else {
+        $zipFiles += @(Get-ChildItem -LiteralPath $root -File -Filter 'wof*.zip' -ErrorAction SilentlyContinue)
+    }
 }
 $zipFiles = @($zipFiles | Sort-Object FullName -Unique)
 
-# If the normal wof*.zip names are absent, scan zip files only inside the usual ROM folders.
+# Fallback only inside ordinary ROM directories if archive names are nonstandard.
 if ($zipFiles.Count -eq 0) {
     foreach ($root in $roots) {
         if ((Split-Path -Leaf $root) -match '^(?i:roms?)$') {
-            $zipFiles += @(Get-ChildItem -LiteralPath $root -File -Filter '*.zip' -ErrorAction SilentlyContinue)
+            $zipFiles += @(Get-ChildItem -LiteralPath $root -Recurse -File -Filter '*.zip' -ErrorAction SilentlyContinue)
         }
     }
     $zipFiles = @($zipFiles | Sort-Object FullName -Unique)
@@ -96,8 +103,10 @@ foreach ($zip in $zipFiles) {
                 archive = $zip.FullName
                 archiveName = $zip.Name
                 member = $entry.Name
+                path = $null
                 bytes = [int64]$entry.Length
                 sha1 = $digest
+                error = $null
             }
         }
     }
@@ -106,6 +115,7 @@ foreach ($zip in $zipFiles) {
             archive = $zip.FullName
             archiveName = $zip.Name
             member = $null
+            path = $null
             bytes = $null
             sha1 = $null
             error = $_.Exception.Message
@@ -116,10 +126,16 @@ foreach ($zip in $zipFiles) {
     }
 }
 
-# Also accept loose canonical program files in the usual ROM folders.
+# Also accept loose canonical program files, but only from the normal emulator/ROM roots.
 foreach ($root in $roots) {
+    $leaf = Split-Path -Leaf $root
     foreach ($name in $knownNames) {
-        $loose = Get-ChildItem -LiteralPath $root -File -Filter $name -ErrorAction SilentlyContinue
+        if ($leaf -match '^(?i:roms?)$') {
+            $loose = @(Get-ChildItem -LiteralPath $root -Recurse -File -Filter $name -ErrorAction SilentlyContinue)
+        }
+        else {
+            $loose = @(Get-ChildItem -LiteralPath $root -File -Filter $name -ErrorAction SilentlyContinue)
+        }
         foreach ($file in $loose) {
             $digest = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA1).Hash.ToLowerInvariant()
             $found += [pscustomobject]@{
@@ -129,6 +145,7 @@ foreach ($root in $roots) {
                 path = $file.FullName
                 bytes = [int64]$file.Length
                 sha1 = $digest
+                error = $null
             }
         }
     }
@@ -137,14 +154,21 @@ foreach ($root in $roots) {
 $setMatches = @()
 foreach ($setName in @('wof', 'wofr1')) {
     $def = $canonical[$setName]
+    $expectedArchiveName = "$setName.zip"
     $expectedRows = @()
     $allMatched = $true
+
     foreach ($expected in $def.files) {
         $name = ([string]$expected.name).ToLowerInvariant()
         $sha1 = ([string]$expected.sha1).ToLowerInvariant()
         $hit = $found | Where-Object {
-            $_.member -and ([string]$_.member).ToLowerInvariant() -eq $name -and ([string]$_.sha1).ToLowerInvariant() -eq $sha1
+            if (-not $_.member) { return $false }
+            $nameMatch = ([string]$_.member).ToLowerInvariant() -eq $name
+            $hashMatch = ([string]$_.sha1).ToLowerInvariant() -eq $sha1
+            $containerMatch = (-not $_.archiveName) -or (([string]$_.archiveName).ToLowerInvariant() -eq $expectedArchiveName)
+            return $nameMatch -and $hashMatch -and $containerMatch
         } | Select-Object -First 1
+
         if (-not $hit) { $allMatched = $false }
         $expectedRows += [pscustomobject]@{
             name = $expected.name
@@ -153,8 +177,10 @@ foreach ($setName in @('wof', 'wofr1')) {
             source = if ($hit) { if ($hit.archive) { "$($hit.archiveName)/$($hit.member)" } else { $hit.path } } else { $null }
         }
     }
+
     $setMatches += [pscustomobject]@{
         set = $setName
+        expectedArchive = $expectedArchiveName
         description = $def.description
         canonicalProgramPairMatch = $allMatched
         browserRelation = $def.browserRelation
@@ -176,16 +202,16 @@ if ($titleSet) {
     if ($titleMatch) {
         $loadedSet = $titleSet
         $verdict = $titleMatch.browserRelation
-        $reason = 'WinKawaks live title and canonical two-file SHA-1 program pair agree.'
+        $reason = 'WinKawaks live title and the canonical program pair in the matching set container agree.'
     }
     else {
-        $reason = 'WinKawaks title identifies a set, but its canonical program pair was not found/hash-matched in the normal local ROM locations.'
+        $reason = 'WinKawaks title identifies a set, but the matching set container did not produce its canonical two-file SHA-1 program pair.'
     }
 }
 elseif ($matchedSets.Count -eq 1) {
     $loadedSet = $matchedSets[0].set
     $verdict = $matchedSets[0].browserRelation
-    $reason = 'Exactly one canonical WOF program pair was found, but the live WinKawaks title did not expose a recognized revision label.'
+    $reason = 'Exactly one canonical WOF set container matched, but the live title did not expose a recognized revision label.'
 }
 else {
     $reason = 'Cryptographic evidence is ambiguous or incomplete.'
