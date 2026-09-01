@@ -1,0 +1,94 @@
+{
+  "schema": "wof-prospective-validator-live-ambiguity-fresh-qa-result-v1",
+  "stageId": "PROSPECTIVE_VALIDATOR_LIVE_AMBIGUITY_QA_V1",
+  "updatedAt": "2026-09-01",
+  "status": "PASS",
+  "stopCondition": "PASS — PROSPECTIVE VALIDATOR LIVE AMBIGUITY P0 FRESH QA",
+  "ownerBrowserRequired": false,
+  "ownerAction": "NO",
+  "freshIndependentQa": true,
+  "fixThreadReadyVerdictAcceptedAsProof": false,
+  "execution": {
+    "mode": "fresh independent source/control-flow audit plus independently executed repository-equivalent topology-transition and cleanup/finalization adversarial harness; reproducible repo-import unittest suite committed in the QA lane",
+    "directOwnerBrowserRun": false,
+    "directRepoImportSuiteExecutionInConnectorSession": false,
+    "reason": "This stage is repository-side QA with no Owner Browser run; connector session can read/write the private repository but does not expose a checked-out private-repo process runner.",
+    "freshQaSuite": "test_live_ambiguity_fresh_qa.py",
+    "freshQaSuiteBlob": "876022cdec6d7f2ad17320fb384dc2f07f725a5b"
+  },
+  "independentFixtures": [
+    "fixtures/topology_transition_adversarial.json",
+    "fixtures/cleanup_finalization_adversarial.json"
+  ],
+  "adversarialObservations": {
+    "topologyTransition": {
+      "intermediatePollAfterAmbiguityBeforeNextAdmissionCycle": {
+        "prospectiveDrainCount": 0,
+        "prospectiveIngestCount": 0
+      },
+      "nextAdmissionCycle": {
+        "fullTopologyScan": true,
+        "skipPageIds": [],
+        "sharedWorkerAffectedRoomFinalizedBeforeDrain": true,
+        "sharedWorkerAffectedRoomDrainCount": 0,
+        "sharedWorkerAffectedRoomIngestCount": 0,
+        "unrelatedExactPairRoomRemainsAdmissible": true
+      }
+    },
+    "cleanupFinalization": {
+      "stopCalled": true,
+      "stopReturnPassedToIngest": false,
+      "forbiddenStopEventAdmitted": false,
+      "forbiddenStopPendingAdmitted": false,
+      "previouslyFreshPendingOnly": "censored"
+    }
+  },
+  "requirements": {
+    "1_unique_to_shared_finalized_before_later_admission": "PASS",
+    "2_no_positive_duration_audit_gap_can_admit": "PASS",
+    "3_exact_page_worker_pair_freshly_reproved_each_admission_cycle": "PASS",
+    "4_scan_failure_or_unverified_pair_fails_closed_no_deferred_ingest": "PASS",
+    "5_remote_cleanup_stop_payload_cannot_bypass_authority": "PASS",
+    "6_two_pages_two_distinct_workers_independently_admissible": "PASS",
+    "7_shared_worker_admits_none_unrelated_rooms_isolated": "PASS",
+    "8_discovery_only_never_enters_prospective_counters": "PASS",
+    "9_all_conservative_manifest_gates_and_unknown_fail_closed": "PASS",
+    "10_research_only_and_productionPromotionAllowed_false": "PASS",
+    "11_world_921031_endpoint_confinement_association_safety": "PASS",
+    "12_read_only_zero_ram_writes_no_input_no_worker_replacement_or_rewrite": "PASS"
+  },
+  "gateCoverage": {
+    "minProspectiveSignals": "ENFORCED",
+    "minProspectiveRooms": "ENFORCED",
+    "requireZeroHardMiss": "ENFORCED",
+    "minDistinctTargets": "ENFORCED",
+    "minObservedTypes": "ENFORCED",
+    "requireLifecycleReset": "ENFORCED",
+    "unknownGate": "FAIL_CLOSED"
+  },
+  "auditedSutBlobs": {
+    "live_validator_v2.py": "512c6635d2a8c1bf99cd7f4a5e3f9e45b9b2b3d0",
+    "discovery_v2_hardening.py": "959cf2d4dbfecc2031b1e3feee141a3dd06f9b01",
+    "validator.py": "2e1d574574205b176725a50edd7ec062ab100d40",
+    "discovery_v2.py": "37b0bd95cf2882b46ef6291a53fd46b6d268c898",
+    "live_validator_v2_hardened.py": "393b6f34b3bf9f0b13e3d644414a0ea3a392299a"
+  },
+  "keyFindings": {
+    "auditIntervalConstantSeconds": 0.0,
+    "drainOutsideDiscoveryAdmissionCycle": false,
+    "fullScanUsesEmptySkipPageIds": true,
+    "ambiguousRoomsFinalizedBeforeDrain": true,
+    "provenPairsRequiredBeforeDrain": true,
+    "scanFailureFinalizesUnverifiedRoomsBeforeReturn": true,
+    "remoteFinalizeOverrideIngestsStopPayload": false,
+    "sharedWorkerCrossPageRelationsRejectedGlobally": true,
+    "discoveryDiagnosticsEvidenceClass": "discovery-only",
+    "passVerdict": "PROSPECTIVE_PASS_RESEARCH_ONLY",
+    "productionPromotionAllowed": false,
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false
+  },
+  "blocker": null
+}
