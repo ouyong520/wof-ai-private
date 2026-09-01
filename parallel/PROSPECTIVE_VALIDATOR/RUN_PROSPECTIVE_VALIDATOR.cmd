@@ -1,11 +1,16 @@
 @echo off
 setlocal
+chcp 65001 >nul
+set "PYTHONUTF8=1"
+set "PYTHONIOENCODING=utf-8"
 cd /d "%~dp0"
+title WOF 前瞻验证器 Discovery V2
 set "PY="
 where py >nul 2>nul && set "PY=py -3"
 if not defined PY where python >nul 2>nul && set "PY=python"
 if not defined PY (
   echo [错误] 未找到 Python。请先使用 WOF Toolkit 安装/准备 Python 环境。
+  echo 游戏本身没有受到影响。
   pause
   exit /b 2
 )
@@ -15,7 +20,12 @@ if "%~1"=="" (
   pause
   exit /b 2
 )
-%PY% live_validator.py "%~1"
+echo.
+echo WOF 前瞻验证器
+echo Worker 自动发现：Discovery V2（支持 page / iframe / Worker topology）
+echo 只读模式：开启  ^|  游戏内存写入：0  ^|  游戏输入注入：无
+echo.
+%PY% live_validator_v2.py "%~1"
 set "RC=%ERRORLEVEL%"
 echo.
 if "%RC%"=="0" (
