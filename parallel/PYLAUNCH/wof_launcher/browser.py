@@ -60,8 +60,9 @@ def browser_metadata_supported(browser: Any) -> bool:
     product, separator, version = value.partition("/")
     if product.strip().casefold() not in _SUPPORTED_BROWSER_PRODUCTS:
         return False
-    if separator and not version.strip():
-        return False
+    if separator:
+        if not version or version != version.strip() or "/" in version or any(ch.isspace() for ch in version):
+            return False
     return True
 
 
@@ -104,7 +105,7 @@ def probe_endpoint_diagnostic(host: str, port: int) -> tuple[BrowserEndpoint | N
         return None, "启动浏览器校验拒绝：/json/version 缺少有效 Browser 元数据。"
     browser = browser.strip()
     if not browser_metadata_supported(browser):
-        return None, f"启动浏览器校验拒绝：Browser 元数据不是受支持的 Chrome/Chromium/Edge 系列：{browser!r}。"
+        return None, f"启动浏览器校验拒绝：Browser 元数据不是受支持且结构有效的 Chrome/Chromium/Edge 系列：{browser!r}。"
 
     websocket_url = payload.get("webSocketDebuggerUrl")
     if not isinstance(websocket_url, str) or not websocket_url.strip():
