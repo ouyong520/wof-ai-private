@@ -1,139 +1,220 @@
-# WOF Alpha RC3 — Bounded Real-Browser Acceptance Plan
+# WOF Alpha — Transport-Aware Bounded Real-Browser Acceptance V2 Plan
 
-## Preconditions
+## 1. Authorization gate
 
-Final owner acceptance is permitted only after fresh independent RC3 QA returns exactly:
+Do not run the final Browser acceptance until **both** are true:
 
-`PASS — READY FOR ONE REAL BROWSER ACCEPTANCE`
+1. fresh real Windows PYLAUNCH proof has simultaneously proven Browser / WOF page / native Worker / WASM heap / exact World 921031 / READ ONLY while the room remains playable;
+2. Safe Transport Integration reports:
+   `INTEGRATION IMPLEMENTED — READY FOR BOUNDED REAL BROWSER ACCEPTANCE`
+   with product regression, transport integration tests and PYLAUNCH tests all PASS.
 
-At preparation time the QA gate is still closed by `ALPHAQA-RC3-001` (P1 runtime diagnostic stale-warning retention). Do not use a Browser run to waive that blocker.
+Browser acceptance never waives an offline integration failure.
 
-## Browser-only questions this run answers
+## 2. Fixed constants
 
-The run is intentionally limited to evidence that static/offline QA cannot fully prove.
+```text
+application schema:  wof-alpha-v2
+release:             wof-alpha-rc3
+transportVersion:    wof-alpha-safe-transport-v1
+supported build:     wof / Warriors of Fate (World 921031)
+golden SHA-256:      5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62
+identity signature:  wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8
+ordinary stale:      1500 ms
+```
 
-### B1 — real document-start bootstrap / Worker interception
+Only these production `ruleId` values are allowed:
 
-PASS requires, in the primary page:
+```text
+T18_5440_CYCLE_BODY7512_TM4_LEVEL_90
+T18_5424_CYCLE_BODY7520_TM4_LEVEL_90
+```
 
-- `window.__WOF_ALPHA_BOOTSTRAP_RC3.release === 'wof-alpha-rc3'`;
-- `workerIntercepted === true`;
-- `hudLoaded === true`;
-- `window.__WOF_ALPHA_CONFIG.session` is present and agrees with the HUD/page session;
-- the HUD receives a fresh matching-session detector state.
+## 3. Single bounded acceptance run
 
-Failure to intercept/load/pair within the bounded startup window is FAIL/INCOMPLETE, never a fallback to a manual Worker Console path.
+The integrated acceptance driver and the page collector use the fixed handoff in `ACCEPTANCE_DRIVER_CONTRACT.md`.
 
-### B2 — exact World 921031 positive identity
+### A1 — launcher/runtime preflight
 
-Expected full digest:
+Required PASS evidence:
 
-`5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`
+- Browser connected;
+- exact WOF page resolved;
+- exact native `gstyphoon*.js` Worker resolved;
+- WASM/module/shared heap resolved;
+- exact World 921031 Gate A accepted;
+- `readOnly=true`;
+- `ramWrites=0`;
+- `inputInjection=false`;
+- no Worker replacement/wrap/Blob/URL rewrite;
+- room is already entered and owner confirms it is normally playable when starting the run.
 
-Expected accepted signature:
+Failure of an exact association or identity gate is FAIL/CANNOT_START, never a manual Worker Console fallback.
 
-`wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8`
+### A2 — exact current pair binding
 
-PASS requires a live detector `state` containing exactly that signature.
+The page collector reads the authoritative page config and transport status.
 
-Reason this is sufficient Browser evidence for the positive gate: RC3 Worker source computes the normalized full 1 MiB CPU-logical SHA-256 once, calls `validateIdentityProbe()`, and starts/post states only after `identity.ok`. `validateIdentityProbe()` requires an accepted, well-formed 64-hex digest exactly equal to the golden digest; sparse vector/dispatch/layout checks cannot substitute.
+Required current-pair tuple:
 
-The acceptance helper does not duplicate the ROM locator/hash implementation, avoiding a second implementation that could disagree with production.
-
-### B3 — fail-closed runtime behavior during the run
-
-Any live `diag` from the paired detector makes the Browser run FAIL.
-
-The helper records HUD warning count immediately after a diagnostic when possible. The product invariant `warning -> diag => immediate warningCount 0` must already be proven by the fresh QA rerun before this real-Browser stage; the owner is not asked to manufacture a runtime exception or bad ROM.
-
-### B4 — real WebGL HUD path and state restoration
-
-The helper wraps only the existing `window.__WOF_GL_HOOK.callback`; it does not replace the game draw hook or product renderer.
-
-For sampled real HUD callbacks it captures the GL state touched by the product renderer immediately before and immediately after the original HUD callback and requires zero mismatches across:
-
-- current program;
-- array-buffer binding;
-- active texture and 2D bindings;
-- viewport;
-- blend/depth/cull/scissor enables;
-- blend function/equation;
-- color mask;
-- pixel-store flip/premultiply flags;
-- vertex attribute 0 enable/buffer/layout/offset.
-
-At least one sampled callback must actually increment Alpha HUD `drawCount`; this proves the comparison covered a real HUD draw, not merely an idle callback.
-
-### B5 — cross-tab session isolation and reload pairing
-
-One operator click opens one auxiliary same-origin game tab. The helper coordinates only through a dedicated support control channel.
+```json
+{
+  "transportVersion": "wof-alpha-safe-transport-v1",
+  "session": "<32 lowercase hex>",
+  "pairGeneration": 1,
+  "pairNonce": "<32 lowercase hex>"
+}
+```
 
 PASS requires:
 
-1. primary page is connected with session `P` and product channel `CP`;
-2. auxiliary first load is connected with session `A1` and channel `CA1`;
-3. `P != A1` and `CP != CA1`;
-4. auxiliary tab is automatically reloaded;
-5. auxiliary second load is connected with session `A2` and channel `CA2`;
-6. `A2 != A1`, `A2 != P`, and `CA2 != CA1`;
-7. primary remains connected to `P` throughout.
+- page config session/channel are well formed;
+- transport status session equals page session;
+- generation is a positive integer;
+- nonce is 32 lowercase hex;
+- only current-pair messages can become acceptance-authoritative.
 
-This is the real-Browser complement to offline exact-session message rejection tests.
+### A3 — detector-local identity and first current-pair state
 
-### B6 — legacy research HUD takeover
+PASS requires:
 
-If support instrumentation observes `window.WOFHUD` before Alpha HUD installation, a successful Alpha HUD load plus `WOFALPHAHUD.status().researchHudDisposed === true` is required.
+- detector-local Gate B identity accepted for the current Worker/runtime epoch;
+- identity signature equals the World 921031 expected signature;
+- the first authoritative `state` matches schema/session/transportVersion/generation/nonce;
+- sequence is valid/current;
+- HUD does not gain warning authority before this first valid state;
+- after the first valid state the HUD is paired to that same current pair.
 
-If no legacy HUD was present in this run, result is `NOT_APPLICABLE`, not failure.
+A launcher Gate A PASS never substitutes for Gate B.
 
-### B7 — target/side/UNKNOWN sanity without rare attacks
+### A4 — fresh no-warning state
 
-Every naturally observed warning must satisfy all of:
+PASS requires at least one valid current-pair `state` with `warnings: []`.
 
-- `ruleId` is exactly one of the two RC3 production T18 rules;
-- `target` is `P1`, `P2` or `P3`;
-- `target7E` is `0`, `4` or `8` and agrees with `target`;
-- `sourceSide` and `threatSide` are `LEFT`, `CENTER` or `RIGHT`;
-- `publication === 'hold-only-current-level'`;
-- `evidence === 'fresh-current-sample'`;
-- no inherited age/watch/history fields are present.
+This proves the normal no-warning path is fresh and harmless.
 
-If no active T18 warning occurs naturally, this sub-check is `NOT_EXERCISED`. Infrastructure acceptance may still PASS because attack coverage is outside this Browser run.
+### A5 — ordinary stale behavior
 
-### B8 — acceptable Alpha runtime overhead
+The exact boundary is an offline integration gate and must already be PASS:
 
-The helper records actual original HUD callback duration for the same GL-state samples and verifies the product stream/draw loop remains alive during a 6-second observation window.
+- fresh through exactly 1500 ms;
+- silent at 1501 ms without newer accepted state.
 
-Automatic catastrophic-overhead guard:
+The bounded Browser run additionally pauses ordinary publication without forging a current `diag` when the integrated acceptance driver supports the contract-defined stale probe, then records:
 
-- at least 10 callback samples;
-- p95 original HUD callback duration <= 16 ms;
-- maximum sampled callback duration <= 50 ms;
-- game draw counter advances;
-- paired detector remains connected and state messages continue.
+- last accepted current-pair state time;
+- receiver/HUD remains governed by receiver-local freshness;
+- no warning authority survives after the >1500 ms boundary;
+- gameplay render/liveness continues.
 
-Raw measurements are retained in the JSON. These thresholds are smoke-test guards, not a claim that local emulator timing equals Browser attack timing.
+The Browser measurement is tolerant to scheduler jitter; it cannot redefine the exact 1500/1501 contract. If the live stale probe cannot be exposed safely, Browser result records `OFFLINE_GATE_ONLY` and requires the offline exact boundary gate PASS.
 
-### B9 — no RAM writes / no gameplay input injection
+### A6 — current-pair diagnostic immediate clear
 
-This is not re-proven by poking the live game. It is a required external precondition from fresh independent QA/static source inspection. The support helper itself performs no game-RAM access and sends no keyboard/mouse/gameplay input.
+The driver triggers the fixed support-only transport diagnostic/stop path defined by the integration harness, never a game-RAM or input failure.
 
-## Final result rules
+PASS requires:
 
-The helper emits exactly one Browser result:
+- diagnostic is current session/generation/nonce;
+- collector observes it as current-pair;
+- prior warning authority becomes zero/invalid in the same task boundary or immediately observable next task;
+- it does **not** wait for the 1500 ms stale timeout;
+- room/game render remains alive.
 
-- `PASS — REAL BROWSER ACCEPTANCE` — all required Browser checks pass; optional attack-shape evidence may be `NOT_EXERCISED`.
-- `FAIL — REAL BROWSER ACCEPTANCE` — a required Browser invariant fails or a live detector diagnostic/error occurs.
-- `INCOMPLETE — REAL BROWSER ACCEPTANCE` — the environment prevented a required check (for example popup blocked or auxiliary page never became ready).
+If no warning was active immediately before the diagnostic, the run still requires the product HUD to remain cleared and records the warning-clear subcheck as `NO_ACTIVE_WARNING`; exact warning->diag clearing remains backed by offline integration regression.
 
-A Browser PASS is **not** an Alpha release declaration. PM/release ownership still consumes the independent QA verdict plus this Browser result.
+### A7 — reconnect/rebind fresh pair
 
-## Deliberate exclusions
+After the forced stop/diagnostic the driver reconnects/rebinds.
+
+PASS requires:
+
+- same page session is retained unless the page itself reloaded;
+- `pairGeneration` strictly increases;
+- `pairNonce` changes;
+- a fresh detector-local identity acceptance occurs for a new Worker/runtime epoch when required;
+- first new authoritative state belongs only to the fresh pair;
+- no old warning state or sequence authority transfers.
+
+### A8 — old generation / wrong nonce rejection
+
+The page collector may post support-only synthetic messages into the existing Alpha BroadcastChannel. These messages never touch game RAM or input.
+
+Negative vectors:
+
+1. old generation + old nonce `state`;
+2. old generation + old nonce `diag`;
+3. current generation + wrong nonce `state`;
+4. current generation + wrong nonce `diag`.
+
+PASS requires none can create or clear current warning authority or replace the current pair. The collector also records that these messages are rejected by its own current-pair classifier.
+
+If a visible warning is not active at the time of a clear-negative vector, the browser subcheck may be `NO_ACTIVE_WARNING`; exact receiver rejection remains mandatory in offline integration tests.
+
+### A9 — warning sanity
+
+Every naturally observed warning must:
+
+- use one of the two allowed T18 rule IDs;
+- be `publication="hold-only-current-level"`;
+- be `evidence="fresh-current-sample"`;
+- use current valid P1/P2/P3 target/target7E values;
+- use current LEFT/CENTER/RIGHT source/threat side;
+- contain no age/watch/history carry-over fields.
+
+If no approved T18 condition occurs naturally, result is `NOT_EXERCISED`. Do not create new attack research merely to manufacture one.
+
+### A10 — gameplay fail-open / room remains playable
+
+The owner starts acceptance only after entering the room and confirming the room is normally controllable.
+
+During stop/stale/rebind, the tool automatically records non-invasive liveness evidence such as page `requestAnimationFrame` and game draw counters when available.
+
+PASS requires:
+
+- no navigation/room-entry control issued by acceptance;
+- no gameplay input injected;
+- render/liveness continues through transport disruption;
+- owner start confirmation states the room was playable;
+- no Alpha/Launcher failure stops the game page.
+
+### A11 — final safety invariants
+
+Final JSON must contain:
+
+```json
+{
+  "readOnly": true,
+  "ramWrites": 0,
+  "inputInjection": false
+}
+```
+
+Any other value is FAIL.
+
+## 4. Final result
+
+Allowed top-level results:
+
+- `PASS — REAL BROWSER ACCEPTANCE V2`
+- `FAIL — REAL BROWSER ACCEPTANCE V2`
+- `INCOMPLETE — REAL BROWSER ACCEPTANCE V2`
+- `BLOCKED — TRANSPORT INTEGRATION NOT READY`
+
+PASS requires every mandatory infrastructure/safety/current-pair/rebind gate to pass. Optional natural T18 exercise may be `NOT_EXERCISED`.
+
+A Browser PASS is evidence for PM. It is **not** an Alpha release declaration.
+
+## 5. Deliberate exclusions
 
 Do not ask the owner to:
 
-- reproduce F1–F4 history rules (they are quarantined);
-- provoke BODY4728/A4704, T23, T24, WOF-052 or Beta cases;
-- inspect Worker Console manually;
-- compare local WinKawaks timing numerically to Browser milliseconds;
-- manually compare dozens of Console fields.
+- open DevTools;
+- select a Worker Console;
+- paste JavaScript;
+- inspect RAM;
+- provoke quarantined F1-F4 or unrelated T23/T24/WOF-052/Beta behavior;
+- compare WinKawaks timing numerically;
+- retry a real FAIL until it happens to pass.
+
+Do not modify `product/alpha/**` in this prep lane.
