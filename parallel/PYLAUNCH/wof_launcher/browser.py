@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ipaddress
 import json
 import os
 import subprocess
@@ -9,6 +10,7 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 
 @dataclass(frozen=True)
@@ -29,13 +31,39 @@ def _http_json(url: str, timeout: float = 0.8) -> dict[str, Any]:
         return json.loads(response.read().decode("utf-8"))
 
 
+def is_loopback_host(host: str) -> bool:
+    value = str(host or "").strip().lower().rstrip(".")
+    if value == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(value).is_loopback
+    except ValueError:
+        return False
+
+
+def websocket_matches_endpoint(websocket_url: str, host: str, port: int) -> bool:
+    if not is_loopback_host(host):
+        return False
+    try:
+        parsed = urlsplit(websocket_url)
+        ws_host = parsed.hostname
+        ws_port = parsed.port
+    except (TypeError, ValueError):
+        return False
+    if parsed.scheme not in {"ws", "wss"} or not ws_host or ws_port is None:
+        return False
+    return is_loopback_host(ws_host) and ws_port == int(port)
+
+
 def probe_endpoint(host: str, port: int) -> BrowserEndpoint | None:
+    if not is_loopback_host(host):
+        return None
     try:
         payload = _http_json(f"http://{host}:{port}/json/version")
     except (OSError, ValueError, urllib.error.URLError):
         return None
     ws = payload.get("webSocketDebuggerUrl")
-    if not isinstance(ws, str) or not ws.startswith("ws"):
+    if not isinstance(ws, str) or not websocket_matches_endpoint(ws, host, port):
         return None
     return BrowserEndpoint(host=host, port=port, browser=str(payload.get("Browser") or "Chromium"), websocket_url=ws)
 
@@ -92,6 +120,8 @@ def launch_debug_browser(
     user_data_dir: Path | None = None,
     game_url: str | None = None,
 ) -> subprocess.Popen[Any]:
+    if not is_loopback_host(host):
+        raise ValueError("PYLAUNCH only permits loopback CDP endpoints")
     profile = (user_data_dir or default_profile_dir()).resolve()
     profile.mkdir(parents=True, exist_ok=True)
     args = [
@@ -108,6 +138,8 @@ def launch_debug_browser(
 
 
 def wait_for_endpoint(host: str, port: int, timeout: float = 8.0) -> BrowserEndpoint | None:
+    if not is_loopback_host(host):
+        return None
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         endpoint = probe_endpoint(host, port)
