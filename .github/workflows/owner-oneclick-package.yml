@@ -8,6 +8,7 @@ on:
       - 'WOF_TOOLKIT.cmd'
       - 'parallel/OWNER_ONECLICK/**'
       - 'parallel/OPTOOLKIT/**'
+      - 'parallel/PYLAUNCH/**'
       - 'parallel/BROWSER_FLEET/**'
       - 'parallel/WOF052L_RECORDER/**'
   workflow_dispatch:
@@ -22,7 +23,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Validate manifest and rollback contract
+      - name: Validate manifest, PYLAUNCH freshness, update and rollback contracts
         run: python parallel/OWNER_ONECLICK/test_package.py
 
   windows-oneclick:
@@ -34,38 +35,123 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: First install through real Chinese CMD
+
+      - name: Fresh install through real Chinese CMD and verify exact PYLAUNCH
         shell: powershell
         run: |
           $cn = [string]([char]0x4E2D) + [char]0x6587
-          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Path\Local App Data')
+          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Fresh Path\Local App Data')
           New-Item -ItemType Directory -Path $env:LOCALAPPDATA -Force | Out-Null
           $entryName = 'WOF_' + [char]0x4E00 + [char]0x952E + [char]0x5DE5 + [char]0x5177 + '.cmd'
           $entry = Join-Path (Get-Location) $entryName
           $cmdLine = 'call "' + $entry + '" --update-only'
           cmd.exe /d /c $cmdLine
-          if ($LASTEXITCODE -ne 0) { throw ('first install failed: ' + $LASTEXITCODE) }
+          if ($LASTEXITCODE -ne 0) { throw ('fresh install failed: ' + $LASTEXITCODE) }
+
           $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
           $current = Join-Path $root 'current.txt'
-          if (-not (Test-Path -LiteralPath $current)) { throw 'current.txt missing after first install' }
+          if (-not (Test-Path -LiteralPath $current)) { throw 'current.txt missing after fresh install' }
           $version = (Get-Content -LiteralPath $current -Raw).Trim()
-          if ($version -ne '2026.09.01.4') { throw ('unexpected installed version: ' + $version) }
+          if ($version -ne '2026.09.01.5') { throw ('unexpected installed version: ' + $version) }
           $release = Join-Path $root ('releases\' + $version)
-          foreach ($p in @('installed.ok','WOF_TOOLKIT.cmd','parallel\OPTOOLKIT\owner_zh_cn.py','parallel\WOF052L_RECORDER\owner_zh_cn.py','parallel\BROWSER_FLEET\fleet_owner_zh_cn.py')) {
+          foreach ($p in @(
+            'installed.ok',
+            'PACKAGE_MANIFEST.json',
+            'WOF_TOOLKIT.cmd',
+            'parallel\OPTOOLKIT\owner_zh_cn.py',
+            'parallel\PYLAUNCH\RUN_WINDOWS_PROOF.cmd',
+            'parallel\PYLAUNCH\WOF_ONECLICK_PROOF_CN.cmd',
+            'parallel\PYLAUNCH\launcher.py',
+            'parallel\PYLAUNCH\wof_launcher\discovery_v2.py',
+            'parallel\PYLAUNCH\wof_launcher\monitor.py',
+            'parallel\PYLAUNCH\wof_launcher\proof.py',
+            'parallel\WOF052L_RECORDER\owner_zh_cn.py',
+            'parallel\BROWSER_FLEET\fleet_owner_zh_cn.py'
+          )) {
             if (-not (Test-Path -LiteralPath (Join-Path $release $p))) { throw ('installed file missing: ' + $p) }
           }
-          if (Get-ChildItem -LiteralPath (Join-Path $root 'releases') -Directory -Filter '*.staging-*') { throw 'staging directory remained after successful install' }
-      - name: Re-run one-click updater and preserve installed version
+
+          $installedManifest = Get-Content -LiteralPath (Join-Path $release 'PACKAGE_MANIFEST.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+          if ($installedManifest.packageVersion -ne '2026.09.01.5') { throw 'installed manifest package version mismatch' }
+          if ($installedManifest.components.pylaunch.revision -ne 'worker-discovery-v2') { throw 'installed PYLAUNCH revision is not discovery-v2' }
+          if ($installedManifest.components.pylaunch.sourceCommit -ne '7b10867f14f59ca9ab95c0fa6d30530008409371') { throw 'installed PYLAUNCH source commit mismatch' }
+
+          $expected = @{
+            'parallel\PYLAUNCH\RUN_WINDOWS_PROOF.cmd' = 'a6c52c436d1d7f1fa1cffcd8c24849ec14dd806d'
+            'parallel\PYLAUNCH\WOF_ONECLICK_PROOF_CN.cmd' = 'f840103ea5a0a827c69d20f27c11f4bb4cef3490'
+            'parallel\PYLAUNCH\launcher.py' = 'f19489896591a1ee5db416ca86c88ff9161b3237'
+            'parallel\PYLAUNCH\wof_launcher\cdp.py' = '06480f3aa7ab9261d7f91ab09074e96b4a6befc9'
+            'parallel\PYLAUNCH\wof_launcher\discovery_v2.py' = 'cee0bdef0fe461ab0cb003e6ae198db8c19a5ec2'
+            'parallel\PYLAUNCH\wof_launcher\monitor.py' = '5ee0ce9a84988d7841799d907ebdfe2a3e68ea56'
+            'parallel\PYLAUNCH\wof_launcher\proof.py' = '7cddae420b08bba627b05f2164083289569e5f5a'
+            'parallel\PYLAUNCH\wof_launcher\state.py' = '7f00e9a2e948f86c30a99cab04809d726b60c95d'
+            'parallel\PYLAUNCH\wof_launcher\tray.py' = 'c3529a60da46fc7507e6899991fa9e4f8bd816e7'
+          }
+          foreach ($rel in $expected.Keys) {
+            $full = Join-Path $release $rel
+            $actual = (& git hash-object -- $full).Trim()
+            if ($actual -ne $expected[$rel]) { throw ('installed PYLAUNCH SHA mismatch: ' + $rel + ' expected=' + $expected[$rel] + ' actual=' + $actual) }
+          }
+
+          if (Get-ChildItem -LiteralPath (Join-Path $root 'releases') -Directory -Filter '*.staging-*') { throw 'staging directory remained after successful fresh install' }
+
+      - name: Smoke-start installed Chinese Windows proof
         shell: powershell
         run: |
           $cn = [string]([char]0x4E2D) + [char]0x6587
-          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Path\Local App Data')
+          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Fresh Path\Local App Data')
+          $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
+          $release = Join-Path $root 'releases\2026.09.01.5'
+          $proofCmd = Join-Path $release 'parallel\PYLAUNCH\RUN_WINDOWS_PROOF.cmd'
+          $cmdLine = 'call "' + $proofCmd + '"'
+          cmd.exe /d /c $cmdLine
+          if ($LASTEXITCODE -ne 0) { throw ('Chinese Windows proof did not start: ' + $LASTEXITCODE) }
+          $status = Join-Path $release 'parallel\PYLAUNCH\WINDOWS_PROOF_STATUS.json'
+          if (-not (Test-Path -LiteralPath $status)) { throw 'WINDOWS_PROOF_STATUS.json was not created' }
+          $proof = Get-Content -LiteralPath $status -Raw -Encoding UTF8 | ConvertFrom-Json
+          if ($proof.readOnly -ne $true -or [int]$proof.ramWrites -ne 0 -or $proof.inputInjection -ne $false) { throw 'proof safety flags changed' }
+          if (-not $proof.ownerSummaryZh -or -not $proof.checksZh) { throw 'Chinese proof summary/checks missing' }
+          Get-Process pythonw -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+
+      - name: Update from previous package and preserve last-known-good
+        shell: powershell
+        run: |
+          $cn = [string]([char]0x4E2D) + [char]0x6587
+          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Upgrade Path\Local App Data')
+          $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
+          $old = Join-Path $root 'releases\2026.09.01.4'
+          New-Item -ItemType Directory -Path $old -Force | Out-Null
+          Set-Content -LiteralPath (Join-Path $old 'installed.ok') -Value 'previous package' -Encoding ASCII
+          New-Item -ItemType Directory -Path $root -Force | Out-Null
+          Set-Content -LiteralPath (Join-Path $root 'current.txt') -Value '2026.09.01.4' -Encoding ASCII
+
           $entryName = 'WOF_' + [char]0x4E00 + [char]0x952E + [char]0x5DE5 + [char]0x5177 + '.cmd'
           $entry = Join-Path (Get-Location) $entryName
           $cmdLine = 'call "' + $entry + '" --update-only'
           cmd.exe /d /c $cmdLine
-          if ($LASTEXITCODE -ne 0) { throw ('second run failed: ' + $LASTEXITCODE) }
+          if ($LASTEXITCODE -ne 0) { throw ('update from previous package failed: ' + $LASTEXITCODE) }
+
+          $version = (Get-Content -LiteralPath (Join-Path $root 'current.txt') -Raw).Trim()
+          if ($version -ne '2026.09.01.5') { throw ('update did not switch to new version: ' + $version) }
+          if (-not (Test-Path -LiteralPath (Join-Path $old 'installed.ok'))) { throw 'last-known-good previous package was removed' }
+          $newRelease = Join-Path $root 'releases\2026.09.01.5'
+          if (-not (Test-Path -LiteralPath (Join-Path $newRelease 'installed.ok'))) { throw 'new package missing after update' }
+          $actual = (& git hash-object -- (Join-Path $newRelease 'parallel\PYLAUNCH\wof_launcher\discovery_v2.py')).Trim()
+          if ($actual -ne 'cee0bdef0fe461ab0cb003e6ae198db8c19a5ec2') { throw 'updated package contains wrong discovery-v2 blob' }
+          if (Get-ChildItem -LiteralPath (Join-Path $root 'releases') -Directory -Filter '*.staging-*') { throw 'staging directory remained after update' }
+
+      - name: Re-run updater without changing immutable current release
+        shell: powershell
+        run: |
+          $cn = [string]([char]0x4E2D) + [char]0x6587
+          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Upgrade Path\Local App Data')
+          $entryName = 'WOF_' + [char]0x4E00 + [char]0x952E + [char]0x5DE5 + [char]0x5177 + '.cmd'
+          $entry = Join-Path (Get-Location) $entryName
+          $cmdLine = 'call "' + $entry + '" --update-only'
+          cmd.exe /d /c $cmdLine
+          if ($LASTEXITCODE -ne 0) { throw ('second updater run failed: ' + $LASTEXITCODE) }
           $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
           $version = (Get-Content -LiteralPath (Join-Path $root 'current.txt') -Raw).Trim()
-          if ($version -ne '2026.09.01.4') { throw ('version changed unexpectedly: ' + $version) }
-          if (-not (Test-Path -LiteralPath (Join-Path $root 'releases\2026.09.01.4\installed.ok'))) { throw 'last-known-good missing after second run' }
+          if ($version -ne '2026.09.01.5') { throw ('version changed unexpectedly: ' + $version) }
+          if (-not (Test-Path -LiteralPath (Join-Path $root 'releases\2026.09.01.4\installed.ok'))) { throw 'previous last-known-good missing after second run' }
+          if (-not (Test-Path -LiteralPath (Join-Path $root 'releases\2026.09.01.5\installed.ok'))) { throw 'current immutable release missing after second run' }
