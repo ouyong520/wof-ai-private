@@ -158,6 +158,63 @@ Provide one supported user bootstrap/install path that does not require manually
 
 ---
 
+## ALPHAQA-005 — P0 — fixed BroadcastChannel permits cross-session/cross-tab warning contamination
+
+**Status:** OPEN
+
+**Affected:**
+
+- `product/alpha/wof_alpha_loader.js`
+- `product/alpha/wof_alpha_hud.js`
+- runtime/HUD pairing and fail-closed warning provenance
+
+### Reproduction
+
+Both Worker producer and top-page HUD use the same origin-global channel name:
+
+```js
+const CHANNEL='wof-alpha-v1';
+const bc=new BroadcastChannel(CHANNEL);
+```
+
+The HUD accepts any same-origin message with:
+
+```js
+if(m?.schema!==CHANNEL)return;
+```
+
+and then treats `kind:'state'` as current detector state. It does not validate a per-page/per-runtime session token, Worker identity, release instance id, or a pairing nonce.
+
+Deterministic browser reproduction:
+
+1. Open two game pages/tabs on the same origin, A and B.
+2. Install the current Alpha HUD/runtime in both.
+3. Trigger a valid Alpha warning only in game B while game A is safe/quiet.
+4. Because `BroadcastChannel` is origin-scoped rather than tab-scoped, A's HUD is eligible to receive B's Worker `wof-alpha-v1` state message.
+5. A can therefore render B's warning, target and side as if they belonged to A. The inverse is also possible, and diagnostic/state messages from one runtime can overwrite the other HUD's most recent state.
+
+The same fixed channel also means any other same-origin context capable of posting the accepted schema can inject an Alpha-looking warning without passing A's local runtime identity guard.
+
+### Impact
+
+This is a direct false-warning/fail-open provenance path. A HUD is not guaranteed to display warnings from the runtime attached to the same game page. The local identity guard therefore does not fully protect the user-facing output path.
+
+This is P0 under the QA severity definition because a warning can be displayed for the wrong game session even when the local page itself has no valid warning.
+
+### Minimal required fix
+
+Bind every accepted HUD state/diagnostic message to the intended Alpha runtime/page session. A safe fix may use a per-session channel name, a cryptographically unpredictable pairing nonce/session id carried and verified in every message, or an equivalent same-page runtime binding.
+
+Requirements:
+
+- HUD must ignore state/diagnostic messages not belonging to its paired runtime session;
+- two same-origin game tabs running Alpha simultaneously must remain isolated;
+- runtime restart/reinstall must establish a clean pairing and cannot inherit another tab's producer;
+- add a deterministic two-producer/two-session regression or browser fixture proving foreign-session messages are ignored;
+- do not weaken stale fail-closed behavior while adding pairing.
+
+---
+
 ## Non-blocking / pending real-Browser checks
 
 These are not currently recorded as code defects, but still require real-Browser acceptance after the blockers above are fixed:
