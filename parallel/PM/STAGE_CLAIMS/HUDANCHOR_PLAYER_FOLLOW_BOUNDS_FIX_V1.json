@@ -2,7 +2,10 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "HUDANCHOR_PLAYER_FOLLOW_BOUNDS_FIX_V1",
   "promptPath": "parallel/PM/HUDANCHOR_PLAYER_FOLLOW_BOUNDS_FIX_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "6d78206cc7c0be06eb5ec25dc272fbd2a086443c",
-  "startedAtUtc": "2026-09-01T14:57:13Z"
+  "startedAtUtc": "2026-09-01T14:57:13Z",
+  "completedAtUtc": "2026-09-01T15:03:57Z",
+  "resultPath": "parallel/HUDANCHOR_PLAYER_FOLLOW/RESULT.md",
+  "resultCommit": "21445bc7ddd013990d3d498cc515266776913d50"
 }
