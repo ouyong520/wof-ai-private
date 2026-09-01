@@ -1,147 +1,137 @@
 # BASECAP — Shared Labeled WinKawaks Capture Dataset
 
-## Mission
+Updated: 2026-09-01
 
-BASECAP owns reusable, labeled WinKawaks raw captures so GEO, EFIELD, RAWMINE, and future local research do not repeatedly ask the operator to collect the same basic scenes.
+## 状态
 
-BASECAP is an acquisition/data-catalog lane only. It does not own GEO/EFIELD semantic conclusions and must not modify Browser production rules.
+BASECAP v1 基础采集已完成。权威索引见：
 
-## Ownership
+```text
+parallel/BASECAP/BASE_CAPTURE_CATALOG.md
+```
 
-BASECAP may write only:
+当前基础覆盖：B00、B10、B11、B12、B13、B20、B30、B31、B32、B40-P2、B40-P3。后续 GEO / EFIELD / RAWMINE 应优先复用这些 retained raw，不要重复向操作者采同一基础场景。
+
+## 职责
+
+BASECAP 只负责：
+
+- 审计已有 raw；
+- 建立一次采集、长期保存、多 AI 复用的基础数据集；
+- 保存可验证的场景标签、操作协议、task/result/raw 身份；
+- 只在确有覆盖缺口时新建 `BASECAP-*` 采集任务。
+
+BASECAP 不负责解释字段语义，不修改 GEO / EFIELD / RAWMINE 研究结论，不修改生产规则，不写游戏 RAM。
+
+## 写入边界
+
+BASECAP 文档写入范围：
 
 ```text
 parallel/BASECAP/**
 ```
 
-Collector task IDs must use:
+Collector 侧只允许为 BASECAP 采集流程创建/维护 `BASECAP-*` 队列任务，或修复采集控制流本身。不得伪造 status/result/raw。
 
-```text
-BASECAP-*
-```
+## Raw 不可变规则
 
-Do not modify `parallel/GEO/**`, `parallel/EFIELD/**`, `parallel/RAWMINE/**`, WOF mainline files, production-shadow, or game RAM.
-
-## Core rule: reuse before recapture
-
-Before creating any new BASECAP task:
-
-1. inspect `parallel/BASECAP/BASE_CAPTURE_CATALOG.md`;
-2. inspect existing GEO/EFIELD captures when their scene metadata is authoritative enough to reuse;
-3. register an existing capture instead of repeating it when the material conditions match;
-4. collect only missing conditions or explicit discriminators.
-
-Never invent a scene label from raw bytes alone.
-
-## Immutability / no overwrite
-
-Every capture uses a globally unique `taskId` and is treated as an immutable dataset identity.
-
-Canonical raw path for reusable captures:
+每个采集使用全局唯一 `taskId`。标准 retained raw 路径：
 
 ```text
 captures/<taskId>.jsonl.gz
 ```
 
-Use `uploadRawStream=true` for BASECAP unless there is a specific reason not to. Never reuse an old task ID for a new capture. If repeating a scene, create a new task ID and mark the old catalog entry `SUPERSEDED` only when justified.
-
-## Required label for every reusable capture
-
-Each catalog entry must include:
+默认：
 
 ```text
-captureId/taskId
-status = VALID | SUPERSEDED | INVALID
-rawPath
-capturedAtUtc
-ROM/game/session identity when known
-player occupancy/configuration
-pre-capture scene/setup
-operatorGate instructions when used
-operator action during capture
-durationSeconds
-hz
-layout = P1 + P2 + P3 + 20 enemies, stride 0xE0, 5152 bytes/frame
-intentionalChangedVariables
-intentionalHeldStableVariables
-intendedReuseQuestions
-knownConfounders
-sourceEvidence for the label
+uploadRawStream = true
+readOnly = true
+writesGameMemory = false
+layout = P1 + P2 + P3 + 20 enemies
+stride = 0xE0
+bytesPerFrame = 5152
 ```
 
-## Initial baseline suite
+绝不复用旧 taskId，绝不覆盖历史 raw。重采必须使用新 taskId，并在目录中说明旧数据为什么 INVALID / SUPERSEDED / NONCANONICAL。
 
-Do not blindly collect all of these if equivalent retained raw already exists. Audit first, then fill gaps.
+## 标签证据规则
 
-Suggested baseline families:
+Collector `PASS` 只证明机械采集健康，不自动证明人工动作按要求发生。
+
+一个人工场景只有在以下证据闭合后才能标记 `VALID`：
+
+1. authoritative queue task；
+2. matching task blob SHA；
+3. `DONE` status；
+4. matching `PASS` result；
+5. retained gzip raw；
+6. `readErrors=0`、`frameSizeErrors=0`、`writesGameMemory=false`；
+7. 人工场景还必须有操作者对关键可观察条件/动作完成的确认。
+
+禁止仅根据 raw 数值反推出操作者做过什么。
+
+## 当前 Collector 单窗口流程
+
+现在使用 Collector v2 单窗口流程：
 
 ```text
-B00 static idle baseline
-B10 P1 horizontal-only movement
-B11 P1 vertical/floor-depth-only movement
-B12 P1 facing/turn discriminator with minimal displacement
-B13 P1 action/animation diversity while approximately position-stable
-B20 camera-scroll discriminator
-B30 ordinary combat diversity
-B31 enemy lifecycle spawn/active/death diversity
-B32 enemy target/retarget diversity
-B40 P2/P3 structure replication only after P1 geometry is sufficiently understood
+启动 START_WOF_COLLECTOR.bat
+-> Collector 自动轮询任务
+-> 新任务自动在主窗口显示中文名称和完整中文步骤
+-> 操作者先准备游戏场景
+-> 在同一个主窗口按一次回车
+-> 看到“采集已开始”后执行指定动作
+-> 自动采集、压缩、上传、写 result/status
+-> 自动返回等待并显示下一任务
 ```
 
-The exact scene instructions must be narrow and observable. Prefer short controlled bursts over generic 60-second natural captures.
+`READY_WOF_TASK.bat` 已废弃，不再参与任务启动。
 
-## Operator interaction
+单窗口回车是明确的当前任务启动点，因此不再需要旧 Collector v1 的 READY 后 12 秒防竞态延迟。历史 v1 数据仍按当时真实协议保留，不重写历史事实。
 
-Use `operatorGate.required=true` only for a scene that genuinely needs the operator.
-
-All human-operated BASECAP tasks MUST follow:
+详细规则：
 
 ```text
 parallel/BASECAP/OPERATOR_INSTRUCTION_STANDARD.md
 parallel/BASECAP/OPERATOR_GATE_TIMING_NOTE.md
 ```
 
-The operator workflow is:
+## 人工指令硬规则
 
-```text
-prepare requested scene
--> run READY_WOF_TASK.bat once
--> verify the exact accepted taskId
--> for short-action scenes, keep all controls released for the required post-READY delay
--> perform the numbered action steps exactly
--> Collector finishes automatically
-```
+所有给操作者看的任务说明必须使用中文。技术标识如 taskId、文件名、JSON 字段名可以保留英文。
 
-READY is bound to the active task and is not a persistent mode.
+任何主动输入步骤必须明确写出：
 
-### No ambiguous key instructions
+- 哪个玩家；
+- 哪个按键；
+- 是轻点还是持续按住；
+- 按住多久；
+- 何时松开；
+- 松开后静止多久；
+- 重复次数；
+- 可观察确认条件；
+- 禁止输入；
+- P1/P2/P3 其他玩家是否必须保持不动。
 
-Never write shorthand such as `按左 2 秒` when the intended sequence is actually `轻点左并立即松开，然后静止 2 秒`.
+禁止使用“按左两秒”“攻击几次”“移动一下”这类可产生多种理解的描述。
 
-Every active input step must explicitly state:
+## 复用原则
 
-```text
-which key
-TAP or HOLD
-when to release
-how long to remain idle after release
-visible confirmation when relevant
-repeat count
-forbidden inputs
-P2/P3 requirements
-```
+新研究开始前按以下顺序：
 
-A `TAP / 轻点` means `按下后立即松开，不要按住`.
-A `HOLD / 按住` means `持续按住明确时长，到时立即松开`.
-A `WAIT / 静止` is always a separate step after release.
+1. 先查 `BASE_CAPTURE_CATALOG.md`；
+2. 再查已 retained 的 GEO / EFIELD / RAWMINE raw；
+3. 能复用就复用；
+4. 只有真正缺少场景/判别条件时才新增采集。
 
-If the wording is ambiguous enough that two reasonable operators could perform materially different actions, do not submit the task.
+B30/B31/B32 当前复用 `EFIELD-003-passive-retarget-60s60`，其中 B31 只可表述为 typed-enemy episode enter/exit diversity；不得未经 EFIELD 证据把这些边缘直接改称语义上的 spawn/death。
 
-## Completion standard
+## 完成标准
 
-BASECAP v1 is complete when:
+BASECAP v1 当前满足完成条件：
 
-- the catalog contains the reusable basic scenes actually needed by GEO/RAWMINE/EFIELD;
-- every VALID entry has an unambiguous label and retained raw path;
-- duplicate scenes are not recollected without a documented reason;
-- GEO/RAWMINE can consume the catalog directly without asking the operator to move machine-readable data between chats.
+- 基础套件已经覆盖；
+- 新采 B13/B20/P2/P3 全部 retained raw + PASS + 操作证据闭合；
+- 旧时序失败/无标签尝试保留为历史非 canonical；
+- 下游 AI 可以直接从目录引用 raw，不需要操作者搬运机器可读数据；
+- 不再存在必须由 BASECAP 当前继续采集的基础场景缺口。
