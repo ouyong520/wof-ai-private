@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import unified_live_proof as u
+from test_recorder_authority_heartbeat import RecorderAuthorityHeartbeatTests
 
 SAFE_MANIFEST = {
     "version": "wof-browser-fleet-v1",
