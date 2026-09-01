@@ -2,7 +2,11 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "OWNER_ONECLICK_DYNAMIC_REFRESH_V1",
   "promptPath": "parallel/PM/OWNER_ONECLICK_DYNAMIC_REFRESH_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "5e7ee73f04734829c7d2cf89ea156f30acc24cb0",
-  "startedAtUtc": "2026-09-01T14:20:00Z"
+  "startedAtUtc": "2026-09-01T14:20:00Z",
+  "blockedAtUtc": "2026-09-01T14:24:00Z",
+  "blockerResultPath": "parallel/OWNER_ONECLICK/DYNAMIC_REFRESH_BLOCKER.md",
+  "blockerResultCommit": "fc9de38c17ace7625caedc04f14ca333e4f1c1d8",
+  "blocker": "owner-oneclick workflow hard-codes the previous package version/source commit/blob SHAs; activating a correct dynamic manifest refresh requires a fresh workflow-owned stage because this stage is forbidden to modify workflows"
 }
