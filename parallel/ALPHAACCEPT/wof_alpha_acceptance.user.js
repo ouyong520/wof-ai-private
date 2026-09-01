@@ -1,366 +1,234 @@
 // ==UserScript==
-// @name         WOF Alpha RC3 Browser Acceptance Helper
+// @name         WOF Alpha Browser Acceptance V2 Collector
 // @namespace    https://github.com/ouyong520/wof-ai-private
-// @version      0.1.0
-// @description  Support-only one-click real-Browser acceptance collector for WOF Alpha RC3. Does not modify product/alpha or game RAM/input.
+// @version      0.2.0
+// @description  Support-only current-pair acceptance collector for the future safe native-Worker transport. No game RAM writes or gameplay input.
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
 (()=>{
 'use strict';
-if(window.__WOF_ALPHA_ACCEPTANCE_HELPER)return;
+if(window.__WOF_ALPHA_ACCEPTANCE_V2_COLLECTOR)return;
 
-const VERSION='wof-alpha-browser-acceptance-helper-v1';
-const SCHEMA='wof-alpha-browser-acceptance-v1';
-const RELEASE='wof-alpha-rc3';
+const VERSION='wof-alpha-browser-acceptance-collector-v2';
+const RESULT_SCHEMA='wof-alpha-browser-acceptance-v2';
 const PRODUCT_SCHEMA='wof-alpha-v2';
+const RELEASE='wof-alpha-rc3';
+const TRANSPORT='wof-alpha-safe-transport-v1';
 const BUILD='wof / Warriors of Fate (World 921031)';
-const GOLDEN_SHA256='5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62';
-const IDENTITY_SIGNATURE='wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8';
-const QA_REQUIRED='PASS — READY FOR ONE REAL BROWSER ACCEPTANCE';
-const ALLOWED_RULES=new Set([
-  'T18_5440_CYCLE_BODY7512_TM4_LEVEL_90',
-  'T18_5424_CYCLE_BODY7520_TM4_LEVEL_90'
-]);
+const GOLDEN='5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62';
+const ID_SIG='wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8';
+const ALLOWED_RULES=new Set(['T18_5440_CYCLE_BODY7512_TM4_LEVEL_90','T18_5424_CYCLE_BODY7520_TM4_LEVEL_90']);
 const TARGET_BY_7E={0:'P1',4:'P2',8:'P3'};
-const SIDE_VALUES=new Set(['LEFT','CENTER','RIGHT']);
-const CONTROL_CHANNEL='wof-alpha-acceptance-control-v1';
-const AUX_PREFIX='WOF_ALPHA_ACCEPT_AUX_';
-const AUX_RUN=window.name.startsWith(AUX_PREFIX)?window.name.slice(AUX_PREFIX.length):null;
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const SIDE=new Set(['LEFT','CENTER','RIGHT']);
+const HEX32=/^[0-9a-f]{32}$/;
 const nowIso=()=>new Date().toISOString();
-const round=(n,d=3)=>Number.isFinite(n)?+n.toFixed(d):null;
-const randHex=n=>{const b=new Uint8Array(n);crypto.getRandomValues(b);return [...b].map(x=>x.toString(16).padStart(2,'0')).join('');};
-const percentile=(arr,p)=>{if(!arr.length)return null;const a=[...arr].sort((x,y)=>x-y);return a[Math.min(a.length-1,Math.max(0,Math.ceil(p*a.length)-1))];};
+const clone=x=>{try{return structuredClone(x);}catch(_){try{return JSON.parse(JSON.stringify(x));}catch(__){return null;}}};
+
+let rafCount=0;
+(function raf(){rafCount++;requestAnimationFrame(raf);})();
 
 const obs={
-  cfg:null,productBc:null,stateCount:0,stateTimes:[],identitySignature:null,wrongIdentitySignatures:new Set(),
-  diag:[],warningRows:0,invalidWarnings:[],legacySeenBeforeAlpha:false,
-  gl:{installed:false,completed:false,samples:[],actualDrawSamples:0,mismatches:[],errors:[],original:null,wrapper:null,bridge:null}
+  started:false,startedAt:null,ownerConfirmedPlayable:false,marks:[],bc:null,bcName:null,
+  pageConfig:null,currentPair:null,pairHistory:[],lastSeqByGeneration:new Map(),
+  currentStates:0,currentDiags:0,rejected:[],firstState:null,emptyStateSeen:false,
+  identityAccepted:false,identitySignature:null,safetySeen:null,warningRows:0,invalidWarnings:[],
+  diags:[],negative:[],rafAtBegin:0,rafAtLastMark:0,lastError:null
 };
-const control=new BroadcastChannel(CONTROL_CHANNEL);
-const controlInbox=[];
-const controlWaiters=[];
 
-function safeHudStatus(){try{return window.WOFALPHAHUD?.status?.()||null;}catch(e){return{error:String(e?.message||e)};}}
-function safeBootstrap(){
-  const b=window.__WOF_ALPHA_BOOTSTRAP_RC3;
-  return b?{release:b.release||null,session:b.session||null,workerIntercepted:!!b.workerIntercepted,hudLoaded:!!b.hudLoaded,lastError:b.lastError||null}:null;
-}
 function safeConfig(){
-  const c=window.__WOF_ALPHA_CONFIG;
-  return c?{release:c.release||null,schema:c.schema||null,session:c.session||null,channel:c.channel||null}:null;
+  try{
+    const c=window.__WOF_ALPHA_CONFIG;
+    if(!c)return null;
+    return {release:c.release??null,schema:c.schema??null,session:c.session??null,channel:c.channel??null};
+  }catch(e){obs.lastError=String(e?.message||e);return null;}
+}
+function safeTransport(){
+  try{
+    const t=window.__WOF_ALPHA_TRANSPORT_V1;
+    const s=typeof t?.status==='function'?t.status():null;
+    return s&&typeof s==='object'?clone(s):null;
+  }catch(e){obs.lastError=String(e?.message||e);return null;}
+}
+function safeHud(){
+  try{return clone(window.WOFALPHAHUD?.status?.()||null);}catch(e){return{lastError:String(e?.message||e)};}
+}
+function normalizePair(cfg,t){
+  if(!cfg||!t)return null;
+  const session=String(t.session??cfg.session??'');
+  const generation=Number(t.pairGeneration);
+  const nonce=String(t.pairNonce??'');
+  const version=String(t.transportVersion??'');
+  if(cfg.schema!==PRODUCT_SCHEMA||cfg.release!==RELEASE||!HEX32.test(session)||cfg.session!==session)return null;
+  if(version!==TRANSPORT||!Number.isInteger(generation)||generation<1||!HEX32.test(nonce))return null;
+  return {transportVersion:version,session,pairGeneration:generation,pairNonce:nonce};
+}
+function samePair(a,b){return !!a&&!!b&&a.session===b.session&&a.pairGeneration===b.pairGeneration&&a.pairNonce===b.pairNonce&&a.transportVersion===b.transportVersion;}
+function updatePair(){
+  const cfg=safeConfig(),t=safeTransport(),p=normalizePair(cfg,t);
+  obs.pageConfig=cfg;
+  if(p&&!samePair(p,obs.currentPair)){
+    obs.currentPair=p;
+    obs.pairHistory.push({...p,seenAt:nowIso()});
+    if(obs.pairHistory.length>20)obs.pairHistory.shift();
+    attachChannel(cfg?.channel);
+  }else if(cfg?.channel&&cfg.channel!==obs.bcName)attachChannel(cfg.channel);
+  if(t){
+    const ident=t.identity||t.detectorIdentity||null;
+    if(ident?.ok===true||ident?.accepted===true){obs.identityAccepted=true;obs.identitySignature=ident.signature||t.identitySignature||obs.identitySignature;}
+    if(typeof t.identitySignature==='string')obs.identitySignature=t.identitySignature;
+  }
+  return {cfg,t,p};
+}
+function attachChannel(name){
+  if(typeof name!=='string'||!name)return;
+  if(obs.bc&&obs.bcName===name)return;
+  try{obs.bc?.close?.();}catch(_){}
+  try{obs.bc=new BroadcastChannel(name);obs.bcName=name;obs.bc.onmessage=e=>observeMessage(e.data);}catch(e){obs.lastError='BroadcastChannel: '+String(e?.message||e);}
+}
+function rejectReason(m){
+  const p=obs.currentPair;
+  if(!m||typeof m!=='object')return'not-object';
+  if(m.schema!==PRODUCT_SCHEMA)return'wrong-schema';
+  if(m.transportVersion!==TRANSPORT)return'wrong-transport-version';
+  if(!p)return'no-current-pair';
+  if(m.session!==p.session)return'wrong-session';
+  if(m.pairGeneration!==p.pairGeneration)return'wrong-generation';
+  if(m.pairNonce!==p.pairNonce)return'wrong-nonce';
+  return null;
 }
 function validateWarning(w){
-  const errors=[];
-  if(!w||typeof w!=='object')return['warning is not an object'];
-  if(!ALLOWED_RULES.has(w.ruleId))errors.push('ruleId outside RC3 production set: '+String(w.ruleId));
-  if(!['P1','P2','P3'].includes(w.target))errors.push('invalid target: '+String(w.target));
-  if(!Object.prototype.hasOwnProperty.call(TARGET_BY_7E,w.target7E)||TARGET_BY_7E[w.target7E]!==w.target)errors.push('target7E/target mismatch');
-  if(!SIDE_VALUES.has(w.sourceSide))errors.push('invalid sourceSide: '+String(w.sourceSide));
-  if(!SIDE_VALUES.has(w.threatSide))errors.push('invalid threatSide: '+String(w.threatSide));
-  if(w.publication!=='hold-only-current-level')errors.push('publication is not hold-only-current-level');
-  if(w.evidence!=='fresh-current-sample')errors.push('evidence is not fresh-current-sample');
-  for(const k of ['atMs','ageMs','watchId','watch','cycle','history','previous','priorTarget'])if(Object.prototype.hasOwnProperty.call(w,k))errors.push('forbidden inherited/history field: '+k);
-  return errors;
+  const e=[];
+  if(!w||typeof w!=='object')return['not-object'];
+  if(!ALLOWED_RULES.has(w.ruleId))e.push('ruleId');
+  if(!['P1','P2','P3'].includes(w.target))e.push('target');
+  if(TARGET_BY_7E[w.target7E]!==w.target)e.push('target7E');
+  if(!SIDE.has(w.sourceSide))e.push('sourceSide');
+  if(!SIDE.has(w.threatSide))e.push('threatSide');
+  if(w.publication!=='hold-only-current-level')e.push('publication');
+  if(w.evidence!=='fresh-current-sample')e.push('evidence');
+  for(const k of ['ageMs','watchId','watch','history','previous','priorTarget','atMs'])if(Object.prototype.hasOwnProperty.call(w,k))e.push('forbidden:'+k);
+  return e;
 }
-function observeProductMessage(m){
-  if(!(m&&m.schema===PRODUCT_SCHEMA&&obs.cfg&&m.session===obs.cfg.session))return;
+function observeMessage(m){
+  updatePair();
+  const reason=rejectReason(m);
+  if(reason){if(obs.started&&obs.rejected.length<100)obs.rejected.push({at:nowIso(),kind:m?.kind??null,reason,pairGeneration:m?.pairGeneration??null});return;}
   if(m.kind==='state'){
-    obs.stateCount++;
-    const t=performance.now();obs.stateTimes.push(t);if(obs.stateTimes.length>1000)obs.stateTimes.shift();
-    if(typeof m.identitySignature==='string'){
-      if(m.identitySignature===IDENTITY_SIGNATURE)obs.identitySignature=m.identitySignature;
-      else obs.wrongIdentitySignatures.add(m.identitySignature);
-    }
+    const seq=Number(m.seq),g=obs.currentPair.pairGeneration,last=obs.lastSeqByGeneration.get(g)??-1;
+    if(!Number.isInteger(seq)||seq<=last){if(obs.started)obs.rejected.push({at:nowIso(),kind:'state',reason:'duplicate-or-out-of-order-seq',seq});return;}
+    obs.lastSeqByGeneration.set(g,seq);
+    if(!obs.started)return;
+    obs.currentStates++;
+    if(!obs.firstState)obs.firstState={at:nowIso(),pair:clone(obs.currentPair),seq,hud:safeHud()};
+    if(m.identitySignature===ID_SIG){obs.identityAccepted=true;obs.identitySignature=m.identitySignature;}
+    if(typeof m.identitySignature==='string'&&m.identitySignature!==ID_SIG)obs.identitySignature=m.identitySignature;
+    obs.safetySeen={readOnly:m.readOnly,ramWrites:m.ramWrites,inputInjection:m.inputInjection};
     const rows=Array.isArray(m.warnings)?m.warnings:[];
+    if(rows.length===0)obs.emptyStateSeen=true;
     obs.warningRows+=rows.length;
-    for(const w of rows){
-      const errors=validateWarning(w);
-      if(errors.length&&obs.invalidWarnings.length<20)obs.invalidWarnings.push({at:nowIso(),ruleId:w?.ruleId??null,errors});
-    }
-  }else if(m.kind==='diag'){
-    const before=safeHudStatus();
-    const item={at:nowIso(),reason:String(m.reason||m.status||'diagnostic'),warningCountBefore:before?.warningCount??null,warningCountNextTask:null};
-    obs.diag.push(item);
-    setTimeout(()=>{item.warningCountNextTask=safeHudStatus()?.warningCount??null;},0);
+    for(const w of rows){const errors=validateWarning(w);if(errors.length&&obs.invalidWarnings.length<30)obs.invalidWarnings.push({ruleId:w?.ruleId??null,errors});}
+  } else if(m.kind==='diag'){
+    if(!obs.started)return;
+    obs.currentDiags++;
+    const before=safeHud()?.warningCount??null;
+    const d={at:nowIso(),pair:clone(obs.currentPair),code:m.code??null,status:m.status??null,warningCountBefore:before,warningCountNextTask:null};
+    obs.diags.push(d);
+    setTimeout(()=>{d.warningCountNextTask=safeHud()?.warningCount??null;},0);
   }
 }
-function attachProductChannel(){
-  const c=window.__WOF_ALPHA_CONFIG;
-  if(!(c&&c.release===RELEASE&&c.schema===PRODUCT_SCHEMA&&typeof c.session==='string'&&typeof c.channel==='string'))return;
-  if(obs.cfg&&obs.cfg.session===c.session&&obs.productBc)return;
-  try{obs.productBc?.close?.();}catch(_){}
-  obs.cfg={release:c.release,schema:c.schema,session:c.session,channel:c.channel};
-  try{
-    const bc=new BroadcastChannel(c.channel);
-    bc.onmessage=e=>observeProductMessage(e.data);
-    obs.productBc=bc;
-  }catch(e){obs.diag.push({at:nowIso(),reason:'acceptance helper could not attach product channel: '+String(e?.message||e)});}
+function status(){
+  const {cfg,t,p}=updatePair();
+  return {version:VERSION,ready:!!p,pageConfig:cfg,transport:t,currentPair:p,hud:safeHud(),identityAccepted:obs.identityAccepted,identitySignature:obs.identitySignature,currentStates:obs.currentStates,currentDiags:obs.currentDiags,rafCount,lastError:obs.lastError};
 }
-
-function glSnapshot(gl){
-  const active=gl.getParameter(gl.ACTIVE_TEXTURE),activeTex=gl.getParameter(gl.TEXTURE_BINDING_2D);
-  gl.activeTexture(gl.TEXTURE0);const tex0=gl.getParameter(gl.TEXTURE_BINDING_2D);gl.activeTexture(active);
-  return{
-    program:gl.getParameter(gl.CURRENT_PROGRAM),array:gl.getParameter(gl.ARRAY_BUFFER_BINDING),active,activeTex,tex0,
-    viewport:Array.from(gl.getParameter(gl.VIEWPORT)),blend:gl.isEnabled(gl.BLEND),depth:gl.isEnabled(gl.DEPTH_TEST),
-    cull:gl.isEnabled(gl.CULL_FACE),scissor:gl.isEnabled(gl.SCISSOR_TEST),srcRGB:gl.getParameter(gl.BLEND_SRC_RGB),
-    dstRGB:gl.getParameter(gl.BLEND_DST_RGB),srcA:gl.getParameter(gl.BLEND_SRC_ALPHA),dstA:gl.getParameter(gl.BLEND_DST_ALPHA),
-    eqRGB:gl.getParameter(gl.BLEND_EQUATION_RGB),eqA:gl.getParameter(gl.BLEND_EQUATION_ALPHA),mask:Array.from(gl.getParameter(gl.COLOR_WRITEMASK)),
-    flip:gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL),premul:gl.getParameter(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL),
-    a0:{enabled:!!gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_ENABLED),buf:gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING),
-      size:gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_SIZE),type:gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_TYPE),
-      norm:!!gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_NORMALIZED),stride:gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_STRIDE),
-      offset:gl.getVertexAttribOffset(0,gl.VERTEX_ATTRIB_ARRAY_POINTER)}
-  };
+function resetRun(){
+  obs.started=false;obs.startedAt=null;obs.ownerConfirmedPlayable=false;obs.marks=[];obs.currentStates=0;obs.currentDiags=0;obs.rejected=[];obs.firstState=null;obs.emptyStateSeen=false;
+  obs.identityAccepted=false;obs.identitySignature=null;obs.safetySeen=null;obs.warningRows=0;obs.invalidWarnings=[];obs.diags=[];obs.negative=[];obs.lastSeqByGeneration=new Map();obs.rafAtBegin=rafCount;obs.rafAtLastMark=rafCount;obs.lastError=null;
+  updatePair();
 }
-function arrEq(a,b){return Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&a.every((v,i)=>v===b[i]);}
-function glDiff(a,b){
-  const out=[];
-  for(const k of ['program','array','active','activeTex','tex0','blend','depth','cull','scissor','srcRGB','dstRGB','srcA','dstA','eqRGB','eqA','flip','premul'])if(a[k]!==b[k])out.push(k);
-  if(!arrEq(a.viewport,b.viewport))out.push('viewport');if(!arrEq(a.mask,b.mask))out.push('colorMask');
-  for(const k of ['enabled','buf','size','type','norm','stride','offset'])if(a.a0[k]!==b.a0[k])out.push('a0.'+k);
-  return out;
+function begin(opts={}){
+  resetRun();
+  if(opts.ownerConfirmedPlayable!==true)return{ok:false,error:'ownerConfirmedPlayable must be true'};
+  obs.started=true;obs.startedAt=nowIso();obs.ownerConfirmedPlayable=true;obs.marks.push({name:'begin',at:obs.startedAt,detail:{pair:clone(obs.currentPair)}});
+  return{ok:true,status:status()};
 }
-function installGlProbe(){
-  if(obs.gl.installed||AUX_RUN)return;
-  const bridge=window.__WOF_GL_HOOK,hud=window.WOFALPHAHUD;
-  if(!(bridge&&bridge.gl&&typeof bridge.callback==='function'&&hud?.status))return;
-  const gl=bridge.gl,original=bridge.callback;
-  obs.gl.installed=true;obs.gl.original=original;obs.gl.bridge=bridge;
-  const wrapper=function(){
-    if(obs.gl.samples.length>=30)return original.apply(this,arguments);
-    let pre=null,post=null,d0=null,d1=null,value,thrown=null;
-    try{pre=glSnapshot(gl);d0=safeHudStatus()?.drawCount??null;}catch(e){obs.gl.errors.push('pre-snapshot: '+String(e?.message||e));}
-    const t0=performance.now();
-    try{value=original.apply(this,arguments);}catch(e){thrown=e;}
-    const dt=performance.now()-t0;
-    try{d1=safeHudStatus()?.drawCount??null;post=glSnapshot(gl);}catch(e){obs.gl.errors.push('post-snapshot: '+String(e?.message||e));}
-    const diffs=pre&&post?glDiff(pre,post):['snapshot-unavailable'];
-    obs.gl.samples.push(dt);
-    if(Number.isFinite(d0)&&Number.isFinite(d1)&&d1>d0)obs.gl.actualDrawSamples++;
-    if(diffs.length&&obs.gl.mismatches.length<20)obs.gl.mismatches.push({sample:obs.gl.samples.length,fields:diffs});
-    if(obs.gl.samples.length>=30){
-      obs.gl.completed=true;
-      setTimeout(()=>{if(bridge.callback===wrapper)bridge.callback=original;},0);
-    }
-    if(thrown)throw thrown;
-    return value;
-  };
-  obs.gl.wrapper=wrapper;bridge.callback=wrapper;
+function mark(name,detail=null){
+  if(!obs.started)return{ok:false,error:'not-started'};
+  const item={name:String(name),at:nowIso(),rafDelta:rafCount-obs.rafAtLastMark,detail:clone(detail)};obs.rafAtLastMark=rafCount;obs.marks.push(item);return{ok:true,item};
 }
-
-async function readySnapshot(timeoutMs=20000){
-  const until=performance.now()+timeoutMs;
-  while(performance.now()<until){
-    attachProductChannel();installGlProbe();
-    const b=safeBootstrap(),c=safeConfig(),h=safeHudStatus();
-    const ok=!!(b&&c&&h&&b.release===RELEASE&&b.workerIntercepted&&b.hudLoaded&&c.release===RELEASE&&c.schema===PRODUCT_SCHEMA&&
-      b.session===c.session&&h.session===c.session&&h.release===RELEASE&&h.connected===true&&obs.identitySignature===IDENTITY_SIGNATURE);
-    if(ok)return{ok:true,bootstrap:b,config:c,hud:h,identitySignature:obs.identitySignature};
-    await sleep(100);
-  }
-  return{ok:false,bootstrap:safeBootstrap(),config:safeConfig(),hud:safeHudStatus(),identitySignature:obs.identitySignature};
+function makeNegative(kind){
+  const p=obs.currentPair;if(!p)throw new Error('no current pair');
+  const common={schema:PRODUCT_SCHEMA,release:RELEASE,transportVersion:TRANSPORT,session:p.session,pairGeneration:p.pairGeneration,pairNonce:p.pairNonce,readOnly:true,ramWrites:0,inputInjection:false};
+  if(kind.startsWith('old-generation-')){common.pairGeneration=Math.max(0,p.pairGeneration-1);common.pairNonce='00000000000000000000000000000000';}
+  if(kind.startsWith('wrong-nonce-'))common.pairNonce='ffffffffffffffffffffffffffffffff'===p.pairNonce?'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee':'ffffffffffffffffffffffffffffffff';
+  if(kind.endsWith('-state'))return{...common,kind:'state',seq:2147483000,identitySignature:ID_SIG,warnings:[]};
+  return{...common,kind:'diag',status:'DISABLED',code:'acceptance-negative-pair-probe',reason:'support-only acceptance negative-pair fixture'};
 }
-
-function onControlMessage(m){
-  if(!m||m.schema!==SCHEMA)return;
-  controlInbox.push(m);if(controlInbox.length>100)controlInbox.shift();
-  for(let i=controlWaiters.length-1;i>=0;i--){
-    const w=controlWaiters[i];if(w.pred(m)){controlWaiters.splice(i,1);clearTimeout(w.timer);w.resolve(m);}
-  }
-  if(AUX_RUN&&m.runId===AUX_RUN){
-    if(m.kind==='aux-reload'){
-      try{sessionStorage.setItem('wof_alpha_accept_prev_'+AUX_RUN,String(obs.cfg?.session||''));}catch(_){}
-      location.reload();
-    }else if(m.kind==='aux-close'){
-      try{window.close();}catch(_){}
-    }
-  }
+async function postNegative(kind){
+  const allowed=new Set(['old-generation-state','old-generation-diag','wrong-nonce-state','wrong-nonce-diag']);
+  if(!obs.started)return{ok:false,error:'not-started'};
+  if(!allowed.has(kind))return{ok:false,error:'unsupported-kind'};
+  updatePair();if(!obs.bc||!obs.currentPair)return{ok:false,error:'no-current-pair-channel'};
+  const m=makeNegative(kind),before=safeHud();obs.bc.postMessage(m);await new Promise(r=>setTimeout(r,0));const after=safeHud();
+  const item={kind,postedAt:nowIso(),collectorRejectReason:rejectReason(m),warningCountBefore:before?.warningCount??null,warningCountAfter:after?.warningCount??null,pairGeneration:m.pairGeneration,pairNonce:m.pairNonce};
+  obs.negative.push(item);return{ok:true,item};
 }
-control.onmessage=e=>onControlMessage(e.data);
-function waitControl(pred,timeoutMs){
-  const hit=controlInbox.find(pred);if(hit)return Promise.resolve(hit);
-  return new Promise(resolve=>{
-    const waiter={pred,resolve,timer:null};
-    waiter.timer=setTimeout(()=>{const i=controlWaiters.indexOf(waiter);if(i>=0)controlWaiters.splice(i,1);resolve(null);},timeoutMs);
-    controlWaiters.push(waiter);
-  });
+function snapshot(){return{status:status(),started:obs.started,startedAt:obs.startedAt,ownerConfirmedPlayable:obs.ownerConfirmedPlayable,marks:clone(obs.marks),pairHistory:clone(obs.pairHistory),firstState:clone(obs.firstState),emptyStateSeen:obs.emptyStateSeen,currentStates:obs.currentStates,currentDiags:obs.currentDiags,identityAccepted:obs.identityAccepted,identitySignature:obs.identitySignature,safetySeen:clone(obs.safetySeen),diags:clone(obs.diags),negative:clone(obs.negative),rejected:clone(obs.rejected),warningRows:obs.warningRows,invalidWarnings:clone(obs.invalidWarnings),rafDelta:rafCount-obs.rafAtBegin};}
+function gatePass(g){return !!g&&['status','productRegression','transportIntegrationTests','pylaunchTests','rc5NoWorkerReplacementRegression','rc4DiagSessionStaleRegression','exactStaleBoundary1500_1501'].every(k=>g[k]==='PASS');}
+function launcherPass(l){return !!l&&['browser','wofPage','worker','wasmHeap','world921031','launcherIdentityGate'].every(k=>l[k]===true);}
+function safetyPass(s){return !!s&&s.readOnly===true&&s.ramWrites===0&&s.inputInjection===false&&s.windowWorkerReplacement===false;}
+function negativeSummary(){
+  const by=k=>obs.negative.find(x=>x.kind===k);
+  const rejected=x=>!!x&&['wrong-generation','wrong-nonce'].includes(x.collectorRejectReason);
+  return{result:['old-generation-state','old-generation-diag','wrong-nonce-state','wrong-nonce-diag'].every(k=>rejected(by(k)))?'PASS':'INCOMPLETE',oldGenerationStateRejected:rejected(by('old-generation-state')),oldGenerationDiagRejected:rejected(by('old-generation-diag')),wrongNonceStateRejected:rejected(by('wrong-nonce-state')),wrongNonceDiagRejected:rejected(by('wrong-nonce-diag'))};
 }
-function sendControl(m){control.postMessage({schema:SCHEMA,at:Date.now(),...m});}
-
-async function auxMode(){
-  const snap=await readySnapshot(25000);
-  let oldSession=null;try{oldSession=sessionStorage.getItem('wof_alpha_accept_prev_'+AUX_RUN);}catch(_){}
-  const phase=oldSession?'reloaded':'initial';
-  sendControl({kind:'aux-ready',runId:AUX_RUN,phase,oldSession:oldSession||null,ready:snap.ok,session:snap.config?.session||null,
-    channel:snap.config?.channel||null,identitySignature:snap.identitySignature||null,workerIntercepted:!!snap.bootstrap?.workerIntercepted,
-    hudLoaded:!!snap.bootstrap?.hudLoaded,connected:!!snap.hud?.connected,lastError:snap.bootstrap?.lastError||snap.hud?.lastError||null});
-  if(oldSession){try{sessionStorage.removeItem('wof_alpha_accept_prev_'+AUX_RUN);}catch(_){}}
-}
-
-let ui=null,button=null,statusEl=null,outEl=null;
-function ensureUi(){
-  if(AUX_RUN||ui||!document.documentElement)return;
-  const d=document.createElement('div');
-  d.id='wof-alpha-acceptance-ui';
-  d.style.cssText='position:fixed;right:10px;top:10px;z-index:2147483647;width:360px;max-height:78vh;overflow:auto;background:rgba(10,10,12,.96);color:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;font:12px/1.35 sans-serif;box-shadow:0 2px 16px #0008';
-  const title=document.createElement('div');title.textContent='WOF Alpha RC3 Acceptance';title.style.cssText='font-weight:700;font-size:14px;margin-bottom:6px';
-  const note=document.createElement('div');note.textContent='PREP ONLY — run only after fresh RC3 QA PASS.';note.style.cssText='margin-bottom:8px;color:#ffd28a';
-  const b=document.createElement('button');b.textContent='Run RC3 Browser Acceptance';b.style.cssText='width:100%;padding:8px;cursor:pointer;font-weight:700';
-  const s=document.createElement('div');s.textContent='Waiting for real game/HUD…';s.style.cssText='margin-top:8px;white-space:pre-wrap';
-  const pre=document.createElement('pre');pre.style.cssText='display:none;white-space:pre-wrap;word-break:break-word;margin-top:8px;padding:6px;background:#0008;max-height:42vh;overflow:auto';
-  d.append(title,note,b,s,pre);document.documentElement.appendChild(d);ui=d;button=b;statusEl=s;outEl=pre;
-  b.onclick=()=>runAcceptance();
-}
-function setStatus(t){if(statusEl)statusEl.textContent=t;}
-function showResult(r){if(outEl){outEl.style.display='block';outEl.textContent=JSON.stringify(r,null,2);}if(button)button.disabled=false;}
-
-async function performanceWindow(ms=6000){
-  const h0=safeHudStatus(),bridge=window.__WOF_GL_HOOK;
-  const state0=obs.stateCount,draw0=Number.isFinite(bridge?.gameDraws)?bridge.gameDraws:null,cb0=h0?.callbackCount??null,t0=performance.now();
-  await sleep(ms);
-  const elapsed=performance.now()-t0,h1=safeHudStatus();
-  const stateDelta=obs.stateCount-state0,draw1=Number.isFinite(bridge?.gameDraws)?bridge.gameDraws:null,cb1=h1?.callbackCount??null;
-  return{observationMs:round(elapsed,1),stateMessages:stateDelta,stateRateHz:round(stateDelta/(elapsed/1000),2),
-    gameDrawsDelta:Number.isFinite(draw0)&&Number.isFinite(draw1)?draw1-draw0:null,hudCallbacksDelta:Number.isFinite(cb0)&&Number.isFinite(cb1)?cb1-cb0:null,
-    connectedAtEnd:h1?.connected===true,hudStatusEnd:h1};
-}
-
-let running=false;
-async function runAcceptance(){
-  if(running)return;running=true;if(button)button.disabled=true;
-  const startedAt=nowIso(),tStart=performance.now(),failures=[],incomplete=[];
-  const fail=m=>failures.push(m),inc=m=>incomplete.push(m);
-  setStatus('Checking primary real game page…');
-  const primary=await readySnapshot(20000);
-  if(!primary.ok){
-    if(obs.diag.length)fail('primary detector emitted diagnostic before readiness');
-    else inc('primary page did not become fully paired/connected with accepted identity within 20 s');
-  }
-  if(obs.wrongIdentitySignatures.size)fail('unexpected identity signature observed: '+[...obs.wrongIdentitySignatures].join(','));
-  if(primary.identitySignature&&primary.identitySignature!==IDENTITY_SIGNATURE)fail('primary accepted identity signature mismatch');
-
-  const primarySession=primary.config?.session||null,primaryChannel=primary.config?.channel||null;
-  const perfPromise=performanceWindow(6000);
-  const runId=randHex(8),auxName=AUX_PREFIX+runId;
-  setStatus('Opening auxiliary tab and checking independent pairing…');
-  let auxWin=null,aux1=null,aux2=null;
-  try{auxWin=window.open(location.href,auxName);}catch(_){}
-  if(!auxWin){inc('auxiliary same-origin game tab was blocked');}
-  else{
-    aux1=await waitControl(m=>m.kind==='aux-ready'&&m.runId===runId&&m.phase==='initial',25000);
-    if(!aux1)inc('auxiliary initial page did not report readiness within 25 s');
-    else if(!aux1.ready)inc('auxiliary initial page loaded but product did not become ready');
-    if(aux1?.ready){
-      if(aux1.identitySignature!==IDENTITY_SIGNATURE)fail('auxiliary initial identity signature mismatch');
-      if(aux1.session===primarySession)fail('primary and auxiliary sessions collided');
-      if(aux1.channel===primaryChannel)fail('primary and auxiliary product channels collided');
-      sendControl({kind:'aux-reload',runId});
-      setStatus('Auxiliary pairing is isolated. Reloading it once automatically…');
-      aux2=await waitControl(m=>m.kind==='aux-ready'&&m.runId===runId&&m.phase==='reloaded',25000);
-      if(!aux2)inc('auxiliary reload did not report a fresh pairing within 25 s');
-      else if(!aux2.ready)inc('auxiliary reloaded page did not become ready');
-      if(aux2?.ready){
-        if(aux2.identitySignature!==IDENTITY_SIGNATURE)fail('auxiliary reload identity signature mismatch');
-        if(aux2.oldSession!==aux1.session)fail('auxiliary reload did not report the expected previous session');
-        if(aux2.session===aux1.session)fail('reload reused the previous auxiliary session');
-        if(aux2.session===primarySession)fail('reloaded auxiliary session collided with primary session');
-        if(aux2.channel===aux1.channel)fail('reload reused the previous auxiliary product channel');
-      }
-    }
-    sendControl({kind:'aux-close',runId});
-  }
-
-  const perf=await perfPromise;
-  const end=await readySnapshot(3000);
-  if(primarySession&&end.config?.session!==primarySession)fail('primary session changed during acceptance without primary reload');
-  if(!end.hud?.connected)fail('primary detector/HUD was not connected at end of run');
-  if(end.identitySignature!==IDENTITY_SIGNATURE)fail('primary accepted identity missing at end of run');
-  if(obs.diag.length)fail('paired runtime diagnostic/error occurred during Browser run');
-  if(obs.invalidWarnings.length)fail('one or more naturally observed warnings violated RC3 current-rule/target/side contract');
-
-  const hs=end.hud||safeHudStatus()||{};
-  const glDur=obs.gl.samples.filter(Number.isFinite),p95=percentile(glDur,.95),max=glDur.length?Math.max(...glDur):null;
-  const glRequiredSamples=10;
-  if(!obs.gl.installed)inc('real Alpha WebGL callback probe could not attach');
-  else if(glDur.length<glRequiredSamples)inc('fewer than 10 real HUD callback samples were captured');
-  if(obs.gl.actualDrawSamples<1)inc('no sampled HUD callback performed an actual Alpha HUD draw; refresh and start acceptance promptly');
-  if(obs.gl.errors.length)fail('WebGL state probe encountered errors');
-  if(obs.gl.mismatches.length)fail('WebGL state changed across Alpha HUD callback');
-  if(hs.drawHooked!==true)fail('Alpha HUD draw hook is not active');
-  if(hs.lastError)fail('Alpha HUD/GL hook reported an error: '+String(hs.lastError));
-
-  if(glDur.length>=glRequiredSamples){
-    if(Number.isFinite(p95)&&p95>16)fail('HUD callback p95 exceeded 16 ms smoke threshold');
-    if(Number.isFinite(max)&&max>50)fail('HUD callback sample exceeded 50 ms smoke threshold');
-  }
-  if(!(Number.isFinite(perf.gameDrawsDelta)&&perf.gameDrawsDelta>0))fail('game draw counter did not advance during performance window');
-  if(!(perf.stateMessages>0&&perf.connectedAtEnd))fail('detector state stream did not remain live during performance window');
-
-  const bootstrapPass=!!(primary.ok&&primary.bootstrap?.workerIntercepted&&primary.bootstrap?.hudLoaded&&primary.config?.session===primary.bootstrap?.session&&primary.hud?.session===primary.config?.session);
-  const identityPass=primary.identitySignature===IDENTITY_SIGNATURE&&!obs.wrongIdentitySignatures.size;
-  const webglIncomplete=!obs.gl.installed||glDur.length<glRequiredSamples||obs.gl.actualDrawSamples<1;
-  const webglFail=!!(obs.gl.errors.length||obs.gl.mismatches.length||hs.drawHooked!==true||hs.lastError);
-  const transportComplete=!!(aux1?.ready&&aux2?.ready);
-  const transportPass=transportComplete&&aux1.session!==primarySession&&aux1.channel!==primaryChannel&&aux2.oldSession===aux1.session&&aux2.session!==aux1.session&&aux2.session!==primarySession&&aux2.channel!==aux1.channel&&end.hud?.connected===true;
-  const legacyResult=obs.legacySeenBeforeAlpha?(hs.researchHudDisposed===true?'PASS':'FAIL'):'NOT_APPLICABLE';
+function finalize(driver={}){
+  updatePair();
+  const failures=[],incomplete=[];
+  const integration=driver.integrationGate||{};const launcher=driver.launcher||{};const safety=driver.safety||{};const actions=driver.actions||{};
+  if(!gatePass(integration))failures.push('integration gate is not fully PASS');
+  if(!launcherPass(launcher))failures.push('launcher Browser/page/Worker/WASM/World gate is incomplete');
+  if(!safetyPass(safety))failures.push('safety contract mismatch');
+  const hist=obs.pairHistory.filter((x,i,a)=>i===0||!samePair(x,a[i-1]));const initial=hist.length?hist[0]:null,rebound=hist.length>1?hist[hist.length-1]:null;
+  const pair={session:initial?.session??obs.currentPair?.session??null,initialGeneration:initial?.pairGeneration??null,initialNonce:initial?.pairNonce??null,reboundGeneration:rebound?.pairGeneration??null,reboundNonce:rebound?.pairNonce??null,generationIncreased:!!(initial&&rebound&&rebound.pairGeneration>initial.pairGeneration),nonceChanged:!!(initial&&rebound&&rebound.pairNonce!==initial.pairNonce)};
+  if(!pair.generationIncreased||!pair.nonceChanged)incomplete.push('fresh rebind pair not fully observed');
+  const identityOk=obs.identityAccepted&&obs.identitySignature===ID_SIG;if(!identityOk)incomplete.push('detector-local World 921031 identity acceptance not observed');
+  if(!obs.firstState)incomplete.push('first valid current-pair state not observed');
+  if(!obs.emptyStateSeen)incomplete.push('fresh no-warning state not observed');
+  const lastDiag=obs.diags.length?obs.diags[obs.diags.length-1]:null;
+  const diagResult=lastDiag?(lastDiag.warningCountBefore>0?(lastDiag.warningCountNextTask===0?'PASS':'FAIL'):'NO_ACTIVE_WARNING'):'INCOMPLETE';
+  if(diagResult==='FAIL')failures.push('current-pair diag did not immediately clear warning');else if(diagResult==='INCOMPLETE')incomplete.push('current-pair diag not observed');
+  const neg=negativeSummary();if(neg.result!=='PASS')incomplete.push('all four old-generation/wrong-nonce negative probes not observed');
+  if(obs.invalidWarnings.length)failures.push('invalid warning row observed');
   const warningResult=obs.invalidWarnings.length?'FAIL':(obs.warningRows?'PASS':'NOT_EXERCISED');
-  const perfPass=glDur.length>=glRequiredSamples&&Number.isFinite(p95)&&p95<=16&&Number.isFinite(max)&&max<=50&&Number.isFinite(perf.gameDrawsDelta)&&perf.gameDrawsDelta>0&&perf.stateMessages>0&&perf.connectedAtEnd;
-
-  if(!bootstrapPass&&!incomplete.some(x=>x.includes('primary page')))fail('primary bootstrap/pairing invariant failed');
-  if(!identityPass&&!incomplete.some(x=>x.includes('primary page')))fail('exact World 921031 accepted identity evidence failed');
-  if(legacyResult==='FAIL')fail('legacy WOFHUD was seen but Alpha did not report successful research HUD disposal');
-  if(transportComplete&&!transportPass)fail('cross-tab/reload pairing invariant failed');
-
-  let result='PASS — REAL BROWSER ACCEPTANCE';
-  if(failures.length)result='FAIL — REAL BROWSER ACCEPTANCE';
-  else if(incomplete.length||webglIncomplete||!transportComplete)result='INCOMPLETE — REAL BROWSER ACCEPTANCE';
-
-  const final={
-    schema:SCHEMA,result,release:RELEASE,supportedBuild:BUILD,goldenSha256:GOLDEN_SHA256,expectedIdentitySignature:IDENTITY_SIGNATURE,
-    startedAt,finishedAt:nowIso(),durationMs:round(performance.now()-tStart,1),
-    qaGate:{requiredExternalVerdict:QA_REQUIRED,checkedByHelper:false},
-    checks:{
-      bootstrap:{result:bootstrapPass?'PASS':(primary.ok?'FAIL':'INCOMPLETE'),workerIntercepted:!!primary.bootstrap?.workerIntercepted,hudLoaded:!!primary.bootstrap?.hudLoaded,
-        primarySession,pageSessionMatches:!!(primary.config?.session&&primary.config.session===primary.bootstrap?.session),hudSessionMatches:!!(primary.hud?.session&&primary.hud.session===primary.config?.session),connected:!!primary.hud?.connected},
-      identity:{result:identityPass?'PASS':(primary.identitySignature?'FAIL':'INCOMPLETE'),signatureObserved:primary.identitySignature||null,
-        fullDigestAuthority:'product exact 1 MiB CPU-logical SHA-256 gate'},
-      runtimeDiagnostics:{result:obs.diag.length?'FAIL':'PASS',count:obs.diag.length,items:obs.diag.slice(0,20)},
-      webglHud:{result:webglFail?'FAIL':(webglIncomplete?'INCOMPLETE':'PASS'),drawHooked:hs.drawHooked===true,stateSamples:glDur.length,
-        samplesWithActualHudDraw:obs.gl.actualDrawSamples,stateMismatchCount:obs.gl.mismatches.length,stateMismatches:obs.gl.mismatches,
-        probeErrors:obs.gl.errors,hudCallbackP95Ms:round(p95),hudCallbackMaxMs:round(max),hudLastError:hs.lastError||null},
-      transport:{result:transportPass?'PASS':(transportComplete?'FAIL':'INCOMPLETE'),primarySession,primaryChannel,
-        auxInitialSession:aux1?.session||null,auxInitialChannel:aux1?.channel||null,auxReloadSession:aux2?.session||null,auxReloadChannel:aux2?.channel||null,
-        initialIsolation:!!(aux1?.ready&&aux1.session!==primarySession&&aux1.channel!==primaryChannel),
-        reloadCreatedFreshPairing:!!(aux2?.ready&&aux2.oldSession===aux1?.session&&aux2.session!==aux1?.session&&aux2.channel!==aux1?.channel),
-        primaryStayedConnected:!!(end.hud?.connected&&end.config?.session===primarySession)},
-      legacyHud:{result:legacyResult,legacySeenBeforeAlpha:obs.legacySeenBeforeAlpha,alphaReportsResearchHudDisposed:hs.researchHudDisposed===true},
-      warningSanity:{result:warningResult,observedWarningRows:obs.warningRows,allowedRuleIds:[...ALLOWED_RULES],invalidRows:obs.invalidWarnings},
-      performance:{result:perfPass?'PASS':(webglIncomplete?'INCOMPLETE':'FAIL'),...perf,automaticLimits:{minimumHudCallbackSamples:10,hudCallbackP95MsMax:16,hudCallbackSingleMaxMs:50,requiresGameDrawAdvance:true,requiresDetectorContinuity:true}},
-      safetyContract:{result:'EXTERNAL_QA_PRECONDITION',readOnly:true,ramWrites:0,inputInjection:false,note:'Fresh independent QA/static source inspection is authoritative; this support helper performs no game RAM or gameplay-input access.'}
-    },
-    failures:[...new Set(failures)],incomplete:[...new Set(incomplete)],
-    notes:[warningResult==='NOT_EXERCISED'?'No active T18 warning occurred naturally; infrastructure acceptance does not require provoking rare attacks.':null,
-      'Browser PASS is acceptance evidence only and is not an Alpha release declaration.'].filter(Boolean)
-  };
-  window.__WOF_ALPHA_ACCEPTANCE_RESULT=final;
-  console.log('WOF_ALPHA_ACCEPTANCE_RESULT',JSON.stringify(final));
-  setStatus(result);showResult(final);running=false;
-  return final;
+  const staleResult=actions.staleProbe||'INCOMPLETE';if(!['PASS','OFFLINE_GATE_ONLY'].includes(staleResult))incomplete.push('live stale probe unavailable or incomplete');
+  const renderAlive=obs.rafAtBegin>0&&(rafCount-obs.rafAtBegin)>0;const gameplayOk=obs.ownerConfirmedPlayable&&renderAlive&&launcher.roomRemainedPlayable===true;
+  if(!gameplayOk)incomplete.push('room playability/render liveness evidence incomplete');
+  let result='PASS — REAL BROWSER ACCEPTANCE V2';
+  if(!gatePass(integration))result='BLOCKED — TRANSPORT INTEGRATION NOT READY';
+  else if(failures.length)result='FAIL — REAL BROWSER ACCEPTANCE V2';
+  else if(incomplete.length)result='INCOMPLETE — REAL BROWSER ACCEPTANCE V2';
+  const out={schema:RESULT_SCHEMA,result,release:RELEASE,transportVersion:TRANSPORT,supportedBuild:BUILD,goldenSha256:GOLDEN,expectedIdentitySignature:ID_SIG,startedAt:obs.startedAt,finishedAt:nowIso(),durationMs:obs.startedAt?Date.now()-Date.parse(obs.startedAt):0,integrationGate:clone(integration),launcher:clone(launcher),pair,detectorIdentity:{result:identityOk?'PASS':'INCOMPLETE',accepted:obs.identityAccepted,signature:obs.identitySignature},firstCurrentPairState:{result:obs.firstState?'PASS':'INCOMPLETE',observed:!!obs.firstState,seq:obs.firstState?.seq??null,hudAuthorityOnlyAfterState:driver.firstCurrentPairState?.hudAuthorityOnlyAfterState??null},noWarningState:{result:obs.emptyStateSeen?'PASS':'INCOMPLETE',observed:obs.emptyStateSeen},stale1500:{result:staleResult,exactBoundaryAuthority:'offline integration regression',exact1500_1501Gate:integration.exactStaleBoundary1500_1501??null,browserObservedSilentAfter1500:driver.stale1500?.browserObservedSilentAfter1500??null},diagImmediateClear:{result:diagResult,currentPairDiagObserved:!!lastDiag,warningCountBefore:lastDiag?.warningCountBefore??null,warningCountNextTask:lastDiag?.warningCountNextTask??null,waitedForStaleTimeout:false},rebind:{result:pair.generationIncreased&&pair.nonceChanged?'PASS':'INCOMPLETE',freshPair:pair.generationIncreased&&pair.nonceChanged,freshStateObserved:driver.rebind?.freshStateObserved??false,oldAuthorityInherited:driver.rebind?.oldAuthorityInherited??null},negativePairRejection:neg,warningSanity:{result:warningResult,observedWarningRows:obs.warningRows,allowedRuleIds:[...ALLOWED_RULES],invalidRows:clone(obs.invalidWarnings)},gameplay:{result:gameplayOk?'PASS':'INCOMPLETE',ownerConfirmedPlayableAtStart:obs.ownerConfirmedPlayable,renderAliveAcrossStopRebind:renderAlive,roomRemainedPlayable:launcher.roomRemainedPlayable===true,navigationInjected:false},safety:{result:safetyPass(safety)?'PASS':'FAIL',readOnly:safety.readOnly??null,ramWrites:safety.ramWrites??null,inputInjection:safety.inputInjection??null,windowWorkerReplacement:safety.windowWorkerReplacement??null},failures:[...new Set(failures)],incomplete:[...new Set(incomplete)],notes:[warningResult==='NOT_EXERCISED'?'No approved T18 warning occurred naturally; no attack research was added.':null,'Browser acceptance evidence does not itself declare Alpha released.'].filter(Boolean)};
+  window.__WOF_ALPHA_ACCEPTANCE_RESULT=out;console.log('WOF_ALPHA_ACCEPTANCE_RESULT_V2',JSON.stringify(out));return out;
 }
 
-window.__WOF_ALPHA_ACCEPTANCE_HELPER={version:VERSION,start:runAcceptance,status:()=>({version:VERSION,auxRun:AUX_RUN,config:obs.cfg,stateCount:obs.stateCount,identitySignature:obs.identitySignature,diagCount:obs.diag.length,glSamples:obs.gl.samples.length})};
+window.__WOF_ALPHA_ACCEPTANCE_V2_COLLECTOR={version:VERSION,status,begin,mark,snapshot,postNegative,finalize,reset:()=>{resetRun();return status();}};
 
-const poll=setInterval(()=>{
-  attachProductChannel();
-  if(!window.WOFALPHAHUD&&window.WOFHUD)obs.legacySeenBeforeAlpha=true;
-  installGlProbe();
-  if(!AUX_RUN&&window.WOFALPHAHUD)ensureUi();
-},25);
-addEventListener('pagehide',()=>{try{obs.productBc?.close?.();control.close();}catch(_){} clearInterval(poll);},{once:true});
-
-if(AUX_RUN)auxMode().catch(e=>sendControl({kind:'aux-ready',runId:AUX_RUN,phase:'initial',ready:false,lastError:String(e?.stack||e)}));
+let ui,stat;
+function ensureUi(){
+  if(ui||!document.documentElement)return;
+  const d=document.createElement('div');d.style.cssText='position:fixed;right:10px;top:10px;z-index:2147483647;width:330px;background:rgba(15,15,18,.95);color:#fff;border:1px solid #aaa;border-radius:8px;padding:10px;font:13px/1.45 sans-serif;box-shadow:0 2px 12px #0008';
+  const title=document.createElement('div');title.textContent='WOF Alpha 真人验收 V2';title.style.cssText='font-weight:700;font-size:15px;margin-bottom:6px';
+  stat=document.createElement('div');stat.style.cssText='margin-bottom:8px;color:#ddd';
+  const b=document.createElement('button');b.textContent='当前房间可以正常操作，开始验收';b.style.cssText='width:100%;padding:8px;font-weight:700';
+  b.onclick=()=>{const r=begin({ownerConfirmedPlayable:true});stat.textContent=r.ok?'已开始采集。后续 stale / diag / rebind 由集成后的 Launcher 自动执行。':'无法开始：'+r.error;};
+  d.append(title,stat,b);document.documentElement.appendChild(d);ui=d;
+}
+setInterval(()=>{
+  const s=status();
+  if((s.pageConfig||s.transport)&&!ui)ensureUi();
+  if(stat&&!obs.started)stat.textContent=s.ready?'已发现 Safe Transport current pair；等待开始验收。':'验收准备已完成；当前等待 Safe Transport Integration / current pair。';
+},100);
+addEventListener('pagehide',()=>{try{obs.bc?.close?.();}catch(_){}},{once:true});
 })();
