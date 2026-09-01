@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "REGRESSION_ORCH_DISCOVERY_V2_GUARD_V1",
+  "promptPath": "parallel/PM/REGRESSION_ORCH_DISCOVERY_V2_GUARD_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "06c8ce3c1c7a79ea5a9b331f8f677b05aa3332de",
+  "startedAtUtc": "2026-09-01T13:43:00Z"
+}
