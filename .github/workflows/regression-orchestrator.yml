@@ -1,0 +1,51 @@
+name: Regression Orchestrator
+
+on:
+  push:
+    paths:
+      - 'parallel/REGRESSION_ORCH/**'
+      - '.github/workflows/regression-orchestrator.yml'
+  workflow_dispatch:
+
+jobs:
+  windows-offline-regression:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install existing dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --disable-pip-version-check -r parallel/PYLAUNCH/requirements.txt
+          python -m pip install --disable-pip-version-check -r parallel/WOF052L_RECORDER/requirements.txt
+
+      - name: Compile orchestrator
+        run: python -m py_compile parallel/REGRESSION_ORCH/orchestrator.py parallel/REGRESSION_ORCH/tests/test_orchestrator.py
+
+      - name: Run full offline regression
+        run: python parallel/REGRESSION_ORCH/orchestrator.py --repo-root . --ci
+
+      - name: Upload regression summary and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-orchestrator-windows-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            parallel/REGRESSION_ORCH/REGRESSION_SUMMARY.json
+            parallel/REGRESSION_ORCH/回归结果.txt
+            parallel/REGRESSION_ORCH/logs/**
