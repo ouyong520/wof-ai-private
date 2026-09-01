@@ -115,7 +115,7 @@ def is_runtime_path(path: str) -> bool:
 
 
 def selected_paths_from_commit(root: Path, commit: str) -> dict[str, str]:
-    out = run_git(root, "ls-tree", "-r", commit, "--", "WOF_一键工具.cmd", "WOF_TOOLKIT.cmd",
+    out = run_git(root, "-c", "core.quotepath=false", "ls-tree", "-r", commit, "--", "WOF_一键工具.cmd", "WOF_TOOLKIT.cmd",
                   "parallel/OPTOOLKIT", "parallel/PYLAUNCH", "parallel/WOF052L_RECORDER",
                   "parallel/BROWSER_FLEET", "parallel/LIVE_PROOF_BUNDLE",
                   "product/alpha", "parallel/ALPHAQA_RC5")
