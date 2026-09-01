@@ -1,131 +1,112 @@
-# WOF Prospective Validator Framework — Result
+# WOF Prospective Validator — Result
+
+更新时间：2026-09-01
 
 ## Verdict
 
-**READY — repository-side stop condition reached.**
+**PROSPECTIVE VALIDATOR DISCOVERY V2 READY**
 
-未来分析线产出候选 manifest 后，不需要再开发新的 prospective validator。候选文件可以直接交给：
+Prospective Validator 的真人 Browser owner path 已从旧的 `Target.getTargets -> type=worker -> gstyphoon*.js URL` 硬过滤切换到独立 Discovery V2。原 prospective manifest / freeze / evidence / verdict 引擎保持不变。
+
+owner 仍使用：
 
 `RUN_PROSPECTIVE_VALIDATOR.cmd candidate.json`
 
-框架会复用现有 Browser Fleet / localhost CDP，独立附加真实 gstyphoon Worker，并按同一规则引擎完成前瞻统计。
+该入口现在执行 `live_validator_v2.py`。
 
-## Delivered
+## Discovery V2 delivered
 
-- `validator.py`
-  - manifest validation；
-  - ordered `tail2 / pair / tail3 / triple`；
-  - exact signature / `TM*` family / state predicates；
-  - current-level predicates；
-  - signal / strict / jitter / late / hardMiss / censored；
-  - target / side / retarget evidence；
-  - multi-room aggregation；
-  - compact `wof-prospective-result-v1`；
-  - WOF-052L recorder adapter；
-  - discovery/prospective hard separation；
-  - production promotion permanently disabled。
+- `discovery_v2.py`
+  - direct Worker backward compatibility；
+  - page-session `Target.setAutoAttach`；
+  - page -> iframe -> Worker / shared_worker / service_worker related topology；
+  - Worker URL 不再是身份 gate，允许 hashed / changed / blob 等 URL shape；
+  - WASM/module/heap readiness gate；
+  - exact World 921031 SHA-256 gate：`5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`；
+  - wrong / missing / ambiguous Worker fail-closed；
+  - direct Worker page association 优先 parent/opener，再用唯一 browserContext，再用单 page fallback；
+  - related ancestry session ownership，避免 iframe -> Worker session 生命周期被误拆；
+  - discovery diagnostics 固定 `evidenceClass=discovery-only`；
+  - CDP event receiver 仅增加 `Target.setAutoAttach`，没有 gameplay `Input.*`。
 
-- `live_validator.py`
-  - Browser Fleet manifest reuse；
-  - localhost CDP fallback；
-  - endpoint re-probe；
-  - real `gstyphoon*.js` Worker discovery；
-  - strict World 921031 full CPU-logical SHA-256 identity gate；
-  - read-only live state matcher；
-  - wrong attack hard miss；
-  - no-ACTIVE timeout hard miss；
-  - Worker/reload/stop pending signal censored；
-  - independent room/session lifecycle；
-  - rolling corpus/result output。
-
-- `start_session.py`
-  - freezes candidate SHA-256 + timestamp；
-  - prevents pre-freeze discovery corpus from being relabelled as prospective；
-  - detects manifest mutation after freeze。
-
-- `prospective_run.py`
-  - compatibility path that can freeze a candidate, reuse the existing WOF-052L Recorder unchanged, then validate fresh per-room files。
+- `live_validator_v2.py`
+  - 每个 Browser Fleet / localhost endpoint 独立 discovery、session、room map；
+  - 2 / 10 room targetId 即使相同也不会跨 endpoint 合并；
+  - direct Worker 消失 -> 结束该 room；
+  - related Worker path 以 page 生命周期 + Worker session drain 健康度处理 reload/recreated Worker；
+  - 周期性 live topology audit，若同一 page 出现多个通过身份 gate 的 Worker，立即 fail-closed；
+  - 单房间 discovery / attach / CDP 失败不影响其他 endpoint / room；
+  - prospective probe 启动前再次 `validate_session()`；
+  - 写 corpus 前再次校验 frozen candidate manifest SHA-256；
+  - discovery diagnostics 只保存在内存 endpoint diagnostics，不写入 prospective corpus；
+  - owner-facing 正常状态 / 错误 / PASS path 使用简体中文。
 
 - `RUN_PROSPECTIVE_VALIDATOR.cmd`
-  - candidate manifest is the only required argument for the generic live path；
-  - owner-facing output is Simplified Chinese。
+  - 原一键入口保持；
+  - 现在明确显示 Discovery V2；
+  - 默认 UTF-8 / 简体中文；
+  - 调用 `live_validator_v2.py`。
 
-- schemas/examples/fixtures/tests
-  - manifest schema；
-  - unified corpus schema；
-  - T18 BODY4728 ordered-tail expression example；
-  - T23 A5888 BODY4936 tail3 example；
-  - simple current-level predicate example；
-  - prospective/discovery mock corpus。
+## Regression
 
-## Evidence boundary preserved
+新增 `test_discovery_v2.py`，离线执行结果：**12/12 PASS**。
 
-WOF-051 remains authoritative that:
+覆盖：
 
-`S0/A4/B2|BODY4728|FE8b660|NX8b204|Vffff|TM1|P6C4736`
+1. direct worker backward compatibility — PASS；
+2. related-target-only — PASS；
+3. iframe -> worker — PASS；
+4. URL mismatch but valid related runtime — PASS；
+5. WASM not ready fail-closed — PASS；
+6. wrong World identity fail-closed — PASS；
+7. ambiguous Workers fail-closed — PASS；
+8. Worker replacement / reload liveness — PASS；
+9. two / ten endpoint isolation — PASS；
+10. discovery evidence explicitly non-prospective — PASS；
+11. read-only allowlist excludes gameplay Input / `Runtime.callFunctionOn` — PASS；
+12. Worker URL shape is not identity gate — PASS。
 
-is forward-relevant but attack-ambiguous because it prospectively produced both A4704 and A4712.
+既有 `test_validator.py` 的 repository-side framework regression 保留不变，其中已经覆盖启动提示要求的两个关键边界：
 
-Therefore the T18 example manifest in this framework is explicitly an **expression/test vector only**. It does not claim that the sample post-state is a discovered A4704-specific rule.
+- frozen manifest mutation rejection；
+- pre-freeze discovery corpus 不得变 prospective。
 
-WOF-047's observed T23 A5888 BODY4936 ordered tail3 is represented as a research-only example and is not auto-promoted.
+因此 Discovery V2 改动没有修改 candidate hashing、session freeze、prospective evidence classification 或 production promotion policy。
 
-## Validation performed
+推荐仓库回归命令：
 
-Local repository-independent checks completed before write-back:
+`cd parallel/PROSPECTIVE_VALIDATOR && python -m unittest -v test_validator.py test_discovery_v2.py`
 
-- Python compile: PASS
-  - `validator.py`
-  - `start_session.py`
-  - `prospective_run.py`
-  - `live_validator.py`
+## Safety
 
-- Unit regression: **12/12 PASS**
-  - T18 tail2 + prospective gate；
-  - T23 tail3 + timer normalization；
-  - current-level predicate；
-  - discovery isolation；
-  - wrong attack -> hard miss；
-  - no ACTIVE timeout -> hard miss；
-  - censored signal；
-  - Recorder default discovery；
-  - post-freeze Recorder room -> prospective；
-  - pre-freeze Recorder room -> discovery；
-  - frozen manifest mutation rejected；
-  - production promotion rejected。
-
-- Generated live Worker probe: `node --check` PASS。
-
-- Mock CLI run: PASS；produced compact result with:
-  - signal=2；
-  - strict=1；
-  - jitter=1；
-  - hardMiss=0；
-  - two prospective rooms；
-  - verdict=`PROSPECTIVE_PASS_RESEARCH_ONLY`；
-  - `productionPromotionAllowed=false`。
-
-## Safety audit
-
-No files outside `parallel/PROSPECTIVE_VALIDATOR/**` are changed by this lane.
-
-Runtime policy remains:
+固定不变：
 
 - `readOnly=true`；
 - `ramWrites=0`；
 - `inputInjection=false`；
-- `windowWorkerReplacement=false`；
-- no gameplay input；
-- no game RAM write；
-- no Alpha modification；
-- no PYLAUNCH modification；
-- no Recorder modification；
-- no Browser Fleet modification。
+- no `window.Worker` replacement / wrap；
+- no Blob/Data/ObjectURL Worker rewrite；
+- no game RAM writes；
+- no gameplay input injection；
+- no production rule auto-promotion。
+
+本线写入仅发生在：
+
+`parallel/PROSPECTIVE_VALIDATOR/**`
+
+没有修改：
+
+- `parallel/PYLAUNCH/**`；
+- `parallel/BROWSER_FLEET/**`；
+- `parallel/WOF052L_RECORDER/**`；
+- `product/alpha/**`。
+
+## Remaining real-browser proof
+
+不再单独要求 owner 为 discovery 做一次额外真人操作。
+
+唯一保留的真人 Browser proof 是：未来第一次真实 prospective candidate session 正常运行时，同时确认一次 Discovery V2 的 page / iframe / Worker admission、World 921031 identity、read-only safety 与 prospective trace 输出。该 proof 与真实 prospective session 合并执行，不额外浪费 owner 操作。
 
 ## Stop condition
 
-Satisfied:
-
-> future analysis line emits a candidate manifest -> fresh prospective validation needs only that candidate file, not a new validator implementation.
-
-A real Windows/browser run is now evidence collection, not repository-side framework development.
+**PROSPECTIVE VALIDATOR DISCOVERY V2 READY**
