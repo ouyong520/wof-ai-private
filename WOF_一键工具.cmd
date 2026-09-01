@@ -3,7 +3,7 @@ setlocal EnableExtensions
 chcp 65001 >nul 2>&1
 title WOF 一键工具
 
-set "BOOT_URL=https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/parallel/OWNER_ONECLICK/bootstrap.ps1"
+set "BOOT_URL=https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/parallel/OWNER_ONECLICK/bootstrap_v2.ps1"
 set "BOOT_PS1=%TEMP%\WOF_owner_bootstrap_%RANDOM%_%RANDOM%.ps1"
 
 echo.
