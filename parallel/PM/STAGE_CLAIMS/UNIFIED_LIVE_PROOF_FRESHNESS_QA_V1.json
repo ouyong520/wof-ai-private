@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_FRESHNESS_QA_V1",
+  "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_FRESHNESS_QA_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "c1347a4a6cc5c1da97c77e733c617f294263080e",
+  "startedAtUtc": "2026-09-01T14:37:00Z"
+}
