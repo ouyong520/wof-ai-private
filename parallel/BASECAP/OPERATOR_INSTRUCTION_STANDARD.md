@@ -1,112 +1,186 @@
-# BASECAP Operator Instruction Standard
+# BASECAP 操作员指令标准
 
 Updated: 2026-09-01
 
-Purpose: eliminate ambiguity in every human-operated BASECAP capture. A Collector task must tell the operator exactly what to press, whether to hold it, exactly when to release it, how long to remain idle after release, what visible condition to confirm, and what inputs are forbidden.
+目的：消除人工采集中的动作歧义，并让所有可复用标签都能对应到明确的物理操作和可观察条件。
 
-## Hard rule
+## 1. 所有操作员可见文字必须为中文
 
-Never write ambiguous instructions such as:
+硬规则：
 
-- `按左 2 秒`
-- `左右切换几次`
-- `移动一下然后停`
-- `攻击几次`
+- `operatorGate.label` 使用中文；
+- `operatorGate.instructions` 每一条使用中文；
+- Collector 主窗口给人的提示使用中文；
+- taskId、文件名、JSON 字段名、按键名称等技术标识可以保留英文。
 
-These can mean materially different experiments and are forbidden for canonical BASECAP acquisition.
+不得把英文操作短语作为实际操作指令，例如不得只显示 `PRESS / HOLD / WAIT / CAPTURE STARTED`。
 
-Every input step must use one of the explicit forms below.
+## 2. 当前启动方式：Collector v2 单窗口
 
-## Canonical action vocabulary
+人工任务标准流程：
 
-### TAP / 轻点
+```text
+Collector 自动发现任务
+-> 主窗口自动显示当前任务和完整步骤
+-> 操作者准备游戏场景
+-> 在主 Collector 窗口按一次回车
+-> 看到“采集已开始”
+-> 执行任务动作
+-> Collector 自动采集、上传、写结果
+-> 自动等待下一任务
+```
 
-Meaning:
+`READY_WOF_TASK.bat` 已废弃。操作者不需要按回车刷新任务，也不需要额外 READY 窗口。
 
-`按下指定按键 -> 立即松开；不要持续按住。`
+回车只用于：**在已经显示的当前任务上，确认场景准备完成并立即开始采集。**
 
-Required wording example:
+## 3. 禁止模糊动作
 
-`轻点 LEFT 1 次：按下 LEFT 后立即松开，不要按住。`
+禁止写：
 
-A TAP duration is never described as `LEFT 2 秒`. Any waiting duration must be written as a separate step after release.
+- `按左 2 秒`；
+- `左右切换几次`；
+- `移动一下然后停`；
+- `攻击几次`；
+- `往右走一会`。
 
-### HOLD / 按住
+这些文字可能对应不同实验，不能用于 canonical BASECAP。
 
-Meaning:
+## 4. 三种标准物理动作
 
-`持续按住指定按键达到明确时长 -> 到时立即松开。`
+### 轻点
 
-Required wording example:
+含义：
 
-`持续按住 LEFT 2 秒；2 秒结束时立即松开 LEFT。`
+```text
+按下指定键 -> 立即松开；不要持续按住。
+```
 
-### WAIT / 静止
+正确示例：
 
-Meaning:
+```text
+轻点 P1 普通攻击键 1 次：按下后立即松开，不要按住；松开后什么游戏键都不按，静止 2 秒。
+```
 
-`所有指定 gameplay controls 保持松开，不输入任何动作，持续明确时长。`
+### 持续按住
 
-Required wording example:
+含义：
 
-`LEFT 已松开后，双手离开方向键和动作键，静止 2 秒。`
+```text
+按下指定键 -> 连续保持明确时长 -> 到时立即松开。
+```
 
-### RELEASE / 松开
+正确示例：
 
-When a prior step used HOLD, release must be explicit:
+```text
+持续按住 P2 右方向键 2 秒；2 秒结束时立即松开右方向键。松开后所有 P2 游戏键都不按，静止 1 秒。
+```
 
-`到时立即松开 LEFT；确认 LEFT 已完全松开后再进入下一步。`
+### 静止
 
-## Required task structure
+含义：
 
-Every operator-gated BASECAP task with active inputs must be written in this order:
+```text
+任务指定的所有游戏控制保持松开，不输入任何动作，持续明确时长。
+```
 
-1. **Pre-scene** — where P1 must be, whether combat/camera scroll is allowed, P2/P3 requirements.
-2. **READY identity** — exact taskId that `READY_WOF_TASK.bat` must print as accepted.
-3. **Post-READY timing guard** — for short-action scenes under current Collector v1, provide 12 seconds of zero input after exact READY acceptance.
-4. **Action sequence** — numbered, one physical action per step.
-5. **Release step** — every HOLD must state when to release; every TAP must state immediate release.
-6. **Idle interval** — any pause is a separate WAIT step and begins only after release.
-7. **Visible confirmation** — when relevant, state what the operator should visually verify.
-8. **Repeat count** — exact repeat count or explicit `if time remains, repeat once`; never `repeat several times`.
-9. **Forbidden inputs** — list UP/DOWN/LEFT/RIGHT/attack/jump/etc. that must not be used outside the specified steps.
-10. **Other players** — explicitly state whether P2/P3 must remain untouched.
+静止时间从前一个动作**已经松开**后开始计算。
 
-## Example: correct B12 facing wording
+## 5. 每个主动输入步骤必须包含
 
-After exact READY acceptance:
+每一步至少明确：
 
-1. `什么都不要按，静止 12 秒。`
-2. `轻点 LEFT 1 次：按下 LEFT 后立即松开，不要按住。`
-3. `确认人物已经朝左；LEFT 已松开后，什么都不要按，静止 2 秒。`
-4. `轻点 RIGHT 1 次：按下 RIGHT 后立即松开，不要按住。`
-5. `确认人物已经朝右；RIGHT 已松开后，什么都不要按，静止 2 秒。`
-6. `如果时间允许，只再完整重复一次步骤 2-5。`
+1. 哪个玩家：P1 / P2 / P3；
+2. 哪个按键；
+3. 轻点还是持续按住；
+4. 若持续按住，明确秒数；
+5. 明确松开时机；
+6. 松开后是否静止、静止多久；
+7. 是否重复、重复几次；
+8. 相关肉眼确认条件；
+9. 禁止哪些其它输入；
+10. 其它玩家是否必须保持不动。
 
-This is intentionally different from:
+任何一项会影响场景标签而未说明时，任务不得提交。
 
-`按住 LEFT 2 秒`
+## 6. 人工任务推荐结构
 
-which would be a horizontal-movement experiment rather than a minimal-displacement facing experiment.
+按以下顺序写：
 
-## User-facing instruction rule
+1. **场景准备**：人物位置、敌人/战斗、镜头是否允许滚动、其他玩家要求；
+2. **初始松开状态**：确认方向键和动作键已全部松开；
+3. **开始条件**：场景准备好后，在主 Collector 窗口按一次回车；
+4. **正式动作起点**：必须看到“采集已开始”后才执行下面动作；
+5. **动作步骤**：一个物理动作一个步骤，明确按下/按住/松开；
+6. **动作后静止**：与按键动作分开描述；
+7. **肉眼确认**：例如“背景/整个画面确实出现横向滚动”；
+8. **禁止输入**；
+9. **失败条件**：若可观察条件未发生，允许采集结束，但明确告知该 raw 不作为 canonical 标签。
 
-When asking the operator to perform a capture, ChatGPT must present the exact ordered steps in Chinese, including:
+## 7. 典型正确示例
 
-- which key;
-- TAP or HOLD;
-- release timing;
-- wait timing after release;
-- repeat count;
-- forbidden inputs;
-- exact READY taskId when relevant.
+### B13 原地普通攻击
 
-Do not compress the steps into shorthand that changes semantics.
+```text
+看到“采集已开始”后：
+第 1 次轻点普通攻击键，立即松开；静止 2 秒。
+第 2 次轻点普通攻击键，立即松开；静止 2 秒。
+第 3 次轻点普通攻击键，立即松开；静止 2 秒。
+第 4 次轻点普通攻击键，立即松开；之后不再按任何游戏键直到结束。
+全程禁止方向、跳跃和其它动作；P2/P3 不操作。
+```
 
-## Validation rule
+### B20 镜头滚动
 
-A mechanically healthy Collector PASS does not prove that the intended human sequence was executed. If operator wording was ambiguous, timing was unsafe, the user reports a different action, or the control-plane timing cannot guarantee the action fell inside the raw window, the capture must not be promoted as a canonical labeled baseline.
+```text
+看到“采集已开始”后先静止 2 秒。
+持续按住 P1 右方向键 6 秒；6 秒结束立即松开。
+肉眼确认期间背景/整个画面至少出现一次明显横向滚动。
+松开后不再按任何游戏键直到结束。
+```
 
-## Scope
+### B40 P2/P3 四方向
 
-This standard applies only to BASECAP acquisition protocol. It does not authorize automatic keypresses, game-memory writes, Browser/WASM promotion, or semantic field conclusions.
+```text
+右 2 秒 -> 松开 -> 静止 1 秒
+左 2 秒 -> 松开 -> 静止 1 秒
+上 2 秒 -> 松开 -> 静止 1 秒
+下 2 秒 -> 松开 -> 静止到采集结束
+```
+
+必须在任务文本中明确这是 P2 还是 P3，并明确其它玩家全程不操作。
+
+## 8. VALID 证据规则
+
+机械 `PASS` 不等于人工语义成功。
+
+若出现以下任一情况，不得直接升为 canonical `VALID`：
+
+- 操作文字有歧义；
+- 操作者报告实际动作与任务不同；
+- 关键肉眼条件未发生；
+- 控制平面无法保证动作落在 raw 窗口内；
+- task/result SHA 不匹配；
+- raw 未 retained；
+- 存在读取/帧长错误。
+
+不得根据 raw 数值本身猜操作者做过某个动作。
+
+## 9. 历史协议
+
+旧 Collector v1 使用 `READY_WOF_TASK.bat`，存在 READY 与正式采集启动不同步的问题。历史 capture 的标签必须继续按其当时真实协议判断，不能因为 v2 已修复就追溯性重写为安全。
+
+详见：
+
+```text
+parallel/BASECAP/OPERATOR_GATE_TIMING_NOTE.md
+```
+
+## 10. 范围
+
+本标准只定义 BASECAP 人工采集协议。它不授权：
+
+- 自动按键；
+- 游戏 RAM 写入；
+- Browser/WASM production promotion；
+- 字段语义结论。
