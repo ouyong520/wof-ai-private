@@ -1,6 +1,6 @@
 {
   "schema": "wof-regression-orchestrator-manifest-v1",
-  "version": 3,
+  "version": 4,
   "ownerLanguage": "zh-CN",
   "guardRoots": [
     "parallel/REGRESSION_ORCH",
@@ -21,6 +21,7 @@
     "parallel/REGRESSION_ORCH/tests/test_runner.py",
     "parallel/PYLAUNCH/tests/test_discovery.py",
     "parallel/PYLAUNCH/tests/test_discovery_v2.py",
+    "parallel/PYLAUNCH/tests/test_endpoint_hardening.py",
     "parallel/PYLAUNCH/tests/test_fleet_registry.py",
     "parallel/PYLAUNCH/tests/test_windows_proof.py",
     "parallel/BROWSER_FLEET/tests/test_fleet_manager.py",
@@ -28,7 +29,12 @@
     "parallel/BROWSER_FLEET/tests/test_fleet_manager_v2.py",
     "parallel/WOF052L_RECORDER/test_fleet_recorder.py",
     "parallel/WOF052L_RECORDER/test_discovery_v2_sync.py",
+    "parallel/WOF052L_RECORDER/test_hardening_v2.py",
     "parallel/PROSPECTIVE_VALIDATOR/test_validator.py",
+    "parallel/PROSPECTIVE_VALIDATOR/test_discovery_v2.py",
+    "parallel/PROSPECTIVE_VALIDATOR/test_discovery_v2_hardening.py",
+    "parallel/PROSPECTIVE_VALIDATOR/test_entrypoint_v2.py",
+    "parallel/PROSPECTIVE_VALIDATOR/test_validator_hardening.py",
     "parallel/OPTOOLKIT/tests/test_chinese_owner_ux.py",
     "parallel/OPTOOLKIT/tests/test_toolkit.py",
     "parallel/OWNER_ONECLICK/test_package.py",
@@ -59,12 +65,14 @@
       "requiredPaths": [
         "parallel/PYLAUNCH/tests/test_discovery.py",
         "parallel/PYLAUNCH/tests/test_discovery_v2.py",
+        "parallel/PYLAUNCH/tests/test_endpoint_hardening.py",
         "parallel/PYLAUNCH/tests/test_fleet_registry.py",
         "parallel/PYLAUNCH/tests/test_windows_proof.py"
       ],
       "commands": [
         {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "-m", "unittest", "discover", "-s", "tests", "-p", "test_discovery.py", "-v"]},
         {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "-m", "unittest", "discover", "-s", "tests", "-p", "test_discovery_v2.py", "-v"]},
+        {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "-m", "unittest", "discover", "-s", "tests", "-p", "test_endpoint_hardening.py", "-v"]},
         {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "-m", "unittest", "discover", "-s", "tests", "-p", "test_fleet_registry.py", "-v"]},
         {"cwd": "parallel/PYLAUNCH", "argv": ["{python}", "-m", "unittest", "discover", "-s", "tests", "-p", "test_windows_proof.py", "-v"]}
       ]
@@ -86,26 +94,47 @@
     },
     {
       "id": "wof052l_recorder",
-      "nameZh": "WOF-052L Recorder 自检 / Fleet / Discovery v2 回归",
+      "nameZh": "WOF-052L Recorder V2 自检 / Fleet / Discovery 回归",
       "safetyCritical": true,
       "requiredPaths": [
         "parallel/WOF052L_RECORDER/owner_zh_cn.py",
+        "parallel/WOF052L_RECORDER/owner_v2_zh_cn.py",
+        "parallel/WOF052L_RECORDER/discovery_v2_sync.py",
+        "parallel/WOF052L_RECORDER/hardening_v2.py",
         "parallel/WOF052L_RECORDER/test_fleet_recorder.py",
-        "parallel/WOF052L_RECORDER/test_discovery_v2_sync.py"
+        "parallel/WOF052L_RECORDER/test_discovery_v2_sync.py",
+        "parallel/WOF052L_RECORDER/test_hardening_v2.py"
       ],
       "commands": [
-        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "owner_zh_cn.py", "--self-test"]},
+        {"cwd": ".", "argv": ["{python}", "-m", "py_compile", "parallel/WOF052L_RECORDER/owner_v2_zh_cn.py", "parallel/WOF052L_RECORDER/discovery_v2_sync.py", "parallel/WOF052L_RECORDER/hardening_v2.py"]},
+        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "owner_v2_zh_cn.py", "--self-test"]},
         {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "test_fleet_recorder.py"]},
-        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "test_discovery_v2_sync.py"]}
+        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "test_discovery_v2_sync.py"]},
+        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "test_hardening_v2.py"]}
       ]
     },
     {
       "id": "prospective_validator",
-      "nameZh": "Prospective Validator 离线回归",
+      "nameZh": "Prospective Validator Discovery V2 / Evidence 离线回归",
       "safetyCritical": true,
-      "requiredPaths": ["parallel/PROSPECTIVE_VALIDATOR/test_validator.py"],
+      "requiredPaths": [
+        "parallel/PROSPECTIVE_VALIDATOR/discovery_v2.py",
+        "parallel/PROSPECTIVE_VALIDATOR/discovery_v2_hardening.py",
+        "parallel/PROSPECTIVE_VALIDATOR/live_validator_v2.py",
+        "parallel/PROSPECTIVE_VALIDATOR/live_validator_v2_hardened.py",
+        "parallel/PROSPECTIVE_VALIDATOR/test_validator.py",
+        "parallel/PROSPECTIVE_VALIDATOR/test_discovery_v2.py",
+        "parallel/PROSPECTIVE_VALIDATOR/test_discovery_v2_hardening.py",
+        "parallel/PROSPECTIVE_VALIDATOR/test_entrypoint_v2.py",
+        "parallel/PROSPECTIVE_VALIDATOR/test_validator_hardening.py"
+      ],
       "commands": [
-        {"cwd": "parallel/PROSPECTIVE_VALIDATOR", "argv": ["{python}", "test_validator.py"]}
+        {"cwd": ".", "argv": ["{python}", "-m", "py_compile", "parallel/PROSPECTIVE_VALIDATOR/discovery_v2.py", "parallel/PROSPECTIVE_VALIDATOR/discovery_v2_hardening.py", "parallel/PROSPECTIVE_VALIDATOR/live_validator_v2.py", "parallel/PROSPECTIVE_VALIDATOR/live_validator_v2_hardened.py"]},
+        {"cwd": "parallel/PROSPECTIVE_VALIDATOR", "argv": ["{python}", "test_validator.py"]},
+        {"cwd": "parallel/PROSPECTIVE_VALIDATOR", "argv": ["{python}", "test_discovery_v2.py"]},
+        {"cwd": "parallel/PROSPECTIVE_VALIDATOR", "argv": ["{python}", "test_discovery_v2_hardening.py"]},
+        {"cwd": "parallel/PROSPECTIVE_VALIDATOR", "argv": ["{python}", "test_entrypoint_v2.py"]},
+        {"cwd": "parallel/PROSPECTIVE_VALIDATOR", "argv": ["{python}", "test_validator_hardening.py"]}
       ]
     },
     {
