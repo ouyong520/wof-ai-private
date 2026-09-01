@@ -16,6 +16,7 @@ READ_ONLY_METHODS = {
     "Target.detachFromTarget",
     # Discovery/attachment state only. These do not write game/WASM memory or inject input.
     "Target.setAutoAttach",
+    "Page.getFrameTree",
     "Runtime.enable",
     "Runtime.evaluate",
 }
@@ -143,7 +144,7 @@ class CdpClient:
         with self._id_lock:
             message_id = self._next_id
             self._next_id += 1
-        q: queue.Queue[dict[str, Any]] = queue.Queue(maxsize=1)
+        q: queue.Queue[dict[str, Any]]] = queue.Queue(maxsize=1)
         with self._pending_lock:
             self._pending[message_id] = q
         payload: dict[str, Any] = {"id": message_id, "method": method, "params": params or {}}
