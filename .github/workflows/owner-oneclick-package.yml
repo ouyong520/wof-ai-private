@@ -37,27 +37,35 @@ jobs:
       - name: First install through real Chinese CMD
         shell: powershell
         run: |
-          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP 'WOF 中文 路径\Local App Data'
+          $cn = [string]([char]0x4E2D) + [char]0x6587
+          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Path\Local App Data')
           New-Item -ItemType Directory -Path $env:LOCALAPPDATA -Force | Out-Null
-          cmd.exe /d /c "call WOF_一键工具.cmd --update-only"
-          if ($LASTEXITCODE -ne 0) { throw "first install failed: $LASTEXITCODE" }
+          $entryName = 'WOF_' + [char]0x4E00 + [char]0x952E + [char]0x5DE5 + [char]0x5177 + '.cmd'
+          $entry = Join-Path (Get-Location) $entryName
+          $cmdLine = 'call "' + $entry + '" --update-only'
+          cmd.exe /d /c $cmdLine
+          if ($LASTEXITCODE -ne 0) { throw ('first install failed: ' + $LASTEXITCODE) }
           $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
           $current = Join-Path $root 'current.txt'
           if (-not (Test-Path -LiteralPath $current)) { throw 'current.txt missing after first install' }
           $version = (Get-Content -LiteralPath $current -Raw).Trim()
-          if ($version -ne '2026.09.01.2') { throw "unexpected installed version: $version" }
+          if ($version -ne '2026.09.01.2') { throw ('unexpected installed version: ' + $version) }
           $release = Join-Path $root ('releases\' + $version)
           foreach ($p in @('installed.ok','WOF_TOOLKIT.cmd','parallel\OPTOOLKIT\owner_zh_cn.py','parallel\WOF052L_RECORDER\owner_zh_cn.py','parallel\BROWSER_FLEET\fleet_owner_zh_cn.py')) {
-            if (-not (Test-Path -LiteralPath (Join-Path $release $p))) { throw "installed file missing: $p" }
+            if (-not (Test-Path -LiteralPath (Join-Path $release $p))) { throw ('installed file missing: ' + $p) }
           }
           if (Get-ChildItem -LiteralPath (Join-Path $root 'releases') -Directory -Filter '*.staging-*') { throw 'staging directory remained after successful install' }
       - name: Re-run one-click updater and preserve installed version
         shell: powershell
         run: |
-          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP 'WOF 中文 路径\Local App Data'
-          cmd.exe /d /c "call WOF_一键工具.cmd --update-only"
-          if ($LASTEXITCODE -ne 0) { throw "second run failed: $LASTEXITCODE" }
+          $cn = [string]([char]0x4E2D) + [char]0x6587
+          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Path\Local App Data')
+          $entryName = 'WOF_' + [char]0x4E00 + [char]0x952E + [char]0x5DE5 + [char]0x5177 + '.cmd'
+          $entry = Join-Path (Get-Location) $entryName
+          $cmdLine = 'call "' + $entry + '" --update-only'
+          cmd.exe /d /c $cmdLine
+          if ($LASTEXITCODE -ne 0) { throw ('second run failed: ' + $LASTEXITCODE) }
           $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
           $version = (Get-Content -LiteralPath (Join-Path $root 'current.txt') -Raw).Trim()
-          if ($version -ne '2026.09.01.2') { throw "version changed unexpectedly: $version" }
+          if ($version -ne '2026.09.01.2') { throw ('version changed unexpectedly: ' + $version) }
           if (-not (Test-Path -LiteralPath (Join-Path $root 'releases\2026.09.01.2\installed.ok'))) { throw 'last-known-good missing after second run' }
