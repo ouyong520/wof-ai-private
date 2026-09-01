@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "WOF_ASSIST_INPUT_EXECUTION_ARCH_V1",
+  "promptPath": "parallel/PM/WOF_ASSIST_INPUT_EXECUTION_ARCH_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "005f590108e69421b8073cc280d1b9ccb3a39699",
+  "startedAtUtc": "2026-09-01T16:08:00Z"
+}
