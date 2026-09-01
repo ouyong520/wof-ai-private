@@ -4,7 +4,13 @@ import threading
 from pathlib import Path
 from typing import Callable
 
-from .browser import BrowserEndpoint, find_browser, launch_debug_browser, probe_endpoint, wait_for_endpoint
+from .browser import (
+    BrowserEndpoint,
+    find_browser,
+    launch_debug_browser,
+    probe_endpoint_diagnostic,
+    wait_for_endpoint_diagnostic,
+)
 from .cdp import CdpClient, CdpError
 from .discovery_v2 import discover
 from .state import StatusStore
@@ -18,6 +24,7 @@ class LauncherMonitor:
         self._stop = threading.Event(); self._kick = threading.Event(); self._thread: threading.Thread | None = None
         self._client: CdpClient | None = None; self._endpoint: BrowserEndpoint | None = None; self._browser_process = None
         self._last_worker_id: str | None = None; self._last_identity: dict | None = None; self._identity_cache: dict[str, dict] = {}
+        self._startup_attestation_error: str | None = None
 
     def start(self) -> None:
         if self._thread and self._thread.is_alive(): return
@@ -27,9 +34,12 @@ class LauncherMonitor:
         self._stop.set(); self._kick.set()
         if self._client: self._client.close()
 
-    def reconnect(self) -> None:
+    def _invalidate_authority(self) -> None:
         if self._client: self._client.close()
         self._client = None; self._endpoint = None; self._last_worker_id = None; self._last_identity = None; self._identity_cache.clear()
+
+    def reconnect(self) -> None:
+        self._invalidate_authority(); self._startup_attestation_error = None
         self.status.reset_runtime(); self._notify(); self._kick.set()
 
     def open_game(self) -> None:
@@ -44,12 +54,19 @@ class LauncherMonitor:
             except Exception: pass
 
     def _ensure_browser(self) -> BrowserEndpoint | None:
-        endpoint = probe_endpoint(self.host, self.port)
+        self._startup_attestation_error = None
+        endpoint, rejection = probe_endpoint_diagnostic(self.host, self.port)
         if endpoint: return endpoint
+        if rejection:
+            self._startup_attestation_error = rejection
+            return None
         if not self.auto_launch_browser: return None
         if self._browser_process is not None:
             try:
-                if self._browser_process.poll() is None: return wait_for_endpoint(self.host, self.port, timeout=2.0)
+                if self._browser_process.poll() is None:
+                    endpoint, rejection = wait_for_endpoint_diagnostic(self.host, self.port, timeout=2.0)
+                    self._startup_attestation_error = rejection
+                    return endpoint
             except Exception: pass
             self._browser_process = None
         exe = find_browser(self.browser_preference, self.browser_path)
@@ -58,13 +75,14 @@ class LauncherMonitor:
         try: self._browser_process = launch_debug_browser(exe, host=self.host, port=self.port, user_data_dir=self.profile_dir, game_url=self.game_url)
         except OSError as exc:
             self.status.update(state="ERROR", last_error=f"启动专用浏览器失败。游戏本身没有受到影响。技术详情：{exc}"); self._notify(); return None
-        return wait_for_endpoint(self.host, self.port)
+        endpoint, rejection = wait_for_endpoint_diagnostic(self.host, self.port)
+        self._startup_attestation_error = rejection
+        return endpoint
 
     def _connect(self, endpoint: BrowserEndpoint) -> None:
-        if self._client: self._client.close()
         # A replacement browser-level CDP connection is a new authority generation.
         # Invalidate every identity decision before the new client can be observed.
-        self._client = None; self._endpoint = None; self._last_worker_id = None; self._last_identity = None; self._identity_cache.clear()
+        self._invalidate_authority()
         client = CdpClient(endpoint.websocket_url, timeout=5.0); client.connect(); self._client = client; self._endpoint = endpoint
         self.status.update(browser_connected=True, browser_name=endpoint.browser, browser_endpoint=endpoint.http_base, state="WAITING_WOF", last_error=None); self._notify()
 
@@ -73,7 +91,11 @@ class LauncherMonitor:
             try:
                 endpoint = self._ensure_browser()
                 if not endpoint:
-                    self.status.reset_runtime(error="未连接到本机 Chrome/Edge 调试端口。游戏本身没有受到影响。"); self._notify(); self._sleep(); continue
+                    # Never keep a previously accepted browser authority alive after a
+                    # fresh startup attestation fails or the endpoint disappears.
+                    self._invalidate_authority()
+                    error = self._startup_attestation_error or "未连接到本机 Chrome/Edge 调试端口。游戏本身没有受到影响。"
+                    self.status.reset_runtime(error=error); self._notify(); self._sleep(); continue
                 if not self._client or not self._endpoint or self._endpoint.websocket_url != endpoint.websocket_url: self._connect(endpoint)
                 assert self._client is not None
                 choice = discover(self._client, identity_cache=self._identity_cache)
@@ -93,8 +115,7 @@ class LauncherMonitor:
                     state="CONNECTED" if choice.page and choice.worker and identity and identity.get("ok") is True else "WAITING_WOF", last_error=None,
                 ); self._notify()
             except (CdpError, OSError, ValueError) as exc:
-                if self._client: self._client.close()
-                self._client = None; self._endpoint = None; self._last_worker_id = None; self._last_identity = None; self._identity_cache.clear()
+                self._invalidate_authority(); self._startup_attestation_error = None
                 self.status.reset_runtime(error=f"Launcher 与浏览器连接中断。游戏本身没有受到影响。技术详情：{exc}"); self._notify()
             self._sleep()
 
