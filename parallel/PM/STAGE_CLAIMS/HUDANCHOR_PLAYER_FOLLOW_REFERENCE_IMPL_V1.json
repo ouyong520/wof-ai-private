@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "HUDANCHOR_PLAYER_FOLLOW_REFERENCE_IMPL_V1",
+  "promptPath": "parallel/PM/HUDANCHOR_PLAYER_FOLLOW_REFERENCE_IMPL_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "ac26e96b62c0950641afd2e092fd26e1f128eeff",
+  "startedAtUtc": "2026-09-01T14:08:32Z"
+}
