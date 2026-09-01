@@ -1,72 +1,81 @@
-# WOF Future Danger — Enemy Target-Lock HUD Requirement
+# WOF Future Danger — Target-Lock Player-Head HUD Requirement
 
 Updated: 2026-09-01
 Status: AUTHORITATIVE PRODUCT REQUIREMENT
 
 ## Product intent
 
-The preferred future in-game target indicator is **enemy-anchored**, not player-anchored.
+The preferred future in-game target indicator is **player-head anchored**.
 
-For every visible/trackable enemy:
-- determine which player that enemy is currently targeting/locking;
-- render `1P`, `2P`, or `3P` above that enemy;
-- when the enemy retargets, change the label immediately to the new player;
-- the label must follow that enemy's visual position continuously.
+Enemy target/lock state determines **which player should be warned**, but the visual indicator is rendered above the targeted player character, not above the enemy.
+
+Required behavior:
+- detect which player (P1 / P2 / P3) an enemy is currently targeting/locking;
+- show the corresponding target warning above that targeted player's head;
+- the indicator follows the targeted player character continuously;
+- when targeting changes, immediately remove the old target-bound indicator and move/show the warning above the newly targeted player;
+- do not leave the indicator attached to the enemy.
 
 Example:
-- enemy A targets P2 -> show `2P` above enemy A;
-- enemy B targets P3 -> show `3P` above enemy B;
-- if enemy A retargets P1 -> its marker changes to `1P` without leaving stale `2P` on the old state.
+- an enemy targets P2 -> warning appears above P2's character;
+- that enemy retargets P3 -> P2 warning is invalidated immediately and the warning appears above P3;
+- if multiple enemies target the same player, their warning information may later be aggregated near that player's anchor without changing target correctness.
 
 ## Non-drift requirement
 
-This feature is not accepted merely because a label can be drawn near an enemy once.
+This feature is not accepted merely because a label can be drawn above a player once.
 
-The marker must remain visually attached to the same enemy without noticeable drift during:
-- enemy horizontal movement;
+The marker must remain visually attached to the correct player without noticeable drift during:
+- player horizontal movement;
 - depth / lane movement;
-- jump / knockback / vertical displacement when applicable;
+- jump / vertical displacement;
 - camera / stage scrolling;
 - resize / fullscreen / DPR / drawing-buffer changes;
-- multiple simultaneous enemies;
-- enemy slot reuse / despawn / respawn;
-- retarget between P1/P2/P3.
+- P1 / P2 / P3 simultaneous presence;
+- death / respawn / player object replacement;
+- live enemy retarget between P1 / P2 / P3.
 
-A stale marker must never survive onto a reused enemy slot or another enemy.
+The anchor must follow the current live player identity and projection state, not a stale screen coordinate.
 
-## Identity / lifecycle rule
+## Retarget / lifecycle safety
 
-Anchor identity must follow the current live enemy lifecycle identity, not merely `slot + type`.
+Target-bound display identity includes the target player.
 
-If continuity is uncertain, fail closed for the anchored label rather than display it on the wrong enemy.
+If an enemy retargets from P1 to P2:
+1. invalidate the old P1 target-bound indicator immediately;
+2. resolve current P2 player anchor from fresh player/camera/projection state;
+3. render on P2 on the next fresh update;
+4. if P2 anchor is invalid or stale, use the fixed HUD fallback — never leave the marker above P1.
 
-Retarget must invalidate any target-bound display state immediately.
+A stale target marker must never survive across player respawn/object replacement or uncertain continuity.
 
 ## Presentation
 
-Minimum label:
-- `1P` / `2P` / `3P`.
+Minimum useful target indication may include:
+- `1P` / `2P` / `3P` target identity;
+- downward arrow / lock indicator;
+- warning color / urgency.
 
-Optional later additions may include:
-- downward arrow;
-- warning color / urgency;
-- attack family/danger icon;
-- lead time.
+Later additions may include:
+- attack family / danger icon;
+- lead time;
+- multiple-threat aggregation.
 
-These additions must not compromise stable anchoring.
+The visual design must not compromise stable anchoring.
 
 ## Alpha / Beta scope
 
 This requirement must **not delay the first trustworthy Alpha**.
 
 - Alpha may retain the proven fixed in-game HUD as the safe fallback / first-release surface.
-- Enemy-anchored non-drifting target labels are a high-value Beta/near-term presentation goal and may use independent accelerator/reverse-engineering work when it does not conflict with Alpha blockers.
-- Once enemy anchoring is promoted, fixed HUD remains fallback whenever projection/anchor state is invalid or stale.
+- Player-head anchored, non-drifting target warnings are a high-value near-term/Beta presentation goal.
+- Existing HUDANCHOR player projection research is the relevant technical lineage.
+- Fixed HUD remains fallback whenever player/camera/projection state is invalid or stale.
 
 ## Acceptance direction
 
-Final acceptance must prove the marker remains on the correct enemy while both enemy and camera move, and that P1/P2/P3 retarget changes occur without stale labels or cross-enemy inheritance.
+Final acceptance must prove the warning remains above the correct targeted player while the player and camera move, jump, scroll, resize/fullscreen, and while live enemy targeting changes between P1/P2/P3.
 
 The desired user experience is:
 
-`怪物锁定谁 -> 怪物头顶稳定显示对应 1P / 2P / 3P -> 跟随怪物移动 -> 不漂移。`
+`怪物锁定谁 -> 在被锁定角色头顶显示提示 -> 跟随角色移动 -> 不漂移 -> 换锁时立即切到新角色。`
