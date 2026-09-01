@@ -36,10 +36,10 @@ if errorlevel 1 (
 
 echo.
 echo WOF-052L 自动多房间采集器
-echo Worker 自动发现：Discovery V2（支持 page / iframe / Worker topology）
+echo Worker 自动发现：Discovery V2 Hardening（支持 page / iframe / Worker topology）
 echo 只读模式：开启  ^|  游戏内存写入：0  ^|  游戏输入注入：无
 echo.
-".venv\Scripts\python.exe" owner_v2_zh_cn.py %*
+".venv\Scripts\python.exe" owner_zh_cn.py %*
 set "RC=%ERRORLEVEL%"
 if not "%RC%"=="0" (
   echo.
