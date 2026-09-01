@@ -12,8 +12,8 @@
     "sourceLockEnforced": false,
     "executionNote": "Default repository execution imports parallel/WOF052L_RECORDER directly and enforces exact Git blob SHAs. The recorded connector-side execution used WOF052L_QA_SOURCE_MIRROR=1 with extracted copies of the tested RecorderManager.poll_rooms/safe_name/atomic_write_json and FleetSupervisor/load_fleet_entries/write_final_index paths because the private GitHub checkout is not mounted into the execution container."
   },
-  "environment": {"python": "3.13.5", "platform": "Linux-6.18.35-x86_64-with-glibc2.41", "pid": 608},
-  "boundedEquivalent": {"durationSeconds": 0.883, "roomLoops": 240, "fleetLoops": 180, "roomCount": 12, "totalRoomPollOpportunities": 2880, "totalHealthyFleetArtifactCycles": 1980},
+  "environment": {"python": "3.13.5", "platform": "Linux-6.18.35-x86_64-with-glibc2.41", "pid": 718},
+  "boundedEquivalent": {"durationSeconds": 0.906, "roomLoops": 240, "fleetLoops": 180, "roomCount": 12, "totalRoomPollOpportunities": 2880, "totalHealthyFleetArtifactCycles": 1980},
   "roomIsolation": {"rooms": 12, "loops": 240, "roomPollOpportunities": 2880, "injectedBrokenRoom": 4, "brokenAtPoll": 41, "healthyRooms": 11, "healthyPollsEach": 240, "finalizationReason": "worker-cdp-error", "mainLoopException": null, "pass": true},
   "fleetFailureAndArtifacts": {
     "fleetEndpoints": 12,
@@ -22,10 +22,10 @@
     "healthyArtifactCycles": 1980,
     "injectedBrokenEndpoint": 7,
     "injection": "blocked-artifact-parent is a regular file; atomic_write_json attempts child creation beneath it",
-    "workerErrorsCaptured": [{"thread": "wof052l-fleet-7", "type": "FileExistsError", "message": "[Errno 17] File exists: '/tmp/wof052l-long-capture-qa-j4fwiqr9/blocked-artifact-parent'"}],
+    "workerErrorsCaptured": [{"thread": "wof052l-fleet-7", "type": "FileExistsError", "message": "[Errno 17] File exists: '/tmp/wof052l-long-capture-qa-zxd6k63q/blocked-artifact-parent'"}],
     "mainThreadSurvived": true,
     "fleetIndex": {"schema": "wof-052l-fleet-supervisor-v1", "status": "complete", "childRuns": 12, "samples": 1980},
-    "artifactValidation": {"actionLogFiles": 11, "actionLogRowsParsed": 1980, "overlayFiles": 11, "snapshotFiles": 11, "allStructuralChecksPassed": true},
+    "artifactValidation": {"repeatedNamingSafetyChecks": 1980, "actionLogFiles": 11, "actionLogRowsParsed": 1980, "overlayFiles": 11, "snapshotFiles": 11, "allStructuralChecksPassed": true},
     "pass": true
   },
   "preservedSamples": {"actionLog": "SAMPLES/action_log.sample.jsonl", "overlay": "SAMPLES/overlay.sample.json", "snapshot": "SAMPLES/snapshot.sample.json"},
