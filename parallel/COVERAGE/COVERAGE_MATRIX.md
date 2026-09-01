@@ -1,212 +1,130 @@
-# COVERAGE MATRIX
+# WOF COVERAGE MATRIX — normalized refresh
 
 Snapshot: `2026-09-01`  
-`wof-ai-private`: `204c3995ac9b1b04683ad3cbcfa8c8f7a51bad75`  
-`wof-winkawaks-bridge`: `e3676d79a38ac23e572af69d23d560c01bd6777d`
+Canonical enemy type notation: **`T<decimal> (0xHH)`**. Old hex-style labels are deprecated.
 
-This lane is an accounting/coverage view only. WinKawaks evidence is **local discovery evidence**, not Browser production proof. Browser production-shadow authority remains with MAINLINE.
+## Executive verdict
 
-## Status vocabulary
+- `SWEEPATLAS`: **present / ingested**.
+- `SEQMINER`: **present / ingested**.
+- retained WinKawaks type universe in the audited EFIELD corpus: **T1 (0x01) .. T31 (0x1F), all observed**.
+- type-present samples: **60,271** across **7** EFIELD raws / **23,400** frames / **2** sessions.
+- same-type lifecycle episodes: **1,604** aggregate.
+- confirmed live-target changes: **8**.
+- structural attack/executor episodes: **271** aggregate.
+- **human recap required: NO**.
 
-| Status | Meaning |
+The old COVERAGE snapshot was stale in two material ways: it treated SWEEPATLAS/SEQMINER as absent, and it mixed old hex-style `Txx` notation with Browser decimal notation. In particular, old `T17` represented raw `0x17`, which is canonically **T23 (0x17)**; local T23 is therefore not missing and has **2,140** retained samples.
+
+## Gap legend
+
+| Class | Meaning |
 |---|---|
-| GOOD | Direct usable coverage exists for the stated dimension. |
-| LOW | Direct evidence exists but is sparse. |
-| MISSING | No current evidence exists for an explicitly requested/known candidate. |
-| CONFOUNDED | Raw/status exists, but the intended manipulation/attribution does not isolate the requested dimension. |
-| LABEL_UNKNOWN | Evidence may exist, but the semantic label or requested cross-tab is not materialized. |
+| `PHYSICAL` | required bytes/condition are genuinely absent from retained corpus |
+| `ANALYSIS` | retained bytes exist but requested cross-tab has not been materialized |
+| `LABEL` | semantic/human label is not authoritative in retained evidence |
+| `BROWSER` | local evidence exists but production-context prospective validation is still needed |
 
-`GOOD`/`LOW` are coverage labels, not correctness or rule-proof labels. Zero coverage never means a rule failed.
+## Per-type normalized cross-tab
 
-## Audit totals
+| Type | Samples | Density | Stable-type retarget | Replacement-boundary retarget | Ordered evidence | Lifecycle / target occupancy / structural attack per-type counts |
+|---|---:|---|---|---|---|---|
+| T1 (0x01) | 173 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T2 (0x02) | 408 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T3 (0x03) | 160 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T4 (0x04) | 300 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T5 (0x05) | 495 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T6 (0x06) | 354 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T7 (0x07) | 2,670 | GOOD | — | T7 → T16, P3→P1 @ EFIELD-004 f2961 s17 | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T8 (0x08) | 7,293 | GOOD | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T9 (0x09) | 2,894 | GOOD | P3→P1 @ EFIELD-003 f3322 s19 | T27 → T9, P2→P1 @ EFIELD-004 f2961 s18 | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T10 (0x0A) | 645 | GOOD | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T11 (0x0B) | 1,102 | GOOD | P1→P3 @ EFIELD-003 f492 s17 | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T12 (0x0C) | 469 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T13 (0x0D) | 470 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T14 (0x0E) | 411 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T15 (0x0F) | 187 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T16 (0x10) | 9,210 | GOOD | P3→P2 @ EFIELD-003 f1827 s17 | T7 → T16, P3→P1 @ EFIELD-004 f2961 s17 | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T17 (0x11) | 2,002 | GOOD | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T18 (0x12) | 528 | GOOD | — | — | type-specific local + Browser ordered evidence | `ANALYSIS` — not safely materialized per type |
+| T19 (0x13) | 1,013 | GOOD | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T20 (0x14) | 686 | GOOD | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T21 (0x15) | 2,285 | GOOD | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T22 (0x16) | 2,309 | GOOD | P3→P1 @ EFIELD-002 f2167 s19 | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T23 (0x17) | 2,140 | GOOD | — | — | type-specific local + Browser ordered evidence | `ANALYSIS` — not safely materialized per type |
+| T24 (0x18) | 12,866 | GOOD | P1→P3 @ EFIELD-002 f3155 s17 | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T25 (0x19) | 6,807 | GOOD | P1→P3 @ EFIELD-002 f3416 s18 | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T26 (0x1A) | 1,060 | GOOD | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T27 (0x1B) | 591 | GOOD | — | T27 → T9, P2→P1 @ EFIELD-004 f2961 s18 | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T28 (0x1C) | 188 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T29 (0x1D) | 272 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T30 (0x1E) | 133 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
+| T31 (0x1F) | 150 | LOW | — | — | global executor topology only | `ANALYSIS` — not safely materialized per type |
 
-- Raw artifacts in `captures/`: **30**
-- Mechanically successful gameplay raws after excluding two collector/platform test raws: **28**
-- Successful gameplay capture identities with complete `task + status + result + raw` provenance: **28 / 28**
-- Failed gameplay acquisition attempts retained in status: **7**
-- Failed attempts with an archived task spec: **2**
-- Failed attempts with status only and no retained current/archive task spec: **5**
-- Deduplication key: canonical gameplay `taskId` / raw filename identity. Reuse of the same raw by BASECAP/GEO/EFIELD/RAWMINE does **not** create another capture.
-- `parallel/SWEEPATLAS/**`: absent at this snapshot.
-- `parallel/SEQMINER/**`: absent at this snapshot.
+### What the table does and does not prove
 
-## Global dimension matrix
+Sample density is directly materialized by SWEEPATLAS. Retarget rows are exact retained target-change anchors. Ordered evidence is type-specific only where SEQMINER publishes a type-linked example (T18/T23); other types inherit only the global executor-topology corpus, not a claimed type-specific sequence. Per-type lifecycle episode totals, P1/P2/P3 dwell counts, and structural attack/executor episode totals are **analysis/materialization gaps**: aggregate totals exist, but the current retained human-readable outputs do not safely expose those contingency tables.
 
-| Dimension | Status | Current evidence / limitation |
-|---|---|---|
-| stage | LABEL_UNKNOWN | No authoritative stage labels are present in the audited corpus. |
-| scene | LABEL_UNKNOWN | Task names describe acquisition conditions, not authoritative game scenes. |
-| wave | LABEL_UNKNOWN | No authoritative wave labels are present. |
-| capture | GOOD | 28 deduplicated mechanically successful gameplay captures retained. |
-| player count/config | LABEL_UNKNOWN | Not consistently materialized as an authoritative per-capture label. |
-| enemy Txx | GOOD / LOW | 31 observed Txx codes have a sample census; 14 are LOW by the coverage-only threshold below. |
-| attack | GOOD + LABEL_UNKNOWN | Structural executor/attack-family values are well represented, but semantic attack names are not established here. |
-| semantic ACTIVE cycle count | LABEL_UNKNOWN | Current EFIELD outputs do not establish a semantic hitbox/damage ACTIVE state. |
-| target P1/P2/P3 | GOOD | Aggregate live-target and association evidence covers P1/P2/P3 across all 60,271 type-present samples. |
-| left/right/geometry diversity | GOOD | GEO owner lane has closed P1 X/Y, P2/P3 same-offset structure, facing, and top/bottom; some historical intended manipulations remain CONFOUNDED. |
-| sequence family | LABEL_UNKNOWN | No SEQMINER output exists at this snapshot. |
-| rare branch | LOW | Structural coarse family `enemy+0x73 = 0x1E` has only 42 frames. Semantic branch naming remains unknown. |
-| boss/ordinary enemy | LABEL_UNKNOWN | No authoritative boss/ordinary atlas exists in current inputs. |
-| raw artifact availability | GOOD | All 28 successful gameplay captures have retained raw artifacts. |
-| label quality | LABEL_UNKNOWN | Several acquisition-condition labels are good, but stage/scene/wave/boss and multiple semantic axes are absent. |
-| capture validity | GOOD | Mechanical/provenance validity is complete for successful captures; condition-level confounds are tracked separately. |
+## Priority type correction
 
-## EFIELD aggregate evidence
+| Type | Local retained evidence | Browser evidence / boundary | Coverage judgment |
+|---|---|---|---|
+| T16 (0x10) | 9,210 samples; same-type P3→P2 retarget; replacement-boundary arrival T7→T16 at P3→P1 | WOF-051 98/98 strict danger, target/side 98/98 | local GOOD + Browser strong |
+| T18 (0x12) | 528 samples; SEQMINER delayed-reload ordered example | A5440 4/4, A5424 4/4; BODY4728 anchor split A4704/A4712 | local GOOD; ordered Browser discriminator still open |
+| T20 (0x14) | 686 samples | WOF-051 5/5 strict A5136/target/side | local GOOD + Browser strong |
+| T23 (0x17) | 2,140 samples; SEQMINER delayed-reload ordered example | WOF-047: A4792=3 / A4920=3 / A5888=2; later rooms sometimes had zero T23 | local GOOD; Browser scene availability variable, not local missing data |
+| T24 (0x18) | 12,866 samples | two production-shadow candidates exist; WOF-051 had zero room coverage | local GOOD; latest Browser zero coverage is scene absence, not rule failure |
 
-The current seven valid EFIELD captures contain:
+## Aggregate target coverage
 
-- **23,400 frames**
-- **468,000 enemy-object samples** (`20 enemy slots/frame`)
-- **60,271 type-present samples**
-- **407,729 type-absent samples**
-- **1,604 contiguous same-nonzero-type lifecycle episodes**
-- **74 type-enter + 74 type-exit boundaries** in the narrower lifecycle edge analysis
-- **271 nonzero structural executor/attack-family episodes**
-- **44,905 nonzero structural executor/attack-family frames**
-- **8 confirmed live-target changes**
-- **2 WinKawaks process sessions**
-- **0 game-memory writes**
+WinKawaks EFIELD confirms three distinct player-reference layers and 8 exact live-target changes. Existing retained accounting also has global live-target dwell counts P1 **46,865**, P2 **2,967**, P3 **10,439**. These global totals remain useful, but per-type P1/P2/P3 dwell is not yet materialized and must not be guessed from the 8 transition events.
 
-The global lifecycle episode total is materialized, but the audited read-only outputs do **not** materialize a per-Txx lifecycle-episode table. The same is true for per-Txx attack, target, and scene cross-tabs. Those cells are therefore `LABEL_UNKNOWN`, never zero.
+Exact stable-type target-change anchors:
 
-## Enemy Txx coverage
+- T22 (0x16): P3→P1
+- T24 (0x18): P1→P3
+- T25 (0x19): P1→P3
+- T11 (0x0B): P1→P3
+- T16 (0x10): P3→P2
+- T9 (0x09): P3→P1
 
-Coverage-only sample heuristic used by COVERAGE:
+Replacement-boundary anchors:
 
-- `GOOD`: `>= 500` type-present samples
-- `LOW`: `1..499` samples
-- `MISSING`: `0` samples for an explicitly requested/known candidate
+- T7 (0x07) → T16 (0x10), P3→P1
+- T27 (0x1B) → T9 (0x09), P2→P1
 
-This threshold is only for prioritizing evidence density.
+## Aggregate structural attack / executor coverage
 
-| Txx | Samples | Sample status | Lifecycle episodes | Episode status | Semantic ACTIVE cycles | ACTIVE status | Attack kinds | Attack status | Target P1/P2/P3 | Target status | Scene coverage | Scene status |
-|---|---:|---|---:|---|---:|---|---|---|---|---|---|---|
-| T18 | 12,866 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T10 | 9,210 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T08 | 7,293 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T19 | 6,807 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T09 | 2,894 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T07 | 2,670 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T16 | 2,309 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T15 | 2,285 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T17 | 2,140 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T11 | 2,002 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T0B | 1,102 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T1A | 1,060 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T13 | 1,013 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T14 | 686 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T0A | 645 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T1B | 591 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T12 | 528 | GOOD | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T05 | 495 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T0D | 470 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T0C | 469 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T0E | 411 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T02 | 408 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T06 | 354 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T04 | 300 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T1D | 272 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T1C | 188 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T0F | 187 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T01 | 173 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T03 | 160 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T1F | 150 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T1E | 133 | LOW | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
-| T23 | 0 | MISSING | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN | — | LABEL_UNKNOWN |
+Current local corpus contains **271** contiguous `+0x24 != 0 && +0x73 != 0` structural executor episodes. This is not semantic Browser ACTIVE and not exact move identity. Per-type episode counts remain an `ANALYSIS` gap; exact type×attack/move remains additionally blocked by the missing proven WinKawaks-local exact move label.
 
-`T23` is included only because it is an explicit coverage exemplar in the COVERAGE brief. It has zero samples in the current EFIELD corpus, but the audited data do not establish that `T23` belongs to the expected full-game type universe. Therefore `T23 = MISSING in current corpus` is **not** rule failure and is **not** by itself a rescan trigger. `T23` must also not be confused with byte offset `+0x23`; EFIELD's type field is the U8 value at enemy `+0x24`.
+## Ordered-sequence coverage
 
-## Structural attack/executor evidence
+SEQMINER is now present and has exhausted the current retained structural corpus. Global record-aware order, timer/hold, branch, mode and delayed-reload topology are materialized. T18 (0x12) and T23 (0x17) each have explicit local type-linked ordered examples. Browser-labelled ordered evidence exists for both priority types, but it is kept separate from WinKawaks-local semantics.
 
-These are raw structural families, not semantic move names and not semantic ACTIVE states.
+## Provenance / data quality
 
-| Field | Value | Frames | Coverage | Semantic label |
-|---|---:|---:|---|---|
-| enemy+0x73 | 0x00 | 15,366 | GOOD | LABEL_UNKNOWN |
-| enemy+0x73 | 0x0A | 27,486 | GOOD | LABEL_UNKNOWN |
-| enemy+0x73 | 0x1B | 16,651 | GOOD | LABEL_UNKNOWN |
-| enemy+0x73 | 0x0B | 726 | GOOD | LABEL_UNKNOWN |
-| enemy+0x73 | 0x1E | 42 | LOW | LABEL_UNKNOWN |
+- bridge head remains `e3676d79a38ac23e572af69d23d560c01bd6777d`, the same bridge snapshot audited by the old COVERAGE matrix; no new gameplay capture landed after that ledger point.
+- 30 retained raw artifacts total; 28 mechanically successful gameplay raws, 2 collector/platform test raws excluded.
+- all 28 successful gameplay raws have complete task/status/result/raw identity chains.
+- failed acquisition attempts are provenance rows only and never samples.
+- BASECAP v1 is complete; GEO core is closed; EFIELD bounded mapping is complete; RAWMINE current assignment is complete.
 
-Fine structural values at enemy `+0x6C`:
+## Remaining gaps by class
 
-`00=15,366`, `E0=27,486`, `40=11,432`, `50=2,358`, `48=1,517`, `58=1,344`, `90=726`, `78=28`, `70=14`.
+| Gap | Class | Recapture now? | Reason |
+|---|---|---|---|
+| lifecycle episode count per type | ANALYSIS | NO | aggregate 1,604 exists; contingency not materialized |
+| P1/P2/P3 dwell per type | ANALYSIS | NO | global dwell + transition events exist; contingency not materialized |
+| structural executor episode count per type | ANALYSIS | NO | aggregate 271 exists; contingency not materialized |
+| exact type×local-move matrix | ANALYSIS + LABEL | NO | exact local move/attack semantic label is not proven |
+| stage / scene / wave | LABEL / missing labeled corpus | NO | no authoritative labels; broad replay is not a bounded minimal recap |
+| boss / ordinary / visible enemy name | LABEL | NO | no authoritative join source |
+| semantic ACTIVE/hitbox/damage cycle | LABEL | NO | structural executor state must not be renamed |
+| T18 post-anchor attack split | BROWSER | not a WinKawaks recap | WOF-052 Browser data gate |
+| broader T23 prospective validation | BROWSER | only if cost-effective scene appears | do not force rare scene coverage |
 
-Observed structural mapping:
-`00→00`, `E0→0A`, `40/48/50/58→1B`, `90→0B`, `70/78→1E`.
+## Recap verdict
 
-## Target coverage
+**human recap required: NO**
 
-Across all **60,271 type-present samples**:
-
-| Layer | P1 | P2 | P3 | Status |
-|---|---:|---:|---:|---|
-| live target | 46,865 | 2,967 | 10,439 | GOOD |
-| association pointer | 18,091 | 17,494 | 24,686 | GOOD |
-
-There are **8 confirmed live-target changes**. This establishes aggregate P1/P2/P3 coverage. It does **not** establish the per-Txx target cross-tab, so per-type target cells remain `LABEL_UNKNOWN`.
-
-## Successful gameplay capture inventory
-
-Every row below has a current matching task, status, result, and raw artifact. `Mechanical = GOOD` means the Collector result/raw was retained and valid mechanically. `Intended dimension` is separate so a healthy raw can still be `CONFOUNDED` for the manipulation it was meant to isolate.
-
-| Capture/taskId | Lane | Mechanical | Intended dimension | stage | scene/wave | player config | Raw | Coverage note |
-|---|---|---|---|---|---|---|---|---|
-| `BASECAP-B00-idle-8s60-20260901-0510Z` | BASECAP | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/BASECAP-B00-idle-8s60-20260901-0510Z.jsonl.gz` | mechanically successful retained gameplay raw |
-| `BASECAP-B12-facing-minimal-8s60-20260901-0518Z` | BASECAP | GOOD | CONFOUNDED | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/BASECAP-B12-facing-minimal-8s60-20260901-0518Z.jsonl.gz` | initial facing label is noncanonical because READY→capture timing was unsafe |
-| `BASECAP-B12R-facing-delayed-30s60-20260901-0527Z` | BASECAP | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/BASECAP-B12R-facing-delayed-30s60-20260901-0527Z.jsonl.gz` | canonical facing acquisition |
-| `BASECAP-B13-attack-12s60-20260901-0558Z` | BASECAP | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/BASECAP-B13-attack-12s60-20260901-0558Z.jsonl.gz` | canonical attack acquisition |
-| `BASECAP-B13R-standing-attack-ungated-60s60-20260901-0543Z` | BASECAP | GOOD | CONFOUNDED | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/BASECAP-B13R-standing-attack-ungated-60s60-20260901-0543Z.jsonl.gz` | manual attack label is noncanonical because operator gate was disabled |
-| `BASECAP-B20-camera-scroll-16s60-20260901-0559Z` | BASECAP | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/BASECAP-B20-camera-scroll-16s60-20260901-0559Z.jsonl.gz` | mechanically successful retained gameplay raw |
-| `BASECAP-B40-P2-xy-16s60-20260901-0600Z` | BASECAP | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/BASECAP-B40-P2-xy-16s60-20260901-0600Z.jsonl.gz` | mechanically successful retained gameplay raw |
-| `BASECAP-B40-P3-xy-16s60-20260901-0601Z` | BASECAP | GOOD | CONFOUNDED | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/BASECAP-B40-P3-xy-16s60-20260901-0601Z.jsonl.gz` | canonical acquisition, but no usable P3 geometry dynamic in current RAWMINE interpretation |
-| `EFIELD-001-baseline-30s60` | EFIELD | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/EFIELD-001-baseline-30s60.jsonl.gz` | mechanically successful retained gameplay raw |
-| `EFIELD-002-natural-diversity-60s60` | EFIELD | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/EFIELD-002-natural-diversity-60s60.jsonl.gz` | mechanically successful retained gameplay raw |
-| `EFIELD-003-passive-retarget-60s60` | EFIELD | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/EFIELD-003-passive-retarget-60s60.jsonl.gz` | mechanically successful retained gameplay raw |
-| `EFIELD-004-passive-lifecycle-retarget-60s60` | EFIELD | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/EFIELD-004-passive-lifecycle-retarget-60s60.jsonl.gz` | mechanically successful retained gameplay raw |
-| `EFIELD-005-cross-session-target-60s60` | EFIELD | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/EFIELD-005-cross-session-target-60s60.jsonl.gz` | mechanically successful retained gameplay raw |
-| `EFIELD-005R-cross-session-target-60s60` | EFIELD | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/EFIELD-005R-cross-session-target-60s60.jsonl.gz` | mechanically successful retained gameplay raw |
-| `EFIELD-006-cross-session-lifecycle-target-60s60` | EFIELD | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/EFIELD-006-cross-session-lifecycle-target-60s60.jsonl.gz` | mechanically successful retained gameplay raw |
-| `GEO-0001-dynamic-baseline-20260831-1517Z` | GEO | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/GEO-0001-dynamic-baseline-20260831-1517Z.jsonl.gz` | mechanically successful retained gameplay raw |
-| `GEO-0003-natural-geometry-10s60-20260831-1549Z` | GEO | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/GEO-0003-natural-geometry-10s60-20260831-1549Z.jsonl.gz` | mechanically successful retained gameplay raw |
-| `GEO-0004-action-diversity-10s60-20260831-1604Z` | GEO | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/GEO-0004-action-diversity-10s60-20260831-1604Z.jsonl.gz` | mechanically successful retained gameplay raw |
-| `GEO-0006-passive-geometry-camera-20s60-20260831-1657Z` | GEO | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/GEO-0006-passive-geometry-camera-20s60-20260831-1657Z.jsonl.gz` | mechanically successful retained gameplay raw |
-| `GEO-0008-p1-depth-only-5s60-20260831-2115Z` | GEO | GOOD | CONFOUNDED | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/GEO-0008-p1-depth-only-5s60-20260831-2115Z.jsonl.gz` | intended P1 depth manipulation not visible |
-| `GEO-0009-p1-depth-visible-traverse-8s60-20260901-0024Z` | GEO | GOOD | CONFOUNDED | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/GEO-0009-p1-depth-visible-traverse-8s60-20260901-0024Z.jsonl.gz` | intended depth manipulation remained insufficient |
-| `GEO-0010-p1-attribution-depth-calibration-10s60-20260901-0033Z` | GEO | GOOD | CONFOUNDED | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/GEO-0010-p1-attribution-depth-calibration-10s60-20260901-0033Z.jsonl.gz` | intended depth attribution calibration remained insufficient |
-| `GEO-0011-p1-attribution-depth-calibration-10s60-20260901-0038Z` | GEO | GOOD | CONFOUNDED | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/GEO-0011-p1-attribution-depth-calibration-10s60-20260901-0038Z.jsonl.gz` | intended depth attribution calibration remained insufficient |
-| `GEO-0012-p2-same-xy-offsets-12s60-20260901-0054Z` | GEO | GOOD | CONFOUNDED | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/GEO-0012-p2-same-xy-offsets-12s60-20260901-0054Z.jsonl.gz` | mechanically healthy, but no controlled P2 trajectory was isolated |
-| `GEO-0013-p2-attribution-depth-long-35s60-20260901-0104Z` | GEO | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/GEO-0013-p2-attribution-depth-long-35s60-20260901-0104Z.jsonl.gz` | mechanically successful retained gameplay raw |
-| `RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z` | RAWMINE | GOOD | CONFOUNDED | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/RAWMINE-001-p1-depth-retry-8s60-20260831-2126Z.jsonl.gz` | requested attributable P1 depth signal was not isolated |
-| `RAWMINE-004-p1-attribution-depth-redo-10s60-20260901-0037Z` | RAWMINE | GOOD | CONFOUNDED | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/RAWMINE-004-p1-attribution-depth-redo-10s60-20260901-0037Z.jsonl.gz` | intended attribution positive control was absent |
-| `RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z` | RAWMINE | GOOD | GOOD | LABEL_UNKNOWN | LABEL_UNKNOWN | LABEL_UNKNOWN | `captures/RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z.jsonl.gz` | accepted P1 depth confirmation |
-
-Important canonical/noncanonical distinctions:
-
-- Initial `BASECAP-B12-facing-minimal...` raw is retained but noncanonical for facing because the old READY→capture timing was unsafe. `BASECAP-B12R-facing-delayed...` is the canonical facing acquisition.
-- `BASECAP-B13R-standing-attack-ungated...` is retained but noncanonical for the manual attack condition because the operator gate was disabled. `BASECAP-B13-attack-12s60...` is the canonical confirmed attack acquisition.
-- GEO/RAWMINE negative or flat intended manipulations are not field-absence proofs. GEO's owner lane nevertheless closes P1 X/Y and P2/P3 same-offset structure from pooled accepted evidence.
-- `RAWMINE-005...` is accepted by GEO as useful P1 depth confirmation.
-- `BASECAP-B40-P3...` is a mechanically valid/canonical acquisition condition; only its current player-object geometry dynamic is CONFOUNDED in RAWMINE's interpretation.
-
-## Failed gameplay acquisition attempts
-
-Failed acquisitions are preserved as provenance, but never counted as gameplay samples or negative semantic evidence.
-
-| taskId | Lane | Retained task spec | Result | Raw | Status | Note |
-|---|---|---|---|---|---|---|
-| `BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z` | BASECAP | no | no | no | CONFOUNDED | acquisition failed; status retained, no result/raw |
-| `EFIELD-007-passive-proximity-association-60s60` | EFIELD | yes | no | no | CONFOUNDED | acquisition failed; archived task spec + status retained |
-| `EFIELD-008-discovery-probe-snapshot` | EFIELD | yes | no | no | CONFOUNDED | discovery acquisition failed; archived task spec + status retained |
-| `EFIELD-009-discovery-candidate-diagnostic-snapshot` | EFIELD | no | no | no | CONFOUNDED | discovery acquisition failed; status retained only |
-| `GEO-0002-p1-facing-right-static-20260831-1534Z` | GEO | no | no | no | CONFOUNDED | acquisition failed; status retained only |
-| `GEO-0005-camera-scroll-right-8s60-20260831-1619Z` | GEO | no | no | no | CONFOUNDED | acquisition failed; status retained only |
-| `GEO-0007-p1-horizontal-only-5s60-20260831-2038Z` | GEO | no | no | no | CONFOUNDED | acquisition failed; status retained only |
-
-The two archived task specs are `EFIELD-007` and `EFIELD-008`; the remaining five failed status rows do not have a retained current/archive task spec in the audited tree.
-
-## Current coverage verdict
-
-The project already has substantial raw, geometry, lifecycle, structural attack/executor, and aggregate target evidence. The largest unresolved coverage dimensions are **authoritative labels and cross-tabs**, especially stage/scene/wave, boss/ordinary, semantic ACTIVE, sequence-family labels, and per-Txx lifecycle/attack/target/scene breakdowns.
-
-Accordingly, the current minimum physical recap set is **empty**. No broad WinKawaks resweep and no new Collector batch is justified by this audit alone.
+No Collector task is created. A labeled full-game `BASECAP-SWEEP-*` series is genuinely absent, but the current evidence does not identify one specific Product/Beta/v1-critical scene that is both unrecoverable from retained raw and cheap enough to justify human replay. Broad recollection would violate the stop policy. The correct next step is to consume/materialize existing data and allow MAINLINE/Product Browser gates to proceed independently.
