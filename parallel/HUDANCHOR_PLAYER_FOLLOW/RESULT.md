@@ -1,137 +1,97 @@
-# HUDANCHOR Player-Follow Reference Implementation Result
+# HUDANCHOR Player-Follow Bounds Fail-Closed Fix Result
 
-Stage: `HUDANCHOR_PLAYER_FOLLOW_REFERENCE_IMPL_V1`
+Stage: `HUDANCHOR_PLAYER_FOLLOW_BOUNDS_FIX_V1`
 
-Status: **HUDANCHOR PLAYER-FOLLOW REFERENCE IMPLEMENTATION READY**
+Status: **HUDANCHOR PLAYER-FOLLOW BOUNDS FIX READY — READY FOR FRESH QA**
 
-## Delivered
+## Fix delivered
 
-Implemented under the only permitted implementation lane:
+Updated:
 
 - `parallel/HUDANCHOR_PLAYER_FOLLOW/src/player_follow_reference.js`
-  - `PlayerAnchorResolver`
-  - `TargetLockIndicatorRouter`
-  - `PlayerFollowStateMachine`
-  - `AnchoredWarningRenderer`
-  - drawing-buffer -> WebGL clip conversion
-- `parallel/HUDANCHOR_PLAYER_FOLLOW/fixtures/synthetic_projection.js`
-  - explicitly synthetic, arbitrary projection fixture
-  - explicitly not Browser proof
-- `parallel/HUDANCHOR_PLAYER_FOLLOW/test/synthetic_regression.js`
-- `parallel/HUDANCHOR_PLAYER_FOLLOW/package.json`
-- `parallel/HUDANCHOR_PLAYER_FOLLOW/README.md`
+- `parallel/HUDANCHOR_PLAYER_FOLLOW/test/bounds_regression.js`
 
-## Product semantic implemented
+`PlayerAnchorResolver.resolve()` now rejects a finite player-head anchor before native -> drawing-buffer mapping when the final resolved anchor is outside the native viewport:
 
-The implementation follows the corrected authoritative target-lock HUD requirement:
+- `anchorXNative < 0`;
+- `anchorXNative >= nativeWidth`;
+- `anchorYNative < 0`;
+- `anchorYNative >= nativeHeight`.
 
-`怪物锁定谁 -> 在被锁定角色 P1/P2/P3 头顶显示提示 -> 跟随该角色 -> 不漂移 -> 换锁时立即切到新角色`
+The existing body/player projection validation through `validationBounds` is preserved unchanged.
 
-It does not attach the marker to the enemy and does not add/modify any attack-prediction rule.
+An invalid anchor therefore returns `PROJECTION_OUT_OF_BOUNDS`, routes immediately to fixed-HUD fallback, clears follow/smoothing state, and never reaches the warning-rectangle edge clamp.
 
-## Core invariants
+The final warning rectangle is still safely clamped only after a valid anchor has been resolved, preserving legitimate near-edge anchored rendering.
 
-### Anchor resolver
+## Regression coverage
 
-- consumes current P1/P2/P3 `x/y/z` plus injected camera/projection state and live drawing-buffer/content-rect state;
-- returns drawing-buffer anchor coordinates plus validity, freshness, confidence and reason;
-- projection implementation is versioned/injected behind `projectNative(...)`;
-- stale player/projection/drawing-buffer state fails closed;
-- epoch mismatch fails closed;
-- invalid viewport/non-finite/out-of-bounds projection fails closed;
-- no DOM/page coordinate is used as the production anchor plane.
+Added targeted synthetic regression:
 
-### Target-lock routing
+`parallel/HUDANCHOR_PLAYER_FOLLOW/test/bounds_regression.js`
 
-- target player is part of target-bound display identity;
-- a source retarget immediately invalidates the previous player's hold even when a release hold is otherwise enabled;
-- P1 -> P2 -> P3 retarget therefore cannot leave a stale old-player indicator;
-- multiple warning payloads targeting one player are aggregated without creating new danger semantics.
+Coverage:
 
-### Renderer / non-drift state
+1. `anchorXNative < 0` -> fixed fallback;
+2. `anchorXNative >= native width` -> fixed fallback;
+3. `anchorYNative < 0` -> fixed fallback;
+4. `anchorYNative >= native height` -> fixed fallback;
+5. body/player reference remains in bounds while derived head anchor is out of bounds -> fixed fallback;
+6. valid anchor near viewport edge remains anchored and only final rectangle clamps;
+7. invalid anchor after a valid frame clears smoothing state and never reuses the old coordinate;
+8. retarget during an invalid-anchor frame removes the old player cue immediately and falls back for the new target.
 
-- direct WebGL/drawing-buffer coordinate contract;
-- warning rectangle is clamped to current game-content viewport;
-- resize/fullscreen remaps from current drawing-buffer state;
-- DPR is not treated as coordinate truth; live drawing-buffer mapping is authoritative;
-- smoothing defaults off;
-- optional smoothing resets on lifecycle/respawn replacement, projection version change, mapping change, camera discontinuity and invalidation;
-- player disappearance or unrouting clears follow state immediately;
-- anchor failure routes the warning to fixed-HUD fallback and never reuses a last-known player coordinate.
+Targeted result:
 
-## Synthetic regression
-
-Executed with Node.js `v22.16.0`:
-
-```text
-npm test
+```json
+{"status":"PASS","passed":8,"total":8,"fixture":"SYNTHETIC_BOUNDS_ONLY_NOT_BROWSER_PROOF"}
 ```
 
-Result:
+Then the existing full player-follow synthetic regression was run unchanged after the targeted suite.
+
+Full regression result:
 
 ```json
 {"status":"PASS","passed":15,"total":15,"fixture":"SYNTHETIC_ONLY_NOT_BROWSER_PROOF"}
 ```
 
-Coverage:
+Preserved coverage includes movement, camera compensation, depth/jump, P1/P2/P3 routing, immediate retarget invalidation, resize/fullscreen/DPR remap, stale/epoch fail-closed behavior, aggregation, disappearance/no coordinate reuse, lifecycle reset, camera discontinuity reset, and viewport rectangle clamping.
 
-1. horizontal movement;
-2. camera scroll compensation;
-3. depth/lane movement;
-4. jump/Z movement;
-5. P1/P2/P3 independent routing;
-6. retarget P1 -> P2 -> P3 with immediate old hold invalidation;
-7. resize/fullscreen remap;
-8. DPR-only non-drift;
-9. stale projection -> fixed fallback;
-10. epoch mismatch -> fail closed;
-11. multi-warning aggregation;
-12. player disappearance -> no last-coordinate reuse;
-13. respawn/lifecycle replacement -> reset;
-14. camera discontinuity -> reset;
-15. drawing-buffer viewport clamp.
+## Commit / blob evidence
 
-The executed local files were checked against the committed GitHub blob SHAs:
+Implementation commit:
 
-- source: `47a03e1ce459e153ba2b5db42ba10a4d0d746490`
-- fixture: `79e42e675d371ec91715116227fecf0ed3c27d97`
-- regression: `b7d56a74ef520bccb47055bc59558da6dfcb6139`
-- package: `0d040a37b3a44293a80d3289708d01f0e14e93ef`
+- `d43b0711db33532e15d90606f18a632597ea95bf`
 
-## Projection truth boundary
+Regression commit:
 
-No real WOF Browser projection constant was guessed or hardcoded as proved.
+- `418fc7c7e5aa64c7e7bb5b8a5e31743472f6ff91`
 
-The fixture contains arbitrary values and is explicitly labelled synthetic.
+Executed source/test blobs were verified against committed GitHub blobs:
 
-The reference architecture accepts the eventual externally proved Browser transform through `projectionState.projectNative(...)`, with native viewport/version/epoch/camera metadata supplied alongside it.
+- fixed source: `4beb7f8d4c9f815e125ed795aca536f02562f5d1`;
+- bounds regression: `d5798e3470625d440092aa00a05142157f99799b`;
+- unchanged synthetic fixture: `79e42e675d371ec91715116227fecf0ed3c27d97`;
+- unchanged full synthetic regression: `b7d56a74ef520bccb47055bc59558da6dfcb6139`.
 
-## Remaining work allowed by this stage
+## Product / safety semantics preserved
 
-Only integration of externally proved real Browser facts/wiring remains:
+Authoritative behavior remains:
 
-1. inject the proved Browser player/camera projection through `projectNative(...)`;
-2. inject the proved native/drawing-buffer content mapping;
-3. wire the plan into the existing direct-WebGL/fixed-HUD draw adapter.
-
-No architectural redesign, new danger semantics, broad capture or guessed constants are required by this reference lane.
-
-## Safety / write-scope audit
+`怪物锁定谁 -> 在被锁定角色 P1/P2/P3 头顶显示提示 -> 跟随角色 -> 不漂移 -> 换锁立即切换`
 
 Preserved:
 
 - read-only presentation semantics;
 - no RAM writes;
-- no gameplay input;
-- no Worker replacement;
-- no `product/alpha/**` modification;
-- no PYLAUNCH modification;
-- no Recorder modification;
-- no Prospective modification;
-- no Browser Fleet modification.
+- no input injection;
+- no Worker replacement/wrap;
+- no new danger semantics;
+- no Browser/projection constant guessing;
+- no `product/alpha/**`, PYLAUNCH, Recorder, Prospective, Browser Fleet, Transport, or HUDANCHOR proof-lane changes.
 
-Implementation writes were confined to `parallel/HUDANCHOR_PLAYER_FOLLOW/**`; the only additional write is the mandatory PM stage claim.
+No real Browser/WOF run was required or used for this repository-side fail-closed fix.
 
 ## Stop condition
 
-**HUDANCHOR PLAYER-FOLLOW REFERENCE IMPLEMENTATION READY**
+**HUDANCHOR PLAYER-FOLLOW BOUNDS FIX READY — READY FOR FRESH QA**
