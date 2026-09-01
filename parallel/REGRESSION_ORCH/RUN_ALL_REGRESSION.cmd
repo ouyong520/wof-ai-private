@@ -26,17 +26,18 @@ echo ============================================================
 echo WOF 全仓库离线回归
 echo ============================================================
 echo 将运行已批准的离线测试；不会自动进入游戏，不会执行真人 Browser proof。
+echo 第三方 .venv / site-packages / node_modules 不会被当成仓库测试执行。
 echo.
 
-%PYEXE% "%HERE%orchestrator.py" --repo-root "%HERE%..\.."
+%PYEXE% "%HERE%runner.py" --repo-root "%HERE%..\.."
 set "RC=%ERRORLEVEL%"
 
 echo.
 echo ============================================================
 if "%RC%"=="0" (
-  echo [完成] 仓库侧离线回归已完成。
+  echo [完成] 当前仓库离线回归全部通过。
 ) else (
-  echo [需要查看] 存在失败或受阻项目，请打开中文结果与对应日志。
+  echo [已完成汇总] 当前存在真实失败或受阻项目，请打开中文结果与对应日志。
 )
 echo JSON：%HERE%REGRESSION_SUMMARY.json
 echo 中文结果：%HERE%回归结果.txt
