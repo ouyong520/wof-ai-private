@@ -1,69 +1,54 @@
 # WOF Future Danger AI — Active Priorities
 
-Updated: 2026-09-01 — Alpha RC5 P0 remains primary; WOF-052 evening capture and Python launcher foundation may run independently
+Updated: 2026-09-01 — RC5 candidate ready; one owner room-entry retest is the Alpha gate
 
-## P0 — Alpha RC5 real-Browser bootstrap fix
+## P0 — RC5 owner Browser room-entry retest
 
-Fresh RC4 independent QA had passed offline/source gates, but the first real Browser acceptance setup exposed a launch blocker before the acceptance run could begin.
+RC5 product engineering has completed its stage with:
+- `product/alpha/ALPHA_RC5_REPORT.md`
+- full product regression PASS
+- current userscript `WOF Future Danger Alpha RC5 Safe Bootstrap`
+- native game `window.Worker` construction left untouched
+- no Blob Worker / Worker URL replacement
+- gameplay-first fail-open behavior: if Alpha cannot attach safely, base game continues and Alpha remains silent.
 
-Owner A/B evidence:
-- Acceptance helper OFF + normal Alpha userscript ON -> game cannot enter the room.
-- Acceptance helper ON + normal Alpha userscript OFF -> game can enter the room.
-- Both WOF userscripts OFF -> game enters normally.
+The only remaining P0 check is one real Browser question with Browser Acceptance Helper disabled:
 
-Therefore the normal Alpha bootstrap/product entry path is implicated. This is a **P0 release blocker** because enabling Alpha can prevent the base game from entering a room.
+**Can the game enter a room normally with only the current RC5 Alpha userscript enabled?**
 
-Authoritative PM blocker record:
-- `parallel/PM/ALPHA_BROWSER_ACCEPTANCE_BLOCKER.md`
-
-Fresh fix bootstrap:
-- `parallel/PM/ALPHA_RC5_BROWSER_BOOTSTRAP_FIX_START_PROMPT.md`
-
-Only the fresh RC5 engineering stage may modify `product/alpha/**`.
+If YES: close the room-entry blocker and open a fresh independent RC5 QA/retest stage.
+If NO: route the exact real-host failure to a fresh targeted diagnostic/fix stage.
 
 ## P1-opportunistic — WOF-052 evening multiplayer capture
 
-The owner reports that evening multiplayer rooms are now available. Because WOF-052 needs natural Browser room coverage, especially T18, PM temporarily resumes this independent read-only research lane while RC5 proceeds.
+The evening multiplayer window may be used for the bounded read-only WOF-052 lane:
+- up to 5 rooms;
+- focus on T18 BODY4728/A4/B2/TM1 ordered context;
+- seek A4704 vs A4712 sequence discrimination;
+- discovery only;
+- no `product/alpha/**` changes;
+- read-only / `ramWrites=0` / no input injection.
 
 Start prompt:
 - `parallel/PM/WOF_052_EVENING_CAPTURE_START_PROMPT.md`
 
-Purpose:
-- collect candidate-containing T18 zero->ACTIVE ordered cycles;
-- seek an ordered-state discriminator between A4704 and A4712 after the ambiguous BODY4728/A4/B2/TM1 state;
-- use up to 5 available rooms, prioritizing T18;
-- keep sequence evidence discovery-only until a later prospective validator.
+## P1-productization — Python Launcher foundation
 
-Hard boundary:
-- no `product/alpha/**` changes;
-- do not use the broken Alpha bootstrap;
-- read-only / `ramWrites=0` / no input injection;
-- WOF-052 remains non-blocking for Alpha release.
-
-## P1-productization — Python launcher foundation
-
-A separate read-only launcher lane may begin now because it does not need to modify Alpha product code or WOF-052 collectors.
+Python/EXE launcher work may continue independently:
+- Chrome/Edge CDP post-start attachment;
+- automatic WOF page/Worker/module/heap discovery;
+- Windows tray icon + settings UI;
+- read-only foundation only;
+- no one-key moves, command injection, or RAM writes yet.
 
 Start prompt:
 - `parallel/PM/PYTHON_LAUNCHER_FOUNDATION_START_PROMPT.md`
-
-UX requirements:
 - `parallel/PM/PYTHON_LAUNCHER_TRAY_UI_REQUIREMENTS.md`
 
-Goal:
-- Python/EXE -> Chrome/Edge CDP -> discover already-running WOF page/Worker -> attach after normal game startup;
-- avoid replacing `window.Worker`;
-- automatically discover Worker/module/heap;
-- show status through a Windows bottom-right tray icon and on-demand settings window;
-- preserve read-only / no-input behavior in this foundation stage;
-- base game must continue even when launcher attachment fails.
-
-This lane is not an Alpha release blocker and must not implement one-key moves, command injection, or RAM writes yet.
-
-## Preserve passed RC4 gates
+## Preserve passed Alpha safety gates
 
 Do not reopen without new evidence:
-- exact World 921031 full-program SHA-256 authority;
+- World 921031 exact full-program SHA-256 authority;
 - exactly two current-level T18 production rules;
 - F1-F4 quarantine;
 - same-type slot replacement safety;
@@ -74,34 +59,14 @@ Do not reopen without new evidence:
 - read-only/no-input;
 - GL restoration.
 
-The new Alpha blocker is specifically real-host normal-user bootstrap / Worker interception / injection compatibility.
-
 ## Browser acceptance
 
-PAUSED. Do not rerun the acceptance helper until RC5 produces a candidate and a fresh retest stage authorizes it.
-
-## SUPPORT — READY / NON-BLOCKING
-
-- Runtime Speed Probe Tooling: complete; one paired ~15 s local/Browser measurement remains when convenient.
-- Local WinKawaks ROM identity: one read-only local hash remains.
-- HUD Anchor Proof Tooling: complete; one Browser projection proof remains for Beta.
-
-## Explicit stops
-
-- Keep the Alpha product userscript disabled for normal play until RC5 retest.
-- STOP repeated room-entry retries on the broken Alpha candidate.
-- STOP Alpha release.
-- WOF-052 may run only as the bounded evening capture lane above; do not let it substitute for or modify the RC5 launch blocker.
-- Python launcher foundation stays read-only; no one-key moves / command injection / RAM writes yet.
-- STOP Beta work and broad collection.
+Full Browser acceptance remains PAUSED until the RC5 room-entry retest passes and fresh independent RC5 QA/retest is completed.
 
 ## Current fastest path
 
-Primary release path:
-**RC5 real-host bootstrap fix -> fresh independent QA/retest -> one real Browser acceptance -> Alpha release decision**
+**owner RC5 room-entry retest -> fresh independent RC5 QA/retest -> full Browser acceptance -> Alpha release decision**
 
-Parallel time-window opportunity:
-**WOF-052 evening rooms -> one merged read-only JSON -> ordered T18 discrimination analysis**
-
-Parallel productization opportunity:
-**Python launcher foundation -> post-start CDP attachment proof -> tray UX -> later EXE packaging**
+Parallel:
+- WOF-052 evening capture
+- Python Launcher foundation
