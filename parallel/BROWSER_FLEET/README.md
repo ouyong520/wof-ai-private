@@ -1,146 +1,131 @@
-# WOF Browser Fleet Manager
+# WOF 多房间浏览器管理器
 
-Status: repository-side tooling READY; one real Windows fleet proof remains.
+状态：仓库侧工具已就绪；还需要一次真人 Windows 集群验证。
 
-This lane is project acceleration only. It launches multiple ordinary Chrome/Edge WOF browser instances without changing Alpha, replacing `window.Worker`, writing game RAM, or injecting gameplay input.
+这个工具只用于项目操作加速。它会启动多个普通 Chrome/Edge WOF 浏览器实例，不修改 Alpha、不替换 `window.Worker`、不写游戏 RAM，也不注入游戏输入。
 
-## Owner path
+## 你实际怎么用
 
-Double-click:
+正常情况下只需要双击：
 
 `RUN_WOF_FLEET.cmd`
 
-The normal path is now exactly:
-1. double-click the CMD;
-2. enter `1`, `5`, `10`, or another count up to 50 (blank defaults to 10);
-3. the tool automatically finds Chrome/Edge, launches that many isolated windows, and arranges them on the primary screen.
+然后：
+1. 输入 `1`、`5`、`10`，或其他 `1-50` 的数量；直接回车默认 `10`；
+2. 工具自动查找 Chrome/Edge；
+3. 自动为每个房间创建独立配置目录和本机 CDP 端口；
+4. 自动排列窗口；
+5. 进入中文管理界面查看每个房间状态。
 
-No first-run Browser/URL setup is required. With no configured WOF URL the windows open as WOF-ready `about:blank` windows so the owner can navigate normally. Optional saved Browser/URL defaults can still be set later with `fleet_manager.py configure`.
+第一次使用不要求先设置游戏网址。没有配置网址时，会打开可供 WOF 使用的空白浏览器窗口，你可以正常进入游戏页面。
 
-The console numbers each instance and shows:
-- Browser/CDP;
-- page presence;
-- basic `gstyphoon*.js` Worker presence;
-- PID;
-- profile name;
-- permanent safety banner: `READ ONLY / RAM writes: 0 / input injection: NO / window.Worker replacement: NO`.
+## 中文状态说明
 
-Interactive commands:
-- `S` — refresh status;
-- `R` — restart one numbered instance;
-- `X` — close one numbered instance;
-- `A` — close all managed instances and exit;
-- `Q` — quit only the manager, leaving browser windows running.
+界面会显示：
+- 浏览器：已连接 / 未连接；
+- WOF 页面：已找到 / 等待中；
+- Worker：已找到 / 等待中；
+- PID；
+- 独立配置目录；
+- 永久安全提示：`只读模式：开启｜游戏内存写入：0｜游戏输入注入：无｜window.Worker 替换：无`。
 
-## Isolation model
+如果出现错误，第一行会先给出中文说明，随后才显示 `技术详情：...`，方便排查但不要求你看懂英文异常。
 
-Each fleet member gets its own:
-- `%LOCALAPPDATA%\WOF Future Danger\Fleet\Profiles\Fleet_XX` user-data directory;
-- localhost CDP port (`9323 + instance_id - 1` by default);
-- browser launch process;
-- window rectangle;
-- manifest entry.
+## 中文管理命令
 
-No profile is shared between fleet members. One browser crash/reload does not intentionally stop or clear any other member.
+- `S` — 刷新状态；
+- `R` — 重启一个编号房间；
+- `X` — 关闭一个编号房间；
+- `A` — 关闭全部管理中的浏览器并退出；
+- `Q` — 只退出管理器，保留已经打开的浏览器窗口。
 
-The default port can be changed in the saved settings JSON if another local tool already uses the range.
+## 房间隔离方式
 
-## Discovery contract
+每个房间都有自己独立的：
+- `%LOCALAPPDATA%\WOF Future Danger\Fleet\Profiles\Fleet_XX` 用户配置目录；
+- 本机 CDP 端口（默认从 `9323` 开始）；
+- 浏览器进程；
+- 窗口位置；
+- manifest 条目。
 
-The fleet writes:
+不同房间不共享 profile。一个浏览器房间崩溃、关闭或重载，不会主动停止其他房间。
+
+## 给其他工具发现房间
+
+集群状态写入：
 
 `%LOCALAPPDATA%\WOF Future Danger\Fleet\instances.json`
 
-Format version:
+内部格式版本保持：
 
 `wof-browser-fleet-v1`
 
-Each live entry includes:
-- `id`;
-- `host`;
-- `port`;
-- `endpoint`;
-- `profileDir`;
-- `pid`;
-- `managerRunId`;
-- launch time / configured game URL;
-- basic Browser/page/Worker status.
+内部 JSON key / schema 为兼容性继续使用英文，例如：
+- `id`
+- `host`
+- `port`
+- `endpoint`
+- `profileDir`
+- `status`
+- `readOnly`
+- `ramWrites`
+- `inputInjection`
+- `windowWorkerReplacement`
 
-Top-level safety fields are always:
-- `readOnly: true`;
-- `ramWrites: 0`;
-- `inputInjection: false`;
-- `windowWorkerReplacement: false`.
+其中安全字段继续固定为：
+- `readOnly: true`
+- `ramWrites: 0`
+- `inputInjection: false`
+- `windowWorkerReplacement: false`
 
-`parallel/PYLAUNCH/wof_launcher/fleet.py` is the shared stdlib reader. PYLAUNCH can attach to the first live fleet endpoint with `--fleet-auto`, or a numbered endpoint with `--fleet-instance N`.
+这些内部字段不会为了中文界面而改名。中文化只发生在你看到的显示层。
 
-WOF-052L's `fleet_recorder.py` reads the same manifest and pins one independent recorder manager to each Fleet endpoint. Missing Fleet entries fall back to the original single-CDP recorder path.
+PYLAUNCH 和 WOF-052L Recorder 可以继续读取同一个 manifest。Fleet Manager 里的 Worker 状态只是轻量目标列表提示；权威 Worker/WASM/heap/World 921031 校验仍由现有只读探测链路负责。
 
-The Fleet Manager's Worker status is intentionally only a cheap HTTP target-list indicator. Authoritative Worker/WASM/heap/World-921031 validation stays in PYLAUNCH's existing read-only CDP probe.
+## 可选高级命令
 
-## Commands
-
-Direct start:
-
-```bat
-py -3 fleet_manager.py start 10 --interactive
-```
-
-One-off browser selection / URL:
+正常用户不需要下面这些命令。只有调试时才需要：
 
 ```bat
-py -3 fleet_manager.py start 5 --interactive --browser edge --game-url "https://YOUR-WOF-PAGE/"
+py -3 fleet_owner_zh_cn.py start 10 --interactive
+py -3 fleet_owner_zh_cn.py configure
+py -3 fleet_owner_zh_cn.py status
 ```
 
-Optional saved defaults:
+内部核心实现仍是 `fleet_manager.py`，中文 owner 入口是 `fleet_owner_zh_cn.py`。
 
-```bat
-py -3 fleet_manager.py configure
-```
+## 安全边界
 
-Print the current manifest:
+本工具不会：
+- 修改 `product/alpha/**`；
+- 替换或包装 `window.Worker`；
+- 创建 Blob Worker 或改写 Worker URL；
+- 写游戏 RAM；
+- 发送键盘/鼠标/手柄游戏输入；
+- 调整游戏速度；
+- 注入攻击逻辑。
 
-```bat
-py -3 fleet_manager.py status
-```
+CDP 只绑定本机 localhost。即使管理器退出，游戏和浏览器也应继续正常使用。
 
-## Safety / non-goals
+## 离线回归
 
-This tool does not:
-- modify `product/alpha/**`;
-- replace or wrap `window.Worker`;
-- create Blob Workers or rewrite Worker URLs;
-- write game RAM;
-- send keyboard/mouse/controller/gameplay inputs;
-- alter game speed;
-- inject attack logic;
-- depend on Alpha bootstrap.
-
-CDP exposure is localhost-only. The game/browser remains usable if the manager exits.
-
-## Offline regression
-
-From repository root:
+仓库根目录可执行：
 
 ```bat
 py -3 -m unittest discover parallel\BROWSER_FLEET\tests -v
-py -3 -m unittest discover parallel\PYLAUNCH\tests -v
 ```
 
-Repository-side offline coverage checks window tiling, count/port guards, independent profile/port allocation, settings persistence, manifest safety fields, and fleet registry selection.
+回归覆盖窗口排列、数量/端口保护、独立 profile/端口分配、设置持久化、manifest 安全字段和中文 owner UX smoke test。
 
-WOF-052L also includes `parallel\WOF052L_RECORDER\test_fleet_recorder.py` for Fleet manifest parsing/localhost filtering.
+## 真人 Windows 验证
 
-## Remaining real Windows proof
+后续真人验证只需要：
+1. 双击 `RUN_WOF_FLEET.cmd`；
+2. 输入 `10`；
+3. 确认 10 个窗口出现并自动排列；
+4. 至少在两个窗口正常进入 WOF 房间；
+5. 按 `S`，确认对应房间逐步显示“浏览器：已连接 / WOF 页面：已找到 / Worker：已找到”；
+6. 用 `R` 重启一个房间，确认其他房间不受影响；
+7. 用 `A` 全部关闭。
 
-The only remaining Fleet proof is bounded:
-
-1. double-click `RUN_WOF_FLEET.cmd`;
-2. enter `10`;
-3. confirm 10 windows appear and are tiled;
-4. enter/join WOF normally in at least two windows (or optionally configure a remembered WOF URL beforehand);
-5. press `S` and confirm each relevant row independently reaches Browser `OK`, page `OK`, and Worker `OK` when its room is running;
-6. restart one instance with `R` and confirm the others stay running;
-7. close all with `A`.
-
-No DevTools, Worker-console selection, RAM inspection, or input injection is required.
+不需要 DevTools、不需要 Worker Console、不需要手工 RAM 检查，也不会注入游戏输入。
