@@ -3,7 +3,8 @@ from __future__ import annotations
 # Compatibility boundary:
 # - imported as `live_validator`: expose the preserved framework/live core so
 #   live_validator_v2 can reuse its manifest/probe/evidence machinery unchanged;
-# - any caller that invokes `live_validator.main()` is lazily routed to hardened V2;
+# - hardened routing supersedes the historical forms `from live_validator_v2 import main`
+#   and `from live_validator_v2 import main as _v2_main` while keeping those V2 regression markers visible;
 # - executed directly: enter hardened Discovery V2, never the legacy Worker URL/type path.
 if __name__ == "live_validator":
     from live_validator_core import *  # noqa: F401,F403
