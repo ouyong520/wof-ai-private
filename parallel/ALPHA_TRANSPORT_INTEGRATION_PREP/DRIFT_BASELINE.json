@@ -1,0 +1,30 @@
+{
+  "schema": "wof-alpha-real-adapter-drift-baseline-v1",
+  "capturedAtHead": "186465bc124df9dbd51223ab982feb8553dddc9b",
+  "files": {
+    "parallel/ALPHA_TRANSPORT_IMPL/adapters.mjs": "e13f73df030e4af6c2f4d70b3718bc0adbd62964",
+    "parallel/ALPHA_TRANSPORT_IMPL/constants.mjs": "a29cb3ad714598e2e6aeeed64acc9e3eca8b221e",
+    "parallel/ALPHA_TRANSPORT_IMPL/detector_adapter.mjs": "ea029f39bbb9d7595e643b98cd83e7da4347bf36",
+    "parallel/ALPHA_TRANSPORT_IMPL/page_authority.mjs": "5e53bd2ad40823a8768802df0a1c5431adb19ee9",
+    "parallel/ALPHA_TRANSPORT_IMPL/reference_runtime.mjs": "3b767c12843f2b3f0768c6026c7a54ada6c02d94",
+    "parallel/ALPHA_TRANSPORT_IMPL/worker_runtime.mjs": "48bb83eab82af4a83eed5c2a8619f7fe1936e58f",
+    "parallel/ALPHA_TRANSPORT_IMPL/acceptance_adapter.mjs": "d79dff0b2708c671ab8a11644fcc4f771ec75003",
+    "parallel/ALPHA_TRANSPORT_MOCK/fixtures.json": "35bf36b4c741cda5d94be3f9884511a86653c11f",
+    "parallel/ALPHA_TRANSPORT_MOCK/vectors.json": "5a0cbe2ccfcf7eb6e875552f56748f736722c14d",
+    "parallel/ALPHA_TRANSPORT_MOCK/expected_results.json": "1231e0946d18068284724d92e732ea185e4e6af8",
+    "parallel/PYLAUNCH/wof_launcher/discovery_v2.py": "68ada457ba653bba63ec0308f812f1b6b84f3bd6",
+    "parallel/PYLAUNCH/wof_launcher/probe.py": "789a6849b826b35542b22d56a4d2ca3628d285a1",
+    "parallel/PYLAUNCH/wof_launcher/cdp.py": "def308bed2a5609be1da26505a15d621395b66aa",
+    "parallel/PYLAUNCH/wof_launcher/monitor.py": "5ee0ce9a84988d7841799d907ebdfe2a3e68ea56",
+    "parallel/WOF052L_RECORDER/discovery_v2_sync.py": "ddde07ed550110058ef1cae1ed62ae873382c462",
+    "parallel/WOF052L_RECORDER/hardening_v2.py": "4268d39f62d62a624966e7d9fd4afda65f6e94c0",
+    "parallel/WOF052L_RECORDER/recorder.py": "9552d168534f3b742e7390597ff07ea5cfcaeaa2",
+    "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py": "ce2e9f970f1a9e70493eb0d06b04431ea4870aa1",
+    "parallel/LIVE_PROOF_BUNDLE/test_unified_live_proof.py": "e24cf4be27927e8595aff5bce1913f28496ca13a",
+    "product/alpha/wof_alpha_bootstrap.user.js": "2729325bae0a860bf9375b47f2c9787b09f8340f",
+    "product/alpha/wof_alpha_core.js": "267a44190744b6848b0685712c3d5572627d3a8a",
+    "product/alpha/wof_alpha_hud.js": "f93f90cc3cc898083d9613841927349159a0d4ae",
+    "product/alpha/wof_alpha_hud_model.js": "16641129ff651c2733aebc6fae09a280e4bac49b",
+    "parallel/ALPHA_TRANSPORT_IMPL/result.json": "82751d3c37a778eeed0dac968d896656cd27a8f5"
+  }
+}
