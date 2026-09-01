@@ -1,0 +1,55 @@
+{
+  "schema": "wof-prospective-validator-discovery-v2-hardening-independent-qa-v1",
+  "stageId": "PROSPECTIVE_VALIDATOR_DISCOVERY_V2_HARDENING_QA_V1",
+  "verdict": "BLOCKED",
+  "stopCondition": "BLOCKED — PROSPECTIVE VALIDATOR HARDENING QA — P0 live topology ambiguity audit gap permits post-ambiguity prospective evidence",
+  "testedImplementation": {
+    "liveValidatorV2Path": "parallel/PROSPECTIVE_VALIDATOR/live_validator_v2.py",
+    "liveValidatorV2BlobSha": "a760de81f84d8934e005d81d68ac99fb37657430",
+    "hardeningPath": "parallel/PROSPECTIVE_VALIDATOR/discovery_v2_hardening.py",
+    "hardeningBlobSha": "959cf2d4dbfecc2031b1e3feee141a3dd06f9b01",
+    "validatorPath": "parallel/PROSPECTIVE_VALIDATOR/validator.py",
+    "validatorBlobSha": "2e1d574574205b176725a50edd7ec062ab100d40"
+  },
+  "blockers": [
+    {
+      "severity": "P0",
+      "id": "LIVE_TOPOLOGY_AMBIGUITY_AUDIT_GAP",
+      "requirement": 11,
+      "summary": "A room can continue prospective drain after its Worker-to-page ownership has become ambiguous, until the next 10-second live topology audit.",
+      "sourceFacts": [
+        "AUDIT_LIVE_TOPOLOGY_INTERVAL is 10.0 seconds.",
+        "Between audits, discover_candidates is called with skip_page_ids=live_page_ids, so the already-connected page relation is intentionally omitted from relation-graph reconstruction.",
+        "Cross-page ambiguity is only acted on after discover_candidates returns ambiguity diagnostics.",
+        "After the discovery block, every remaining room is unconditionally drained and ingested as prospective evidence."
+      ],
+      "adversarialSequence": [
+        "t=100: page-a / worker-shared is a valid connected room and a full topology audit has just completed.",
+        "t=101: page-b appears and is associated with the same exact worker-shared, making ownership ambiguous.",
+        "t=105: normal discovery runs inside the 10-second audit gap; page-a is skipped, so the relation graph cannot observe both page relations.",
+        "t=105: existing page-a room is not finalized and drain() still runs; returned rows can be ingested as prospective.",
+        "t>=110: a full audit can finally see both page relations and finalize before that poll's drain."
+      ],
+      "impact": "Evidence generated after association became ambiguous can be attributed to the pre-existing room and can contribute to minProspectiveSignals/minProspectiveRooms/minDistinctTargets/minObservedTypes/lifecycle gates, creating a false research PASS from evidence whose ownership is no longer unique.",
+      "requiredFixProperty": "Before any prospective drain/ingest, current topology must prove that each live room still has a unique Worker-to-page relation; if uniqueness is lost, censor/finalize first. No positive audit interval may leave an evidence-ingest window after the ambiguity exists.",
+      "qaArtifacts": [
+        "parallel/PROSPECTIVE_VALIDATOR_QA_DISCOVERY_V2_HARDENING/fixtures/live_unique_to_shared_worker.json",
+        "parallel/PROSPECTIVE_VALIDATOR_QA_DISCOVERY_V2_HARDENING/test_live_topology_transition.py"
+      ]
+    }
+  ],
+  "independentChecksCompletedBeforeStop": {
+    "sharedWorkerStaticRelationGraph": "implementation test exists and hardening source rejects both relations when both are present in one scan; blocker is the live scheduling gap before that complete scan occurs",
+    "distinctWorkers": "hardening source preserves independent candidates",
+    "openerIdAuthority": "hardening safe_page_for_direct does not use openerId",
+    "parentIdParentFrameId": "hardening source gives parentId first, then unique parentFrameId mapping",
+    "endpointConfinement": "hardening source requires assigned host loopback, returned websocket host loopback, and exact requested port",
+    "worldIdentity": "discovery probe and attach path require exact expected SHA and safety fields",
+    "discoveryOnlyRows": "validator maps non-prospective evidence classes away from prospective counters",
+    "conservativeGates": "validator executes all six declared supported gates and rejects unknown gate names",
+    "researchOnly": "PASS verdict is PROSPECTIVE_PASS_RESEARCH_ONLY and productionPromotionAllowed is false",
+    "safety": "current admission path checks readOnly=true, ramWrites=0, inputInjection=false, windowWorkerReplacement=false"
+  },
+  "remainingCoverage": "Stopped at the first exact P0 because the prompt stop condition permits BLOCKED on a precise P0/P1. A fresh fix thread and then a fresh QA stage are required before PASS coverage can complete.",
+  "ownerActionRequired": false
+}
