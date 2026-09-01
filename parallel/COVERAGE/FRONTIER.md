@@ -1,111 +1,118 @@
-# COVERAGE FRONTIER
+# COVERAGE FRONTIER — normalized refresh
 
 Snapshot: `2026-09-01`
 
-## Closed enough for current coverage accounting
+## Current closure
 
-### Provenance / raw retention — GOOD
+### Type identity / sample census — REFRESHED
 
-- 30 raw artifacts total in `captures/`.
-- 28 are deduplicated mechanically successful gameplay raws.
-- 2 are collector/platform test raws and are excluded from gameplay coverage.
-- all 28 successful gameplay captures have matching `tasks/queue`, `status/by_task`, `results/by_task`, and `captures` artifacts.
-- reuse by another lane is not double-counted.
+Canonical notation is `T<decimal> (0xHH)`. The old hex-style `Txx` display is retired.
 
-### Current EFIELD Txx sample census — GOOD / LOW
+The seven retained EFIELD captures contain all nonzero raw type bytes `0x01..0x1F`, therefore all normalized types `T1 (0x01)` through `T31 (0x1F)` are observed.
 
-- 31 observed Txx codes.
-- 60,271 total type-present samples.
-- 17 Txx at COVERAGE `GOOD` density (`>=500` samples).
-- 14 Txx at COVERAGE `LOW` density (`1..499` samples).
-- T23: 0 samples in the current EFIELD corpus, tracked as `MISSING` exemplar only; expected full-game membership is unknown.
+Priority corrections:
 
-### Aggregate lifecycle evidence — GOOD
+- T16 (0x10): 9,210 samples.
+- T18 (0x12): 528 samples.
+- T20 (0x14): 686 samples.
+- T23 (0x17): 2,140 samples.
+- T24 (0x18): 12,866 samples.
 
-- 1,604 same-nonzero-type lifecycle episodes globally.
-- Per-Txx episode counts remain `LABEL_UNKNOWN` because the current read-only outputs do not materialize that cross-tab.
+The previous COVERAGE `T23=0` conclusion was a notation artifact. Old `T17` meant raw `0x17`, which is canonical T23 (0x17).
 
-### Aggregate structural attack/executor evidence — GOOD / LOW
+### SWEEPATLAS — INGESTED
 
-Coarse `enemy+0x73`:
-- `0x0A`: 27,486 frames — GOOD
-- `0x1B`: 16,651 — GOOD
-- `0x0B`: 726 — GOOD, relatively sparse
-- `0x1E`: 42 — LOW
-- `0x00`: 15,366 background/zero-family frames
+SWEEPATLAS is present. It proves:
 
-There are 271 nonzero structural executor/attack-family episodes globally. Semantic attack names and semantic ACTIVE cycles are not inferred.
+- 23,400 EFIELD frames;
+- 468,000 enemy-slot samples;
+- 60,271 type-present samples;
+- 31 distinct nonzero types;
+- 1,604 same-type episodes;
+- 74 enter + 74 exit boundaries;
+- 8 confirmed live-target changes;
+- 271 structural attack/executor episodes.
 
-### Aggregate target coverage — GOOD
+It also proves the current retained corpus does **not** contain an authoritative stage/scene/wave-labeled full-game sweep series.
 
-Live-target counts:
-- P1: 46,865
-- P2: 2,967
-- P3: 10,439
+### SEQMINER — INGESTED
 
-Association counts:
-- P1: 18,091
-- P2: 17,494
-- P3: 24,686
+SEQMINER is present and has exhausted the current retained structural corpus to its safe boundary.
 
-Eight confirmed live-target changes exist. Per-Txx target coverage remains `LABEL_UNKNOWN`.
+Materialized now:
 
-### Geometry owner closure — GOOD
+- global record-aware ordered executor topology;
+- timer progression and terminal-hold context;
+- branch/reset nodes and mode history;
+- delayed positive timer-reload sequences;
+- explicit local T18 (0x12) and T23 (0x17) ordered examples;
+- explicitly separated Browser-labelled T18/T23 ordered evidence.
 
-Read-only GEO owner outputs close:
-- P1 X
-- P1 Y / floor-depth
-- P2/P3 same-offset structure
-- facing
-- top/bottom
+Not materialized/proven:
 
-Historical flat/confounded captures remain in the audit, but zero/flat evidence is not treated as field absence.
+- all-game type -> exact local move -> ordered signature matrix;
+- authoritative stage/scene/wave conditioning;
+- a proven WinKawaks-local exact move/attack semantic field.
 
-## Open frontier
+SEQMINER itself requests no recapture.
 
-### 1. Stage / scene / wave atlas — LABEL_UNKNOWN
+### Provenance / raw retention — STABLE
 
-This is the highest-priority coverage join. Current task condition names are not game-scene labels.
+The bridge head remains `e3676d79a38ac23e572af69d23d560c01bd6777d`, the same ledger point used by the old COVERAGE snapshot.
 
-### 2. Boss / ordinary enemy labels — LABEL_UNKNOWN
+- 30 raw artifacts total;
+- 28 mechanically successful gameplay raws;
+- 2 collector/platform test raws excluded;
+- complete task/status/result/raw identity for all 28 successful gameplay raws;
+- failed acquisitions are never counted as samples;
+- game-memory writes: 0.
 
-No authoritative mapping is present.
+### BASECAP / GEO / EFIELD / RAWMINE — CLOSED FOR GENERIC COLLECTION
 
-### 3. Per-Txx lifecycle / attack / target / scene cross-tabs — LABEL_UNKNOWN
+- BASECAP v1: complete.
+- GEO: P1 X/Y, P2/P3 structure, facing, and retained player-object top/bottom search closed; explicit advice is not to repeat the canonical scenes.
+- EFIELD: bounded high-value mapping complete; no outstanding generic capture requirement.
+- RAWMINE: current candidate-screen assignment complete; no active operator-gated task.
 
-These are primarily analysis/materialization gaps over existing raw. Do not collect first.
+## Open frontier by gap class
 
-### 4. Semantic ACTIVE cycles — LABEL_UNKNOWN
+### ANALYSIS / MATERIALIZATION
 
-Structural attack/executor episodes must not be renamed as semantic ACTIVE.
+Existing retained bytes support more accounting, but current human-readable outputs do not safely expose these per-type tables:
 
-### 5. Ordered sequence families — LABEL_UNKNOWN
+1. lifecycle episode count per normalized type;
+2. target dwell/occupancy P1/P2/P3 per normalized type;
+3. structural attack/executor episode count per normalized type;
+4. full normalized type × structural executor contingency table.
 
-`parallel/SEQMINER/**` is absent at this snapshot.
+These are not capture requests.
 
-### 6. Rare / low-density evidence — LOW
+### LABEL / SEMANTIC
 
-The 14 low-density Txx and coarse `0x1E` family are the main quantitative sparse-evidence frontier, but their optimal recap scenes cannot be chosen until authoritative scene incidence is available.
+Still UNKNOWN unless an authoritative source appears:
 
-## Input lanes to consume read-only
+- stage;
+- scene;
+- wave;
+- boss / ordinary;
+- human enemy names;
+- semantic ACTIVE/hitbox/damage cycle;
+- exact WinKawaks-local move/attack identity.
 
-COVERAGE should continuously re-audit when these change:
+Do not infer any of these from task names, rarity, or raw patterns.
 
-- `parallel/BASECAP/**`
-- `parallel/GEO/**`
-- `parallel/EFIELD/**`
-- `parallel/RAWMINE/**`
-- `parallel/SWEEPATLAS/**` when present
-- `parallel/SEQMINER/**` when present
-- bridge `tasks/queue/**`
-- bridge `status/by_task/**`
-- bridge `results/by_task/**`
-- bridge `captures/**`
+### BROWSER VALIDATION
 
-COVERAGE does not change field semantics, attack rules, Browser logic, MAINLINE production-shadow state, or other lane files.
+- T18 (0x12): WOF-052 remains the ordered post-anchor Browser discrimination gate.
+- T23 (0x17): Browser ordered evidence exists; do not spend repeated rooms merely to force scene appearance.
+- Product release regression / identity guard / live retarget remain Product/MAINLINE gates, not COVERAGE capture work.
 
-## Current next action
+### PHYSICAL
 
-**No human capture and no Collector batch.**
+A labeled full-game `BASECAP-SWEEP-*` corpus is physically absent. This matters to a future authoritative breadth denominator, but it is **not** currently a justified human recap because no single bounded Product/Beta/v1-critical scene has been identified that would close the gap at low cost.
 
-The next useful COVERAGE action is to ingest authoritative scene/sequence labels or materialized per-Txx cross-tabs, recompute the matrix, and only then solve the minimal scene set-cover problem. A new physical recap should be requested only if that recomputation leaves genuine residual coverage gaps that existing raw cannot satisfy.
+## Stop decision
+
+**human recap required: NO**
+
+COVERAGE has reached the safe accounting boundary of current GitHub material. The next useful increments are new materialized analyses/labels from existing raw or Browser/Product validation results—not a broad WinKawaks replay.
