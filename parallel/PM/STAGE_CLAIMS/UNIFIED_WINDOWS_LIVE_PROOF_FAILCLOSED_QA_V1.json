@@ -2,7 +2,12 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "UNIFIED_WINDOWS_LIVE_PROOF_FAILCLOSED_QA_V1",
   "promptPath": "parallel/PM/UNIFIED_WINDOWS_LIVE_PROOF_FAILCLOSED_QA_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "0804b88379224fde90683e624b963edf0a64da53",
-  "startedAtUtc": "2026-09-01T13:52:00Z"
+  "startedAtUtc": "2026-09-01T13:52:00Z",
+  "resultPath": "parallel/LIVE_PROOF_BUNDLE_QA_FAILCLOSED/RESULT.md",
+  "machineResultPath": "parallel/LIVE_PROOF_BUNDLE_QA_FAILCLOSED/RESULT.json",
+  "resultCommit": "250ccae3be8430fd84875093fef700819d82cf6c",
+  "blocker": "P1 stale/unknown child success can still become PASS",
+  "ownerIntervention": "NO"
 }
