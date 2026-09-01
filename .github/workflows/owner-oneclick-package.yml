@@ -49,7 +49,7 @@ jobs:
           $current = Join-Path $root 'current.txt'
           if (-not (Test-Path -LiteralPath $current)) { throw 'current.txt missing after first install' }
           $version = (Get-Content -LiteralPath $current -Raw).Trim()
-          if ($version -ne '2026.09.01.3') { throw ('unexpected installed version: ' + $version) }
+          if ($version -ne '2026.09.01.4') { throw ('unexpected installed version: ' + $version) }
           $release = Join-Path $root ('releases\' + $version)
           foreach ($p in @('installed.ok','WOF_TOOLKIT.cmd','parallel\OPTOOLKIT\owner_zh_cn.py','parallel\WOF052L_RECORDER\owner_zh_cn.py','parallel\BROWSER_FLEET\fleet_owner_zh_cn.py')) {
             if (-not (Test-Path -LiteralPath (Join-Path $release $p))) { throw ('installed file missing: ' + $p) }
@@ -67,5 +67,5 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw ('second run failed: ' + $LASTEXITCODE) }
           $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
           $version = (Get-Content -LiteralPath (Join-Path $root 'current.txt') -Raw).Trim()
-          if ($version -ne '2026.09.01.3') { throw ('version changed unexpectedly: ' + $version) }
-          if (-not (Test-Path -LiteralPath (Join-Path $root 'releases\2026.09.01.3\installed.ok'))) { throw 'last-known-good missing after second run' }
+          if ($version -ne '2026.09.01.4') { throw ('version changed unexpectedly: ' + $version) }
+          if (-not (Test-Path -LiteralPath (Join-Path $root 'releases\2026.09.01.4\installed.ok'))) { throw 'last-known-good missing after second run' }
