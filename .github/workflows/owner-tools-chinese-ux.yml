@@ -1,0 +1,50 @@
+name: Owner Tools Chinese UX
+
+on:
+  push:
+    paths:
+      - 'WOF_TOOLKIT.cmd'
+      - 'parallel/BROWSER_FLEET/**'
+      - 'parallel/WOF052L_RECORDER/**'
+      - 'parallel/OPTOOLKIT/**'
+      - '.github/workflows/owner-tools-chinese-ux.yml'
+  workflow_dispatch:
+
+jobs:
+  offline-ux-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install existing tool dependencies
+        run: |
+          python -m pip install --disable-pip-version-check -r parallel/PYLAUNCH/requirements.txt
+          python -m pip install --disable-pip-version-check -r parallel/WOF052L_RECORDER/requirements.txt
+
+      - name: Compile Chinese owner frontends
+        run: |
+          python -m py_compile parallel/BROWSER_FLEET/fleet_owner_zh_cn.py
+          python -m py_compile parallel/WOF052L_RECORDER/owner_zh_cn.py
+          python -m py_compile parallel/OPTOOLKIT/owner_zh_cn.py
+          python -m py_compile parallel/OPTOOLKIT/toolkit.py
+
+      - name: Browser Fleet offline regression
+        run: python -m unittest discover -s parallel/BROWSER_FLEET/tests -p 'test_*.py' -v
+
+      - name: WOF-052L self-test
+        working-directory: parallel/WOF052L_RECORDER
+        run: python owner_zh_cn.py --self-test
+
+      - name: WOF-052L Fleet regression
+        working-directory: parallel/WOF052L_RECORDER
+        run: python -m unittest -v test_fleet_recorder.py
+
+      - name: Operator Toolkit and Chinese CLI smoke tests
+        run: python -m unittest discover -s parallel/OPTOOLKIT/tests -p 'test_*.py' -v
