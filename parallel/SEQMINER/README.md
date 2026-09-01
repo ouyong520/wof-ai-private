@@ -1,6 +1,6 @@
 # SEQMINER — WinKawaks enemy attack ordered-sequence mining
 
-Status: **bounded current-corpus mining complete / reusable miner ready / WinKawaks-local only**
+Status: **bounded current-corpus mining complete / reusable miner v3 ready / WinKawaks-local only**
 
 Write boundary: `parallel/SEQMINER/**` only.
 
@@ -20,8 +20,9 @@ zero attack / zero structural proxy
 -> ordered distinct executor states
 -> tail2 / tail3
 -> transition pair / triple
--> descriptor/cursor progression
+-> cursor/flag/mode progression
 -> exact + normalized timer progression
+-> cross-state timer reload edges / conditional holds
 -> future same-object nonzero event / ACTIVE
 ```
 
@@ -29,7 +30,7 @@ Nothing in this lane is a Browser production rule.
 
 ## Corpus boundary
 
-`parallel/SWEEPATLAS/**` now exists and confirms:
+`parallel/SWEEPATLAS/**` confirms:
 
 - seven retained EFIELD natural-gameplay runs;
 - 23,400 frames;
@@ -39,7 +40,7 @@ Nothing in this lane is a Browser production rule.
 - T18 (`+0x24=0x12`) present for 528 samples;
 - T23 (`+0x24=0x17`) present for 2,140 samples.
 
-However `SWEEPATLAS/CAPTURE_INDEX.json` also explicitly reports:
+Its capture index also explicitly reports:
 
 ```text
 stageSceneWaveLabelsAvailable = false
@@ -73,7 +74,7 @@ SEQMINER reuses EFIELD's confirmed/strong fields:
 
 `+0x73 != 0` remains only a structural executor-phase proxy. It is not semantic attack ACTIVE.
 
-## Automatic miner v2
+## Automatic miner v3
 
 `seqminer.py` automatically discovers retained `.jsonl` / `.jsonl.gz` files.
 
@@ -132,25 +133,55 @@ SEQMINER therefore mines exact timer profiles and normalized ceiling-distance bu
 
 It also records terminal timer-1 hold buckets `0 | 1 | 2-3 | 4-9 | 10-29 | 30+`, because literal `TM1` can conceal long conditional waits.
 
+### v3 cross-state reload correction
+
+Retained delayed-`1B` analysis contains **52** residences that enter with `+0x34=8` and load upward shortly afterward. Critically, `+0x35` changes on `52/52` of those reload frames and `+0x42` also changes on `52/52`.
+
+Because `+0x35` is part of the core state, a reload that coincides with the mode transition crosses a compressed-state boundary. A state-local `positiveTimer34Reloads` list can therefore miss exactly the delayed-load edge we care about.
+
+v3 fixes that by also tracking every positive `+0x34` load at the **cycle prefix** level, before the future event, preserving:
+
+```text
+from/to timer34
+coreFrom/coreTo
+cursorFrom/cursorTo
+mode35From/mode35To
+phaseFrom/phaseTo
+timer42From/timer42To
+timer1 hold before reload
+sameCore / cursorChanged / mode35Changed / timer42Changed
+exact + record-normalized reload family
+```
+
+The future event edge is deliberately excluded from predictor features to prevent leakage.
+
+## Confidence and scene-label rules
+
+The machine-readable contract is `FEATURE_CONTRACT.json`.
+
+Core rules:
+
+- feature support is counted at most once per resolved cycle per signature;
+- ambiguous-anchor attack support is also cycle-based;
+- repeated loop visits remain visible separately as raw occurrence counts but never create independent confidence;
+- capture filename fallback is not treated as authoritative scene evidence;
+- if explicit stage/scene/room/wave fields exist later, all present dimensions are retained rather than silently keeping only the first one.
+
 ## Generated outputs
 
 A run writes:
 
-- `CYCLES.generated.jsonl` — resolved same-object cycles;
-- `CANDIDATES.generated.json` — final/tail/pair/triple exact/normalized rankings;
-- `BRANCHPOINTS.generated.json` — ambiguous anchors plus next/previous/timer outcome distributions;
+- `CYCLES.generated.jsonl` — resolved same-object cycles, including cycle-level timer reload edges;
+- `CANDIDATES.generated.json` — final/tail/pair/triple/reload exact/normalized rankings;
+- `BRANCHPOINTS.generated.json` — ambiguous anchors plus cycle-based next/previous/timer outcome distributions and separate raw loop counts;
 - `SEQUENCE_ATLAS.generated.md`;
 - `ATTACK_BRANCHES.generated.md`.
-
-Support is counted once per cycle per signature so an internal loop cannot inflate confidence.
 
 ## Evidence classes
 
 - `discovery_correlation` — local association only.
 - `same_cycle_evidence` — ordered context precedes the same object's later event.
 - `potentially_prospectively_testable_candidate` — only used in explicit exact-attack mode after repeated/pure support; still not production.
-
-Capture-filename fallback is never pretended to be an authoritative scene label.
 
 ## Current highest-value results
 
@@ -165,6 +196,7 @@ WinKawaks-local structural hotspots for future exact-label mining:
 
 - `0x02008BE0` — high-volume mixed exit/conditional-wait node;
 - `0x02008BD6` and `0x02005E9A` — logical-cursor ambiguity materially split by embedded flags;
+- delayed-`1B` timer reload edge — a real cross-state event, not safely representable by literal `TM` or one compressed state alone;
 - `0x02008C12`, `0x02008C52`, `0x02005ED6` — loop/reset branch nodes;
 - long terminal-hold records `0x02008D08`, `0x02005FF8`, `0x02008D12`, `0x02006002`;
 - `+0x35` transitions as an independent branch axis.
@@ -175,4 +207,4 @@ These are structural candidates only and must never be numerically copied into B
 
 The connector-visible retained raw-derived information has been mined to the point where more generic offline reading is not expected to produce an exact all-game attack discriminator.
 
-No Collector task is requested. Reopen exact local mining when either a labeled retained full-sweep series appears or an exact WinKawaks-local move/attack value is independently established.
+No Collector task is requested. Reopen exact local mining when either a labeled retained full-sweep series appears or an exact WinKawaks-local move/attack value is independently established. v3 will then regenerate exact attack-labelled final/tail/pair/triple/reload families without changing the evidence rules above.
