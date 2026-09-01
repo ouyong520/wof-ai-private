@@ -1,76 +1,81 @@
 # WOF Future Danger AI — Release Readiness
 
-Updated: 2026-09-01 — RC3 independent QA complete / one P1 requires RC4
+Updated: 2026-09-01 — RC4 independent QA PASS / real Browser acceptance next
 
-## Alpha — **RC3 QA BLOCKED / RC4 REQUIRED**
+## Alpha — **RC4 QA PASS / BROWSER ACCEPTANCE READY**
 
-Fresh independent RC3 QA is complete. It found exactly one release blocker:
+Fresh independent RC4 QA completed with no remaining P0/P1 and returned:
 
-- `ALPHAQA-RC3-001` — a runtime disable/error diagnostic does not immediately invalidate the last warning in the page HUD. A prior warning can remain visible for up to 1500 ms after the detector has already failed closed.
+`PASS — READY FOR ONE REAL BROWSER ACCEPTANCE`
 
-This is a P1 user-visible fail-closed defect and blocks human Browser acceptance.
+### Release gates already passed
 
-## RC3 areas already independently passed
-
-Do not treat the entire candidate as failed. Independent QA passed:
-- exact `wof / Warriors of Fate (World 921031)` full-program SHA-256 gate;
-- wrong/missing/pending/error/malformed identity remains disabled;
-- no sparse identity fallback;
-- no same-type hidden replacement inheritance;
+- exact `wof / Warriors of Fate (World 921031)` full 1 MiB CPU-logical SHA-256 identity;
+- pending/missing/malformed/mismatch/error identity fails closed;
+- sparse vector/dispatch evidence cannot authorize warnings;
+- RC3 runtime-diag stale-warning P1 closed in RC4;
 - exactly two stateless current-level T18 production rules;
-- F1-F4 quarantined / cannot user-alert;
+- F1-F4 quarantined;
+- same-type slot reuse/history inheritance blocked;
 - session/cross-tab isolation;
 - simultaneous warning aggregation;
 - legacy HUD cleanup;
-- normal-user document-start bootstrap;
-- live target / side recomputation;
-- UNKNOWN target silence;
+- normal-user document-start bootstrap passes offline/source QA;
+- live target reread / side recompute;
+- UNKNOWN/invalid target silence;
 - read-only / no gameplay input injection;
-- GL state restoration.
+- WebGL state restoration.
+
+### Final remaining Alpha gate
+
+One bounded real Browser acceptance using the prepared `parallel/ALPHAACCEPT/**` helper.
+
+It verifies the real host/runtime path including:
+- real document-start Worker interception;
+- accepted World 921031 identity signature;
+- primary/auxiliary/reload session isolation;
+- live detector/HUD connectivity;
+- WebGL state restoration and smoke-level callback overhead;
+- warning contract sanity if a current T18 warning happens naturally;
+- no paired runtime diagnostic/error during the acceptance run.
+
+A rare attack is not required merely to pass infrastructure acceptance.
 
 ## Alpha gate status
 
 | Gate | Status |
 |---|---|
-| Browser World 921031 exact identity | PASS independent QA |
+| World 921031 exact identity | PASS independent QA |
+| runtime diag immediate invalidation | PASS independent QA |
 | same-type replacement safety | PASS independent QA |
-| production rule inventory | PASS — only two T18 current-level rules |
+| production rule inventory | PASS — two T18 rules only |
 | F1-F4 quarantine | PASS |
-| session isolation | PASS offline/source |
-| multi-threat HUD | PASS offline/source |
-| legacy HUD teardown | PASS offline/source |
-| normal-user bootstrap | PASS offline/source / live acceptance later |
-| target/side/UNKNOWN | PASS offline/source |
-| read-only/no-input | PASS offline/source |
-| runtime explicit-error warning clearing | **FAIL P1 — RC4 required** |
-| RC3 independent QA | COMPLETE / BLOCKED |
-| RC4 implementation | NEXT |
-| fresh RC4 independent QA | WAIT |
-| Browser acceptance | PREP COMPLETE / NOT AUTHORIZED |
-| Alpha release | WAIT |
-
-## Browser acceptance preparation
-
-`parallel/ALPHAACCEPT/**` is complete. Once a future independent QA returns `PASS — READY FOR ONE REAL BROWSER ACCEPTANCE`, the owner operation is already reduced to a normal refresh + one acceptance button, with automated auxiliary-tab checks and one result JSON.
-
-Do not run it before RC4 + fresh QA.
+| session isolation | PASS offline/source; Browser acceptance checks live |
+| multi-warning HUD | PASS offline/source |
+| legacy HUD cleanup | PASS offline/source |
+| normal-user bootstrap | PASS offline/source; Browser acceptance checks live |
+| target/side/UNKNOWN | PASS |
+| read-only/no-input | PASS |
+| GL restoration | PASS offline/source; Browser acceptance checks live |
+| RC4 product regression | PASS |
+| fresh RC4 independent QA | PASS |
+| real Browser acceptance | **NEXT / AUTHORIZED** |
+| Alpha release | WAIT FOR BROWSER RESULT |
 
 ## Release sequence
 
-1. close completed RC3 QA thread;
-2. open fresh RC4 fix using `parallel/PM/ALPHA_RC4_FIX_START_PROMPT.md`;
-3. RC4 changes only the immediate diagnostic warning-clearing behavior and adds regression;
-4. close RC4 implementation when candidate is produced;
-5. open fresh independent RC4 QA;
-6. if QA passes, run prepared one-click Browser acceptance;
-7. if Browser acceptance passes, PM may release Alpha.
+1. run one prepared real Browser acceptance;
+2. return its single JSON to PM;
+3. if result is `PASS — REAL BROWSER ACCEPTANCE`, PM records the final Alpha release decision;
+4. if FAIL/INCOMPLETE, preserve the JSON and route only the concrete cause.
 
 ## Parallel non-blocking support
 
-- Local WinKawaks ROM identity: one local read-only hash command remains; expected local World 921002 vs Browser World 921031.
-- Runtime Speed: simulation-speed question remains separate; support tooling may continue.
-- Player-Anchored HUD: Beta projection proof tooling/handoff is separate from Alpha.
+- Local WinKawaks ROM identity: one read-only local hash remains; expected local World 921002 vs Browser World 921031.
+- Runtime Speed: one paired ~15 s local/Browser measurement remains; tooling is complete.
+- Player-Anchored HUD: one Browser projection proof remains for Beta.
+- WOF-052 resumes after the Alpha release gate according to roadmap.
 
 ## Current release judgment
 
-**Alpha is blocked by one narrow P1, not by the core identity/lifecycle/rule-scope work. Fastest path: RC4 tiny fix -> fresh QA -> prepared one-click Browser acceptance.**
+**Alpha has cleared implementation and fresh independent QA. It is now exactly one bounded real-Browser acceptance away from the release decision.**
