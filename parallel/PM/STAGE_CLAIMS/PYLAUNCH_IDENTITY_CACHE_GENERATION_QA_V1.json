@@ -1,7 +1,16 @@
 {
   "stageId": "PYLAUNCH_IDENTITY_CACHE_GENERATION_QA_V1",
-  "status": "ACTIVE",
+  "status": "BLOCKED",
   "claimedAt": "2026-09-01T23:16:00+08:00",
   "executor": "ChatGPT",
-  "note": "Fresh independent QA per PYLAUNCH_IDENTITY_CACHE_GENERATION_QA_START_PROMPT.md"
+  "qaBaseHead": "3cf948005329568c09fded1ff31bcec2a297317b",
+  "violatingModule": "parallel/PYLAUNCH/wof_launcher/browser.py",
+  "violatingBlob": "e883030fe8a90333b8ed58aae5699118b2c876fe",
+  "violatedRule": "startup /json/version metadata attestation must remain green/fail closed",
+  "evidence": [
+    "parallel/PYLAUNCH_QA_IDENTITY_GENERATION/QA_RESULT.md",
+    "parallel/PYLAUNCH_QA_IDENTITY_GENERATION/test_startup_attestation_regression.py"
+  ],
+  "downstreamPyLauncherReadinessUnlocked": false,
+  "note": "Fresh QA reproduced acceptance of missing Browser metadata and non-browser websocket endpoint shape; current production startup attestation is not fail-closed."
 }
