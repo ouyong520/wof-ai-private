@@ -3,67 +3,84 @@
 Date: 2026-09-01
 Lane: `RAWMINE-*` only
 Evidence class: `WinKawaks-local-discovery-only`
-Status: **COMPLETE for the current retained-raw / owner-question phase**
+Status: **COMPLETE for the current GEO/EFIELD owner-question assignment**
 
 ## Role boundary
 
 RAWMINE is not a semantic reverse-engineering owner. It is the automatic candidate screener / evidence analyzer for GEO and EFIELD questions.
 
-This completion therefore means the requested screening/evidence machinery is implemented and the current retained corpus has been exhausted against the active/bounded owner questions. It does **not** mean every object byte has a semantic name.
+Completion means the requested automatic screening machinery is implemented and the currently active owner questions have either been exhausted or handed back with discriminative evidence. It does not mean every byte has a semantic name.
 
 ## Delivered automatic evidence
 
-For all 23 normalized objects and all `0x00..0xDF` offsets, the bridge pipeline now emits:
+The RAWMINE bridge pipeline now covers:
 
-1. offset change count and frequency;
+1. per-object offset change count/frequency;
 2. zero->nonzero / nonzero->zero transitions;
 3. value domains and compact frequency summaries;
-4. neutral U8/U16/U32 minimum-reasonable-width evidence;
-5. same-frame and neighboring-frame linkage (`lag -2..+2`);
+4. neutral minimum-reasonable-width evidence;
+5. same-frame and neighboring-frame linkage;
 6. transition/event windows;
-7. pair correlation and connected clusters;
-8. Top 10 rankings for concrete owner questions.
+7. pair correlation and clusters;
+8. concrete owner-question Top 10 rankings;
+9. controlled-manipulation validity guards;
+10. controlled attempt history and timing discriminators.
 
-Bridge implementation / outputs:
+Key implementations / outputs:
 
 - `analysis/rawmine/candidate_screen.py`
 - `analysis/rawmine/candidate_screen_refine.py`
 - `analysis/rawmine/candidate_screen_owner_sync.py`
+- `analysis/rawmine/candidate_screen_geo_depth.py`
+- `analysis/rawmine/player_slot_depth_long_window.py`
+- `analysis/rawmine/depth_pair_timing.py`
 - `.github/workflows/rawmine-candidate-screen.yml`
-- `results/rawmine/candidate_screen.json`
-- `results/rawmine/candidate_screen_summary.json`
-- `results/rawmine/candidate_screen_summary.md`
-
-Current corpus: 11 raw runs = 7 EFIELD + 4 GEO.
+- `.github/workflows/rawmine-slot-attribution.yml`
+- `results/rawmine/candidate_screen*.json`
+- `results/rawmine/player_slot_depth_long_window.json`
+- `results/rawmine/depth_pair_timing.json`
 
 ## Owner-question state
 
 ### GEO P1 X
 
-Current raw provides a strong question-conditioned screen under the GEO-owned composite anchor. `+0x04` ranks first as a single-offset discriminator and `+0x0B` is a sparse highly specific companion. RAWMINE does not promote the coordinate semantics.
+Existing evidence remains sufficient for RAWMINE's screening role: `+0x04` is the strongest single-offset discriminator under the GEO-owned composite-X anchor and `+0x0B` is a sparse highly specific companion. RAWMINE does not assign final coordinate semantics.
 
-### GEO P1 Y
+### GEO P1 Y / floor-depth
 
-Current P1 raw contains only one `+0x08` anchor-change event. All Top 10 remain `INSUFFICIENT_COVERAGE`. This is the only current priority question that cannot be defensibly ranked from retained P1 evidence.
+The final timing-robust controlled raw is:
 
-### EFIELD execution boundary
+`RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z`
 
-Owner question is closed: EFIELD found no better direct byte gate than `+0x24` in the retained corpus. RAWMINE now excludes owner-resolved/rejected fields and reports only residual boundary companions; all current Top 10 are weak evidence and do not reopen the owner conclusion.
+Collector health:
 
-### EFIELD retarget precursor
+- 2400 frames;
+- 59.981 Hz;
+- 0 read errors;
+- 0 frame-size errors;
+- read-only PASS.
 
-Owner question is closed: no selective universal pre-commit signal is established. RAWMINE now scopes out the confirmed target, stored association, split reference, synchronization checkpoint, resolved executor structures and owner-rejected same-frame alternatives before producing a residual Top 10. High residual scores are explicitly not interpreted as proof that a universal precursor exists.
+The optional horizontal movement-attribution guard failed because all reconstructed player X composites stayed unchanged. That failure is explicitly scoped to independent slot-attribution via horizontal motion.
 
-### EFIELD executor / action-state neighborhood
+The retained raw nevertheless contains strong P1-only controlled depth-correlated evidence in the Collector's structurally ordered P1 object:
 
-RAWMINE added two owner-conditioned screens:
+- `+0x08`: 536 events, specificity 1.0, untouched P2/P3 rate 0, bidirectional score 0.955224;
+- `+0xA2`: 536 events, specificity 1.0, untouched P2/P3 rate 0, bidirectional score 0.966418;
+- equal observed domain: 63..143 / 81 values.
 
-- coupling to logical executor cursor transitions;
-- selectivity for owner-confirmed fine/coarse phase-transition frames.
+The dedicated timing discriminator finds the dominant exact relationship:
 
-The phase-transition screen places `+0x72` first and `+0x37` fourth, while `+0x2E` and `+0x2D` rank lower under that narrower exact-transition question. These are evidence rankings only and are compatible with EFIELD keeping all four at candidate level where appropriate.
+`A2[t] == 08[t-1]`
 
-EFIELD has formally closed its current bounded high-value field-mapping phase, so RAWMINE does not request additional generic EFIELD captures.
+for 2116 / 2399 comparable frames = 0.882034. Same-frame equality is only 0.736667. When both bytes change, their delta sign agrees 100%.
+
+This is strong neutral evidence that the two fields track the same varying quantity at different temporal stages, with `+0xA2` trailing `+0x08` by one frame in the dominant relationship. GEO owns the final decision about current/live vs cached depth semantics, width, scale, and promotion.
+
+Handoff state: `READY_FOR_GEO_OWNER_PROMOTION_DECISION`.
+
+### EFIELD
+
+EFIELD has formally closed its bounded high-value field-mapping phase. RAWMINE retains its residual lifecycle, retarget, executor, and action/state rankings as evidence only and requests no further generic capture.
 
 ## Guardrails preserved
 
@@ -72,10 +89,10 @@ EFIELD has formally closed its current bounded high-value field-mapping phase, s
 - no WinKawaks numeric offset promoted directly into Browser/WASM;
 - no `CONFIRMED` semantic labels issued by RAWMINE;
 - GEO/EFIELD artifacts consumed read-only;
-- RAWMINE writes remain in RAWMINE-owned paths and bridge RAWMINE analysis/results.
+- RAWMINE private writes remain under `parallel/RAWMINE/**`.
 
-## Automatic continuation rule
+## Final stop rule
 
-The current phase is complete against existing raw. On any future eligible owner capture, the workflow automatically regenerates the generic evidence and owner-question rankings.
+There are no active RAWMINE operator-gated tasks. The current RAWMINE assignment is complete.
 
-A new RAWMINE capture is justified only when an owner asks a concrete discriminative question that cannot be answered from already retained raw and is not already being collected by that owner lane.
+Future work is justified only by a new concrete GEO/EFIELD ambiguity that cannot be discriminated from the retained corpus.
