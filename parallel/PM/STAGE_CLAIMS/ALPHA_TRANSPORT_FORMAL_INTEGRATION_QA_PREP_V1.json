@@ -2,7 +2,13 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "ALPHA_TRANSPORT_FORMAL_INTEGRATION_QA_PREP_V1",
   "promptPath": "parallel/PM/ALPHA_TRANSPORT_FORMAL_INTEGRATION_QA_PREP_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "6e453a467608430e1c9610511df458ab3c62505b",
-  "startedAtUtc": "2026-09-01T15:39:00Z"
+  "startedAtUtc": "2026-09-01T15:39:00Z",
+  "completedAtUtc": "2026-09-01T15:47:56Z",
+  "verdict": "HARNESS_READY_WAITING_SUT",
+  "resultPath": "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION_QA_PREP/RESULT.md",
+  "harnessPath": "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION_QA_PREP/formal_integration_qa.mjs",
+  "expectedOutcomesPath": "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION_QA_PREP/expected_outcomes.json",
+  "resultCommit": "6f39a5c292e09d560ee88da62a4e29e282b18931"
 }
