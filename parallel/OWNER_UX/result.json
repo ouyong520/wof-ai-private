@@ -1,0 +1,55 @@
+{
+  "artifact": "wof-owner-tools-simplified-chinese-ux-pass",
+  "date": "2026-09-01",
+  "verdict": "CHINESE OWNER UX PASS — Browser Fleet / WOF-052L / Operator Toolkit repository-side owner-facing workflow all Simplified Chinese by default",
+  "ownerFacingDefaultLanguage": "zh-CN",
+  "components": {
+    "browserFleet": "PASS",
+    "wof052lRecorder": "PASS",
+    "operatorToolkit": "PASS",
+    "oneClickCompatibility": "PASS"
+  },
+  "windowsUtf8": {
+    "workflowRunId": 33506500512,
+    "windowsJobId": 99851686574,
+    "offlineJobId": 99851686810,
+    "cmdExeUtf8ChineseOutput": true,
+    "powershellUtf8ChineseOutput": true,
+    "chinesePathJsonRoundtrip": true,
+    "actualRecorderCmdSelfTest": "PASS",
+    "operatorToolkitChineseSmoke": "PASS",
+    "hostedWindows": "Windows Server 2025 / NT 10.0.26100"
+  },
+  "offlineRegression": {
+    "browserFleet": "PASS",
+    "wof052lSelfTest": "PASS",
+    "wof052lFleetManifest": "PASS",
+    "operatorToolkit": "PASS",
+    "chineseCliSmoke": "PASS",
+    "chinesePathSmoke": "PASS",
+    "englishMachineSchemaCompatibility": "PASS"
+  },
+  "machineContracts": {
+    "jsonKeysRemainEnglish": true,
+    "schemasRemainEnglish": true,
+    "versionStringsRemainMachineCompatible": true,
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "scopeGuards": {
+    "parallelPylaunchModifiedByThisLane": false,
+    "productAlphaModifiedByThisLane": false,
+    "gameLogicModifiedByThisLane": false,
+    "attackRulesModifiedByThisLane": false,
+    "wof052lResearchCriteriaModifiedByThisLane": false
+  },
+  "ownerEntrypoints": [
+    "WOF_TOOLKIT.cmd",
+    "WOF_一键工具.cmd",
+    "parallel/BROWSER_FLEET/RUN_WOF_FLEET.cmd",
+    "parallel/WOF052L_RECORDER/RUN_WOF052L_RECORDER.cmd"
+  ],
+  "p0": [],
+  "p1": []
+}
