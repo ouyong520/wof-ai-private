@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import re
 import shutil
 import subprocess
 import tempfile
@@ -46,24 +45,17 @@ class PackageTests(unittest.TestCase):
         self.assertRegex(m["packageVersion"], r"^[A-Za-z0-9._-]+$")
         commit = m["sourceCommit"]
         self.assertRegex(commit, r"^[0-9a-f]{40}$")
-        self.assertEqual(
-            m["baseUrl"],
-            f"https://raw.githubusercontent.com/ouyong520/wof-ai-private/{commit}/",
-        )
+        self.assertEqual(m["baseUrl"], f"https://raw.githubusercontent.com/ouyong520/wof-ai-private/{commit}/")
         self.assertEqual(m["safety"], {"readOnly": True, "ramWrites": 0, "inputInjection": False})
         paths = [row["path"] for row in m["files"]]
         self.assertEqual(len(paths), len(set(paths)))
         required = {
-            "WOF_一键工具.cmd",
-            "WOF_TOOLKIT.cmd",
-            "parallel/OPTOOLKIT/toolkit.py",
-            "parallel/OPTOOLKIT/owner_zh_cn.py",
+            "WOF_一键工具.cmd", "WOF_TOOLKIT.cmd",
+            "parallel/OPTOOLKIT/toolkit.py", "parallel/OPTOOLKIT/owner_zh_cn.py",
             "parallel/PYLAUNCH/launcher.py",
-            "parallel/WOF052L_RECORDER/owner_zh_cn.py",
-            "parallel/WOF052L_RECORDER/fleet_recorder.py",
+            "parallel/WOF052L_RECORDER/owner_zh_cn.py", "parallel/WOF052L_RECORDER/fleet_recorder.py",
             "parallel/WOF052L_RECORDER/recorder.py",
-            "parallel/BROWSER_FLEET/RUN_WOF_FLEET.cmd",
-            "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py",
+            "parallel/BROWSER_FLEET/RUN_WOF_FLEET.cmd", "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py",
             "parallel/BROWSER_FLEET/fleet_manager.py",
         }
         self.assertTrue(required.issubset(paths))
@@ -82,12 +74,7 @@ class PackageTests(unittest.TestCase):
     def test_bootstrap_has_atomic_lkg_contract(self) -> None:
         s = self.bootstrap
         for token in [
-            "releases",
-            ".staging-",
-            "installed.ok",
-            "current.txt",
-            "Get-GitBlobSha1",
-            "gitBlobSha",
+            "releases", ".staging-", "installed.ok", "current.txt", "Get-GitBlobSha1", "gitBlobSha",
             "Move-Item -LiteralPath $stage -Destination $releaseDir",
             "Move-Item -LiteralPath $pointerTmp -Destination $CurrentFile -Force",
             "Remove-Item -LiteralPath $stage -Recurse -Force",
@@ -97,10 +84,7 @@ class PackageTests(unittest.TestCase):
             s.index("Move-Item -LiteralPath $stage -Destination $releaseDir"),
             s.index("Move-Item -LiteralPath $pointerTmp -Destination $CurrentFile -Force"),
         )
-        self.assertRegex(
-            s,
-            r"raw\.githubusercontent\.com/ouyong520/wof-ai-private/\[0-9a-f\]\{40\}",
-        )
+        self.assertIn("raw\\.githubusercontent\\.com/ouyong520/wof-ai-private/[0-9a-f]{40}/", s)
         self.assertNotIn("git clone", s.lower())
         self.assertNotIn("github desktop", s.lower())
 
@@ -113,19 +97,9 @@ class PackageTests(unittest.TestCase):
         self.assertIn("--scope user", s)
 
     def test_owner_surface_is_chinese_utf8(self) -> None:
-        for text in [
-            "WOF 一键工具",
-            "正在启动 WOF 工具安装/更新程序",
-            "旧版本不会被删除",
-            "日志文件发回来",
-        ]:
+        for text in ["WOF 一键工具", "正在启动 WOF 工具安装/更新程序", "旧版本不会被删除", "日志文件发回来"]:
             self.assertIn(text, self.entry)
-        for text in [
-            "正在检查 WOF 工具更新",
-            "正在准备 Python 环境",
-            "旧版本工具仍然保留",
-            "正在打开中文 WOF 工具箱",
-        ]:
+        for text in ["正在检查 WOF 工具更新", "正在准备 Python 环境", "旧版本工具仍然保留", "正在打开中文 WOF 工具箱"]:
             self.assertIn(text, self.bootstrap)
         self.assertIn("chcp 65001", self.entry)
 
