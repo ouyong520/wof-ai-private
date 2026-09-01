@@ -1,0 +1,25 @@
+{
+  "schema": "wof-assist-command-plan-v1",
+  "planId": "synthetic-fixture-001",
+  "deadlineMs": 500,
+  "steps": [
+    {
+      "op": "press",
+      "symbol": "SYM_PRIMARY",
+      "timeoutMs": 100,
+      "preconditions": ["window-focused"]
+    },
+    {
+      "op": "hold",
+      "symbol": "SYM_MODIFIER",
+      "holdMs": 25,
+      "timeoutMs": 100,
+      "ack": "synthetic-step-visible"
+    },
+    {
+      "op": "release",
+      "symbol": "SYM_PRIMARY",
+      "timeoutMs": 100
+    }
+  ]
+}
