@@ -1,70 +1,40 @@
 # WOF Future Danger AI — Owner Actions
 
-Updated: 2026-09-01 — parallel acceleration
+Updated: 2026-09-01 — Alpha RC1 gate
 
-## Current owner action required: YES — two remaining actions
+## Current owner action required: YES — one immediate non-gameplay action
 
-Product Alpha thread has been opened by the owner and is considered STARTED.
+Alpha RC1 exists. COVERAGE refresh is complete and says no human recap. SEQMINER requests no recapture. WOF-052 remains useful research but is not required for Alpha release.
 
-### Action O1 — MAINLINE WOF-052 Browser run
+### Action O1 — Start / continue one ALPHA QA thread
 
-When continuing the Browser MAINLINE thread, run the already-defined `WOF-052` multi-room protocol.
-
-Operator goal:
-- up to 5 rooms;
-- prefer rooms where T18 appears;
-- allow normal gameplay so the coordinator can collect candidate-containing attack-zero cycles;
-- return the one final coordinator JSON according to the MAINLINE protocol.
-
-Purpose:
-- discover ordered context that separates the prospectively ambiguous T18 BODY4728 anchor outcomes A4704 vs A4712.
-
-Do **not**:
-- perform a new broad WinKawaks sweep;
-- create BASECAP collector batches;
-- repeatedly hunt T23-only rooms at high operator cost;
-- interpret or choose offsets/rules manually.
-
-### Action O2 — PRODUCT / ALPHA implementation thread — STARTED
-
-Status: owner reports the dedicated Product Alpha thread has been opened.
-
-It should continue from:
-- `parallel/PM/PRODUCT_ALPHA_START_PROMPT.md`
-
-No duplicate Product Alpha implementation thread should be opened.
-
-### Action O3 — Open one COVERAGE refresh thread
-
-Open one new ChatGPT thread and send:
+If you have not already opened it, open one new ChatGPT thread and send:
 
 ```text
-你负责 WOF 的 COVERAGE 数据整理。请连接 GitHub，读取 ouyong520/wof-ai-private/parallel/PM/COVERAGE_REFRESH_START_PROMPT.md，然后按里面要求继续做。主要使用现有数据，不要让我重新采集，做到覆盖情况整理清楚或者确认真的需要最小补采为止。
+你负责 WOF Alpha 的独立 QA / 测试验收。请连接 GitHub，读取 ouyong520/wof-ai-private/parallel/PM/ALPHA_QA_START_PROMPT.md，然后严格按照里面的要求持续检查。你的主要任务是找 Alpha 的 Bug、错误规则、加载问题、目标切换问题和安全问题。不要和 Alpha 开发帖抢着修改产品代码，把发现的问题写回 GitHub，直到 QA 通过或者明确找出必须修复的问题。
 ```
 
-Purpose:
-- refresh stale COVERAGE snapshot against current SWEEPATLAS/SEQMINER;
-- normalize enemy type IDs;
-- separate real physical data gaps from analysis/label gaps;
-- avoid unnecessary human replay.
+No `parallel/ALPHAQA/**` result exists yet at this snapshot, so PM cannot treat QA as started/completed from GitHub alone.
 
-## Current authorized parallel streams
+### Action O2 — Real Browser Alpha acceptance — WAIT FOR QA
 
-1. Product Alpha implementation — active.
-2. MAINLINE WOF-052 — active / human-gated.
-3. Existing SEQMINER — active existing lane.
-4. COVERAGE refresh — start O3.
-5. PM coordination — active.
+Do **not** run the Alpha RC1 Browser acceptance yet if QA has not cleared P0/P1.
 
-Do not open more research lanes now.
+Once QA reports PASS / no open P0/P1, the next owner action becomes one short real Browser acceptance using the exact instructions under `product/alpha/**`.
 
-A separate Alpha QA thread should wait until Product Alpha produces a concrete release candidate or stable integrated implementation; opening it earlier would duplicate work and create conflict risk.
+That run will be the final Alpha release gate.
 
-## Further owner action gates
+### Action O3 — MAINLINE WOF-052 — optional research after current Alpha gate
 
-After O1 and O3 are started, do not request more owner work until one of these occurs:
+WOF-052 still needs owner Browser gameplay to add ordered T18 evidence. It can resume after Alpha QA/acceptance or whenever owner time is available, but it does not block RC1 because the ambiguous BODY4728 rule is excluded from Alpha.
 
-1. a prospective Browser validator needs a precise operator run;
-2. Alpha release candidate needs a short real-Browser acceptance test;
-3. refreshed COVERAGE proves a minimal targeted WinKawaks recap is necessary;
-4. a true product-scope/release choice is required.
+## No other owner work now
+
+- COVERAGE: no recap requested.
+- SEQMINER: no Collector recapture requested.
+- BASECAP/GEO/EFIELD/RAWMINE: no generic work requested.
+- Do not open more discovery threads until Alpha QA returns.
+
+## Next PM trigger
+
+When QA writes results to `parallel/ALPHAQA/**`, simply return to the PM thread and say `继续`. PM will read GitHub directly and decide whether Alpha needs fixes or can proceed to the final Browser acceptance.
