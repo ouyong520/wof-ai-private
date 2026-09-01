@@ -1,9 +1,9 @@
 (()=>{
 'use strict';
-const VERSION='wof-alpha-hud-rc2';
+const VERSION='wof-alpha-hud-rc3';
 const SCHEMA='wof-alpha-v2';
 const cfg=window.__WOF_ALPHA_CONFIG;
-if(!cfg||typeof cfg.session!=='string'||cfg.session.length<16||typeof cfg.channel!=='string')throw new Error('WOF Alpha RC2 session config missing');
+if(!cfg||cfg.release!=='wof-alpha-rc3'||typeof cfg.session!=='string'||cfg.session.length<16||typeof cfg.channel!=='string')throw new Error('WOF Alpha RC3 session config missing');
 const SESSION=cfg.session,CHANNEL=cfg.channel;
 if(!window.WOFAlphaHudModel?.summarizeWarnings)throw new Error('WOF Alpha HUD model missing');
 
@@ -129,7 +129,7 @@ function drawHud(){
     const W=gl.drawingBufferWidth||canvas.width,w=Math.min(520,W-8);drawTexture(Math.max(4,(W-w)/2),8,w,h);return;
   }
   if(now-loadedAt<STARTUP_MS){
-    const h=paintBox('WOF Alpha RC2 已加载',[fresh?'检测器已连接 · 当前无已冻结危险':'等待检测器连接']);
+    const h=paintBox('WOF Alpha RC3 已加载',[fresh?'检测器已连接 · 当前无生产危险':'等待 921031 身份校验/检测器连接']);
     const W=gl.drawingBufferWidth||canvas.width,w=Math.min(520,W-8);drawTexture(Math.max(4,(W-w)/2),8,w,h);
   }
 }
@@ -154,10 +154,10 @@ window.WOFALPHAHUD={
   status(){
     const fresh=!!lastRx&&Date.now()-lastRx<=STALE_MS;
     const summary=window.WOFAlphaHudModel.summarizeWarnings(fresh&&Array.isArray(lastMsg?.warnings)?lastMsg.warnings:[]);
-    return{version:VERSION,session:SESSION,connected:fresh,ageMs:lastRx?Date.now()-lastRx:null,warningCount:summary.count,
+    return{version:VERSION,release:'wof-alpha-rc3',session:SESSION,connected:fresh,ageMs:lastRx?Date.now()-lastRx:null,warningCount:summary.count,
       groups:summary.groups,drawHooked:gl.drawArrays===bridge.wrapper,drawCount,callbackCount,lastError:bridge.lastError||null,
       researchHudDisposed:true};
   }
 };
-console.log('✅ WOF Alpha RC2 HUD installed · session',SESSION.slice(0,8));
+console.log('✅ WOF Alpha RC3 HUD installed · session',SESSION.slice(0,8));
 })();
