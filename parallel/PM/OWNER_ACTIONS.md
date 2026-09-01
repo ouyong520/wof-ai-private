@@ -2,7 +2,9 @@
 
 Updated: 2026-09-01
 
-## Current owner action required: YES — one Browser action only
+## Current owner action required: YES — two lightweight actions
+
+Only one action involves gameplay.
 
 ### Action O1 — MAINLINE WOF-052 Browser run
 
@@ -23,11 +25,26 @@ Do **not**:
 - repeatedly hunt T23-only rooms at high operator cost;
 - interpret or choose offsets/rules manually.
 
+### Action O2 — Start one PRODUCT / ALPHA implementation thread
+
+Open one new ChatGPT thread and send only this bootstrap instruction:
+
+```text
+你负责 WOF PRODUCT / ALPHA 实现。请连接 GitHub，读取 ouyong520/wof-ai-private/parallel/PM/PRODUCT_ALPHA_START_PROMPT.md，然后严格按里面的职责、写入范围和 stop condition 持续执行，直到 Alpha RC 或只剩真人 Browser acceptance。
+```
+
+Purpose:
+- let Alpha engineering proceed in parallel with MAINLINE research;
+- keep release runtime/ruleset/HUD separate from WOF-0xx research coordinators;
+- reuse existing HUD/production-shadow assets rather than rebuild them.
+
+This is the only new workstream currently authorized. Do not open another research lane.
+
 ## No other owner work now
 
-PM/research lanes can continue from GitHub without the owner manually copying results between AI threads.
+After O1 and O2 are started, PM/research/product lanes can continue from GitHub without the owner manually moving technical results between chats.
 
-A second owner action should not be requested until one of these gates occurs:
+A further owner action should not be requested until one of these gates occurs:
 
 1. a prospective Browser validator needs a precise operator run;
 2. Alpha release candidate needs a short real-Browser acceptance test;
