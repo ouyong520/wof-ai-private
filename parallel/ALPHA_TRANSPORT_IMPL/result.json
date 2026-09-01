@@ -1,0 +1,53 @@
+{
+  "artifact": "wof-alpha-safe-transport-reference-implementation-v1",
+  "generatedAt": "2026-09-01T13:49:27.409Z",
+  "mode": "reference-implementation-compatible-adapter",
+  "status": "PASS",
+  "repositoryStatus": "ALPHA TRANSPORT REFERENCE IMPLEMENTATION READY FOR INTEGRATION",
+  "sourceVectorCatalog": "parallel/ALPHA_TRANSPORT_MOCK/vectors.json",
+  "sourceFixtures": "parallel/ALPHA_TRANSPORT_MOCK/fixtures.json",
+  "sourceExpectedResults": "parallel/ALPHA_TRANSPORT_MOCK/expected_results.json",
+  "selftest": {"status": "PASS", "passCount": 8, "failCount": 0},
+  "vectorCount": 67,
+  "passCount": 67,
+  "failCount": 0,
+  "contractCoverage": {
+    "startupWorkerSafety": "5/5",
+    "targetSelection": "6/6",
+    "identity": "8/8",
+    "pairSessionIsolation": "8/8",
+    "warningSafety": "9/9",
+    "diagnosticsStale": "8/8",
+    "timingBackpressure": "6/6",
+    "failureInjection": "7/7",
+    "readOnlyNoInput": "6/6",
+    "existingRegressions": "4/4"
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "workerReplacement": false,
+    "blobRewrite": false,
+    "gamePostMessageControl": false,
+    "heapWrites": false,
+    "assistMode": false
+  },
+  "noRealBrowserDependency": true,
+  "adapterOnlyExternalRuntimeDependencies": true,
+  "provenance": {
+    "safeTransportContractBlobSha": "f8186d051862c16d0757a48a915fff338bc652a0",
+    "mockFixturesBlobSha": "35bf36b4c741cda5d94be3f9884511a86653c11f",
+    "mockVectorsBlobSha": "5a0cbe2ccfcf7eb6e875552f56748f736722c14d",
+    "mockExpectedBlobSha": "1231e0946d18068284724d92e732ea185e4e6af8",
+    "rc5BootstrapBlobSha": "2729325bae0a860bf9375b47f2c9787b09f8340f",
+    "canonicalAlphaCoreBlobSha": "267a44190744b6848b0685712c3d5572627d3a8a"
+  },
+  "integrationInterfaces": {
+    "discoveryAdapter": ["readPageConfig(pageRef)", "listTargets()", "resolveWorker(targets,pageRef)"],
+    "nativeWorkerRuntimeAdapter": ["launcherIdentityProbe(workerRef)", "detectorLocalIdentityProbe(workerRef)", "installObserver(workerRef,binding,detectorAdapter)", "statusObserver(workerRef)", "stopObserver(workerRef)"],
+    "alphaDetectorAdapter": ["constructor(canonicalAlphaCore)", "evaluate(snapshot)", "reset()", "diagnostics()"],
+    "pageHudTransportAdapter": ["bind(pageRef,pairNonce)", "status(pageRef)", "reset(pageRef)"]
+  },
+  "passedVectorIds": ["V01","V02","V03","V04","V05","V06","V07","V08","V09","V10","V11","V12","V13","V14","V15","V16","V17","V18","V19","V20","V21","V22","V23","V24","V25","V26","V27","V28","V29","V30","V31","V32","V33","V34","V35","V36","V37","V38","V39","V40","V41","V42","V43","V44","V45","V46","V47","V48","V49","V50","V51","V52","V53","V54","V55","V56","V57","V58","V59","V60","V61","V62","V63","V64","V65","V66","V67"]
+}
