@@ -18,12 +18,15 @@ from pathlib import Path
 from typing import Any
 
 SCHEMA = "wof-unified-windows-live-proof-v1"
-STOP_CONDITION = "UNIFIED LIVE PROOF READY \u2014 ONE OWNER WOF RUN REMAINS"
+STOP_CONDITION = "UNIFIED LIVE PROOF READY — ONE OWNER WOF RUN REMAINS"
 ADMISSION_MARKERS = (
-    "World 921031 \u5df2\u786e\u8ba4 / Discovery V2 / \u53ea\u8bfb\u6a21\u5f0f",
-    "World 921031 \u5df2\u786e\u8ba4 / \u53ea\u8bfb\u6a21\u5f0f",
+    "World 921031 已确认 / Discovery V2 / 只读模式",
+    "World 921031 已确认 / 只读模式",
 )
-FATAL_MARKER = "WOF-052L \u91c7\u96c6\u5668\u6ca1\u6709\u6b63\u5e38\u5b8c\u6210"
+FATAL_MARKERS = (
+    "WOF-052L 采集器没有正常完成",
+    "已安全拒绝采集",
+)
 READINESS = {
     "pylaunch": "FIX READY - one real Windows proof remains",
     "browserFleet": "BROWSER FLEET DISCOVERY V2 READY",
@@ -64,7 +67,7 @@ def choose_free_port(start: int = 9423, end: int = 9499) -> int:
                 return port
             except OSError:
                 pass
-    raise RuntimeError("no free localhost proof CDP port in 9423..9499")
+    raise RuntimeError("没有可用的本机 Proof CDP 端口（9423..9499）")
 
 
 def normalize_fleet(manifest: dict[str, Any] | None) -> dict[str, Any]:
@@ -142,11 +145,33 @@ def normalize_pylaunch(proof: dict[str, Any] | None) -> dict[str, Any]:
 
 @dataclass
 class RecorderEvidence:
+    # Current authority. A fatal event explicitly revokes these fields.
     admitted: bool = False
     admission_line: str | None = None
     fatal: bool = False
     fatal_line: str | None = None
+    generation: int = 0
+    admission_generation: int | None = None
+    fatal_generation: int | None = None
+
+    # Historical evidence is retained for diagnostics but never satisfies readiness.
+    ever_admitted: bool = False
+    last_admission_line: str | None = None
+    ever_fatal: bool = False
+    last_fatal_line: str | None = None
     lines: list[str] = field(default_factory=list)
+
+    @property
+    def current_healthy(self) -> bool:
+        return self.admitted and not self.fatal
+
+    @property
+    def current_health(self) -> str:
+        if self.fatal:
+            return "FATAL"
+        if self.admitted:
+            return "HEALTHY"
+        return "WAITING"
 
     def feed(self, line: str) -> None:
         text = line.strip()
@@ -154,12 +179,71 @@ class RecorderEvidence:
             return
         self.lines.append(text)
         self.lines[:] = self.lines[-120:]
+
         if any(mark in text for mark in ADMISSION_MARKERS):
+            self.generation += 1
             self.admitted = True
             self.admission_line = text
-        if FATAL_MARKER in text:
+            self.admission_generation = self.generation
+            self.fatal = False
+            self.fatal_line = None
+            self.ever_admitted = True
+            self.last_admission_line = text
+
+        if any(mark in text for mark in FATAL_MARKERS):
+            self.generation += 1
             self.fatal = True
             self.fatal_line = text
+            self.fatal_generation = self.generation
+            self.admitted = False
+            self.admission_line = None
+            self.admission_generation = None
+            self.ever_fatal = True
+            self.last_fatal_line = text
+
+
+def normalize_process_health(process_state: dict[str, Any] | None) -> dict[str, Any]:
+    health_known = process_state is not None
+    state = dict(process_state or {})
+    launcher_required = bool(state.get("launcherRequired", False))
+    recorder_required = bool(state.get("recorderRequired", False))
+    launcher_exit = state.get("launcherExitCode")
+    recorder_exit = state.get("recorderExitCode")
+    launcher_live = None if not launcher_required else launcher_exit is None
+    recorder_live = None if not recorder_required else recorder_exit is None
+    healthy = bool(
+        health_known
+        and (not launcher_required or launcher_live is True)
+        and (not recorder_required or recorder_live is True)
+    )
+    state.update({
+        "healthKnown": health_known,
+        "launcherRequired": launcher_required,
+        "recorderRequired": recorder_required,
+        "launcherLive": launcher_live,
+        "recorderLive": recorder_live,
+        "healthy": healthy,
+    })
+    return state
+
+
+def _append_unique(items: list[str], value: str) -> None:
+    if value and value not in items:
+        items.append(value)
+
+
+def current_blockers(blockers: list[str], recorder: RecorderEvidence,
+                     process_state: dict[str, Any] | None) -> tuple[list[str], dict[str, Any]]:
+    effective = list(blockers)
+    process = normalize_process_health(process_state)
+    if recorder.fatal:
+        detail = recorder.fatal_line or recorder.last_fatal_line or "Recorder 当前处于 fatal 状态"
+        _append_unique(effective, "Recorder 致命状态：" + detail)
+    if process.get("launcherRequired") and process.get("launcherLive") is False:
+        _append_unique(effective, f"PYLAUNCH 子进程已退出（code={process.get('launcherExitCode')}）")
+    if process.get("recorderRequired") and process.get("recorderLive") is False:
+        _append_unique(effective, f"Recorder 子进程已退出（code={process.get('recorderExitCode')}）")
+    return effective, process
 
 
 def safety_ok(fleet: dict[str, Any], pylaunch: dict[str, Any], recorder: RecorderEvidence) -> bool:
@@ -167,17 +251,21 @@ def safety_ok(fleet: dict[str, Any], pylaunch: dict[str, Any], recorder: Recorde
         fleet.get("readOnly") is True and fleet.get("ramWrites") == 0
         and fleet.get("inputInjection") is False and fleet.get("windowWorkerReplacement") is False
         and pylaunch.get("readOnly") is True and pylaunch.get("ramWrites") == 0
-        and pylaunch.get("inputInjection") is False and recorder.admitted
+        and pylaunch.get("inputInjection") is False and recorder.current_healthy
     )
 
 
-def automated_ready(fleet: dict[str, Any], pylaunch: dict[str, Any], recorder: RecorderEvidence) -> bool:
+def automated_ready(fleet: dict[str, Any], pylaunch: dict[str, Any], recorder: RecorderEvidence,
+                    process_state: dict[str, Any] | None = None,
+                    blockers: list[str] | None = None) -> bool:
+    effective_blockers, process = current_blockers(list(blockers or []), recorder, process_state)
     return bool(
-        fleet.get("browser") and fleet.get("page") and fleet.get("workerIndicator")
+        not effective_blockers and process.get("healthy") is True
+        and fleet.get("browser") and fleet.get("page") and fleet.get("workerIndicator")
         and fleet.get("workerAuthority") == "cheap-indicator-only"
         and fleet.get("world921031Authoritative") is False
         and pylaunch.get("automatedPass") and pylaunch.get("world921031")
-        and recorder.admitted and safety_ok(fleet, pylaunch, recorder)
+        and recorder.current_healthy and safety_ok(fleet, pylaunch, recorder)
     )
 
 
@@ -187,15 +275,17 @@ def build_status(*, run_id: str, run_dir: Path, fleet_manifest: dict[str, Any] |
                  process_state: dict[str, Any] | None = None) -> dict[str, Any]:
     fleet = normalize_fleet(fleet_manifest)
     pylaunch = normalize_pylaunch(pylaunch_proof)
-    auto = automated_ready(fleet, pylaunch, recorder)
-    passed = auto and playability == "CONFIRMED"
-    result = "PASS" if passed else ("BLOCKED" if blockers else "WAITING")
+    effective_blockers, process = current_blockers(blockers, recorder, process_state)
+    auto = automated_ready(fleet, pylaunch, recorder, process_state, effective_blockers)
+    owner_prompt_eligible = auto and playability == "NOT_READY"
+    passed = bool(not effective_blockers and auto and playability == "CONFIRMED")
+    result = "BLOCKED" if effective_blockers else ("PASS" if passed else "WAITING")
     summary = (
-        "\u771f\u4eba\u77ed\u9a8c\u8bc1\u901a\u8fc7\uff1a\u5df2\u5177\u5907 10 \u623f\u95f4\u957f\u91c7\u96c6\u6761\u4ef6\u3002\u4e0d\u4f1a\u81ea\u52a8\u5f00\u59cb\u957f\u91c7\u96c6\u3002"
+        "真人短验证通过：已具备 10 房间长采集条件。不会自动开始长采集。"
         if passed else
-        "\u771f\u4eba\u77ed\u9a8c\u8bc1\u672a\u5b8c\u6210\uff1b\u5df2\u4fdd\u7559\u5df2\u53d6\u5f97\u8bc1\u636e\u3002"
-        if blockers else
-        "\u6b63\u5728\u7b49\u5f85 WOF / Worker / WASM / World 921031 / Recorder \u51c6\u5165\u3002"
+        "真人短验证已阻断；已保留未受影响分支的正证据和精确 blocker。"
+        if effective_blockers else
+        "正在等待 WOF / Worker / WASM / World 921031 / Recorder 当前准入。"
     )
     safe = safety_ok(fleet, pylaunch, recorder)
     return {
@@ -204,23 +294,34 @@ def build_status(*, run_id: str, run_dir: Path, fleet_manifest: dict[str, Any] |
                        "readiness": READINESS, "stopCondition": STOP_CONDITION},
         "live": {
             "result": result, "automatedChecksReady": auto,
+            "ownerPromptEligible": owner_prompt_eligible,
             "ownerPlayabilityConfirmation": playability,
             "fleetDiscoveryV2": fleet, "pylaunchAuthoritativeProof": pylaunch,
             "recorderDiscoveryV2Admission": {
                 "admitted": recorder.admitted, "evidence": recorder.admission_line,
                 "fatal": recorder.fatal, "fatalEvidence": recorder.fatal_line,
+                "currentHealth": recorder.current_health,
+                "generation": recorder.generation,
+                "admissionGeneration": recorder.admission_generation,
+                "fatalGeneration": recorder.fatal_generation,
+                "history": {
+                    "everAdmitted": recorder.ever_admitted,
+                    "lastAdmissionEvidence": recorder.last_admission_line,
+                    "everFatal": recorder.ever_fatal,
+                    "lastFatalEvidence": recorder.last_fatal_line,
+                },
                 "recentOutput": recorder.lines[-30:],
             },
             "safety": {"pass": safe, "readOnly": True if safe else None,
                        "ramWrites": 0 if safe else None,
                        "inputInjection": False if safe else None,
                        "workerReplacement": False, "blobWorker": False},
-            "processes": process_state or {}, "blockers": blockers,
+            "processes": process, "blockers": effective_blockers,
         },
         "overallResult": result, "tenRoomLongCaptureReady": passed,
         "longCaptureAutoStarted": False, "ownerSummaryZh": summary,
         "ownerReturn": {"json": str(run_dir / "UNIFIED_LIVE_PROOF_STATUS.json"),
-                        "alternative": "\u6700\u7ec8\u4e2d\u6587\u72b6\u6001\u622a\u56fe"},
+                        "alternative": "最终中文状态截图"},
     }
 
 
@@ -256,8 +357,10 @@ def stop_child(proc: subprocess.Popen[str] | None) -> None:
     try:
         proc.terminate(); proc.wait(timeout=5)
     except Exception:
-        try: proc.kill()
-        except Exception: pass
+        try:
+            proc.kill()
+        except Exception:
+            pass
 
 
 def run_live(root: Path) -> int:
@@ -280,39 +383,65 @@ def run_live(root: Path) -> int:
     profiles = run_dir / "fleet" / "Profiles"
     pyproof = run_dir / "PYLAUNCH_WINDOWS_PROOF_STATUS.json"
     rec_out = run_dir / "recorder"
-    evidence = RecorderEvidence(); blockers: list[str] = []
+    evidence = RecorderEvidence()
+    blockers: list[str] = []
     q: "queue.Queue[tuple[str, str]]" = queue.Queue()
-    playability = "NOT_READY"; pyproc = None; recproc = None; terminal = None
+    playability = "NOT_READY"
+    pyproc = None
+    recproc = None
+    terminal = None
 
     class ProofFleet(ChineseFleetManager):
         def _profile_for(self, instance_id: int) -> Path:
             return profiles / f"Proof_{instance_id:02d}"
 
     mgr = ProofFleet(settings_path=settings, manifest_path=manifest, poll_seconds=1.0)
-    mgr.settings.base_port = choose_free_port(); mgr.settings.browser = "auto"; mgr.settings.game_url = None
+    mgr.settings.base_port = choose_free_port()
+    mgr.settings.browser = "auto"
+    mgr.settings.game_url = None
     mgr.settings.save(settings)
+
+    def process_snapshot() -> dict[str, Any]:
+        return {
+            "launcherRequired": pyproc is not None,
+            "recorderRequired": recproc is not None,
+            "launcherExitCode": pyproc.poll() if pyproc else None,
+            "recorderExitCode": recproc.poll() if recproc else None,
+            "fleetManifest": str(manifest),
+        }
+
+    def observe_failures() -> None:
+        if pyproc is not None and pyproc.poll() is not None:
+            _append_unique(blockers, f"PYLAUNCH 子进程已退出（code={pyproc.returncode}）")
+        if recproc is not None and recproc.poll() is not None:
+            _append_unique(blockers, f"Recorder 子进程已退出（code={recproc.returncode}）")
+        if evidence.fatal:
+            detail = evidence.fatal_line or evidence.last_fatal_line or "未知 fatal"
+            _append_unique(blockers, "Recorder 致命状态：" + detail)
 
     def persist(stage: str) -> dict[str, Any]:
         value = build_status(run_id=run_id, run_dir=run_dir, fleet_manifest=load_json(manifest),
                              pylaunch_proof=load_json(pyproof), recorder=evidence,
                              playability=playability, stage=stage, blockers=list(blockers),
-                             process_state={"launcherExitCode": pyproc.poll() if pyproc else None,
-                                            "recorderExitCode": recproc.poll() if recproc else None,
-                                            "fleetManifest": str(manifest)})
+                             process_state=process_snapshot())
         atomic_write_json(status_path, value)
-        try: shutil.copy2(status_path, latest)
-        except OSError: pass
+        try:
+            shutil.copy2(status_path, latest)
+        except OSError:
+            pass
         return value
 
     print("\n============================================================")
-    print("  WOF \u7edf\u4e00 Windows \u771f\u4eba\u77ed\u9a8c\u8bc1")
+    print("  WOF 统一 Windows 真人短验证")
     print("============================================================")
-    print("\u53ea\u8bfb\u6a21\u5f0f\uff1a\u5f00\u542f | RAM writes: 0 | input injection: none")
-    print("\u4e0d\u9700\u8981 DevTools / Worker Console / \u7c98\u8d34 JavaScript\u3002")
+    print("只读模式：开启 | RAM writes: 0 | input injection: none")
+    print("不需要 DevTools / Worker Console / 粘贴 JavaScript。")
     persist("STARTING")
     try:
-        print("\u6b63\u5728\u542f\u52a8 1 \u4e2a\u4e13\u7528 WOF \u6d4f\u89c8\u5668\u623f\u95f4...")
-        mgr.start(1); mgr.print_status(); persist("BROWSER_STARTED")
+        print("正在启动 1 个专用 WOF 浏览器房间...")
+        mgr.start(1)
+        mgr.print_status()
+        persist("BROWSER_STARTED")
         pyproc = start_child([sys.executable, "-u", str(py_dir / "launcher.py"),
                               "--fleet-instance", "1", "--fleet-manifest", str(manifest),
                               "--no-tray", "--proof-json", str(pyproof)], py_dir)
@@ -321,69 +450,88 @@ def run_live(root: Path) -> int:
                                "--no-launch-browser"], rec_dir)
         threading.Thread(target=reader, args=(pyproc, "PYLAUNCH", None, q), daemon=True).start()
         threading.Thread(target=reader, args=(recproc, "RECORDER", evidence, q), daemon=True).start()
-        print("\u8bf7\u5728\u4e13\u7528\u6d4f\u89c8\u5668\u4e2d\u6b63\u5e38\u8fdb\u5165\u4e00\u4e2a WOF \u623f\u95f4\uff0c\u5176\u4ed6\u68c0\u67e5\u81ea\u52a8\u5b8c\u6210\u3002")
+        print("请在专用浏览器中正常进入一个 WOF 房间，其他检查自动完成。")
         last = 0.0
         while True:
             while True:
-                try: prefix, line = q.get_nowait()
-                except queue.Empty: break
-                if any(x in line for x in ("\u5df2\u786e\u8ba4", "\u5931\u8d25", "ERROR")):
+                try:
+                    prefix, line = q.get_nowait()
+                except queue.Empty:
+                    break
+                if any(x in line for x in ("已确认", "失败", "ERROR", "拒绝")):
                     print(f"[{prefix}] {line}")
-            py = normalize_pylaunch(load_json(pyproof))
-            if pyproc.poll() is not None and not py.get("automatedPass"):
-                msg = f"PYLAUNCH exited early (code={pyproc.returncode})"
-                if msg not in blockers: blockers.append(msg)
-            if recproc.poll() is not None and not evidence.admitted:
-                msg = f"Recorder exited early (code={recproc.returncode})"
-                if msg not in blockers: blockers.append(msg)
-            if evidence.fatal and evidence.fatal_line:
-                msg = "Recorder fatal: " + evidence.fatal_line
-                if msg not in blockers: blockers.append(msg)
+
+            observe_failures()
             if time.monotonic() - last >= 2:
-                f = normalize_fleet(load_json(manifest)); p = normalize_pylaunch(load_json(pyproof))
+                f = normalize_fleet(load_json(manifest))
+                p = normalize_pylaunch(load_json(pyproof))
                 print("\rBrowser:%s | Page:%s | Fleet Worker:%s | World:%s | Recorder:%s      " % (
                     "OK" if f["browser"] else "WAIT", "OK" if f["page"] else "WAIT",
                     "OK" if f["workerIndicator"] else "WAIT", "OK" if p["world921031"] else "WAIT",
-                    "OK" if evidence.admitted else "WAIT"), end="", flush=True)
+                    "OK" if evidence.current_healthy else "WAIT"), end="", flush=True)
                 last = time.monotonic()
+
             value = persist("LIVE_WAITING")
-            if value["live"]["automatedChecksReady"]:
-                print("\n\n\u81ea\u52a8\u53ea\u8bfb\u9a8c\u8bc1\u5168\u90e8\u901a\u8fc7\u3002")
-                ans = input("\u5f53\u524d WOF \u623f\u95f4\u4ecd\u80fd\u6b63\u5e38\u8fd0\u884c\uff1f\u6b63\u5e38\u8f93\u5165 Y\uff0c\u5f02\u5e38\u8f93\u5165 N\uff1a").strip().lower()
-                playability = "CONFIRMED" if ans in {"y", "yes", "\u662f", "\u6b63\u5e38"} else "FAILED"
-                if playability == "FAILED": blockers.append("Owner confirmed gameplay abnormal")
-                terminal = persist("COMPLETE" if playability == "CONFIRMED" else "BLOCKED")
+            if value["live"]["ownerPromptEligible"]:
+                # Re-check immediately before asking so a just-exited child cannot rely on stale PASS.
+                observe_failures()
+                value = persist("PLAYABILITY_GATE")
+                if not value["live"]["ownerPromptEligible"]:
+                    terminal = persist("BLOCKED")
+                    break
+                print("\n\n自动只读验证当前全部通过。")
+                ans = input("当前 WOF 房间仍能正常运行？正常输入 Y，异常输入 N：").strip().lower()
+                playability = "CONFIRMED" if ans in {"y", "yes", "是", "正常"} else "FAILED"
+                if playability == "FAILED":
+                    _append_unique(blockers, "Owner 确认游戏运行异常")
+                # Any automatic lane may regress while the owner is answering. Re-check all current state.
+                observe_failures()
+                recheck = persist("FINAL_RECHECK")
+                if playability == "CONFIRMED" and not recheck["live"]["automatedChecksReady"]:
+                    _append_unique(blockers, "Owner 确认期间自动检查不再保持当前 PASS")
+                terminal = persist("COMPLETE" if playability == "CONFIRMED" and not blockers else "BLOCKED")
                 break
-            if blockers:
-                terminal = persist("BLOCKED"); break
+            if value["live"]["blockers"]:
+                terminal = persist("BLOCKED")
+                break
             time.sleep(0.5)
     except KeyboardInterrupt:
-        blockers.append("Owner interrupted live proof"); terminal = persist("INTERRUPTED")
+        _append_unique(blockers, "Owner 中断了真人短验证")
+        terminal = persist("INTERRUPTED")
     except Exception as exc:
-        blockers.append(f"unified live proof error: {exc}"); terminal = persist("BLOCKED")
+        _append_unique(blockers, f"统一真人短验证错误：{exc}")
+        terminal = persist("BLOCKED")
     finally:
-        stop_child(recproc); stop_child(pyproc)
-        try: mgr._stop.set(); mgr.stop_all()
-        except Exception: pass
+        stop_child(recproc)
+        stop_child(pyproc)
+        try:
+            mgr._stop.set()
+            mgr.stop_all()
+        except Exception:
+            pass
 
     final = terminal or persist("BLOCKED")
     # Do not recompute from the post-cleanup Fleet manifest; preserve terminal evidence.
     atomic_write_json(status_path, final)
-    try: shutil.copy2(status_path, latest)
-    except OSError: pass
+    try:
+        shutil.copy2(status_path, latest)
+    except OSError:
+        pass
     print("\n============================================================")
-    print("PASS - 10-room long capture ready" if final["overallResult"] == "PASS" else "Live short proof not complete")
-    print("long capture auto-start: NO")
-    print("JSON: " + str(status_path))
+    print("PASS - 已具备 10 房间长采集条件" if final["overallResult"] == "PASS" else "真人短验证未通过")
+    print("自动开始长采集：否")
+    print("JSON：" + str(status_path))
     print("============================================================")
     try:
-        if os.name == "nt": os.startfile(run_dir)  # type: ignore[attr-defined]
-    except Exception: pass
+        if os.name == "nt":
+            os.startfile(run_dir)  # type: ignore[attr-defined]
+    except Exception:
+        pass
     return 0 if final["overallResult"] == "PASS" else 2
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="WOF unified Windows live proof")
+    p = argparse.ArgumentParser(description="WOF 统一 Windows 真人短验证")
     p.add_argument("--project-root", required=True)
     return p.parse_args()
 
@@ -394,7 +542,7 @@ def main() -> int:
                 root / "parallel" / "BROWSER_FLEET" / "fleet_owner_zh_cn.py",
                 root / "parallel" / "WOF052L_RECORDER" / "owner_v2_zh_cn.py"]
     if any(not p.is_file() for p in required):
-        print("required WOF proof tools missing")
+        print("缺少统一真人短验证所需的 WOF 工具文件")
         return 3
     return run_live(root)
 
