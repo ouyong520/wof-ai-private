@@ -1,67 +1,63 @@
 # WOF Future Danger AI — Owner Actions
 
-Updated: 2026-09-01 — RC3 candidate complete / fresh QA next
+Updated: 2026-09-01 — RC3 QA is the only Alpha-path owner action
 
-## Current owner action required: YES — stage/thread management only
+## Current owner action required: YES — ensure fresh RC3 QA is running
 
-The Browser identity probe is complete and accepted.
-No additional Browser ROM probe is required now.
-
-Authoritative supported Browser program:
-- `wof / Warriors of Fate (World 921031)`
-- full 1 MiB CPU-logical SHA-256:
-  `5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`
-
-RC3 has produced a candidate and its own product regression passes.
-
-## Action O1 — close the RC3 implementation thread
-
-The RC3 implementation thread has reached its stop condition.
-Do not ask it to continue testing or certifying its own release.
-
-## Action O2 — open a fresh independent RC3 QA thread
-
-Use:
+RC3 implementation is complete and closed.
+The next Alpha stage is a fresh independent QA thread using:
 
 `parallel/PM/ALPHA_RC3_QA_START_PROMPT.md`
 
-The fresh QA thread must:
-- read current RC3 artifacts;
-- write only under `parallel/ALPHAQA_RC3/**`;
-- not modify `product/alpha/**`;
-- independently audit exact 921031 SHA-256 gating, two-rule stateless lifecycle policy, session isolation, multi-threat HUD, bootstrap, legacy teardown, target/side, UNKNOWN silence, read-only/no-input and discovery-rule exclusion;
-- stop at PASS-for-one-Browser-acceptance or a concrete P0/P1 blocker.
+Current GitHub status: no RC3-QA verdict commit is present yet.
 
-## Parallel support threads
+If that QA thread is already open, no duplicate thread is needed; let it continue until it commits either:
+- `PASS — READY FOR ONE REAL BROWSER ACCEPTANCE`, or
+- a concrete P0/P1 blocker.
 
-### Local WinKawaks ROM Identity
+Do not run final Alpha Browser acceptance before that verdict exists.
 
-Current status: one minimal read-only local hash probe remains.
-Strong retained evidence points to local `World 921002`, but cryptographic proof is still pending.
+## Non-blocking support actions — do not delay Alpha QA
 
-Run only the exact one-command probe supplied by that support thread when requested. No gameplay or recollection is needed.
+### Local ROM identity
 
-### Runtime Speed / Timing
+Support lane reached STOP B.
+One read-only command can cryptographically decide whether local WinKawaks is really World 921002 or matches Browser World 921031:
 
-Continue independently. No owner action yet unless that lane reduces the question to one minimal timing test.
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\parallel\LOCALROM\local_rom_identity_probe.ps1`
 
-### Player-Anchored HUD
+Run only from an up-to-date local `wof-ai-private` checkout while WinKawaks has WOF loaded. Game may remain paused. Return the single JSON output.
 
-Beta-support lane may be opened/continued independently using:
+This is useful but does not block Alpha.
 
-`parallel/PM/PLAYER_ANCHORED_HUD_START_PROMPT.md`
+### Runtime speed
 
-It must not modify Alpha product code.
+Support lane reached STOP B.
+Exactly one paired 15-second no-input measurement per runtime remains. It is not required for Alpha because Browser production lead labels were measured in the Browser runtime and remain valid.
+
+Do not spend owner time on this until the QA stage is running or completed.
+
+### Player-anchored HUD
+
+Beta support reached STOP B.
+One minimal Browser projection proof remains before implementation. Do not run it as an Alpha release prerequisite.
+
+## Completed threads to close
+
+- Alpha RC3 implementation — complete candidate.
+- Runtime Speed audit — STOP B, handoff written.
+- Player-Anchored HUD audit — STOP B, handoff written.
+- Local ROM identity audit — STOP B, one owner command remains.
 
 ## Do not do yet
 
-- Do not run final Alpha Browser acceptance before fresh RC3 QA passes.
+- Do not run final Alpha Browser acceptance before RC3 QA PASS.
+- Do not modify RC3 from its completed implementation thread.
 - Do not restart WOF-052 as an Alpha blocker.
-- Do not perform broad Browser or WinKawaks recollection.
-- Do not revive RC2 or RC3 implementation threads after their stages are complete.
+- Do not perform broad Browser/WinKawaks recollection.
 
 ## Next PM trigger
 
-After the fresh RC3 QA writes its verdict to GitHub, PM will either:
-- open a fresh next fix stage for any P0/P1 blocker; or
-- issue one exact bounded Browser acceptance procedure and then decide Alpha release.
+After RC3 QA commits its verdict, PM will either:
+- create a fresh next fix stage for any P0/P1 blocker; or
+- issue one exact bounded Browser acceptance procedure and decide Alpha release.
