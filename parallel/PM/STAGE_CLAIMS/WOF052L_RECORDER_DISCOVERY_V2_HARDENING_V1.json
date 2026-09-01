@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "WOF052L_RECORDER_DISCOVERY_V2_HARDENING_V1",
+  "promptPath": "parallel/PM/WOF052L_RECORDER_DISCOVERY_V2_HARDENING_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "700eaa5bf36bce8ff49bd877e6532da964c2b896",
+  "startedAtUtc": "2026-09-01T13:32:30Z"
+}
