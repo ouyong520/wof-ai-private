@@ -16,6 +16,38 @@ Target architecture to investigate and prototype:
 
 The launcher should let the game create its native Worker normally. Do not replace `window.Worker`, do not rewrite the game Worker URL, and do not depend on the current broken Alpha bootstrap path.
 
+## Windows tray UX requirement
+
+The long-term launcher should behave like a small Windows notification-area/system-tray utility rather than keeping a large main window open.
+
+Required UX direction:
+- after startup, minimize to a small WOF icon in the Windows bottom-right tray/notification area;
+- single-click or right-click opens a compact menu/status panel;
+- the game remains the foreground application; the launcher should stay unobtrusive in the background;
+- a larger settings window opens only when the user explicitly chooses Settings/Advanced Settings;
+- support start-with-Windows and start-minimized options later;
+- package toward a single `WOF Future Danger.exe` experience.
+
+Initial tray menu/status model should reserve room for:
+- WOF connection status;
+- detected game/build identity;
+- Future Danger on/off;
+- HUD on/off and HUD settings;
+- sound/warning settings;
+- hotkey settings;
+- reconnect / launch game;
+- logs / diagnostics;
+- update/about;
+- quit.
+
+Future post-foundation items may be added to the same tray/settings UI, but must remain disabled/not implemented in this stage:
+- Assist Mode;
+- one-key moves;
+- command injection;
+- memory-write features.
+
+The tray icon should visibly communicate basic state when practical (for example connected / disconnected / error) without forcing the user to open a console.
+
 ## Scope for this foundation stage
 
 Build only the launcher/control foundation:
@@ -25,6 +57,7 @@ Build only the launcher/control foundation:
 - read-only inspect/evaluate the live Worker context;
 - locate/confirm the game WASM module / heap using existing Browser knowledge where appropriate;
 - expose a minimal local status UI/CLI showing at least: browser connected, WOF page found, WOF Worker found, module/heap found, supported build/identity status, read-only mode;
+- add a minimal Windows tray icon/menu shell as the preferred UX surface if practical in this stage;
 - design clean reconnect behavior for reload, room changes, Worker recreation, and browser restart;
 - keep the game fully usable when the launcher cannot attach.
 
@@ -61,6 +94,7 @@ Create a new non-product area such as `parallel/PYLAUNCH/**` containing:
 - dependency/setup instructions for Windows;
 - target/Worker discovery logic;
 - read-only attachment/status proof;
+- minimal tray icon/menu prototype if feasible;
 - reconnect strategy;
 - packaging plan toward a single EXE;
 - a short result report that states exactly what is proven vs not yet proven.
@@ -71,7 +105,7 @@ Keep dependencies modest and explain why each one is needed.
 
 Minimize owner steps. Ideal first proof:
 1. owner starts launcher;
-2. launcher opens or attaches to browser;
+2. launcher appears as one small WOF tray icon and opens or attaches to browser;
 3. owner enters WOF normally;
 4. launcher automatically reports that the correct WOF page/Worker/module is connected;
 5. no DevTools/Worker-console selection required.
