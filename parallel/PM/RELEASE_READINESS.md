@@ -1,70 +1,64 @@
 # WOF Future Danger AI — Release Readiness
 
-Updated: 2026-09-01 — RC1 audit
+Updated: 2026-09-01 — RC1 QA blocked
 
-Statuses are management bands, not fake precision.
+## Alpha — **RC1 BLOCKED / RC2 REQUIRED**
 
-## Alpha — **RC1 / QA + HUMAN BROWSER ACCEPTANCE PENDING**
+Independent QA has completed its first pass and RC1 is not releasable yet.
 
-A bounded release candidate now exists at `product/alpha/**` as `wof-alpha-rc1`.
+### QA result
 
-The implementation owner has completed the Alpha engineering checklist: six frozen rules, release/runtime isolation, fail-closed Browser layout guard, live target/retarget, WebGL HUD, UNKNOWN silence policy, minimal loader path, static no-write/no-input audit and release regression.
+Passed:
+- frozen six-rule fidelity;
+- T16 remains danger-only;
+- T18 BODY4728/A4/B2/TM1 remains excluded as an A4704-specific production predictor;
+- no T23/T24/local/discovery leakage;
+- static read-only/no-input audit;
+- live target reread, P1/P2/P3 mapping, side recomputation and UNKNOWN silence in core;
+- stale horizon, slot-gone and type-change cleanup.
 
-The release regression reconstructs the audited WOF-051 production subset at 143/143 resolved fixture signals with zero hard-miss equivalent. It also checks that the ambiguous T18 BODY4728 candidate remains silent and that T16 B4 is danger-only rather than A6432-exclusive.
-
-Important limitation: the repository does not retain the raw WOF-051 per-poll Browser stream, so this is a canonical fixture reconstruction rather than a raw production-stream replay. Therefore real Browser acceptance remains mandatory.
+Blocked:
+- **P0 ALPHAQA-001:** supported build signature is derived from layout-only evidence and can fail open on a lookalike revision;
+- **P1 ALPHAQA-002:** same-type same-slot replacement can inherit a prior enemy watch;
+- **P1 ALPHAQA-003:** HUD silently drops simultaneous warnings after the first row;
+- **P1 ALPHAQA-004:** supported load path still requires researcher-level manual live Worker-console selection.
 
 ### Alpha gate status
 
-| Gate | Status | PM judgment |
-|---|---|---|
-| frozen production manifest | PASS RC1 | six PM freeze rules only; explicit exclusions retained |
-| release/runtime separation | PASS RC1 | no WOF-0xx research coordinator in release path |
-| loader/bootstrap | PASS IMPLEMENTATION | one dual-context loader path documented; real Browser acceptance pending |
-| runtime identity / fail-closed | PASS OFFLINE / HUMAN CHECK PENDING | positive layout guard exists; unsupported mismatch must remain silent |
-| live target + retarget + side | PASS OFFLINE / HUMAN CHECK PENDING | regression covers P1->P3 and UNKNOWN silence |
-| non-console WebGL HUD | PASS IMPLEMENTATION / VISUAL CHECK PENDING | real game visual/interference check required |
-| UNKNOWN / stale silence | PASS OFFLINE | must be observed once in Browser acceptance |
-| release-artifact regression | PASS | 143/143 canonical production-subset fixture resolution |
-| no RAM writes / no input injection | PASS STATIC / HUMAN INTERFERENCE CHECK PENDING | static audit clean; runtime status reports must confirm readOnly/ramWrites=0/inputInjection=false |
-| independent Alpha QA | **OPEN** | `parallel/ALPHAQA/**` has not produced a result yet |
-| real Browser RC acceptance | **OPEN** | perform only after QA has no open P0/P1 |
+| Gate | Status |
+|---|---|
+| frozen production rules | PASS QA |
+| release/runtime separation | PASS QA |
+| positive runtime/build identity | **FAIL P0** |
+| same-type replacement safety | **FAIL P1** |
+| simultaneous warning presentation | **FAIL P1** |
+| ordinary-user bootstrap | **FAIL P1** |
+| live target/retarget/side core | PASS QA, lifecycle fix required |
+| UNKNOWN/stale silence | PASS QA |
+| static no RAM writes / no input | PASS QA |
+| independent RC1 QA | COMPLETE / BLOCKED |
+| RC2 implementation | OPEN |
+| fresh RC2 QA retest | OPEN |
+| real Browser acceptance | WAIT |
 
-### Alpha release decision
+### Release sequence
 
-**Do not call Alpha released yet.**
-
-Release sequence is now:
-
-1. independent Alpha QA;
-2. Alpha developer fixes any P0/P1 findings;
-3. QA rechecks current artifact;
-4. one short real Browser owner acceptance;
+1. RC2 fixes all four P0/P1 blockers;
+2. parallel runtime identity audit supplies positive guard evidence or one minimal human probe;
+3. fresh independent QA retests RC2;
+4. only after QA clears, run one short real Browser acceptance;
 5. if acceptance passes, mark Alpha released.
 
-No extra attack research is required before Alpha.
+Do not use owner Browser time on RC1 acceptance while blockers remain.
 
 ## Beta — MID
 
-Beyond Alpha, Beta should add:
-
-- broader validated common-event coverage;
-- validated ordered rules for important ambiguous branches;
-- broader multi-room/scene evidence;
-- polished multi-danger prioritization;
-- easier install/config/update flow;
-- extended runtime overhead/stability checks;
-- automated release regression against retained real Browser traces when such traces become available;
-- defensible common-event coverage denominator.
-
-COVERAGE now has normalized type accounting and explicitly says broad human recap is not currently required. Stage/scene/wave/boss semantics remain the main breadth-label gap.
+Beta requirements remain broader validated common-event coverage, ordered ambiguity resolution, multi-danger polish, easier install/update, extended stability and defensible breadth accounting. Those are not reasons to delay the bounded RC2 safety fixes.
 
 ## v1 — EARLY-MID
 
-V1 still requires stable Beta, trustworthy breadth accounting, high coverage of the common dangerous-event set, intentional silence for unsupported ambiguity, no unresolved P0 release risks and normal-user packaging/support documentation.
-
-`100% all attacks` is not the criterion.
+Unchanged: stable Beta, trustworthy breadth denominator, intentional silence for unsupported events, no P0 release risk, normal-user packaging and support matrix.
 
 ## Current release judgment
 
-**RC1 is real and narrow. The fastest safe route is independent QA -> one real Browser acceptance -> Alpha release.**
+**RC1 is a useful engineering milestone but failed independent release QA. The fastest safe route is RC2 fixes + identity audit in parallel -> fresh QA -> one Browser acceptance.**
