@@ -1,0 +1,78 @@
+{
+  "schema": "wof-recorder-authority-heartbeat-fresh-qa-result-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_HEARTBEAT_QA_V1",
+  "result": "BLOCKED",
+  "severity": "P1",
+  "ownerActionRequired": false,
+  "ownerBrowserWofRequired": false,
+  "target": {
+    "path": "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py",
+    "blob": "0d9010007910f58b77c64fde98264697191bb679",
+    "recorderProducerPath": "parallel/WOF052L_RECORDER/fleet_recorder.py",
+    "recorderProducerBlob": "9398ef1569815439e6c141890f069674a30dca0f"
+  },
+  "blocker": {
+    "code": "P1-RECORDER-AUTHORITY-PRIOR-GENERATION-REPLAY",
+    "summary": "Stale prior-generation Recorder heartbeat/admission replay is not generation-bound and can revive authority.",
+    "heartbeatReplayObserved": {
+      "before": {
+        "currentHealthy": false,
+        "authorityGeneration": 2,
+        "admissionAuthorityGeneration": 2,
+        "logicalGeneration": 3
+      },
+      "after": {
+        "currentHealthy": true,
+        "authorityGeneration": 3,
+        "admissionAuthorityGeneration": 2,
+        "logicalGeneration": 3
+      }
+    },
+    "admissionReplayObserved": {
+      "before": {
+        "admitted": false,
+        "fatal": true,
+        "currentHealthy": false,
+        "authorityGeneration": 1,
+        "logicalGeneration": 2
+      },
+      "after": {
+        "admitted": true,
+        "fatal": false,
+        "currentHealthy": true,
+        "authorityGeneration": 2,
+        "logicalGeneration": 3
+      }
+    },
+    "rootCause": "RecorderEvidence.feed receives only text and reader carries no source process/supervisor/admission generation, so trusted-looking prior-generation bytes are indistinguishable from current authority events."
+  },
+  "positiveChecks": {
+    "arbitraryStdoutCannotRenewStaleAuthority": "PASS",
+    "unrelatedJsonCannotRenewStaleAuthority": "PASS",
+    "partialCrFragmentsCannotRenewAuthority": "PASS",
+    "currentRecognizedHeartbeatRenewsAuthority": "PASS",
+    "freshRecognizedAdmissionRenewsAuthority": "PASS",
+    "genericOutputAndHeartbeatCannotOverrideFatal": "PASS",
+    "currentHealthyUsesTrustedAuthorityFreshness": "PASS",
+    "ownerDoubleGateFixtureCovered": true,
+    "longCaptureAutoStartedFalseFixtureCovered": true,
+    "chineseUxFixtureCovered": true,
+    "preflightBlockedDetectionFixtureCovered": true
+  },
+  "regressionRunner": {
+    "path": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_HEARTBEAT/run_qa.py",
+    "freshThreadExecutedFullRepoRunner": false,
+    "reason": "Connected execution environment has no repository checkout and outbound git clone is unavailable; no independent full-suite PASS is claimed."
+  },
+  "artifacts": {
+    "fixture": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_HEARTBEAT/test_recorder_authority_heartbeat_adversarial.py",
+    "fixtureCommit": "255f8741216574b46b05d23265a91b3e34dac353",
+    "runner": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_HEARTBEAT/run_qa.py",
+    "runnerCommit": "62380964238e4839640a14a7a22d80a1eaae9d74",
+    "resultMarkdown": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_HEARTBEAT/RESULT.md",
+    "resultMarkdownCommit": "df9d037c506361c98fba409ec3c6b1ea430d2f81"
+  },
+  "unifiedPreflightCurrentHeadRecheckUnblocked": false,
+  "requiredNext": "Fix Recorder authority provenance/generation binding, then run a new fresh independent QA stage.",
+  "stopCondition": "BLOCKED — UNIFIED LIVE PROOF RECORDER AUTHORITY HEARTBEAT FRESH QA — P1 stale prior-generation Recorder heartbeat/admission replay is not generation-bound and can revive authority"
+}
