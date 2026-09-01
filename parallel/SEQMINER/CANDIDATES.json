@@ -1,0 +1,135 @@
+{
+  "version": "seqminer-candidates-v1",
+  "evidenceNamespace": "mixed-explicitly-labelled",
+  "productionPromotion": false,
+  "allGameSweepRawVisibleOnGitHubMain": false,
+  "candidates": [
+    {
+      "rank": 1,
+      "id": "T18-BODY4728-POST-SEQUENCE-SPLIT",
+      "type": "T18",
+      "goal": "split eventual A4704 versus A4712 after the prospectively ambiguous BODY4728 state",
+      "anchor": "S0/A4/B2|BODY4728|FE8b660|NX8b204|Vffff|TM1|P6C4736",
+      "evidenceClass": "potentially_prospectively_testable_candidate_design",
+      "knownEvidence": {
+        "prospectiveOutcomes": {
+          "A4704": 1,
+          "A4712": 1
+        },
+        "targetStable": "2/2",
+        "sideStable": "2/2"
+      },
+      "orderedFeaturesToRank": [
+        "first distinct post-anchor state",
+        "post-anchor tail2",
+        "post-anchor tail3",
+        "descriptor/next progression",
+        "exact timer progression",
+        "timer-normalized progression",
+        "target/reference context"
+      ],
+      "reason": "single-state ambiguity is already proven prospectively; WOF-051 states longer histories differ materially",
+      "browserProductionRule": false
+    },
+    {
+      "rank": 2,
+      "id": "T23-A5888-BODY4936-TAIL3",
+      "type": "T23",
+      "goal": "prospectively test whether an ordered BODY4936 tail discriminates A5888 from A4792/A4920",
+      "signature": [
+        "S0/A8/B2 BODY4936",
+        "S0/A2/B0 BODY4936",
+        "S0/A6/B4 BODY4936"
+      ],
+      "eventualAttack": "A5888",
+      "evidenceClass": "same_cycle_evidence",
+      "knownSupport": 1,
+      "knownAttackClassCycles": 2,
+      "reason": "the first state also occurs on an A4792 cycle, demonstrating that order adds information",
+      "browserProductionRule": false
+    },
+    {
+      "rank": 3,
+      "id": "T23-BRANCH-SET-TAIL2-TAIL3",
+      "type": "T23",
+      "goal": "learn a branch set rather than one universal fingerprint for A4792/A4920/A5888",
+      "evidenceClass": "same_cycle_evidence",
+      "knownCycles": {
+        "A4792": 3,
+        "A4920": 3,
+        "A5888": 2
+      },
+      "reason": "A4792 itself has three distinct immediate tails and A4920 also shows multiple final/tail families",
+      "requiredStability": [
+        "cross-room",
+        "cross-target",
+        "timer-normalized",
+        "same-cycle"
+      ],
+      "browserProductionRule": false
+    },
+    {
+      "rank": 4,
+      "id": "WINKAWAKS-CURSOR-PHASE-TIMER-SEQUENCE",
+      "type": "all observed WinKawaks types",
+      "goal": "use logical cursor transitions plus phase tuple and timer progression as the ordered backbone once exact local attack labels are available",
+      "evidenceClass": "discovery_correlation",
+      "localFields": [
+        "+0x2F..0x32 logical cursor",
+        "+0x34 dwell/countdown",
+        "+0x35 mode",
+        "+0x37 gate",
+        "+0x6C/+0x70/+0x72/+0x73/+0x77 phase tuple"
+      ],
+      "knownStability": {
+        "logicalCursorDestinationPhaseAggregateHoldoutCoverage": "4819/4820",
+        "logicalCursorDestinationPhaseAccuracyCovered": "4818/4819"
+      },
+      "reason": "cursor-to-phase transitions replicate across retained EFIELD captures and encode order more directly than a single state byte",
+      "browserProductionRule": false
+    },
+    {
+      "rank": 5,
+      "id": "WINKAWAKS-TIMER-NORMALIZED-BRANCH",
+      "type": "all observed WinKawaks types",
+      "goal": "compare exact-timer versus record-relative timer-normalized sequence families",
+      "evidenceClass": "discovery_correlation",
+      "timerField": "+0x34",
+      "normalization": "recordCeiling(logicalCursor)-timer34",
+      "knownStability": {
+        "arrivalAtCeiling": "3192/4323",
+        "arrivalWithin1": "4000/4323",
+        "arrivalWithin2": "4090/4323",
+        "leaveOneRunOutCoverage": "4321/4323",
+        "holdoutExceedsTrainingCeiling": "11/4321"
+      },
+      "reason": "one/two tick sampling differences are common and should not fragment otherwise identical ordered branches",
+      "browserProductionRule": false
+    },
+    {
+      "rank": 6,
+      "id": "WINKAWAKS-MODE35-TRANSITION-CONTEXT",
+      "type": "all observed WinKawaks types",
+      "goal": "test whether +0x35 transition history splits branches that share cursor/phase state",
+      "evidenceClass": "discovery_correlation",
+      "notableTransitions": {
+        "00->FF": 353,
+        "FF->00": 237,
+        "02->00": 128,
+        "FF->02": 74,
+        "00->01": 67,
+        "00->02": 52,
+        "01->FF": 39
+      },
+      "reason": "+0x35 has an independent state-machine structure and is not reducible to the +0x34 countdown",
+      "browserProductionRule": false
+    }
+  ],
+  "blockedUntilDataAppears": [
+    {
+      "id": "ALL-GAME-WINKAWAKS-ATTACK-AMBIGUITY-ATLAS",
+      "reason": "connector-visible GitHub main currently exposes no retained all-game SWEEP* raw and no parallel/SWEEPATLAS directory; do not fabricate attack-labelled cross-type counts",
+      "action": "run parallel/SEQMINER/seqminer.py automatically against retained sweep raw when it is present in a checkout/CI workspace"
+    }
+  ]
+}
