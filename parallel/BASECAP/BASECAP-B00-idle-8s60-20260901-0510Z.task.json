@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "wof_collector_task_v1",
+  "taskId": "BASECAP-B00-idle-8s60-20260901-0510Z",
+  "createdAtUtc": "2026-09-01T05:10:40Z",
+  "issuedBy": "chatgpt-wof-basecap",
+  "consumerProject": "ouyong520/wof-ai-private",
+  "action": "capture_raw_burst",
+  "readOnly": true,
+  "parameters": {
+    "seconds": 8.0,
+    "hz": 60.0,
+    "uploadRawStream": true,
+    "purpose": "BASECAP B00 reusable stationary-idle baseline. Capture a clean no-input P1 baseline for later GEO/RAWMINE/EFIELD reuse. Acquisition only; no field-semantic inference, no Browser promotion, no game-memory writes."
+  },
+  "operatorGate": {
+    "required": true,
+    "label": "BASECAP B00 stationary idle",
+    "instructions": [
+      "Put P1 in a safe place with no combat and no camera scrolling. Leave P2/P3 untouched.",
+      "When ready, run READY_WOF_TASK.bat.",
+      "After READY is accepted, do not press any game controls for about 8 seconds."
+    ]
+  }
+}
