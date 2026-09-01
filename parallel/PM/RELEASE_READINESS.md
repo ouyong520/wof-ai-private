@@ -1,33 +1,18 @@
 # WOF Future Danger AI — Release Readiness
 
-Updated: 2026-09-01 — real Browser acceptance exposed P0 bootstrap blocker
+Updated: 2026-09-01 — RC5 room-entry P0 repaired; Alpha now blocked on safe live-Worker transport
 
-## Alpha — **BLOCKED / RC5 REQUIRED**
+## Alpha — **BLOCKED / SAFE TRANSPORT REQUIRED**
 
-Fresh RC4 independent QA passed offline/source validation, but the first real Browser acceptance setup exposed a launch blocker before acceptance could run.
+Owner real-Browser RC5 retest:
+- current RC5 Safe Bootstrap enabled;
+- Browser Acceptance Helper disabled;
+- game **enters a room normally**;
+- no HUD/warnings appear because RC5 intentionally waits for a safe external live-Worker transport.
 
-Owner A/B result:
-- normal Alpha userscript enabled, acceptance helper disabled -> game cannot enter room;
-- both WOF userscripts disabled -> game enters normally.
+Therefore the former P0 `Alpha prevents room entry` is closed by owner evidence, pending fresh independent RC5 QA confirmation.
 
-This is a P0 release blocker because the supported normal-user Alpha entry path can prevent the base game from entering a room.
-
-## Previously passed gates remain retained evidence
-
-- exact `wof / Warriors of Fate (World 921031)` full-program SHA-256 identity;
-- identity pending/mismatch/error fail-closed;
-- exactly two stateless current-level T18 production rules;
-- F1-F4 quarantine;
-- same-type replacement safety;
-- session/cross-tab isolation;
-- simultaneous warning aggregation;
-- legacy HUD cleanup;
-- runtime diagnostic immediate warning invalidation;
-- target/side/UNKNOWN safety;
-- read-only/no-input;
-- WebGL state restoration.
-
-The new blocker is real-host bootstrap/Worker interception/injection compatibility, not a reopening of rule semantics.
+This does **not** make Alpha release-ready. A usable Alpha still needs a proven non-replacing live-Worker transport and a final bounded Browser acceptance exercising real detector/HUD behavior.
 
 ## Gate status
 
@@ -35,20 +20,45 @@ The new blocker is real-host bootstrap/Worker interception/injection compatibili
 |---|---|
 | RC4 product regression | PASS |
 | Fresh RC4 independent QA | PASS |
-| Real host can enter room with Alpha enabled | **FAIL / P0** |
-| Browser acceptance | BLOCKED / PAUSED |
-| RC5 bootstrap fix | NEXT |
+| RC5 product regression | PASS |
+| Real host can enter room with RC5 enabled | **PASS** |
+| Fresh RC5 room-entry QA | PENDING |
+| Python Launcher foundation implementation | DONE |
+| Real Windows CDP live-Worker proof | **PENDING / P0** |
+| Alpha transport integration | BLOCKED ON PROOF |
+| Full Browser acceptance | PAUSED |
 | Alpha release | BLOCKED |
+
+## Current transport route
+
+Primary candidate:
+`Python/EXE Launcher -> localhost Chrome/Edge CDP -> already-native gstyphoon Worker -> WASM/heap -> exact World 921031 identity`.
+
+The launcher foundation is implemented under `parallel/PYLAUNCH/**` and has one real Windows/Browser proof remaining. It does not replace `window.Worker` and is read-only in the current stage.
 
 ## Required sequence
 
-1. fresh RC5 real-Browser bootstrap fix;
-2. preserve all RC4 safety gates;
-3. one minimal owner room-entry retest on the RC5 candidate;
-4. fresh independent QA/retest;
-5. only then rerun the bounded Browser acceptance;
-6. Alpha release decision only after Browser PASS.
+1. fresh RC5 independent QA confirms the room-entry repair;
+2. Python Launcher live Windows proof passes;
+3. fresh Alpha transport-integration stage connects the detector through the proven non-replacing path;
+4. bounded real Browser acceptance verifies actual HUD/warnings and preserved safety behavior;
+5. PM release decision.
+
+## Retained safety requirements
+
+Must remain true through transport integration:
+- exact `wof / World 921031` full-program SHA-256 authority;
+- only two current-level T18 production rules;
+- F1-F4 quarantined;
+- same-type replacement safety;
+- session isolation;
+- multi-warning HUD;
+- runtime diag immediate warning invalidation;
+- target/side/UNKNOWN safety;
+- read-only / no gameplay input injection for Alpha;
+- WebGL restoration;
+- base game continues even when the transport cannot attach.
 
 ## Current release judgment
 
-**Alpha is not releasable. Real Browser testing found a P0 startup compatibility defect: enabling the supported Alpha userscript can prevent normal room entry.**
+**Alpha is not releasable yet. The startup-blocking defect is repaired, but the real Browser detector/HUD path is intentionally silent until a safe live-Worker transport is proven and integrated.**
