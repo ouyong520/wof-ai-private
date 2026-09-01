@@ -2,7 +2,10 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "WOF052L_RECORDER_LONG_CAPTURE_QA_RETEST_V1",
   "promptPath": "parallel/PM/WOF052L_RECORDER_LONG_CAPTURE_QA_RETEST_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "DONE",
   "startCommit": "f6886b057ebdb0b5654a37568fb677e2bf4b94c9",
-  "startedAtUtc": "2026-09-01T15:38:33Z"
+  "startedAtUtc": "2026-09-01T15:38:33Z",
+  "resultPath": "parallel/WOF052L_RECORDER_QA_LONG_CAPTURE/RESULT.md",
+  "finalCommit": "cd63332d984434bf7b5e029abf8b72588ac53012",
+  "finishedAtUtc": "2026-09-01T16:00:47Z"
 }
