@@ -17,6 +17,7 @@ Open blockers:
 | ALPHAQA-003 | P1 | Core can publish multiple simultaneous warnings but HUD silently renders only `warnings[0]`. |
 | ALPHAQA-004 | P1 | Supported load path still requires manual selection of the live `gstyphoon.js` Worker console plus a second top-page console load. |
 | ALPHAQA-005 | P0 | Fixed origin-global `BroadcastChannel('wof-alpha-v1')` has no per-session/runtime binding, so same-origin tabs/runtimes can contaminate each other's HUD state and create false warnings. |
+| ALPHAQA-006 | P1 | Existing research `WOFHUD` is only hidden, not disposed, so legacy key listeners/BroadcastChannel/resources can remain live during Alpha. |
 
 Detailed reproduction and fix requirements are in `FINDINGS.md`.
 
@@ -39,14 +40,18 @@ The current positive guard checks memory/layout compatibility but not actual gam
 
 A second fail-closed boundary is also open: the HUD accepts state from a fixed origin-global BroadcastChannel without binding it to the local page/runtime session. Even a correct local build guard cannot guarantee the rendered warning came from the runtime paired to that HUD.
 
-### 3. Read-only / interference — STATIC PASS; REAL-BROWSER GL CHECK PENDING
+### 3. Read-only / interference — STATIC PASS; ISOLATION FAIL (P1); REAL-BROWSER GL CHECK PENDING
 
 Static/manual audit found:
 
 - no game RAM write path;
-- no keyboard/gameplay input injection;
+- no keyboard/gameplay input injection in the Alpha release files themselves;
 - worker exception path stops timer and clears engine warnings;
 - HUD GL work is wrapped in snapshot/restore/finally paths.
+
+Isolation blocker:
+
+- if the project's legacy research `WOFHUD` is already installed, Alpha calls only `hide()`; the legacy HUD's key listener/BroadcastChannel/resources are not torn down (`ALPHAQA-006`).
 
 Still pending after blockers are fixed:
 
@@ -83,7 +88,8 @@ Fail:
 
 - same-type slot reuse/replacement can retain a prior watch;
 - simultaneous warnings are silently reduced to one row by the HUD;
-- fixed BroadcastChannel allows foreign same-origin session state/diagnostics to overwrite the HUD's current source.
+- fixed BroadcastChannel allows foreign same-origin session state/diagnostics to overwrite the HUD's current source;
+- top-page Alpha takeover does not fully dispose a previously installed research HUD.
 
 ### 6. Regression independence — QA HARNESS ADDED; CURRENT ARTIFACT BLOCKED
 
@@ -100,7 +106,7 @@ Fail:
 
 The existing product regression's 143-count replay is a synthetic reconstruction from WOF-051 aggregate counts, not a replay of retained raw per-poll Browser evidence; it is therefore not treated as independent proof by QA.
 
-ALPHAQA-005 additionally requires a deterministic foreign-session message rejection test in RC2/fresh QA.
+ALPHAQA-005 additionally requires a deterministic foreign-session message rejection test in RC2/fresh QA. ALPHAQA-006 additionally requires a legacy-HUD teardown regression/browser fixture.
 
 ### 7. Packaging / user path — FAIL (P1)
 
@@ -132,6 +138,7 @@ QA should re-run after product owner fixes all open P0/P1 items. Retest must inc
 - same-type replacement / scene transition cleanup;
 - simultaneous warning presentation;
 - two same-origin Alpha sessions cannot cross-contaminate warnings/diagnostics;
+- prior research HUD is fully torn down on Alpha takeover;
 - P1/P2/P3 retarget and side update;
 - HUD rendering/performance and reload safety;
 - normal user load path.
