@@ -1,0 +1,28 @@
+{
+  "schema": "wof-alpha-current-head-acceptance-v1",
+  "artifactKind": "fixture-only-not-runtime-evidence",
+  "result": "BLOCKED — RELEASE GATES NOT GREEN",
+  "snapshotCommit": "0000000000000000000000000000000000000000",
+  "release": "wof-alpha-rc3",
+  "transportVersion": "wof-alpha-safe-transport-v1",
+  "world921031": {
+    "sha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
+    "identitySignature": "wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8"
+  },
+  "repositoryGates": [],
+  "failures": [
+    {
+      "code": "RELEASE_GATES_NOT_GREEN",
+      "class": "BLOCKED",
+      "detail": "fixture only; no Browser/WOF evidence exists in this file",
+      "messageZh": "这是空白 fixture，不是真人验收证据。"
+    }
+  ],
+  "ownerStatusZh": "fixture only；当前没有执行 Browser/WOF 验收。",
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false
+  }
+}
