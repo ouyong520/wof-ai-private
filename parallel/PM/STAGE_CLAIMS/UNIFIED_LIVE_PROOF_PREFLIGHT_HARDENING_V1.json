@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_PREFLIGHT_HARDENING_V1",
+  "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_PREFLIGHT_HARDENING_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "b145a6b0db4899cc3e10820a5456dd34895acbbb",
+  "startedAtUtc": "2026-09-01T14:41:00Z"
+}
