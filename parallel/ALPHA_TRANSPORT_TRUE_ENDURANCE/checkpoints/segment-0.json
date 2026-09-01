@@ -1,0 +1,60 @@
+{
+  "schema": "wof-alpha-transport-true-endurance-checkpoint-v1",
+  "stageId": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_V1",
+  "segmentIndex": 0,
+  "intendedDurationMs": 1500000,
+  "actualElapsedMs": 1500048,
+  "startedAtUtc": "2026-09-01T15:51:23.056Z",
+  "endedAtUtc": "2026-09-01T16:16:23.154Z",
+  "status": "PASS",
+  "blocker": null,
+  "scenarioCount": 76962239,
+  "seedRange": {
+    "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_V1:segment:0:scenario:0",
+    "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_V1:segment:0:scenario:76962238"
+  },
+  "familyCounts": {
+    "stale-old-completion-rebind": 5497303,
+    "session-change": 5497303,
+    "pair-generation-nonce-churn": 5497303,
+    "runtime-epoch-reset": 5497303,
+    "worker-replacement-reinstall": 5497303,
+    "disconnect-reconnect": 5497303,
+    "stale-warning-expiry-boundary": 5497303,
+    "warning-clear-change-race": 5497303,
+    "heartbeat-timing-variation": 5497303,
+    "skipped-tick-one-in-flight-no-catch-up": 5497303,
+    "unsupported-supported-transition": 5497303,
+    "out-of-order-completion": 5497302,
+    "legacy-untagged-compatible": 5497302,
+    "failure-injection-publish-clear-revoke": 5497302
+  },
+  "failureCount": 0,
+  "latestInvariantStatus": "PASS",
+  "rollingEvidenceSha256": "6a5ffa3ee8fe16ac5c57877d5fd9927f17e452433cbc99615af7e7af082f24d7",
+  "frozenCatalogControl": {
+    "status": "PASS",
+    "vectorCount": 67,
+    "passCount": 67,
+    "failCount": 0
+  },
+  "sourceIntegrity": {
+    "algorithm": "git-blob-sha1",
+    "observedBlobShas": {
+      "ALPHA_TRANSPORT_IMPL/constants.mjs": "a29cb3ad714598e2e6aeeed64acc9e3eca8b221e",
+      "ALPHA_TRANSPORT_IMPL/page_authority.mjs": "5e53bd2ad40823a8768802df0a1c5431adb19ee9",
+      "ALPHA_TRANSPORT_IMPL/worker_runtime.mjs": "c353b4500640e31950cde42173a934d541f22531",
+      "ALPHA_TRANSPORT_IMPL/acceptance_adapter.mjs": "d79dff0b2708c671ab8a11644fcc4f771ec75003",
+      "ALPHA_TRANSPORT_MOCK/fixtures.json": "35bf36b4c741cda5d94be3f9884511a86653c11f",
+      "ALPHA_TRANSPORT_MOCK/vectors.json": "5a0cbe2ccfcf7eb6e875552f56748f736722c14d",
+      "ALPHA_TRANSPORT_MOCK/expected_results.json": "1231e0946d18068284724d92e732ea185e4e6af8"
+    }
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "workerReplacement": false,
+    "blobRewrite": false
+  }
+}
