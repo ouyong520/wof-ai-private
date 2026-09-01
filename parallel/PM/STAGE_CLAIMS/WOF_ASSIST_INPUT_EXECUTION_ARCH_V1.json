@@ -2,7 +2,10 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "WOF_ASSIST_INPUT_EXECUTION_ARCH_V1",
   "promptPath": "parallel/PM/WOF_ASSIST_INPUT_EXECUTION_ARCH_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "005f590108e69421b8073cc280d1b9ccb3a39699",
-  "startedAtUtc": "2026-09-01T16:08:00Z"
+  "startedAtUtc": "2026-09-01T16:08:00Z",
+  "completedAtUtc": "2026-09-01T16:14:00Z",
+  "resultPath": "parallel/WOF_ASSIST_INPUT_ARCH/RESULT.md",
+  "resultCommit": "2424e7a5fb458ce79e27482f66f833614eb79e0a"
 }
