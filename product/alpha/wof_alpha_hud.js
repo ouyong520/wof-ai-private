@@ -5,6 +5,8 @@ const SCHEMA='wof-alpha-v2';
 const cfg=window.__WOF_ALPHA_CONFIG;
 if(!cfg||cfg.release!=='wof-alpha-rc3'||typeof cfg.session!=='string'||cfg.session.length<16||typeof cfg.channel!=='string')throw new Error('WOF Alpha RC3 session config missing');
 const SESSION=cfg.session,CHANNEL=cfg.channel;
+const TRANSPORT=window.__WOF_ALPHA_TRANSPORT_V1;
+if(!TRANSPORT||TRANSPORT.version!=='wof-alpha-safe-transport-v1'||typeof TRANSPORT.matches!=='function')throw new Error('WOF Alpha Safe Transport 配对接口缺失');
 if(!window.WOFAlphaHudModel?.summarizeWarnings)throw new Error('WOF Alpha HUD model missing');
 
 // Product takeover is allowed only after legacy research resources are actually released.
@@ -138,11 +140,12 @@ bridge.callback=drawHud;
 const bc=new BroadcastChannel(CHANNEL);
 bc.onmessage=e=>{
   const m=e.data;
-  if(!(m&&m.schema===SCHEMA&&m.session===SESSION))return;
+  if(!(m&&m.schema===SCHEMA&&m.session===SESSION&&TRANSPORT.matches(m)))return;
   if(m.kind==='state'){lastMsg=m;lastRx=Date.now();lastDiag=null;lastKey='';}
   else if(m.kind==='diag'){lastMsg=null;lastRx=0;lastDiag={at:Date.now(),reason:m.reason||m.status||'diagnostic'};lastKey='';}
 };
 
+function transportReset(){lastMsg=null;lastRx=0;lastDiag=null;lastKey='';}
 function dispose(){
   if(disposed)return;disposed=true;
   if(bridge.callback===drawHud)bridge.callback=null;
@@ -150,7 +153,7 @@ function dispose(){
   try{gl.deleteTexture(tex);gl.deleteBuffer(buf);gl.deleteProgram(prog);}catch(_){}
 }
 window.WOFALPHAHUD={
-  version:VERSION,session:SESSION,show(){visible=true;lastKey='';},hide(){visible=false;lastKey='';},dispose,
+  version:VERSION,session:SESSION,show(){visible=true;lastKey='';},hide(){visible=false;lastKey='';},transportReset,dispose,
   status(){
     const fresh=!!lastRx&&Date.now()-lastRx<=STALE_MS;
     const summary=window.WOFAlphaHudModel.summarizeWarnings(fresh&&Array.isArray(lastMsg?.warnings)?lastMsg.warnings:[]);
