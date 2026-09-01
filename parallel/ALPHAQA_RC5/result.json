@@ -1,0 +1,61 @@
+{
+  "artifact": "wof-alpha-rc5-independent-qa-retest",
+  "date": "2026-09-01",
+  "verdict": "PASS — RC5 ROOM-ENTRY REPAIR QA",
+  "roomEntryRepair": {
+    "ownerRealBrowserEvidenceAccepted": true,
+    "browserAcceptanceHelperDisabled": true,
+    "normalRc5BootstrapEnabled": true,
+    "roomEntrySucceeded": true,
+    "specificFormerP0Closed": true
+  },
+  "bootstrap": {
+    "windowWorkerIdentityPreserved": true,
+    "constructsGameWorker": false,
+    "blobWorker": false,
+    "objectUrlWorkerRewrite": false,
+    "workerUrlRewrite": false,
+    "workerOptionsRewrite": false,
+    "gameplayFailOpenOnTransportFailure": true,
+    "gameplayFailOpenOnSecureSessionFailure": true,
+    "prePairHudFetch": false,
+    "warningBehaviorWithoutTransport": "fail-closed-silent",
+    "sessionIsolationBeforeHudAttach": true,
+    "independentVmHarness": "PASS"
+  },
+  "preservedRc4SafetyGates": {
+    "exactWorld921031Full1MiBSha256Gate": true,
+    "goldenSha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
+    "productionRulesExactlyTwoT18CurrentLevel": true,
+    "f1ToF4Quarantined": true,
+    "sameTypeSlotReplacementSafe": true,
+    "sessionCrossTabIsolation": true,
+    "runtimeDiagImmediateWarningInvalidation": true,
+    "foreignSessionDiagCannotClearCurrentWarning": true,
+    "laterValidStateCanBecomeAuthoritative": true,
+    "ordinaryStaleBoundaryMs": 1500,
+    "multiWarningHud": true,
+    "legacyHudDisposal": true,
+    "targetSideLive": true,
+    "unknownSilent": true,
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "webglStateRestoration": true
+  },
+  "unchangedFromRc4BlobEvidence": {
+    "wof_alpha_core.js": "267a44190744b6848b0685712c3d5572627d3a8a",
+    "wof_alpha_loader.js": "ef6c74fc6cba3c101654a851c411b2b2b005d447",
+    "wof_alpha_hud.js": "f93f90cc3cc898083d9613841927349159a0d4ae",
+    "wof_alpha_hud_model.js": "16641129ff651c2733aebc6fae09a280e4bac49b"
+  },
+  "releaseVerdict": {
+    "alphaReleaseReady": false,
+    "reason": "A safe non-replacing live-Worker transport is still required before bounded real-Browser detector/HUD/warning acceptance can run."
+  },
+  "productFilesModifiedByQa": false,
+  "pythonLauncherModifiedByQa": false,
+  "wof052lModifiedByQa": false,
+  "p0": [],
+  "p1": []
+}
