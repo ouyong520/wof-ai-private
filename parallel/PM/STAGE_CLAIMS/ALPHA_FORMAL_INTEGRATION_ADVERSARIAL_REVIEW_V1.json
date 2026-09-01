@@ -2,7 +2,10 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "ALPHA_FORMAL_INTEGRATION_ADVERSARIAL_REVIEW_V1",
   "promptPath": "parallel/PM/ALPHA_FORMAL_INTEGRATION_ADVERSARIAL_REVIEW_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "86232a9857141072ee6d8bd354079a7a34822502",
-  "startedAtUtc": "2026-09-01T16:07:48Z"
+  "startedAtUtc": "2026-09-01T16:07:48Z",
+  "resultPath": "parallel/ALPHA_FORMAL_INTEGRATION_REVIEW/RESULT.md",
+  "resultCommit": "db342a504c1672604544695dd5401928214dd5d2",
+  "blocker": "P1 detector-local exact World 921031 identity is not freshly verified at formal observer install; stale Discovery identity can survive same-targetId runtime/execution-context replacement."
 }
