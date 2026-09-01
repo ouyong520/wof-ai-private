@@ -1,0 +1,47 @@
+name: Project Status Scanner
+
+on:
+  push:
+    paths:
+      - 'parallel/PROJECT_STATUS/**'
+      - 'parallel/PM/**'
+      - '.github/workflows/project-status-scanner.yml'
+  workflow_dispatch:
+
+jobs:
+  offline-scanner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 100
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Compile
+        run: python -m py_compile parallel/PROJECT_STATUS/scan_project_status.py
+
+      - name: Unit tests
+        run: python -m unittest discover -s parallel/PROJECT_STATUS/tests -p 'test_*.py' -v
+
+      - name: Repository read-only scan
+        run: python parallel/PROJECT_STATUS/scan_project_status.py --output-dir /tmp/wof-project-status --quiet
+
+      - name: Validate outputs
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('/tmp/wof-project-status')
+          data = json.loads((root / 'PROJECT_STATUS.json').read_text(encoding='utf-8'))
+          assert data['schema'] == 'wof-project-status-v1'
+          assert data['safety']['read_only_scanner'] is True
+          assert data['safety']['game_ram_writes'] == 0
+          assert (root / '项目状态.txt').exists()
+          print('Project Status Scanner offline validation PASS')
+          PY
