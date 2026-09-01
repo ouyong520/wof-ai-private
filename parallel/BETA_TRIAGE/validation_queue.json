@@ -1,0 +1,42 @@
+{
+  "schema": "wof-beta-triage-validation-queue-v1",
+  "updated": "2026-09-01",
+  "status": "BETA VALIDATION QUEUE READY",
+  "promotion": "research-only",
+  "newCollectionRequested": false,
+  "alphaModified": false,
+  "safety": {"readOnly": true, "ramWrites": 0, "inputInjection": false, "productionAutoPromotion": false},
+  "notation": "T<decimal> (0xHH)",
+  "scoreFormula": "userValue * coverageFrequency * predictiveStrength * validationConvenience",
+  "hardConstraints": [
+    "T18 (0x12) BODY4728/A4/B2/TM1 is a shared anchor, not an A4704-specific rule",
+    "T18 BODY4728 requires ordered context",
+    "T23 attack-ambiguous single states must not be armed alone",
+    "WinKawaks-local numeric fields remain discovery-only"
+  ],
+  "queue": [
+    {"rank":1,"id":"T24_5424_CYCLE_BODY7520_TM4_S24_LEVEL_90","type":"T24 (0x18)","expectedAttacks":[5424],"score":400,"browserPositive":"58/58 WOF-046/047/049","state":"PROSPECTIVE_READY_CURRENT_LEVEL","minimumTest":{"signals":10,"rooms":2,"wrongAttacks":0,"hardMisses":0},"wof052l":"OPPORTUNISTIC_YES"},
+    {"rank":2,"id":"T24_5440_CYCLE_BODY7512_TM3_80","type":"T24 (0x18)","expectedAttacks":[5440],"score":400,"browserPositive":"50/50 WOF-046/047/049","state":"PROSPECTIVE_READY_CURRENT_LEVEL","minimumTest":{"signals":10,"rooms":2,"wrongAttacks":0,"hardMisses":0},"wof052l":"OPPORTUNISTIC_YES"},
+    {"rank":3,"id":"D867BA_3232_TM6_220","expectedAttacks":[3232],"score":300,"browserPositive":"80/80 WOF-046/047/049/050/051","state":"PROSPECTIVE_READY_RESEARCH_SHADOW_LIFECYCLE_GATED","minimumTest":{"form":"current-level-first","signals":12,"targets":2},"wof052l":"OPPORTUNISTIC_YES"},
+    {"rank":4,"id":"D8811E_3232_TM6_135","expectedAttacks":[3232],"score":300,"browserPositive":"68/68 WOF-046/047/049/050/051; one real-late positive","state":"PROSPECTIVE_READY_RESEARCH_SHADOW_LIFECYCLE_GATED","minimumTest":{"form":"current-level-first","signals":12,"targets":2},"wof052l":"OPPORTUNISTIC_YES"},
+    {"rank":5,"id":"T20_5136_B0_TO_B255_1250","type":"T20 (0x14)","expectedAttacks":[5136],"score":150,"browserPositive":"27/27 WOF-046/049/050/051","state":"ORDERED_HISTORY_RESEARCH_READY_LIFECYCLE_GATED","minimumTest":{"signals":8,"rooms":2,"ordered":true},"wof052l":"OPPORTUNISTIC_YES"},
+    {"rank":6,"id":"T16_B4_DANGER_40","type":"T16 (0x10)","score":150,"browserPositive":"520 positive danger outcomes WOF-046/047/049/050/051","semantics":"IMMINENT_DANGER_NOT_ATTACK_EXCLUSIVE","state":"DANGER_RESEARCH_READY_LIFECYCLE_GATED","minimumTest":{"form":"current-level-first","signals":30,"rooms":2},"wof052l":"OPPORTUNISTIC_YES"},
+    {"rank":7,"id":"T18_BODY4728_POST_SEQUENCE_SPLIT","type":"T18 (0x12)","score":90,"prospectiveAnchorOutcomes":{"A4704":1,"A4712":1},"state":"NEEDS_ORDERED_DISCOVERY_THEN_PROSPECTIVE","minimumDiscoveryCyclesPerBranch":2,"minimumProspectiveSignals":5,"forbidden":"arm shared BODY4728 anchor alone","wof052l":"PRIORITY_OPPORTUNISTIC_YES"},
+    {"rank":8,"id":"T23_A5888_BODY4936_TAIL3","type":"T23 (0x17)","expectedAttacks":[5888],"score":32,"sequence":["S0/A8/B2 BODY4936","S0/A2/B0 BODY4936","S0/A6/B4 BODY4936"],"state":"PROSPECTIVE_READY_ORDERED_RARE_COVERAGE","minimumTest":{"signals":3,"completeTailRequired":true},"wof052l":"PER_ROOM_JSON_ONLY"},
+    {"rank":9,"id":"T23_A4920_BRANCH_FAMILY","type":"T23 (0x17)","expectedAttacks":[4920],"score":16,"knownDiscoveryCycles":3,"state":"NEEDS_REPEATED_ORDERED_BRANCH_DISCOVERY","minimumDiscoveryCyclesPerBranch":2,"minimumProspectiveSignals":3,"wof052l":"PER_ROOM_JSON_ONLY"},
+    {"rank":10,"id":"T23_A4792_MULTI_BRANCH_SET","type":"T23 (0x17)","expectedAttacks":[4792],"score":8,"knownDiscoveryCycles":3,"state":"NEEDS_REPEATED_ORDERED_BRANCH_DISCOVERY_AND_RETARGET_HANDLING","minimumDiscoveryCyclesPerBranch":2,"minimumProspectiveSignals":3,"wof052l":"PER_ROOM_JSON_ONLY"}
+  ],
+  "permanentRejects": [
+    "T18 (0x12) BODY4728 single-state -> A4704",
+    "T23 (0x17) known attack-ambiguous single states",
+    "WinKawaks +0x73 != 0 as Browser attack predictor",
+    "WinKawaks +0x24 != 0 as Browser attack predictor",
+    "local branch hotspot without exact local attack label",
+    "one-cycle-only pair/triple as production claim"
+  ],
+  "parkedLowPriority": [
+    "WOF-045 T23 BODY4976/A6/B4/TM5 single-state candidate",
+    "WinKawaks 02008BE0/cursor-flag/TM1-hold/delayed-reload/mode35/loop-reset structural families",
+    "stage/scene/wave-conditioned expansion until authoritative labels exist"
+  ]
+}
