@@ -14,11 +14,12 @@ Read first:
 
 ## Current owner evidence
 
-Minimal A/B on the real Browser host:
-- acceptance helper OFF + normal Alpha userscript ON -> owner still cannot enter the room;
-- both WOF userscripts OFF -> owner can enter normally.
+The owner completed a stronger three-way A/B on the real Browser host:
+- acceptance helper OFF + normal Alpha userscript ON -> game cannot enter the room;
+- acceptance helper ON + normal Alpha userscript OFF -> game can enter the room;
+- both WOF userscripts OFF -> game can enter normally.
 
-Treat this as a P0 normal-user bootstrap/real-host compatibility blocker.
+Treat this as a P0 normal-user bootstrap/real-host compatibility blocker isolated to the normal Alpha bootstrap/product attach path rather than the acceptance helper.
 
 ## Goal
 
@@ -37,6 +38,7 @@ Prioritize diagnosis of the real-host startup path, including:
 - page-side loader/HUD fetch/eval interactions only if they can block room entry;
 - graceful fail-open for gameplay availability while keeping warnings fail-closed when Alpha cannot attach safely.
 
+Do not spend time blaming or changing the Browser Acceptance helper unless new evidence contradicts the owner control result showing helper-only entry succeeds.
 Do not guess from theory alone if existing Browser/host evidence can settle it.
 
 ## Mandatory invariant
