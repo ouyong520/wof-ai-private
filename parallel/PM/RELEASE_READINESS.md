@@ -1,81 +1,70 @@
 # WOF Future Danger AI — Release Readiness
 
-Updated: 2026-09-01
+Updated: 2026-09-01 — RC1 audit
 
-Statuses here are management bands, not fake precision.
+Statuses are management bands, not fake precision.
 
-## Alpha — LATE / ENGINEERING FOUNDATION PRESENT / NOT RC
+## Alpha — **RC1 / QA + HUMAN BROWSER ACCEPTANCE PENDING**
 
-The second PM audit found that Alpha is closer than the initial conservative checklist implied: the repository already has reusable production-shadow/danger-map work and a direct WebGL HUD with reload-safe hook, BroadcastChannel state path, stale/hold behavior and in-game load confirmation.
+A bounded release candidate now exists at `product/alpha/**` as `wof-alpha-rc1`.
 
-Those assets reduce implementation work, but they are still historical/research assets until integrated into a bounded release artifact and regression-tested as that artifact.
+The implementation owner has completed the Alpha engineering checklist: six frozen rules, release/runtime isolation, fail-closed Browser layout guard, live target/retarget, WebGL HUD, UNKNOWN silence policy, minimal loader path, static no-write/no-input audit and release regression.
 
-### Already strong enough
+The release regression reconstructs the audited WOF-051 production subset at 143/143 resolved fixture signals with zero hard-miss equivalent. It also checks that the ambiguous T18 BODY4728 candidate remains silent and that T16 B4 is danger-only rather than A6432-exclusive.
 
-- core Browser reverse engineering foundation;
-- multiple repeated prospective production-shadow warnings;
-- target/side evidence for the mature subset;
-- read-only research/collector discipline;
-- explicit evidence hierarchy and known exclusions;
-- production-shadow / danger-map runtime history exists;
-- direct WebGL HUD implementation exists and has prior reload/load-confirmation hardening;
-- enough validated behavior to make a narrow product useful.
+Important limitation: the repository does not retain the raw WOF-051 per-poll Browser stream, so this is a canonical fixture reconstruction rather than a raw production-stream replay. Therefore real Browser acceptance remains mandatory.
 
 ### Alpha gate status
 
 | Gate | Status | PM judgment |
 |---|---|---|
-| frozen production rule manifest | OPEN | `ALPHA_FREEZE_SPEC.md` now defines candidates/exclusions; machine-readable exact manifest still needed |
-| reliable loader/bootstrap | PARTIAL | research loading/resume paths exist; one user release load path is not yet release-audited |
-| runtime identity/version guard | OPEN/PARTIAL | module/RAM discovery guards exist in research scripts; supported-build positive identity + fail-closed release guard still required |
-| fail-closed automatic reader/warning runtime | OPEN | must be separated from research coordinator |
-| live target reread + retarget | STRONG RESEARCH / OPEN RELEASE | Browser logic is mature; must be retained and regression-tested in release artifact |
-| non-Console HUD | PARTIAL-STRONG | direct WebGL HUD exists; must be wired to frozen release runtime and product semantics |
-| UNKNOWN silence policy | OPEN RELEASE | policy defined; implementation audit required |
-| frozen-rule regression | OPEN | must test release artifact, not only research coordinator |
-| no RAM writes / no input injection | STRONG RESEARCH / OPEN RELEASE | existing evidence is strong; final artifact audit still required |
-| real Browser RC acceptance | OPEN | owner action only after RC exists |
+| frozen production manifest | PASS RC1 | six PM freeze rules only; explicit exclusions retained |
+| release/runtime separation | PASS RC1 | no WOF-0xx research coordinator in release path |
+| loader/bootstrap | PASS IMPLEMENTATION | one dual-context loader path documented; real Browser acceptance pending |
+| runtime identity / fail-closed | PASS OFFLINE / HUMAN CHECK PENDING | positive layout guard exists; unsupported mismatch must remain silent |
+| live target + retarget + side | PASS OFFLINE / HUMAN CHECK PENDING | regression covers P1->P3 and UNKNOWN silence |
+| non-console WebGL HUD | PASS IMPLEMENTATION / VISUAL CHECK PENDING | real game visual/interference check required |
+| UNKNOWN / stale silence | PASS OFFLINE | must be observed once in Browser acceptance |
+| release-artifact regression | PASS | 143/143 canonical production-subset fixture resolution |
+| no RAM writes / no input injection | PASS STATIC / HUMAN INTERFERENCE CHECK PENDING | static audit clean; runtime status reports must confirm readOnly/ramWrites=0/inputInjection=false |
+| independent Alpha QA | **OPEN** | `parallel/ALPHAQA/**` has not produced a result yet |
+| real Browser RC acceptance | **OPEN** | perform only after QA has no open P0/P1 |
 
-### Not required for Alpha
+### Alpha release decision
 
-- all enemy types;
-- all attacks;
-- T23 completion;
-- stage/scene/boss atlas completion;
-- rare branch coverage;
-- Safe Path.
+**Do not call Alpha released yet.**
+
+Release sequence is now:
+
+1. independent Alpha QA;
+2. Alpha developer fixes any P0/P1 findings;
+3. QA rechecks current artifact;
+4. one short real Browser owner acceptance;
+5. if acceptance passes, mark Alpha released.
+
+No extra attack research is required before Alpha.
 
 ## Beta — MID
 
-Must add beyond Alpha:
+Beyond Alpha, Beta should add:
 
-- [ ] refreshed authoritative coverage denominator;
-- [ ] common enemy/common dangerous-attack coverage is high enough for routine play;
-- [ ] important ambiguous branches use validated ordered sequence/context;
-- [ ] broader scene/room validation;
-- [ ] strong P1/P2/P3 target and retarget evidence for common rules;
-- [ ] polished HUD and multi-danger prioritization;
-- [ ] simple user configuration/install/update flow;
-- [ ] acceptable runtime overhead and stability over extended play;
-- [ ] automated release regression suite;
-- [ ] supported-version messaging and graceful unsupported-version behavior.
+- broader validated common-event coverage;
+- validated ordered rules for important ambiguous branches;
+- broader multi-room/scene evidence;
+- polished multi-danger prioritization;
+- easier install/config/update flow;
+- extended runtime overhead/stability checks;
+- automated release regression against retained real Browser traces when such traces become available;
+- defensible common-event coverage denominator.
+
+COVERAGE now has normalized type accounting and explicitly says broad human recap is not currently required. Stage/scene/wave/boss semantics remain the main breadth-label gap.
 
 ## v1 — EARLY-MID
 
-V1 becomes justified when:
+V1 still requires stable Beta, trustworthy breadth accounting, high coverage of the common dangerous-event set, intentional silence for unsupported ambiguity, no unresolved P0 release risks and normal-user packaging/support documentation.
 
-- Beta has demonstrated stable ordinary-user operation;
-- COVERAGE/SWEEPATLAS provide a defensible common-event denominator;
-- production warnings cover a high proportion of that common dangerous-event set;
-- remaining unsupported/ambiguous events are intentionally UNKNOWN/silent;
-- no P0 risk remains for false promotion, target/retarget, namespace/version identity, read-only isolation or production-rule separation;
-- release regression and support matrix are established;
-- documentation/packaging no longer assumes research expertise.
-
-PM will set a numeric v1 coverage target only after the denominator is trustworthy. `100% all attacks` is explicitly not the criterion.
+`100% all attacks` is not the criterion.
 
 ## Current release judgment
 
-**Do not release Alpha yet. Do start the bounded PRODUCT/ALPHA implementation workstream now, using existing HUD/runtime assets rather than rebuilding from scratch.**
-
-Research expansion is no longer a reason to defer release engineering.
+**RC1 is real and narrow. The fastest safe route is independent QA -> one real Browser acceptance -> Alpha release.**
