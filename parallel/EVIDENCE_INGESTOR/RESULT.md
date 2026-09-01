@@ -19,6 +19,8 @@ Status: **REPOSITORY READY**
 - 自动排除 `_自动整理/**`，重复运行不会自吞输出。
 - 所有正常用户可见 CLI/CMD 信息默认简体中文。
 - 已接入当前简体中文 Operator Toolkit：根目录 `WOF_TOOLKIT.cmd` -> 菜单 `8` -> Evidence Auto-Ingestor。
+- 当前 owner/Toolkit/独立 CMD 统一通过 `parallel/EVIDENCE_INGESTOR/run.py` 进入核心 `ingestor.py`。
+- `run.py` 已兼容当前 `wof-windows-operator-toolkit-v2-cn`，并接受 `wof-windows-operator-toolkit-v*` 后续版本，避免正常 Regression/Diagnostics 被误报为未知版本。
 
 ## Safety boundary
 
@@ -31,11 +33,14 @@ Status: **REPOSITORY READY**
 
 ## Automated tests
 
-`python -m unittest discover -s parallel/EVIDENCE_INGESTOR/tests -p test_*.py -v`
+基础实现此前已执行：
 
-Result: **13/13 PASS** on repository-side implementation fixture tests.
+```text
+python -m unittest discover -s parallel/EVIDENCE_INGESTOR/tests -p test_*.py -v
+13/13 PASS
+```
 
-Coverage includes:
+原 13 项覆盖：
 
 - valid PYLAUNCH + World 921031
 - broken JSON isolation
@@ -50,6 +55,14 @@ Coverage includes:
 - log indexing
 - Alpha RC5 regression recognition
 - Alpha RC5 QA recognition
+
+当前仓库另外新增 3 项针对真实当前版本的兼容回归：
+
+- `wof-windows-operator-toolkit-v2-cn` Regression -> `REGRESSION_SUMMARY` / knownVersion PASS；
+- `wof-windows-operator-toolkit-v2-cn` Diagnostics -> `DIAGNOSTICS_SUMMARY` / knownVersion PASS；
+- `RUN_EVIDENCE_INGESTOR.cmd` 必须调用 `run.py --package`。
+
+这些回归已经写入 `parallel/EVIDENCE_INGESTOR/tests/test_current_compat.py`，用于后续完整回归执行；本结果不把未在当前 GitHub 主机实际执行的新 3 项虚报成已 PASS。
 
 ## Owner workflow
 
