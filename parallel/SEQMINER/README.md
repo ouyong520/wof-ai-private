@@ -1,76 +1,81 @@
 # SEQMINER — WinKawaks enemy attack ordered-sequence mining
 
-Status: **active discovery lane / WinKawaks-local only**
+Status: **bounded current-corpus mining complete / reusable miner ready / WinKawaks-local only**
 
 Write boundary: `parallel/SEQMINER/**` only.
 
 ## Mission
 
-SEQMINER exists because a single pre-attack state is not necessarily enough to determine the eventual attack.
+SEQMINER exists because one pre-attack state is not necessarily enough to determine the eventual attack.
 
-The Browser mainline already contains two direct examples:
+Browser evidence already proves this twice:
 
-- T18: the same `BODY4728/A4/B2/TM1` state was prospectively followed by both `A4704` and `A4712`.
-- T23: WOF-047 resolved eight zero-cycle traces across three eventual attacks (`A4792=3`, `A4920=3`, `A5888=2`), so the next useful unit is ordered context rather than another isolated state predicate.
+- T18: exact `BODY4728/A4/B2/TM1` was prospectively followed by both `A4704` and `A4712`.
+- T23: WOF-047 resolved eight zero-cycle traces across `A4792=3`, `A4920=3`, `A5888=2`; at least one state belongs to more than one eventual-attack branch.
 
-SEQMINER therefore mines:
+The unit of analysis is therefore:
 
-`zero attack/zero proxy -> ordered distinct states -> pair -> triple -> timer/descriptor progression -> future ACTIVE/nonzero event`
+```text
+zero attack / zero structural proxy
+-> ordered distinct executor states
+-> tail2 / tail3
+-> transition pair / triple
+-> descriptor/cursor progression
+-> exact + normalized timer progression
+-> future same-object nonzero event / ACTIVE
+```
 
-and asks which ordered contexts remain stable across captures, scenes, targets, and object instances.
+Nothing in this lane is a Browser production rule.
 
-## Hard namespace rule
+## Corpus boundary
 
-WinKawaks normalized offsets are **not** Browser/WASM offsets. Nothing in this lane promotes a Browser production rule.
+`parallel/SWEEPATLAS/**` now exists and confirms:
 
-Current confirmed/high-value WinKawaks-local enemy fields reused by SEQMINER:
+- seven retained EFIELD natural-gameplay runs;
+- 23,400 frames;
+- 468,000 enemy-slot samples;
+- 60,271 type-present samples;
+- all local types T1..T31 observed;
+- T18 (`+0x24=0x12`) present for 528 samples;
+- T23 (`+0x24=0x17`) present for 2,140 samples.
 
-| local offset | role used by SEQMINER |
+However `SWEEPATLAS/CAPTURE_INDEX.json` also explicitly reports:
+
+```text
+stageSceneWaveLabelsAvailable = false
+fullSweepSeriesPresent = false
+```
+
+There is still no retained `BASECAP-SWEEP-*` full-game labeled series on GitHub `main`. This is an evidence boundary, not a request for manual raw transfer and not permission to invent scene labels.
+
+## Local executor backbone
+
+SEQMINER reuses EFIELD's confirmed/strong fields:
+
+| local field | sequence role |
 |---|---|
-| `+0x24` | verified type/type-present lifecycle anchor |
-| `+0x2D` | action/reset/control candidate |
-| `+0x2E` | broad action/state candidate |
-| `+0x2F..0x32` | flagged U32 BE script/animation record cursor |
+| `+0x24` | type/type-present lifecycle |
+| `+0x2D/+0x2E` | compact control/action context |
+| `+0x2F..+0x32` | flagged U32 BE logical record cursor |
 | `+0x34` | record dwell/countdown |
 | `+0x35` | independent dwell/control mode |
-| `+0x37` | attack-associated gate/substate candidate |
-| `+0x6C` | fine executor/attack-associated phase |
-| `+0x6D..0x6E` | materialized live player-target pointer |
-| `+0x70` | second fine body/attack-associated phase |
-| `+0x72` | joint-phase payload/companion |
-| `+0x73` | deterministic coarse projection/family anchor |
-| `+0x77` | second coarse projection |
-| `+0x3D..0x3E` | stored player-association pointer |
-| `+0xC6` | stored player-association index |
-| `+0xB0/+0xB4/+0xB6` | profile/instance context |
-| `+0xB9/+0xBB` | locomotion phase/countdown context |
+| `+0x37` | attack/executor gate/substate candidate |
+| `+0x6C/+0x73` | fine -> coarse phase projection |
+| `+0x70/+0x77` | second fine -> coarse projection |
+| `+0x72` | joint-phase companion |
+| `+0x6D..+0x6E` | live/materialized target |
+| `+0x3D..+0x3E/+0xC6` | stored association |
+| split `+0x6F/+0x68` | separate player-reference layer |
+| `+0xCC` | association synchronization checkpoint |
+| `+0xB0/+0xB4/+0xB6` | profile/runtime context |
+| `+0xB9/+0xBB` | locomotion context |
+| `+0x28/+0x99` | sparse context only |
 
-`+0x73 != 0` is **not** treated as a proven semantic attack ACTIVE condition. It is only a structural proxy that lets us exhaust ordered-sequence information already present in the retained EFIELD corpus.
+`+0x73 != 0` remains only a structural executor-phase proxy. It is not semantic attack ACTIVE.
 
-## Current corpus state
+## Automatic miner v2
 
-The connector-visible GitHub `main` currently contains the established BASECAP/EFIELD/GEO/RAWMINE retained captures, including the seven valid EFIELD runs, but no pushed all-game `SWEEP*` capture and no `parallel/SWEEPATLAS` directory. Therefore this first SEQMINER pass does two things:
-
-1. exhausts the already-computed raw-derived ordered-sequence evidence in `results/efield/**`;
-2. installs `seqminer.py`, which automatically consumes `captures/*.jsonl.gz` from a local/CI checkout as soon as retained sweep raw is present, without asking a human to move files or enumerate filenames.
-
-This is a **reuse-before-recapture** result. No Collector task is created by this lane.
-
-## Evidence classes
-
-SEQMINER uses three explicit evidence labels:
-
-1. `discovery_correlation` — association in retained local data; useful for ranking only.
-2. `same_cycle_evidence` — an ordered context is observed before the same object's later nonzero event in the same cycle.
-3. `potentially_prospectively_testable_candidate` — enough same-cycle support/stability exists to justify a separate prospective Browser experiment. This still is **not** a production rule.
-
-When the miner runs in `phase73` proxy mode, candidates remain local structural evidence. Only a future run with a separately proven WinKawaks attack-value field may group cycles by an exact local `activeAttack` value.
-
-## Automatic miner
-
-`seqminer.py` is standard-library Python and discovers raw files itself.
-
-Example from a checkout containing both repositories:
+`seqminer.py` automatically discovers retained `.jsonl` / `.jsonl.gz` files.
 
 ```bash
 python wof-ai-private/parallel/SEQMINER/seqminer.py \
@@ -78,15 +83,15 @@ python wof-ai-private/parallel/SEQMINER/seqminer.py \
   --output wof-ai-private/parallel/SEQMINER/generated
 ```
 
-Default mode is conservative structural proxy mode:
+Default mode is conservative:
 
 ```text
-attack-zero proxy: enemy+0x73 == 0
-future event:       same object enemy+0x73 becomes nonzero
-label:              first nonzero PH73 family
+zero proxy  = enemy+0x73 == 0
+event proxy = first same-object enemy+0x73 != 0
+label       = first nonzero +0x73 value
 ```
 
-Once a true WinKawaks-local attack-value field is independently proven, use explicit attack mode instead of silently reinterpreting an existing offset:
+Explicit attack mode is allowed only after an exact WinKawaks-local move/attack field has independently been proven:
 
 ```bash
 python .../seqminer.py \
@@ -95,58 +100,79 @@ python .../seqminer.py \
   --attack-offset 0xNN --attack-width 2 --attack-endian be
 ```
 
-The miner never assumes a Browser offset equivalence.
+### Cycle identity
 
-## State representation
+The miner follows physical `(capture, enemy slot)` continuity and splits an episode when type becomes absent/changes or episode-invariant `+0xB4/+0xB6` changes. It deliberately does **not** use mutable `+0xB0` as object identity.
 
-A distinct state retains at least:
+### Distinct state
 
-- `type`
-- local action/state candidates `+0x2D/+0x2E`
-- raw/logical cursor and cursor flags `+0x2F..0x32`
-- timer `+0x34`
-- mode/value `+0x35`
-- gate `+0x37`
-- fine/body/payload/coarse phase tuple `(+0x6C,+0x70,+0x72,+0x73,+0x77)`
-- live target `+0x6D..0x6E`
-- player-association/reference layer `+0x3D..0x3E/+0xC6`
-- instance/profile context `+0xB0/+0xB4/+0xB6`
-- locomotion context `+0xB9/+0xBB`
-- local coordinates `+0x07..0x0A/+0x0B..0x0E`
-- frame start/end and dwell length
+The core key is:
 
-The base distinct-state key deliberately excludes the rapidly decrementing `+0x34` timer. Exact-timer and timer-normalized variants are computed separately.
+```text
+type
++ 2D/2E
++ logical cursor + cursor flags
++ 35/37
++ (6C,70,72,73,77)
+```
 
-## Timer normalization
+Target, association, split reference, profile, locomotion and sparse flags are retained as context but do not fragment the core signature. This permits real cross-target/cross-profile stability measurement.
 
-The retained EFIELD corpus strongly favors record-relative timer normalization over literal timer equality. Across 4,323 logical `+0x0A` destination arrivals, the arrival timer is at the observed record ceiling 73.84%, within one below it 92.53%, and within two below it 94.61%. Leave-one-run-out behavior is similarly stable.
+Each compressed state saves frame start/end/dwell plus timer start/end/min/max and terminal `timer34==1` residence.
 
-SEQMINER therefore records both:
+## Exact and normalized timer families
 
-- exact `timer34` progression;
-- `ceilingMinusTimer34` relative to the logical cursor's observed record ceiling, with buckets `0`, `1`, `2`, `3-5`, `6-10`, `11+`.
+Record-relative arrival evidence:
 
-This preserves exact timing while allowing the same record to match despite sampling one or two countdown ticks apart.
+- ceiling: `3192/4323 = 73.84%`;
+- within one: `4000/4323 = 92.53%`;
+- within two: `4090/4323 = 94.61%`.
 
-## Outputs
+SEQMINER therefore mines exact timer profiles and normalized ceiling-distance buckets `0 | 1 | 2 | 3-5 | 6-10 | 11+`.
 
-Human-maintained current frontier:
+It also records terminal timer-1 hold buckets `0 | 1 | 2-3 | 4-9 | 10-29 | 30+`, because literal `TM1` can conceal long conditional waits.
 
-- `SEQUENCE_ATLAS.md`
-- `ATTACK_BRANCHES.md`
-- `CANDIDATES.json`
-- `BROWSER_VALIDATION_QUEUE.md`
-- `FRONTIER.md`
+## Generated outputs
 
-A local/CI run of `seqminer.py` additionally writes machine-generated artifacts under the requested output directory.
+A run writes:
 
-## Guardrails
+- `CYCLES.generated.jsonl` — resolved same-object cycles;
+- `CANDIDATES.generated.json` — final/tail/pair/triple exact/normalized rankings;
+- `BRANCHPOINTS.generated.json` — ambiguous anchors plus next/previous/timer outcome distributions;
+- `SEQUENCE_ATLAS.generated.md`;
+- `ATTACK_BRANCHES.generated.md`.
 
-- No game-memory writes.
-- No Browser production-rule promotion.
-- No bulk Collector task creation.
-- No offset equivalence assumption between WinKawaks and Browser/WASM.
-- Do not call a `+0x73` transition an actual attack unless independently proven.
-- Do not call `+0x24` attack ACTIVE; it is type/type-present lifecycle.
-- Prefer cross-capture and cross-target support over single-run purity.
-- A perfect in-sample pair/triple with one cycle is not a validation candidate.
+Support is counted once per cycle per signature so an internal loop cannot inflate confidence.
+
+## Evidence classes
+
+- `discovery_correlation` — local association only.
+- `same_cycle_evidence` — ordered context precedes the same object's later event.
+- `potentially_prospectively_testable_candidate` — only used in explicit exact-attack mode after repeated/pure support; still not production.
+
+Capture-filename fallback is never pretended to be an authoritative scene label.
+
+## Current highest-value results
+
+Browser-return ranking:
+
+1. T18 post-`BODY4728` ordered split for A4704 vs A4712.
+2. T23 A5888 `BODY4936` ordered tail.
+3. T23 multi-branch tail2/tail3 set for A4792/A4920/A5888.
+4. Cross-target validation for surviving Browser sequences.
+
+WinKawaks-local structural hotspots for future exact-label mining:
+
+- `0x02008BE0` — high-volume mixed exit/conditional-wait node;
+- `0x02008BD6` and `0x02005E9A` — logical-cursor ambiguity materially split by embedded flags;
+- `0x02008C12`, `0x02008C52`, `0x02005ED6` — loop/reset branch nodes;
+- long terminal-hold records `0x02008D08`, `0x02005FF8`, `0x02008D12`, `0x02006002`;
+- `+0x35` transitions as an independent branch axis.
+
+These are structural candidates only and must never be numerically copied into Browser/WASM logic.
+
+## Stop condition
+
+The connector-visible retained raw-derived information has been mined to the point where more generic offline reading is not expected to produce an exact all-game attack discriminator.
+
+No Collector task is requested. Reopen exact local mining when either a labeled retained full-sweep series appears or an exact WinKawaks-local move/attack value is independently established.
