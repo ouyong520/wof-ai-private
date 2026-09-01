@@ -227,6 +227,23 @@ def _install_endpoint_guard(recorder_module: Any) -> None:
             str(ws),
         )
 
+    def find_endpoint(host: str, explicit_port: int | None):
+        if not is_loopback_host(host):
+            _endpoint_rejection(recorder_module, host, explicit_port, "remote-cdp-host-rejected")
+            return None
+        if explicit_port is not None:
+            try:
+                port = int(explicit_port)
+            except (TypeError, ValueError):
+                _endpoint_rejection(recorder_module, host, explicit_port, "invalid-cdp-port")
+                return None
+            return probe_endpoint(host, port)
+        for port in recorder_module.candidate_ports(None):
+            endpoint = probe_endpoint(host, int(port))
+            if endpoint is not None:
+                return endpoint
+        return None
+
     def launch_debug_browser(preference: str, host: str, port: int, game_url: str | None):
         if not is_loopback_host(host):
             _endpoint_rejection(recorder_module, host, port, "remote-cdp-host-rejected")
@@ -234,6 +251,7 @@ def _install_endpoint_guard(recorder_module: Any) -> None:
         return original_launch(preference, host, port, game_url)
 
     recorder_module.probe_endpoint = probe_endpoint
+    recorder_module.find_endpoint = find_endpoint
     recorder_module.launch_debug_browser = launch_debug_browser
     recorder_module._WOF052L_ENDPOINT_GUARD_V2_INSTALLED = True
 
