@@ -1,0 +1,51 @@
+{
+  "schema": "wof-pylaunch-discovery-v2-hardening-independent-qa-v1",
+  "stageId": "PYLAUNCH_DISCOVERY_V2_HARDENING_QA_V1",
+  "date": "2026-09-01",
+  "verdict": "BLOCKED",
+  "stopCondition": "BLOCKED — PYLAUNCH DISCOVERY V2 HARDENING QA — P1-DIRECT-PARENTFRAMEID-AUTHORITY-NOT-REACHABLE",
+  "source": {
+    "startCommit": "a3937dc1f2a00fedcf4bd315984b1d96d81d8e66",
+    "browserPyBlob": "e883030fe8a90333b8ed58aae5699118b2c876fe",
+    "cdpPyBlob": "06480f3aa7ab9261d7f91ab09074e96b4a6befc9",
+    "discoveryV2PyBlob": "5e3d8f27bcd044366bc402811f638c5569240b9b",
+    "probePyBlob": "789a6849b826b35542b22d56a4d2ca3628d285a1",
+    "monitorPyBlob": "5ee0ce9a84988d7841799d907ebdfe2a3e68ea56"
+  },
+  "checks": [
+    {"id": 1, "name": "remote HTTP/CDP host fails closed", "status": "PASS"},
+    {"id": 2, "name": "returned websocket remote/cross-port fails closed", "status": "PASS"},
+    {"id": 3, "name": "loopback normalization localhost/127.0.0.1/::1", "status": "PASS"},
+    {"id": 4, "name": "existing blob/data/hashed/extensionless Worker URL is diagnostic-only", "status": "PASS"},
+    {"id": 5, "name": "wrong World 921031 identity fails closed independent of URL shape", "status": "PASS"},
+    {"id": 6, "name": "openerId is not direct Worker parent authority", "status": "PASS"},
+    {"id": 7, "name": "real parentId / uniquely mapped parentFrameId remains valid", "status": "FAIL", "detail": "parentId works, but real parentFrameId cannot be mapped to a page in the current direct path because discovery does not collect page/frame identity via Page.getFrameTree or execution-context frame mapping; PAGE_PROBE also returns no frameId. With two WOF pages, direct fallback therefore rejects even when Worker.parentFrameId uniquely identifies one page."},
+    {"id": 8, "name": "direct fallback only with exactly one WOF page", "status": "PASS"},
+    {"id": 9, "name": "cross-page exact pair ambiguity fails closed", "status": "PASS"},
+    {"id": 10, "name": "reload/recreated Worker targetId does not inherit vanished-target identity cache", "status": "PASS"},
+    {"id": 11, "name": "disconnect/reconnect clears old authority", "status": "PASS"},
+    {"id": 12, "name": "exact World 921031 SHA authority preserved", "status": "PASS"},
+    {"id": 13, "name": "readOnly=true / ramWrites=0 / inputInjection=false", "status": "PASS"},
+    {"id": 14, "name": "no Worker replacement/wrap, Blob creation, or URL rewrite", "status": "PASS"},
+    {"id": 15, "name": "CDP allowlist excludes gameplay Input.* and Runtime.callFunctionOn", "status": "PASS"}
+  ],
+  "blocker": {
+    "severity": "P1",
+    "id": "P1-DIRECT-PARENTFRAMEID-AUTHORITY-NOT-REACHABLE",
+    "scope": "parallel/PYLAUNCH/**",
+    "reproduction": "Synthetic endpoint has two positively identified WOF pages and one exact World 921031 direct Worker. Worker.parentFrameId points to page B's root frame. The fake CDP exposes Page.getFrameTree for an unambiguous frame->page mapping. Current discovery never requests that mapping and returns direct-worker-page-ambiguous instead of associating page B.",
+    "requiredFix": "In a fresh PYLAUNCH fix stage, surface a read-only page/frame identity map (for example Page.getFrameTree and/or Runtime execution-context auxData.frameId), allowlist only the necessary read-only CDP introspection, and use that map for parentFrameId before unique-WOF-page fallback. Preserve current openerId rejection, exact identity, ambiguity fail-closed, and no-input/no-write guarantees.",
+    "ownerActionRequired": false
+  },
+  "fixture": "parallel/PYLAUNCH_QA_DISCOVERY_V2_HARDENING/test_adversarial_parent_frame.py",
+  "externalObservations": {
+    "ownerOneClickManifestStale": true,
+    "ownerOneClickManifestDetail": "Current manifest pins PYLAUNCH browser.py blob 92838cef8584d16c865de7ab2ffd7fc5ff6921d2 and discovery_v2.py blob cee0bdef0fe461ab0cb003e6ae198db8c19a5ec2, while current blobs are e883030fe8a90333b8ed58aae5699118b2c876fe and 5e3d8f27bcd044366bc402811f638c5569240b9b.",
+    "windowsCp1252ChineseOutputRiskStillPresent": true,
+    "windowsCp1252Detail": "launcher.py still emits ensure_ascii=False Chinese JSON through print() without forcing/reconfiguring stdout encoding. CMD owner entry sets chcp 65001, but redirected/CP1252 Python stdout remains an integration risk. This is recorded only and is not the PYLAUNCH core blocker."
+  },
+  "qaWritesOnly": [
+    "parallel/PYLAUNCH_QA_DISCOVERY_V2_HARDENING/**",
+    "parallel/PM/STAGE_CLAIMS/PYLAUNCH_DISCOVERY_V2_HARDENING_QA_V1.json"
+  ]
+}
