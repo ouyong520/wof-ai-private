@@ -41,6 +41,7 @@ function makeDrawingBuffer(options = {}) {
     sampleAtMs: options.sampleAtMs ?? 1000,
     epoch: options.epoch ?? 'synthetic-epoch-1',
     confidence: 1,
+    dpr: options.dpr ?? 1,
     fullscreen: !!options.fullscreen,
     mappingVersion: options.mappingVersion ?? 'synthetic-map-1',
     contentRect: options.contentRect || { x: 0, y: 0, width, height },
