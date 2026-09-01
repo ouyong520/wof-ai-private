@@ -151,6 +151,63 @@ Literal `TM1` is not enough because some records wait at 1:
 
 SEQMINER v2 therefore records exact timer start/end/min/max plus `terminalTimer1Frames` and a normalized hold bucket.
 
+### Reload-context holdout guardrail
+
+High in-sample purity from adding `type/B6` to destination record is mostly sparse conditioning, not a robust general law. Leave-one-run-out aggregate results show destination record alone covers `4321/4323` with 0.7464 fallback accuracy, while `dst+type+B6` directly covers only `448/4323` and reaches 0.7331 with fallback. Therefore SEQMINER keeps type/profile as context but does not treat profile-conditioned reload values as a stable attack discriminator.
+
+## Delayed `1B` dwell initialization / positive timer reload
+
+A deeper retained-raw pass finds a separate ordered timer phenomenon inside coarse `0x73=1B` residences:
+
+- 52 multi-frame `1B` residences enter with `+0x34=8` and then load upward later;
+- 1,311 other multi-frame `1B` residences do not show this pattern;
+- first positive reload occurs at residence frame offset 1 in 37/52, offset 2 in 13/52, offset 3 in 2/52;
+- loaded values span 9..17;
+- all 52 enter with joint `(6C,70,72,77) = 40,00,E8,00`.
+
+Destination records:
+
+| record | delayed reload events |
+|---|---:|
+| `02008E68` | 10 |
+| `02008DE2` | 10 |
+| `02008D98` | 9 |
+| `020060D2` | 8 |
+| `02006088` | 8 |
+| `02006158` | 7 |
+
+Leading predecessor -> destination pairs include:
+
+```text
+02005EA4 -> 020060D2   6
+02008BE0 -> 02008DE2   6
+02008BE0 -> 02008E68   5
+02005EA4 -> 02006088   5
+02008BE0 -> 02008D98   4
+02005EA4 -> 02006158   3
+02008BD6 -> 02008E68   3
+```
+
+The reload is coordinated with other executor fields:
+
+- `+0x35` changes on 52/52 delayed reload transitions;
+- `+0x42` changes on 52/52;
+- `+0x7E` changes on 41/52;
+- `+0x42` is independently a high-frequency countdown/progress companion whose common deltas track `+0x34` (`-1/-1`, `-2/-2`).
+
+This is stronger evidence for a **multi-field delayed dwell initialization step** than for an arbitrary timer glitch.
+
+Type-conditioned examples include one local T18 and one local T23 event:
+
+```text
+T18 / 0x12: EFIELD-005 f3524 s19, rec 02008E68, B6=29, C6=1, 34 8->11
+T23 / 0x17: EFIELD-005R f1263 s17, rec 02006158, B6=2C, C6=1, 34 8->9
+```
+
+These examples prove the mechanism is reachable by both priority types; they do **not** connect it to Browser A4704/A4712/A4792/A4920/A5888.
+
+The apparent loaded-value purity of `record+type+B6` is not promoted: 48 such groups contain 44 singletons, so the 0.942 in-sample concentration is dominated by sparse memorization. SEQMINER v2 instead records the exact positive-reload sequence and a normalized family (`reload count`, `first reload offset`, timer range, `+0x42` context) for future exact-outcome grouping.
+
 ## `+0x35` independent branch progression
 
 Transition counts:
@@ -179,10 +236,10 @@ SWEEPATLAS proves local T18 (`0x12`) and T23 (`0x17`) are present.
 
 Raw-derived residence examples show both use the executor machinery:
 
-- T18 example: EFIELD-005 slot19, logical `02008E68`, 15-frame `1B` residence ending timer `1,1`.
-- T23 example: EFIELD-005R slot17, logical `02006158`, 10-frame `1B` residence ending timer `1,1`.
+- T18 example: EFIELD-005 slot19, logical `02008E68`, 15-frame `1B` residence ending timer `1,1`; this same residence family contains a delayed `8->11` initialization event.
+- T23 example: EFIELD-005R slot17, logical `02006158`, 10-frame `1B` residence ending timer `1,1`; this family contains a delayed `8->9` initialization event.
 
-These do **not** map local values to Browser A4704/A4712/A4792/A4920/A5888. They only establish retained local coverage.
+These do **not** map local values to Browser A4704/A4712/A4792/A4920/A5888. They only establish retained local coverage and ordered timer diversity.
 
 ## Browser-labelled ordered evidence
 
@@ -220,12 +277,12 @@ The first state also occurs in A4792, directly proving that order adds informati
 
 ## Ranking policy
 
-Rank upward with same-cycle support, outcome purity, independent captures, authoritative scene labels when they truly exist, multiple targets, timer-normalized stability, and ability to split a known ambiguous anchor.
+Rank upward with same-cycle support, outcome purity, independent captures, authoritative scene labels when they truly exist, multiple targets, timer-normalized stability, delayed-reload/terminal-hold stability, and ability to split a known ambiguous anchor.
 
-Rank downward for one-cycle purity, one-capture-only support, exact-timer brittleness, target/profile confounding, capture filename masquerading as a scene, or structural `+0x73` proxy being treated as an exact attack.
+Rank downward for one-cycle purity, one-capture-only support, exact-timer brittleness, sparse record/type/profile memorization, target/profile confounding, capture filename masquerading as a scene, or structural `+0x73` proxy being treated as an exact attack.
 
 ## Current boundary
 
-The current corpus is sufficient to exhaust structural order, timer, mode and branch topology, but not to emit a trustworthy all-game `Txx -> exact move-valued activeAttack -> attack-specific pair/triple` matrix because both a labeled full-sweep series and a proven exact local move/attack field are absent.
+The current corpus is sufficient to exhaust structural order, timer/reload, mode and branch topology, but not to emit a trustworthy all-game `Txx -> exact move-valued activeAttack -> attack-specific pair/triple` matrix because both a labeled full-sweep series and a proven exact local move/attack field are absent.
 
 No recapture is requested. `seqminer.py` v2 is ready to regenerate exact tables automatically when either missing condition is resolved.
