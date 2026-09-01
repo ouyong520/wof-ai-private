@@ -2,7 +2,10 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "PYLAUNCH_PARENTFRAME_AUTHORITY_FIX_V1",
   "promptPath": "parallel/PM/PYLAUNCH_PARENTFRAME_AUTHORITY_FIX_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "02a6d28a95111c52a3f697bf02448f034ca527bb",
-  "startedAtUtc": "2026-09-01T14:13:30Z"
+  "startedAtUtc": "2026-09-01T14:13:30Z",
+  "resultPath": "parallel/PYLAUNCH/PARENTFRAME_AUTHORITY_FIX_RESULT.md",
+  "resultCommit": "57e77b65986bcc5f99f192159455e1dcbf2188fd",
+  "completedAtUtc": "2026-09-01T14:22:30Z"
 }
