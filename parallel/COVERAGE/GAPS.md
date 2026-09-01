@@ -1,152 +1,174 @@
-# COVERAGE GAPS
+# COVERAGE GAPS — normalized refresh
 
 Snapshot: `2026-09-01`
 
-This document separates **physical-data gaps** from **label/materialization gaps**. A missing label or cross-tab is not automatically a request for new gameplay capture.
+This file distinguishes four different things that must not be conflated:
 
-## P0 — LABEL_UNKNOWN: authoritative stage / scene / wave
+1. **PHYSICAL** — required evidence bytes/condition were never retained;
+2. **ANALYSIS** — retained evidence exists but the requested cross-tab has not been materialized;
+3. **LABEL** — a semantic/human label is not authoritative;
+4. **BROWSER** — local evidence exists but Browser production-context proof is still required.
 
-Current gameplay raws are named by acquisition purpose (`baseline`, `retarget`, `geometry`, `attack`, etc.). Those names are not authoritative stage/scene/wave identities.
+## Closed stale gaps
 
-Status: **LABEL_UNKNOWN**
+### T23 local presence — CLOSED
+
+Canonical identity: **T23 (0x17)**.
+
+Retained WinKawaks EFIELD coverage: **2,140 samples**.
+
+The old `T23=0` gap was produced by mixed notation: old COVERAGE `T17` represented raw byte `0x17`. After normalization, that row is T23 (0x17).
+
+No local T23 physical recap is justified.
+
+### Ordered sequence availability — CLOSED AS AN ABSENCE GAP
+
+`parallel/SEQMINER/**` is present.
+
+Current retained sequence evidence includes global executor order/branch/timer topology and explicit type-linked local examples for T18 (0x12) and T23 (0x17). Browser-labelled ordered evidence also exists for both types.
+
+The remaining sequence problem is exact outcome semantics/prospective Browser validation, not absence of SEQMINER.
+
+## P0 — LABEL: authoritative stage / scene / wave
+
+Status: **OPEN LABEL GAP / MISSING LABELED CORPUS**
+
+The current retained natural EFIELD runs have no authoritative stage/scene/wave labels. SWEEPATLAS explicitly refuses to manufacture them.
 
 Impact:
-- cannot build a trustworthy stage × scene × wave coverage matrix;
-- cannot calculate scene-level set cover;
-- cannot claim scene coverage for any Txx;
-- unlabeled raw must not be assigned a scene from numeric RAM patterns.
 
-Action: consume SWEEPATLAS or another authoritative labeling source if/when it appears. Do not rescan merely to make up names.
+- no trustworthy stage × scene × wave denominator;
+- no scene-level type incidence;
+- no scene-level set-cover optimization;
+- no authoritative scene-specific attack matrix.
 
-## P0 — LABEL_UNKNOWN: boss / ordinary enemy
+This is partly rooted in a physically absent labeled full-game sweep series, but a broad replay is not authorized: there is no bounded scene target yet.
 
-No audited input currently provides an authoritative boss-vs-ordinary classification tied to capture/episode identity.
+## P0 — LABEL: boss / ordinary / human enemy names
 
-Status: **LABEL_UNKNOWN**
+Status: **OPEN LABEL GAP**
 
-Action: wait for an authoritative atlas/label source, then join it to existing raw before considering recap.
+No authoritative retained mapping ties internal normalized type to boss/ordinary or visible enemy name.
 
-## P0 — LABEL_UNKNOWN: semantic ACTIVE cycles
+Do not infer from rarity, duration, task name, or executor profile.
 
-EFIELD establishes lifecycle and structural executor/attack-family behavior, but it does not establish a semantic hitbox/damage `ACTIVE` state.
+## P0 — LABEL: semantic ACTIVE / exact local move
 
-Status: **LABEL_UNKNOWN**
+Status: **OPEN LABEL GAP**
 
-Known:
-- 1,604 global same-nonzero-type lifecycle episodes;
-- 271 nonzero structural executor/attack-family episodes.
+Known local structure:
+
+- 271 contiguous structural attack/executor episodes;
+- coarse/fine executor families at `+0x73/+0x6C` and `+0x77/+0x70`;
+- ordered cursor/timer/mode topology.
 
 Unknown:
-- semantic ACTIVE cycle count globally and per Txx.
 
-Action: do not relabel structural `+0x73` episodes as semantic ACTIVE cycles.
+- semantic ACTIVE/hitbox/damage cycle;
+- exact WinKawaks-local move/attack identity.
 
-## P1 — LABEL_UNKNOWN: per-Txx cross-tabs
+Structural phase values must not be renamed into semantic attacks.
 
-The current read-only EFIELD outputs materialize:
-- per-Txx sample counts;
-- a global lifecycle episode total;
-- aggregate attack/executor distributions;
-- aggregate target distributions.
+## P1 — ANALYSIS: per-type lifecycle episodes
 
-They do **not** materialize:
-- lifecycle episodes per Txx;
-- structural/semantic attack kinds per Txx;
-- target P1/P2/P3 per Txx;
-- scene coverage per Txx.
+Status: **OPEN ANALYSIS GAP**
 
-Status: **LABEL_UNKNOWN**
+Aggregate: 1,604 same-type episodes.
 
-This is first an **analysis/materialization gap**, not a capture gap. Existing EFIELD raws should be exhausted before requesting more gameplay.
+Per normalized type counts are not safely materialized in the current retained human-readable outputs.
 
-## P1 — LOW: low-density observed Txx
+Action: reprocess retained raw / existing analysis outputs when a suitable materializer is available. **Do not recapture.**
 
-Coverage-only LOW threshold: fewer than 500 type-present samples.
+## P1 — ANALYSIS: per-type P1/P2/P3 target occupancy
 
-| Txx | Samples |
+Status: **OPEN ANALYSIS GAP**
+
+Global live-target dwell accounting exists:
+
+- P1: 46,865
+- P2: 2,967
+- P3: 10,439
+
+Eight exact live-target changes exist and have normalized type anchors.
+
+What is still missing is the full type × target dwell contingency table. Eight transition events cannot be substituted for dwell incidence.
+
+Action: materialize from retained evidence. **Do not recapture.**
+
+## P1 — ANALYSIS: per-type structural attack/executor episodes
+
+Status: **OPEN ANALYSIS GAP**
+
+Aggregate structural episode count: 271.
+
+Per-type episode totals / full type × executor contingency are not materialized in current reports.
+
+Action: existing raw first. **Do not recapture.**
+
+## P1 — LOW: observed low-density normalized types
+
+Coverage-only threshold: fewer than 500 type-present samples.
+
+| Type | Samples |
 |---|---:|
-| T05 | 495 |
-| T0D | 470 |
-| T0C | 469 |
-| T0E | 411 |
-| T02 | 408 |
-| T06 | 354 |
-| T04 | 300 |
-| T1D | 272 |
-| T1C | 188 |
-| T0F | 187 |
-| T01 | 173 |
-| T03 | 160 |
-| T1F | 150 |
-| T1E | 133 |
+| T1 (0x01) | 173 |
+| T2 (0x02) | 408 |
+| T3 (0x03) | 160 |
+| T4 (0x04) | 300 |
+| T5 (0x05) | 495 |
+| T6 (0x06) | 354 |
+| T12 (0x0C) | 469 |
+| T13 (0x0D) | 470 |
+| T14 (0x0E) | 411 |
+| T15 (0x0F) | 187 |
+| T28 (0x1C) | 188 |
+| T29 (0x1D) | 272 |
+| T30 (0x1E) | 133 |
+| T31 (0x1F) | 150 |
 
-Status: **LOW**
+All are observed. LOW density alone is not a physical-gap proof and does not authorize replay.
 
-These counts alone do not justify a full-game rescan. A targeted recap becomes rational only after stage/scene incidence is known and a small set of scenes can close several gaps at once.
+## P1 — LOW: rare structural executor family
 
-## P1 — LOW: rare structural attack/executor family
+Coarse `enemy+0x73 = 0x1E` has only 42 frames in the retained aggregate.
 
-`enemy+0x73 = 0x1E` occurs for **42 frames** in the current EFIELD corpus.
+This is a sparse structural family, not a named move. No scene can be targeted truthfully without an authoritative scene/semantic join.
 
-Status: **LOW**
+No recap is authorized from rarity alone.
 
-Fine values contributing to this coarse family:
-- `+0x6C = 0x70`: 14 frames
-- `+0x6C = 0x78`: 28 frames
+## P1 — BROWSER: T18 ordered outcome split
 
-The semantic attack/rare-branch name is still **LABEL_UNKNOWN**. Do not design a gameplay recap around a guessed move name.
+T18 (0x12) local coverage is present (528 samples) and local ordered executor evidence exists.
 
-## P1 — MISSING: T23 in current EFIELD corpus
+Browser BODY4728/A4/B2/TM1 prospectively produced both A4704 and A4712. The next gap is post-anchor ordered discrimination in Browser, already assigned to WOF-052.
 
-Current EFIELD census has **0 T23 samples**.
+This is **not** a WinKawaks physical recap gap.
 
-Status: **MISSING in the current EFIELD corpus only**
+## P2 — BROWSER: T23 prospective breadth
 
-Important limits:
-- the audited data do not establish the full-game expected Txx universe;
-- zero T23 coverage is not a rule failure;
-- this does not prove T23 exists in a missing stage;
-- `T23` must not be confused with enemy byte offset `+0x23`.
+T23 (0x17) local coverage is present (2,140 samples).
 
-No physical recap is authorized from this fact alone.
+Browser WOF-047 has 8 resolved ordered cycles, while later WOF-049/050/051 rooms had zero T23. This is scene/room availability variation, not a local data absence.
 
-## P1 — LABEL_UNKNOWN: sequence family
+Do not spend repeated rooms or local replay simply to force T23 to appear.
 
-`parallel/SEQMINER/**` is absent at the audited snapshot.
+## P2 — historical confounds / failed acquisition provenance
 
-Status: **LABEL_UNKNOWN**
+Historical flat, timing-racy, or failed attempts remain provenance facts but are not active gaps when canonical later data or owner closure exists.
 
-The current structural phase hierarchy is not a substitute for an ordered-sequence family atlas. Recompute this gap when SEQMINER arrives.
+Examples include old B12/B13 timing variants, early GEO depth attempts, P2/P3 controlled-attribution failures, and EFIELD fresh-session discovery failures.
 
-## P2 — CONFOUNDED: retained raws with weak intended manipulation/label isolation
-
-Mechanically healthy raw can still be unusable for the dimension it was intended to isolate.
-
-Current tracked cases include:
-- `BASECAP-B12-facing-minimal...` — initial facing label noncanonical;
-- `BASECAP-B13R-standing-attack-ungated...` — manual attack label noncanonical;
-- `GEO-0008...` — intended P1 depth motion not isolated;
-- `RAWMINE-001...` — requested attributable P1 depth signal not isolated;
-- `GEO-0009...` — intended depth traverse insufficient;
-- `GEO-0010...` / `GEO-0011...` — intended depth attribution calibration insufficient;
-- `RAWMINE-004...` — intended attribution positive control absent;
-- `GEO-0012...` — no controlled P2 trajectory isolated;
-- `BASECAP-B40-P3...` — no usable P3 geometry dynamic in the current RAWMINE player-object interpretation.
-
-Status: **CONFOUNDED for the stated intended dimension**, not globally invalid.
-
-GEO owner-level geometry closure remains accepted; these historical flat/confounded attempts must not be interpreted as contradictions.
-
-## P2 — provenance gaps on failed attempts
-
-Seven failed gameplay acquisitions exist in `status/by_task/**` with no result/raw. Only `EFIELD-007` and `EFIELD-008` retain archived task specs; five failed status rows have no retained current/archive task spec.
-
-Status: **CONFOUNDED provenance on failed attempts**
-
-They are never counted as gameplay samples.
+They are never counted as negative evidence against the later closure.
 
 ## Physical recap verdict
 
-**No generic physical recap is currently justified.**
+**human recap required: NO**
 
-The dominant residuals are labels and analysis joins, while BASECAP/GEO/RAWMINE owner lanes already state that no generic re-acquisition is needed. SWEEPATLAS/SEQMINER are absent, so scene-level set-cover optimization cannot yet be computed without inventing labels.
+There is no specific residual physical gap that simultaneously:
+
+- matters now to Product/Beta/v1;
+- cannot be answered from retained data;
+- has an authoritative minimal scene/condition target;
+- has bounded collection cost.
+
+The physically absent labeled full-game sweep series remains a future denominator problem, not a justified broad replay today.
