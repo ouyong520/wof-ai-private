@@ -210,6 +210,18 @@ test('MULTI-THREAT-NOT-SILENTLY-DROPPED', 'P1', () => {
     'HUD must not silently render only warnings[0] when more warnings are active');
 });
 
+// ALPHAQA-005: the exact RC1 transport must not remain a fixed origin-global channel accepted by schema alone.
+// Fresh QA may replace/strengthen this static assertion after RC2 chooses its concrete pairing design.
+test('SESSION-BOUND-WARNING-TRANSPORT', 'P0', () => {
+  const loader = read('wof_alpha_loader.js');
+  const hud = read('wof_alpha_hud.js');
+  const fixedLoaderChannel = /const\s+CHANNEL=['"]wof-alpha-v1['"]/.test(loader) && /new\s+BroadcastChannel\(CHANNEL\)/.test(loader);
+  const fixedHudChannel = /const\s+CHANNEL=['"]wof-alpha-v1['"]/.test(hud) && /new\s+BroadcastChannel\(CHANNEL\)/.test(hud);
+  const schemaOnlyAcceptance = /if\(m\?\.schema!==CHANNEL\)return;/.test(hud);
+  assert.equal(fixedLoaderChannel && fixedHudChannel && schemaOnlyAcceptance, false,
+    'HUD/runtime warning transport must be paired to one page/runtime session, not accepted from a fixed origin-global channel by schema alone');
+});
+
 // Current source-level read-only audit is stronger than product regression's HEAPU-only assignment regex.
 test('READ-ONLY-STATIC', 'P0', () => {
   for (const name of ['wof_alpha_core.js','wof_alpha_loader.js','wof_alpha_hud.js']) {
@@ -232,7 +244,7 @@ test('NORMAL-USER-LOAD-PATH', 'P1', () => {
 
 const blockers = results.filter(x => x.status === 'FAIL' && (x.severity === 'P0' || x.severity === 'P1'));
 const out = {
-  suite: 'wof-alpha-independent-qa-v1',
+  suite: 'wof-alpha-independent-qa-v2',
   artifact: C.VERSION,
   qaStatus: blockers.length ? 'BLOCKED' : 'PASS',
   blockers,
