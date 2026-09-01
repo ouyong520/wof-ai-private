@@ -2,7 +2,11 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "UNIFIED_LIVE_PROOF_PREFLIGHT_HARDENING_V1",
   "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_PREFLIGHT_HARDENING_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "b145a6b0db4899cc3e10820a5456dd34895acbbb",
-  "startedAtUtc": "2026-09-01T14:41:00Z"
+  "startedAtUtc": "2026-09-01T14:41:00Z",
+  "resultPath": "parallel/LIVE_PROOF_BUNDLE/PREFLIGHT_HARDENING_RESULT.md",
+  "resultCommit": "1364cfa54b76df870e384b3a06ec01a26b587c92",
+  "stopCondition": "UNIFIED LIVE PROOF PREFLIGHT HARDENING READY — OWNER NOT NEEDED FOR REPOSITORY CHECKS",
+  "ownerActionRequired": false
 }
