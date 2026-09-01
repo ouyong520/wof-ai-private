@@ -10,6 +10,12 @@ if ($args -contains '--update-only' -or [Environment]::CommandLine -match '(?i)(
 }
 
 $ErrorActionPreference = 'Stop'
+$Utf8NoBom = New-Object Text.UTF8Encoding($false)
+try { [Console]::OutputEncoding = $Utf8NoBom } catch {}
+try { [Console]::InputEncoding = $Utf8NoBom } catch {}
+$OutputEncoding = $Utf8NoBom
+$env:PYTHONUTF8 = '1'
+$env:PYTHONIOENCODING = 'utf-8'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $ManifestBase = 'https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/'
@@ -189,8 +195,6 @@ try {
     $env:WOF_PACKAGE_VERSION = $version
     $env:WOF_TOOLKIT_PYTHON = $venvPython
     $env:WOF_BOOTSTRAP_PATH = Join-Path $releaseDir 'WOF_一键工具.cmd'
-    $env:PYTHONUTF8 = '1'
-    $env:PYTHONIOENCODING = 'utf-8'
 
     Say '工具已准备完成。'
     if ($UpdateOnly) {
@@ -207,5 +211,7 @@ try {
     & $venvPython $ownerToolkit --root $releaseDir
     exit $LASTEXITCODE
 } catch {
-    Fail 'WOF 工具准备失败。' $_.Exception.Message 20
+    $detail = [string]$_.Exception.Message
+    if ($detail -match '^文件完整性校验失败：') { Fail $detail $null 21 }
+    Fail 'WOF 工具准备失败。' $detail 20
 }
