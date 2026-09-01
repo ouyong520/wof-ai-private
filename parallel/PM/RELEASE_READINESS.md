@@ -1,92 +1,76 @@
 # WOF Future Danger AI — Release Readiness
 
-Updated: 2026-09-01 — RC3 candidate complete / fresh independent QA pending
+Updated: 2026-09-01 — RC3 independent QA complete / one P1 requires RC4
 
-## Alpha — **RC3 CANDIDATE / WAITING FRESH QA**
+## Alpha — **RC3 QA BLOCKED / RC4 REQUIRED**
 
-RC3 has corrected the two PM blockers that rejected RC2.
+Fresh independent RC3 QA is complete. It found exactly one release blocker:
 
-### RC3 closed items
+- `ALPHAQA-RC3-001` — a runtime disable/error diagnostic does not immediately invalidate the last warning in the page HUD. A prior warning can remain visible for up to 1500 ms after the detector has already failed closed.
 
-**Runtime/build identity — CLOSED in candidate**
-- supported Browser lineage: `wof / Warriors of Fate (World 921031)`;
-- exact full 1 MiB CPU-logical SHA-256: `5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`;
-- sparse vector/dispatch/layout checks cannot enable warnings without the exact digest;
-- unresolved/mismatched/error identity fails closed.
+This is a P1 user-visible fail-closed defect and blocks human Browser acceptance.
 
-**Same-type hidden replacement safety — CLOSED conservatively in candidate**
-- no positive Browser enemy instance token exists;
-- user-facing production has no history/watch continuity dependency;
-- only two current-level T18 rules remain active;
-- F1-F4 history-derived candidates are quarantined.
+## RC3 areas already independently passed
 
-### Preserved candidate features
-
-- per-session/cross-tab transport isolation;
+Do not treat the entire candidate as failed. Independent QA passed:
+- exact `wof / Warriors of Fate (World 921031)` full-program SHA-256 gate;
+- wrong/missing/pending/error/malformed identity remains disabled;
+- no sparse identity fallback;
+- no same-type hidden replacement inheritance;
+- exactly two stateless current-level T18 production rules;
+- F1-F4 quarantined / cannot user-alert;
+- session/cross-tab isolation;
 - simultaneous warning aggregation;
-- legacy HUD disposal;
-- normal-user document-start bootstrap candidate;
-- live target reread and side recomputation;
-- UNKNOWN/invalid target silence;
-- no game RAM writes;
-- no gameplay input injection/autoplay;
-- no BODY4728-specific A4704 promotion;
-- no T23/T24/local/discovery leakage.
+- legacy HUD cleanup;
+- normal-user document-start bootstrap;
+- live target / side recomputation;
+- UNKNOWN target silence;
+- read-only / no gameplay input injection;
+- GL state restoration.
 
-### Alpha gate status
+## Alpha gate status
 
 | Gate | Status |
 |---|---|
-| Browser version identity | RC3 PASS offline — exact 921031 SHA-256 |
-| hidden same-type replacement safety | RC3 PASS offline — stateless production policy |
-| active production rule inventory | 2 current-level T18 rules; F1-F4 quarantined |
-| cross-tab/session isolation | PASS offline / fresh QA required |
-| multi-threat HUD | PASS offline / fresh QA required |
-| legacy HUD teardown | PASS offline / fresh QA required |
-| normal-user bootstrap | candidate complete / fresh QA + Browser acceptance required |
-| live target/side | PASS offline / fresh QA required |
-| UNKNOWN/stale silence | PASS offline / fresh QA required |
-| no RAM writes / no input | PASS offline/static / fresh QA required |
-| RC3 product regression | PASS |
-| fresh independent RC3 QA | **PENDING — no verdict commit yet** |
-| real Browser acceptance | WAIT FOR QA PASS |
+| Browser World 921031 exact identity | PASS independent QA |
+| same-type replacement safety | PASS independent QA |
+| production rule inventory | PASS — only two T18 current-level rules |
+| F1-F4 quarantine | PASS |
+| session isolation | PASS offline/source |
+| multi-threat HUD | PASS offline/source |
+| legacy HUD teardown | PASS offline/source |
+| normal-user bootstrap | PASS offline/source / live acceptance later |
+| target/side/UNKNOWN | PASS offline/source |
+| read-only/no-input | PASS offline/source |
+| runtime explicit-error warning clearing | **FAIL P1 — RC4 required** |
+| RC3 independent QA | COMPLETE / BLOCKED |
+| RC4 implementation | NEXT |
+| fresh RC4 independent QA | WAIT |
+| Browser acceptance | PREP COMPLETE / NOT AUTHORIZED |
 | Alpha release | WAIT |
 
-Fresh QA bootstrap:
-- `parallel/PM/ALPHA_RC3_QA_START_PROMPT.md`
+## Browser acceptance preparation
+
+`parallel/ALPHAACCEPT/**` is complete. Once a future independent QA returns `PASS — READY FOR ONE REAL BROWSER ACCEPTANCE`, the owner operation is already reduced to a normal refresh + one acceptance button, with automated auxiliary-tab checks and one result JSON.
+
+Do not run it before RC4 + fresh QA.
 
 ## Release sequence
 
-1. keep completed RC3 implementation thread closed;
-2. run fresh independent RC3 QA;
-3. if QA finds P0/P1, close QA and open a fresh next fix stage;
-4. if QA passes, run one bounded real Browser acceptance;
-5. if Browser acceptance passes, release Alpha.
+1. close completed RC3 QA thread;
+2. open fresh RC4 fix using `parallel/PM/ALPHA_RC4_FIX_START_PROMPT.md`;
+3. RC4 changes only the immediate diagnostic warning-clearing behavior and adds regression;
+4. close RC4 implementation when candidate is produced;
+5. open fresh independent RC4 QA;
+6. if QA passes, run prepared one-click Browser acceptance;
+7. if Browser acceptance passes, PM may release Alpha.
 
-Do not use the RC2 QA contract to demand that all six frozen candidates remain production-visible. RC3 intentionally narrows user-facing production for safety.
+## Parallel non-blocking support
 
-## Parallel support status
-
-### Local ROM identity — human-gated, non-blocking
-
-Retained local evidence strongly indicates `wofr1 / World 921002`; exactly one read-only local ROM hash command remains for cryptographic proof. Even if revisions differ, local corpus remains discovery evidence and Browser World 921031 remains production authority.
-
-### Runtime Speed — human-gated, non-blocking
-
-Audit verdict is `INSUFFICIENT — ONE MINIMAL TEST REQUIRED` only for local simulation speed. Collector Hz is wall-clock sampling, not game-frame rate. Browser Alpha lead labels require no change and local timing must not be numerically equated with Browser milliseconds until calibrated.
-
-### Player-Anchored HUD — Beta handoff, human-gated
-
-Research handoff is complete with classification `NEEDS ONE MINIMAL BROWSER PROOF`. It does not block Alpha. Fixed in-game HUD remains the safe fallback until authoritative player/camera/native projection constants are proven.
-
-## Beta — MID
-
-Beta remains broader common-event coverage, ordered ambiguity resolution, player-anchored warning placement, easier install/update, extended stability, broader validated danger set and defensible coverage accounting.
-
-## v1 — EARLY-MID
-
-Requires stable Beta, trustworthy breadth denominator, intentional silence for unsupported branches, no P0 release risk, normal-user packaging/support matrix and sustained Browser stability.
+- Local WinKawaks ROM identity: one local read-only hash command remains; expected local World 921002 vs Browser World 921031.
+- Runtime Speed: simulation-speed question remains separate; support tooling may continue.
+- Player-Anchored HUD: Beta projection proof tooling/handoff is separate from Alpha.
 
 ## Current release judgment
 
-**Alpha is one fresh independent QA stage plus one bounded real-Browser acceptance away from release, assuming no new P0/P1 appears.**
+**Alpha is blocked by one narrow P1, not by the core identity/lifecycle/rule-scope work. Fastest path: RC4 tiny fix -> fresh QA -> prepared one-click Browser acceptance.**
