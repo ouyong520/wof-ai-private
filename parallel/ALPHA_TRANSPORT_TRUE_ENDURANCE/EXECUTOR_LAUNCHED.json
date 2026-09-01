@@ -1,0 +1,12 @@
+{
+  "schema": "wof-alpha-transport-true-endurance-launch-v1",
+  "stageId": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_V1",
+  "workflowRunId": "33528136552",
+  "workflowRunAttempt": "1",
+  "workflowCommit": "8e23ead5e9bc632a0f39747af843ef0c3b53f20f",
+  "launchedAtUtc": "2026-09-01T15:51:06.943Z",
+  "intendedSegments": 13,
+  "segmentDurationMs": 1500000,
+  "intendedExecutorDurationMs": 19500000,
+  "idlePadding": false
+}
