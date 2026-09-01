@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "HUDANCHOR_ONECLICK_BROWSER_PROOF_AUTOMATION_V1",
+  "promptPath": "parallel/PM/HUDANCHOR_ONECLICK_BROWSER_PROOF_AUTOMATION_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "81e4c8a11155bc9385255ecb05bf35566eb118c7",
+  "startedAtUtc": "2026-09-01T14:11:28Z"
+}
