@@ -1,0 +1,64 @@
+{
+  "schema": "wof-unified-live-proof-freshness-fix-status-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_FRESHNESS_FIX_V1",
+  "date": "2026-09-01",
+  "state": "COMPLETE",
+  "verdict": "UNIFIED LIVE PROOF FRESHNESS FIX READY — READY FOR FRESH INDEPENDENT QA",
+  "ownerActionRequired": false,
+  "scope": {
+    "modifiedRuntimePaths": [
+      "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py",
+      "parallel/LIVE_PROOF_BUNDLE/test_unified_live_proof.py"
+    ],
+    "outsideBundleWrite": "parallel/PM/STAGE_CLAIMS/UNIFIED_LIVE_PROOF_FRESHNESS_FIX_V1.json only",
+    "pylaunchModified": false,
+    "recorderModified": false,
+    "browserFleetModified": false,
+    "prospectiveModified": false,
+    "alphaModified": false
+  },
+  "implementation": {
+    "unifiedLiveProofCommit": "ef7b1123279c8affec07799bb49b62dac882fc50",
+    "unifiedLiveProofBlob": "ce2e9f970f1a9e70493eb0d06b04431ea4870aa1",
+    "regressionCommit": "a42cf32b05fdb8ddbcc34e83ea1b918ab280f201",
+    "regressionBlob": "e24cf4be27927e8595aff5bce1913f28496ca13a"
+  },
+  "fixes": {
+    "completeProcessHealthFailClosed": true,
+    "malformedOrPartialHealthCannotPass": true,
+    "pylaunchLastUpdateUtcFreshnessRequired": true,
+    "recorderOutputHeartbeatFreshnessRequired": true,
+    "processObservationFreshnessRequired": true,
+    "preOwnerPromptNewGenerationGate": true,
+    "postOwnerAnswerNewGenerationGate": true,
+    "stalePositiveHistoryDiagnosticOnly": true,
+    "liveHungChildWithStaleSuccessBlocked": true,
+    "stickyBlockerPreserved": true,
+    "recorderFatalGenerationPreserved": true,
+    "evidencePreservationPreserved": true,
+    "longCaptureAutoStarted": false,
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false
+  },
+  "validation": {
+    "bundleRegression": {
+      "tests": 34,
+      "result": "PASS"
+    },
+    "priorIndependentAdversarialFixtureReplay": {
+      "tests": 9,
+      "result": "PASS",
+      "note": "Replayed against the modified bundle without modifying the QA lane; fresh independent QA remains required."
+    },
+    "combined": {
+      "tests": 43,
+      "result": "PASS"
+    },
+    "pyCompile": "PASS",
+    "githubBlobMatchesLocallyValidatedBytes": true
+  },
+  "nextGate": "fresh independent QA",
+  "ownerUx": "你现在需要操作：NO"
+}
