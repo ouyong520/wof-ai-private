@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_FIX_V1",
+  "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_FIX_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "86232a9857141072ee6d8bd354079a7a34822502",
+  "startedAtUtc": "2026-09-01T16:07:51Z"
+}
