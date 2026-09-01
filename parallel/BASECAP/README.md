@@ -94,16 +94,48 @@ The exact scene instructions must be narrow and observable. Prefer short control
 
 Use `operatorGate.required=true` only for a scene that genuinely needs the operator.
 
+All human-operated BASECAP tasks MUST follow:
+
+```text
+parallel/BASECAP/OPERATOR_INSTRUCTION_STANDARD.md
+parallel/BASECAP/OPERATOR_GATE_TIMING_NOTE.md
+```
+
 The operator workflow is:
 
 ```text
 prepare requested scene
 -> run READY_WOF_TASK.bat once
--> perform any explicitly requested during-capture action
+-> verify the exact accepted taskId
+-> for short-action scenes, keep all controls released for the required post-READY delay
+-> perform the numbered action steps exactly
 -> Collector finishes automatically
 ```
 
 READY is bound to the active task and is not a persistent mode.
+
+### No ambiguous key instructions
+
+Never write shorthand such as `按左 2 秒` when the intended sequence is actually `轻点左并立即松开，然后静止 2 秒`.
+
+Every active input step must explicitly state:
+
+```text
+which key
+TAP or HOLD
+when to release
+how long to remain idle after release
+visible confirmation when relevant
+repeat count
+forbidden inputs
+P2/P3 requirements
+```
+
+A `TAP / 轻点` means `按下后立即松开，不要按住`.
+A `HOLD / 按住` means `持续按住明确时长，到时立即松开`.
+A `WAIT / 静止` is always a separate step after release.
+
+If the wording is ambiguous enough that two reasonable operators could perform materially different actions, do not submit the task.
 
 ## Completion standard
 
