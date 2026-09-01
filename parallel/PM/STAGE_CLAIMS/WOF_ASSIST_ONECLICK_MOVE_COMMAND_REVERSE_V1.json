@@ -2,7 +2,11 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "WOF_ASSIST_ONECLICK_MOVE_COMMAND_REVERSE_V1",
   "promptPath": "parallel/PM/WOF_ASSIST_ONECLICK_MOVE_COMMAND_REVERSE_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "13e919e0926038bae474d4fe9bd48566a26d1917",
-  "startedAtUtc": "2026-09-01T16:17:04Z"
+  "startedAtUtc": "2026-09-01T16:17:04Z",
+  "resultPath": "parallel/WOF_ASSIST_MOVE_REVERSE/RESULT.md",
+  "resultCommit": "f0bb61aa51ff4abf959f0d9d3c8d86a334a42065",
+  "blockerId": "WOF_ASSIST_MOVE_LIVE_EVIDENCE_001",
+  "blocker": "Offline evidence cannot ground a concrete direction+button sequence, its timing window, and discriminating game acceptance/completion/recovery signals; one bounded operator-driven passive read-only capture is required."
 }
