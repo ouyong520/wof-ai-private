@@ -1,40 +1,55 @@
 # WOF Future Danger AI — Owner Actions
 
-Updated: 2026-09-01 — Alpha RC1 gate
+Updated: 2026-09-01 — RC1 QA blocked
 
-## Current owner action required: YES — one immediate non-gameplay action
+## Current owner action required: YES — two new non-gameplay work threads
 
-Alpha RC1 exists. COVERAGE refresh is complete and says no human recap. SEQMINER requests no recapture. WOF-052 remains useful research but is not required for Alpha release.
+Alpha QA has completed its RC1 audit and returned **QA BLOCKED** with four open release blockers:
 
-### Action O1 — Start / continue one ALPHA QA thread
+- P0: runtime/build identity is layout-only and can fail open on a lookalike revision;
+- P1: same-type same-slot enemy replacement can inherit an old warning;
+- P1: HUD silently drops simultaneous warnings after the first row;
+- P1: current user load path still requires researcher-level Worker-console selection.
 
-If you have not already opened it, open one new ChatGPT thread and send:
+Do **not** run real Browser Alpha acceptance yet.
+
+## Close these completed work threads
+
+- COVERAGE: complete / PARK; human recap = NO.
+- SEQMINER: current retained corpus exhausted / PARK; no recapture requested.
+- Alpha QA RC1 audit: stage complete at QA BLOCKED. Preserve the thread/result, but do not keep extending the same QA stage.
+- Original Alpha RC1 implementation thread: stage complete; use a new RC2 fix thread rather than reviving the old implementation chat.
+
+## Action O1 — Open new Alpha Fix / RC2 thread
+
+Send:
 
 ```text
-你负责 WOF Alpha 的独立 QA / 测试验收。请连接 GitHub，读取 ouyong520/wof-ai-private/parallel/PM/ALPHA_QA_START_PROMPT.md，然后严格按照里面的要求持续检查。你的主要任务是找 Alpha 的 Bug、错误规则、加载问题、目标切换问题和安全问题。不要和 Alpha 开发帖抢着修改产品代码，把发现的问题写回 GitHub，直到 QA 通过或者明确找出必须修复的问题。
+你负责 WOF Alpha RC2 修复。请连接 GitHub，读取 ouyong520/wof-ai-private/parallel/PM/ALPHA_RC2_FIX_START_PROMPT.md，然后严格按里面要求修复 Alpha QA 找出的 P0/P1 问题，直到 RC2 可以交给新的独立 QA 复测，或者只剩一个必须真人 Browser 操作才能解决的精确阻断点。
 ```
 
-No `parallel/ALPHAQA/**` result exists yet at this snapshot, so PM cannot treat QA as started/completed from GitHub alone.
+This thread owns `product/alpha/**` fixes for this stage.
 
-### Action O2 — Real Browser Alpha acceptance — WAIT FOR QA
+## Action O2 — Open parallel Runtime Identity audit thread
 
-Do **not** run the Alpha RC1 Browser acceptance yet if QA has not cleared P0/P1.
+Send:
 
-Once QA reports PASS / no open P0/P1, the next owner action becomes one short real Browser acceptance using the exact instructions under `product/alpha/**`.
+```text
+你负责 WOF Alpha 的 Browser 运行时/版本识别审计。请连接 GitHub，读取 ouyong520/wof-ai-private/parallel/PM/ALPHA_RUNTIME_IDENTITY_AUDIT_START_PROMPT.md，然后只读检查现有 GitHub 证据，找出怎样真正确认是支持的 wofr1 / World 921002 Browser 版本。不要改 Alpha 产品代码，结果写回 GitHub，直到找到安全的版本识别办法，或者确认只差一个最小真人 Browser 探针。
+```
 
-That run will be the final Alpha release gate.
+This thread is read-only against `product/alpha/**` and writes only `parallel/ALPHAID/**`, so it can run in parallel with RC2 fixes without code conflicts.
 
-### Action O3 — MAINLINE WOF-052 — optional research after current Alpha gate
+## Human gameplay action — NOT YET
 
-WOF-052 still needs owner Browser gameplay to add ordered T18 evidence. It can resume after Alpha QA/acceptance or whenever owner time is available, but it does not block RC1 because the ambiguous BODY4728 rule is excluded from Alpha.
+Do not spend owner Browser time on Alpha acceptance until:
 
-## No other owner work now
+1. RC2 exists;
+2. a fresh independent QA retest clears all P0/P1;
+3. PM explicitly moves the project to Browser acceptance.
 
-- COVERAGE: no recap requested.
-- SEQMINER: no Collector recapture requested.
-- BASECAP/GEO/EFIELD/RAWMINE: no generic work requested.
-- Do not open more discovery threads until Alpha QA returns.
+WOF-052 remains useful post-Alpha research but is not the current release bottleneck.
 
 ## Next PM trigger
 
-When QA writes results to `parallel/ALPHAQA/**`, simply return to the PM thread and say `继续`. PM will read GitHub directly and decide whether Alpha needs fixes or can proceed to the final Browser acceptance.
+After the RC2 fix and/or identity audit writes new GitHub results, return to PM and say `继续`. PM will read GitHub directly and decide whether to open fresh QA retest or request one minimal Browser probe.
