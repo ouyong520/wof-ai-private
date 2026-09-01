@@ -4,6 +4,8 @@ Date: 2026-09-01
 
 Status: **DISCOVERY V2 CROSS-COMPONENT AUDIT COMPLETE — exact P0/P1 drift identified; component code was not modified by this audit lane.**
 
+> Concurrency note: while this audit was running, Prospective Validator landed `discovery_v2.py`, `live_validator_v2.py`, its Discovery V2 regression matrix, and switched `RUN_PROSPECTIVE_VALIDATOR.cmd` to the V2 owner path (through commit `456af2a9c7293669d63cd17f0e60140852600127`). The matrix below was re-audited against that newer state; the earlier legacy-Prospective P0 is **not** the final finding.
+
 ## Role baseline
 
 | Component | Intended authority |
@@ -13,7 +15,7 @@ Status: **DISCOVERY V2 CROSS-COMPONENT AUDIT COMPLETE — exact P0/P1 drift iden
 | `parallel/WOF052L_RECORDER/**` | Capture admission authority |
 | `parallel/PROSPECTIVE_VALIDATOR/**` | Prospective-session admission authority |
 
-Classification vocabulary is fixed to the audit prompt:
+Classification vocabulary:
 
 - `EXPECTED_ROLE_DIFFERENCE`
 - `SAFE_COMPATIBILITY_DIFFERENCE`
@@ -24,58 +26,96 @@ Classification vocabulary is fixed to the audit prompt:
 
 | # | Contract point | PYLAUNCH | Browser Fleet | WOF-052L Recorder | Prospective Validator | Classification | Audit conclusion |
 |---:|---|---|---|---|---|---|---|
-| 1 | localhost endpoint limit | Defaults to `127.0.0.1`, but CLI `--host` is unrestricted and `/json/version` websocket host/port is not pinned back to the requested endpoint. | Strong: manager probes only `127.0.0.1:<assigned port>` and rejects websocket cross-port/cross-host boundary. | Fleet manifest hosts are filtered to loopback, but base `--cdp-host` is unrestricted and returned websocket is not pinned to requested host/port. | Endpoint candidates are loopback-only, but returned websocket is not pinned to the requested port. | `P1_DRIFT_RISK` | Endpoint confinement semantics are not uniform. See `P1-ENDPOINT-CONFINEMENT` in `RESULT.md`. |
-| 2 | page identification / multiple-page ambiguity | Probes pages independently; scored WOF page selection; authoritative pair requires a unique supported page/Worker pair. | Page probe + WOF hints; multiple pages/counts are acceptable because Fleet is advisory only. | Related discovery is rooted per page; direct fallback requires a unique page relation/sole page. | Current live path does not identify or bind a Worker to a page at all. | `P0_INTEGRATION_BLOCKER` | Prospective admission can neither prove page ownership nor fail closed on page ambiguity. Part of `P0-PROSPECTIVE-LIVE-DISCOVERY`. |
-| 3 | direct Worker fallback | Yes; worker/shared/service worker candidates, module + exact identity, then page association. | Yes; cheap module/hint fallback. | Yes; module/heap/RAM readiness + exact identity + page association. | Yes, but it is currently the *only* live discovery path and requires `type=worker + gstyphoon URL`. | `SAFE_COMPATIBILITY_DIFFERENCE` | Direct fallback itself is compatible; Prospective's lack of a preferred related-target path is handled by rows 4-9/P0. |
-| 4 | `Target.setAutoAttach` / related targets | Preferred path: attach page, flattened auto-attach, event queue. | Yes, per page, cheap indicator. | Yes in official V2 entrypoint via `discovery_v2_sync.install(recorder)`. | No in current live validator. | `P0_INTEGRATION_BLOCKER` | Known real-Chrome surface risk is not covered by Prospective admission. |
-| 5 | iframe -> Worker | Yes, bounded recursion. | Yes, bounded recursion. | Yes, bounded recursion. | No. | `P0_INTEGRATION_BLOCKER` | Prospective can miss a valid runtime visible only below a related iframe target. |
-| 6 | target lifecycle / recreated Worker | Fresh discovery each monitor cycle; identity cache keyed by target id and reset on reconnect; tests cover replacement. | Fresh per-instance status recomputation; no stale success retention. | Replacement gets a new target id and a new identity preflight; live topology is periodically re-audited. | Current direct-target loop can reattach a recreated *direct gstyphoon worker*, but has no related-target lifecycle model. | `P0_INTEGRATION_BLOCKER` | Lifecycle behavior is only complete for Prospective's legacy direct surface; it is not Discovery V2 complete. |
-| 7 | Worker URL mismatch tolerance | Worker-type URL variation is allowed, but existing `blob:`, `data:`, `javascript:` targets are hard-rejected before module/identity probe. | Module-positive related/direct worker-like targets are accepted even when URL shape changes; tests include an existing `blob:` related target. | Worker-type URL variation is allowed, but `blob:`, `data:`, `javascript:` are hard-rejected before exact identity. | Current live path requires `gstyphoon*.js`, so general URL mismatch is unsupported. | `P0_INTEGRATION_BLOCKER` | P0 for Prospective; additionally PYLAUNCH/Recorder vs Fleet have a P1 URL-scheme gate drift. See `P1-URL-SCHEME-GATE`. |
-| 8 | Worker -> page / endpoint association | Related path is structurally rooted at a page. Direct path tries `parentId`, then legacy `openerId`, then unique page. | Per-instance endpoint is pinned; related discovery is rooted at each page. | Related path is structurally rooted at a page. Direct path tries `parentId`, then legacy `openerId`, then sole page. | No page binding in current live path; every matching direct Worker at an endpoint is independently admitted if identity passes. | `P0_INTEGRATION_BLOCKER` | Prospective is P0. Separately, use of Worker `openerId` as a direct-fallback parent surrogate in PYLAUNCH/Recorder is a P1 association drift. |
-| 9 | multi-room / multi-tab / multi-port strict isolation | Fleet selection pins one endpoint, but generic CLI endpoint/websocket pinning is incomplete. Within an endpoint, unique page/Worker acceptance is fail-closed. | Strongest implementation: unique port/profile per room; websocket must remain on assigned port; one-room errors contained. | One manager/client/session set per Fleet endpoint; ambiguity per page is fail-closed, but websocket endpoint is not re-pinned to the requested port. | Separate Endpoint objects exist, but current live discovery has no page ownership or ambiguous-worker gate within the endpoint and websocket port is not re-pinned. | `P0_INTEGRATION_BLOCKER` | Prospective multi-tab isolation is not admission-safe. Endpoint pin hardening is separately P1 for PYLAUNCH/Recorder/Prospective. |
-| 10 | stale / reload / disconnect cleanup | Reconnect clears runtime status and identity cache; stale/replaced Worker regression exists. | Every refresh clears per-instance discovery before re-probe; missing endpoint affects only that instance. | Disconnect/reload/poll failure finalizes affected room; replacement revalidates; other Fleet endpoints continue. | Direct-target disappearance finalizes the room; browser disconnect finalizes endpoint rooms. | `SAFE_COMPATIBILITY_DIFFERENCE` | Cleanup is materially fail-safe on implemented surfaces. Prospective's missing related surface is already captured by the P0 discovery blocker. |
-| 11 | WASM / heap readiness | Light module/heap probe followed by exact ROM identity; waits when module is not ready. | Cheap Emscripten module/heap-shape indicator only; no full identity hash. | Requires module + heap + CPS RAM within heap before exact identity/capture admission. | Current direct path requires module + RAM-within-heap before exact identity. | `EXPECTED_ROLE_DIFFERENCE` | Fleet is intentionally cheaper; capture/prospective admission is stricter. PYLAUNCH exact identity remains authoritative proof. |
-| 12 | exact World 921031 SHA-256 authority | Exact full CPU-logical SHA-256 `5c369ce2...8f62`; authoritative proof. | Explicitly `NOT_CHECKED`; manifest marks `workerIndicatorOnly=true` and identity non-authoritative. | Exact same SHA required before capture admission. | Exact same SHA required before prospective probe admission. | `EXPECTED_ROLE_DIFFERENCE` | Correct role split. Fleet status must never be promoted to identity evidence. |
-| 13 | wrong identity fail-closed | Rejected / remains waiting. | Does not claim identity at all. | Rejected; no capture room starts. | Rejected before prospective probe starts. | `SAFE_COMPATIBILITY_DIFFERENCE` | Authorities are fail-closed; Fleet correctly abstains. |
-| 14 | ambiguous Workers fail-closed | Multiple exact supported pairs/workers are rejected. | May report multiple Worker indicators as OK because it is advisory and exposes counts/non-authoritative status. | More than one supported Worker per page is rejected; live ambiguity ends affected capture. | Current live path admits every matching direct Worker independently; no uniqueness gate. | `P0_INTEGRATION_BLOCKER` | Fleet behavior is an expected role exception; Prospective ambiguity handling is a P0 admission blocker. |
-| 15 | read-only CDP allowlist | `Target.getTargets`, attach/detach, `Target.setAutoAttach`, `Runtime.enable/evaluate`; unsafe methods blocked. | Reuses PYLAUNCH CDP client/read-only allowlist. | Official V2 installs only `Target.setAutoAttach` on top of base read-only methods. | Current path uses base read-only methods only; future V2 needs auto-attach added without broadening unsafe methods. | `SAFE_COMPATIBILITY_DIFFERENCE` | No unsafe CDP write/input surface found in the audited paths. |
-| 16 | `Input.*` / gameplay injection forbidden | Explicit tests block `Input.dispatchKeyEvent`; `inputInjection=false`. | No input injection; manifest states false. | No `Input.*`; self-test/V2 tests enforce; `inputInjection=false`. | Live corpus safety reports `inputInjection=false`; no gameplay Input method is used. | `SAFE_COMPATIBILITY_DIFFERENCE` | Aligned. |
-| 17 | `ramWrites=0` | Identity/light probes report `ramWrites=0`; read-only Runtime evaluation. | Manifest/status declares `ramWrites=0`; cheap probe only reads. | Capture safety declares `ramWrites=0`; probe reads RAM but does not write it. | Prospective probe reads RAM state and declares `ramWrites=0`; no game-memory write path found. | `SAFE_COMPATIBILITY_DIFFERENCE` | Aligned. |
-| 18 | no Worker replacement / Blob rewrite | No `window.Worker` replacement/wrap and no Blob/ObjectURL worker creation/rewrite in V2 path. | No Worker replacement/rewrite; only observes existing targets. | No Worker replacement/wrap/rewrite. | No Worker replacement/wrap/rewrite. | `SAFE_COMPATIBILITY_DIFFERENCE` | Safety invariant is aligned. Note: *observing an already-existing `blob:` target read-only is not a rewrite*; the separate discovery gate drift is row 7. |
-| 19 | owner-facing Simplified Chinese | Launcher CLI/tray/proof paths are Chinese by default. | Primary `RUN_WOF_FLEET.cmd` + `fleet_owner_zh_cn.py` are Chinese; internal manager strings may remain English. | Primary `RUN_WOF052L_RECORDER.cmd` invokes `owner_v2_zh_cn.py`; normal owner flow is Chinese. | Primary CMD and current live-validator owner messages are Chinese. | `SAFE_COMPATIBILITY_DIFFERENCE` | Meets project UX rule on primary owner paths; internal/machine-facing English remains an allowed compatibility exception. |
-| 20 | evidence authority: cheap indicator / capture / prospective / authoritative proof | Proof/status is authoritative for Worker/WASM/exact World identity. | Contract explicitly says cheap indicator only and requires consumers to re-probe. | Exact identity is an admission gate to *capture evidence*; output is not prospective by default. | Session freeze + candidate hash separate new prospective evidence from pre-freeze discovery evidence; production auto-promotion remains forbidden. | `EXPECTED_ROLE_DIFFERENCE` | Authority boundaries are correctly distinct. Prospective's P0 is discovery/admission topology, not evidence labeling. |
+| 1 | localhost endpoint limit | Default is loopback, but generic `--host` is unrestricted and returned `/json/version` websocket is not pinned to requested host/port. | Strong reference: assigned `127.0.0.1:<port>` only and returned websocket must stay on that same loopback port. | Fleet manifest hosts are loopback-filtered, but base `--cdp-host` is unrestricted and returned websocket is not re-pinned. | Endpoint candidates are loopback-only, but the reused core endpoint connector does not pin the returned websocket port. | `P1_DRIFT_RISK` | See `P1-ENDPOINT-CONFINEMENT`. |
+| 2 | page identification / multiple-page ambiguity | Related candidates are evaluated globally; more than one exact supported page/Worker pair fails closed. | Per-page cheap indicator; multiple pages/counts are allowed because Fleet is non-authoritative. | Each page fails closed if it has >1 supported Worker, but candidates from different pages are concatenated without a global same-Worker/multi-page uniqueness check. | V2 now does the same per-page uniqueness and global concatenation; no global same-Worker/multi-page uniqueness check. | `P0_INTEGRATION_BLOCKER` | If one exact shared Worker is related to two pages, Recorder/Prospective can keep two page candidates for the same target and later accept one by iteration/order instead of rejecting the association. See `P0-CROSS-PAGE-SHARED-WORKER-AMBIGUITY`. |
+| 3 | direct Worker fallback | Yes; worker/shared/service candidates + exact identity + page association. | Yes; cheap module/hint fallback. | Yes; readiness + exact identity + page association. | Yes in V2; exact identity + page association. | `SAFE_COMPATIBILITY_DIFFERENCE` | Backward compatibility exists in all four roles. |
+| 4 | `Target.setAutoAttach` / related targets | Preferred page-rooted flattened auto-attach with retained events. | Yes, per page, cheap indicator. | Yes in official V2 entrypoint via `discovery_v2_sync.install(recorder)`. | Yes; V2 installs event-retaining CDP support and page-rooted flattened auto-attach. | `SAFE_COMPATIBILITY_DIFFERENCE` | The former Prospective topology gap closed during this audit. |
+| 5 | iframe -> Worker | Yes, bounded recursion. | Yes, bounded recursion. | Yes, bounded recursion. | Yes, bounded recursion; regression includes iframe -> shared Worker with `blob:` URL. | `SAFE_COMPATIBILITY_DIFFERENCE` | Aligned on required topology. |
+| 6 | target lifecycle / recreated Worker | Fresh discovery; reconnect clears identity cache; replacement regression exists. | Fresh per-instance recomputation; stale success is cleared. | New target id re-runs identity; page/worker/poll/disconnect paths finalize affected capture; live topology re-audited. | V2 checks direct Worker/page liveness, periodically re-audits live topology, and closes affected rooms on ambiguity/CDP failure. | `SAFE_COMPATIBILITY_DIFFERENCE` | Material lifecycle behavior is fail-safe on implemented surfaces. |
+| 7 | Worker URL mismatch tolerance | Worker URL variation is allowed, but existing `blob:`, `data:`, `javascript:` targets are hard-rejected before module/exact identity. | Module-positive existing related/direct worker-like targets may be accepted regardless of URL shape; repository regression includes `blob:`. | Worker URL variation is allowed, but `blob:`, `data:`, `javascript:` are hard-rejected before exact identity. | V2 intentionally makes URL non-authoritative for real worker types; regression accepts `blob:`, hashed/no-extension, and `data:` URLs. | `P1_DRIFT_RISK` | PYLAUNCH/Recorder are now stricter than Fleet + Prospective solely by URL scheme. See `P1-URL-SCHEME-GATE`. |
+| 8 | Worker -> page / endpoint association | Preferred path is page-rooted; direct fallback uses `parentId`, then legacy `openerId`, then unique page. | Endpoint/page-rooted advisory discovery; endpoint itself is strongly pinned. | Preferred path is page-rooted; direct fallback uses `parentId`, then `openerId`, then sole page. No global same-target/two-page rejection after related scans. | Preferred path is page-rooted; direct fallback uses `parentId`, then `openerId`, browserContext, then sole page. No global same-target/two-page rejection after related scans. | `P0_INTEGRATION_BLOCKER` | P0 is cross-page shared-Worker ownership. Direct `openerId` use is a separate P1. |
+| 9 | multi-room / multi-tab / multi-port strict isolation | Unique authoritative pair inside endpoint; generic endpoint websocket pinning still needs hardening. | Strongest implementation: independent port/profile/process; returned websocket cannot cross room port. | Independent manager per Fleet endpoint, but same Worker observed under multiple pages is not globally rejected; websocket pinning is also weaker than Fleet. | Independent Endpoint objects and V2 page sessions, but same shared Worker observed under multiple pages is not globally rejected; websocket pinning also weaker than Fleet. | `P0_INTEGRATION_BLOCKER` | Evidence/capture authorities must not choose a page for a shared runtime by scan order. Endpoint pin issue remains P1. |
+| 10 | stale / reload / disconnect cleanup | Reconnect clears runtime state/cache. | Missing endpoint affects only that instance; refresh clears stale discovery. | Affected room finalizes; other Fleet endpoints continue. | V2 affected room finalizes; other endpoints continue. | `SAFE_COMPATIBILITY_DIFFERENCE` | Aligned sufficiently; cross-page ambiguity must additionally trigger cleanup after P0 fix. |
+| 11 | WASM / heap readiness | Light module/heap probe followed by exact World hash authority. | Cheap Emscripten module/heap-shape indicator only. | Requires module + heap + CPS RAM within heap before exact identity/capture admission. | V2 requires module + heap + CPS RAM within heap before exact identity/prospective admission. | `EXPECTED_ROLE_DIFFERENCE` | Fleet is intentionally cheaper; admission/proof roles are stricter. |
+| 12 | exact World 921031 SHA-256 authority | Exact full CPU-logical SHA-256 `5c369ce2...8f62`; authoritative proof. | Explicitly not checked; manifest marks Worker status non-authoritative. | Exact same SHA required before capture admission. | Exact same SHA required before prospective probe admission. | `EXPECTED_ROLE_DIFFERENCE` | Correct role split; Fleet must not be promoted to identity authority. |
+| 13 | wrong identity fail-closed | Rejected / waiting. | Abstains from identity. | Rejected; capture does not start. | V2 rejects before prospective probe starts. | `SAFE_COMPATIBILITY_DIFFERENCE` | Authorities fail closed; Fleet correctly abstains. |
+| 14 | ambiguous Workers fail-closed | Global exact supported pair ambiguity fails closed. | Multiple advisory indicators can remain visible; expected because no evidence admission occurs. | >1 supported Worker on the same page fails closed, but one identical shared Worker related to >1 pages is not globally rejected. | Same: per-page ambiguity fails closed, cross-page same-Worker ambiguity is not globally rejected. | `P0_INTEGRATION_BLOCKER` | Required uniqueness is incomplete at the endpoint relation-graph level. |
+| 15 | read-only CDP allowlist | Enumeration/attach/detach/auto-attach/Runtime enable+evaluate only; unsafe methods blocked. | Reuses PYLAUNCH read-only CDP client. | Official V2 adds only `Target.setAutoAttach` to base read-only methods. | V2 explicitly adds only `Target.setAutoAttach`; tests reject `Input.*`, `Runtime.callFunctionOn`, and page injection methods. | `SAFE_COMPATIBILITY_DIFFERENCE` | No unsafe CDP write/input method found. |
+| 16 | `Input.*` / gameplay injection forbidden | Explicitly blocked. | None. | None. | V2 regression explicitly asserts no gameplay input method. | `SAFE_COMPATIBILITY_DIFFERENCE` | Aligned. |
+| 17 | `ramWrites=0` | Read-only probes; reports 0. | Cheap read-only probes; manifest reports 0. | Capture probes read RAM only; reports 0. | V2 discovery/prospective bootstrap enforces 0. | `SAFE_COMPATIBILITY_DIFFERENCE` | Aligned. |
+| 18 | no Worker replacement / Blob rewrite | No replacement/wrap/rewrite. | Observes existing targets only. | No replacement/wrap/rewrite. | V2 observes even existing Blob/Data worker targets read-only, but does not create/rewrite them. | `SAFE_COMPATIBILITY_DIFFERENCE` | Safety invariant aligned. Observing an existing `blob:` target is not a Blob rewrite. |
+| 19 | owner-facing Simplified Chinese | Primary launcher flow is Chinese. | `RUN_WOF_FLEET.cmd` + Chinese owner wrapper. | `RUN_WOF052L_RECORDER.cmd` -> `owner_v2_zh_cn.py`. | Owner CMD now explicitly invokes `live_validator_v2.py` and prints Chinese Discovery V2/read-only status. | `SAFE_COMPATIBILITY_DIFFERENCE` | Meets primary owner-path Chinese requirement. |
+| 20 | evidence authority: cheap indicator / capture / prospective / authoritative proof | Authoritative Worker/WASM/World proof. | Cheap indicator only; consumers must re-probe. | Exact-identity-gated capture evidence; defaults to discovery when consumed by Prospective adapter. | Candidate/session frozen; discovery diagnostics marked `discovery-only` and V2 write path rejects discovery diagnostics entering prospective corpus. | `EXPECTED_ROLE_DIFFERENCE` | Evidence authority boundaries are correctly distinct. |
 
-## Cross-component blockers referenced by the matrix
+## Blocking / drift findings
 
-### `P0-PROSPECTIVE-LIVE-DISCOVERY` — `P0_INTEGRATION_BLOCKER`
+### `P0-CROSS-PAGE-SHARED-WORKER-AMBIGUITY` — `P0_INTEGRATION_BLOCKER`
 
-Current `parallel/PROSPECTIVE_VALIDATOR/live_validator.py` still discovers only browser-level targets satisfying `type == "worker"` plus `gstyphoon*.js` URL, then admits each matching Worker independently after module/identity checks. It does not use page-rooted auto-attach, iframe-related topology, URL-shape-tolerant Worker discovery, or unique page/Worker association.
+**Affected authorities:** WOF-052L Recorder and Prospective Validator.
 
-**Ownership:** existing fresh lane defined by `parallel/PM/PROSPECTIVE_VALIDATOR_DISCOVERY_V2_SYNC_START_PROMPT.md`; write scope `parallel/PROSPECTIVE_VALIDATOR/**` only.
+Both V2 implementations correctly reject *multiple supported Workers on one page*, but both collect per-page candidates and concatenate them without a global relation-graph uniqueness pass. A single `shared_worker` target can therefore be represented as an exact supported candidate under page A and page B. Their later attach logic prevents two live rooms with the same target id, but that is not fail-closed: it keeps whichever page is processed first and silently closes/skips the duplicate candidate.
+
+That violates strict multi-tab evidence ownership. The correct result for `same exact Worker -> multiple pages` is **no admission for those relations**, with explicit ambiguity diagnostics.
+
+Fresh-fix ownership:
+
+- `WOF052L_DISCOVERY_V2_CROSS_PAGE_AMBIGUITY_FIX` -> only `parallel/WOF052L_RECORDER/**`
+- `PROSPECTIVE_VALIDATOR_DISCOVERY_V2_CROSS_PAGE_AMBIGUITY_FIX` -> only `parallel/PROSPECTIVE_VALIDATOR/**`
+
+Minimum regression vector for both lanes:
+
+```text
+page A ─┐
+        ├─ same shared_worker targetId W (module/heap ready, exact World 921031)
+page B ─┘
+```
+
+Expected: zero admitted candidates/rooms for W; diagnostics say cross-page Worker association ambiguous; if a live relation later becomes cross-page ambiguous, affected room is finalized before more capture/prospective evidence is accepted. One page + one Worker remains PASS. Two independent pages + two distinct Workers remains PASS.
 
 ### `P1-ENDPOINT-CONFINEMENT` — `P1_DRIFT_RISK`
 
-Browser Fleet enforces the strongest invariant: request and websocket must remain on the same assigned loopback port. PYLAUNCH and base Recorder accept arbitrary CLI hosts and do not validate the `/json/version` websocket host/port against the requested endpoint. Prospective constructs loopback hosts but also does not re-pin the returned websocket port.
+Browser Fleet pins request + returned websocket to the assigned loopback port. PYLAUNCH and base Recorder allow arbitrary host CLI values and do not pin the returned websocket. Prospective hosts are loopback-only but its reused core connector likewise does not re-pin the returned websocket port.
 
-**Ownership:** separate fresh fixes in `parallel/PYLAUNCH/**` and `parallel/WOF052L_RECORDER/**`; fold the Prospective side into `P0-PROSPECTIVE-LIVE-DISCOVERY`. Use Browser Fleet's `endpoint_matches_runtime()` semantics as the compatibility reference.
+Fresh-fix ownership:
+
+- `PYLAUNCH_DISCOVERY_V2_ENDPOINT_GUARD` -> `parallel/PYLAUNCH/**`
+- `WOF052L_DISCOVERY_V2_ENDPOINT_GUARD` -> `parallel/WOF052L_RECORDER/**`
+- `PROSPECTIVE_VALIDATOR_DISCOVERY_V2_ENDPOINT_GUARD` -> `parallel/PROSPECTIVE_VALIDATOR/**`
+
+Use Browser Fleet's same-loopback/same-port behavior as compatibility reference.
 
 ### `P1-URL-SCHEME-GATE` — `P1_DRIFT_RISK`
 
-Browser Fleet proves that an already-existing related Worker with a nontraditional URL (including the repository regression's `blob:` case) can be observed and read-only module-probed. PYLAUNCH and Recorder reject `blob:/data:/javascript:` *before* module/identity authority can decide. This can yield `Fleet Worker OK` while authoritative/capture consumers remain WAIT solely because of URL scheme.
+Fleet and the newly landed Prospective V2 correctly treat URL as diagnostic/hint for an already-existing worker-like target and let module/identity decide. PYLAUNCH and Recorder still reject `blob:/data:/javascript:` before identity can decide.
 
-**Ownership:** fresh fixes in `parallel/PYLAUNCH/**` and `parallel/WOF052L_RECORDER/**`; the Prospective V2 lane must follow the same rule. Keep the safety prohibition on *creating/replacing/rewriting* Blob workers; only remove URL scheme as an admission authority for an already-existing attachable target.
+Fresh-fix ownership:
+
+- `PYLAUNCH_DISCOVERY_V2_URL_GATE` -> `parallel/PYLAUNCH/**`
+- `WOF052L_DISCOVERY_V2_URL_GATE` -> `parallel/WOF052L_RECORDER/**`
+
+Do **not** weaken no-Worker-replacement/no-Blob-rewrite safety. Only remove URL scheme as authority over an already-existing attachable target.
 
 ### `P1-DIRECT-OPENERID-ASSOCIATION` — `P1_DRIFT_RISK`
 
-Worker-surface audit established that `openerId` is not the Worker parent model; `parentId` / `parentFrameId` and page/frame topology are the correct association primitives. Current PYLAUNCH and Recorder direct fallbacks still try `openerId` after `parentId`.
+WORKER_SURFACE established that Worker `openerId` is not parent authority. PYLAUNCH, Recorder, and the new Prospective V2 direct fallbacks still consult `openerId` after `parentId`.
 
-**Ownership:** fresh direct-fallback association hardening in `parallel/PYLAUNCH/**` and `parallel/WOF052L_RECORDER/**`. Do not change the preferred page-autoattach path.
+Fresh-fix ownership:
+
+- `PYLAUNCH_DISCOVERY_V2_DIRECT_ASSOCIATION` -> `parallel/PYLAUNCH/**`
+- `WOF052L_DISCOVERY_V2_DIRECT_ASSOCIATION` -> `parallel/WOF052L_RECORDER/**`
+- `PROSPECTIVE_VALIDATOR_DISCOVERY_V2_DIRECT_ASSOCIATION` -> `parallel/PROSPECTIVE_VALIDATOR/**`
+
+Prefer actual page-rooted topology / `parentId` / `parentFrameId`; otherwise require a uniquely identified WOF page or fail closed.
 
 ### `P1-REGRESSION-GUARD-GAP` — `P1_DRIFT_RISK`
 
-`parallel/REGRESSION_ORCH/manifest.json` runs Recorder's `owner_zh_cn.py --self-test` even though the official V2 CMD invokes `owner_v2_zh_cn.py`; the V2 helper has a separate unit test, but the official integration entrypoint is not the suite command. The Prospective suite currently runs only `test_validator.py`, so the live Discovery V2 P0 cannot make the global orchestrator red.
+Prospective now has `test_discovery_v2.py`, but `parallel/REGRESSION_ORCH/manifest.json` still lists only `parallel/PROSPECTIVE_VALIDATOR/test_validator.py` for that suite. Recorder's global suite still invokes `owner_zh_cn.py --self-test` rather than the official V2 owner entrypoint `owner_v2_zh_cn.py`, although the helper unit test is separately present.
 
-**Ownership:** fresh `parallel/REGRESSION_ORCH/**` guard lane after component fixes land: exercise/compile the official Recorder V2 entrypoint and add Prospective Discovery V2 regression as a safety-critical required path/command.
+Fresh-fix ownership:
+
+- `REGRESSION_ORCH_DISCOVERY_V2_INTEGRATION_GUARD` -> only `parallel/REGRESSION_ORCH/**`
+
+Minimum acceptance: require/run the new Prospective Discovery V2 regression; make Recorder's official V2 entrypoint an integration surface; retain existing evidence semantics tests; include component endpoint/cross-page ambiguity regressions once their lanes land.
 
 ## Audited implementation anchors
 
@@ -91,7 +131,9 @@ Worker-surface audit established that `openerId` is not the Worker parent model;
 - `parallel/WOF052L_RECORDER/discovery_v2_sync.py`
 - `parallel/WOF052L_RECORDER/recorder.py`
 - `parallel/WOF052L_RECORDER/fleet_recorder.py`
-- `parallel/PROSPECTIVE_VALIDATOR/live_validator.py`
+- `parallel/PROSPECTIVE_VALIDATOR/discovery_v2.py`
+- `parallel/PROSPECTIVE_VALIDATOR/live_validator_v2.py`
+- `parallel/PROSPECTIVE_VALIDATOR/test_discovery_v2.py`
 - `parallel/PROSPECTIVE_VALIDATOR/start_session.py`
 - `parallel/PROSPECTIVE_VALIDATOR/test_validator.py`
 - `parallel/REGRESSION_ORCH/manifest.json`
