@@ -1,159 +1,257 @@
 # BASECAP Reusable Capture Catalog
 
 Updated: 2026-09-01
+Status: **BASECAP v1 COMPLETE**
 
-Authoritative index for reusable labeled WinKawaks raw captures. Reuse before recapture. Never infer operator actions from raw numbers alone. Collector PASS proves mechanical capture health, not that a requested human manipulation succeeded.
+本文件是共享 WinKawaks 基础 raw 的权威索引。原则：**先复用，后重采；永不根据 raw 数值猜操作者做过什么。**
 
-Raw identity is immutable:
+标准 raw 身份：
 
 ```text
 captures/<taskId>.jsonl.gz
 ```
 
-Never reuse a task ID or overwrite historical raw.
+每个 VALID 人工标签必须由 task/result/raw 身份和操作者动作/肉眼确认共同支持。Collector `PASS` 只证明机械采集健康。
 
-For operator-gated scenes, read both `parallel/BASECAP/OPERATOR_GATE_TIMING_NOTE.md` and `parallel/BASECAP/OPERATOR_ACTION_SEMANTICS.md`. Collector v1 polls at 10 s by default, so `READY accepted -> immediately act` is not timing-safe. BASECAP uses a 12 s post-READY no-input delay inside a longer capture window. Every manual action must separately state key-down behavior, release behavior, post-release wait, repetition count, and forbidden controls.
+所有 raw 的共同布局：
 
-## Phase-1 coverage
+```text
+P1 + P2 + P3 + 20 enemies
+23 objects
+stride = 0xE0
+5152 bytes/frame
+```
 
-| Scene | State | Canonical/reuse source |
+## 1. 基础覆盖总表
+
+| Scene | State | Canonical / reuse source |
 | --- | --- | --- |
-| B00 stationary idle | **COVERED / VALID** | `BASECAP-B00-idle-8s60-20260901-0510Z`; gated stationary no-input baseline, 480 frames, retained raw. |
-| B10 P1 horizontal-only | **COVERED AS LABELED PHASE** | `RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z`, operator-confirmed first phase: visible repeated RIGHT/LEFT for roughly 15 s; no attack/jump/extra action; P2/P3 untouched. |
-| B11 P1 floor/depth-only | **COVERED** | Same `RAWMINE-005`, operator-confirmed second phase: visible repeated UP/DOWN for roughly 20 s; P2/P3 untouched. GEO treats this as the closing P1 Y/depth run. |
-| B12 facing/minimal displacement | **COVERED / VALID** | `BASECAP-B12R-facing-delayed-30s60-20260901-0527Z`; timing-robust delayed protocol, 1800 frames, retained raw. |
-| B13 action/animation diversity with position stable | **QUEUED / NOT YET VALID** | `BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z`; delayed protocol with four isolated ordinary-attack taps and no intentional directional input. |
-| B20 camera-scroll discriminator | **MISSING** | Old gated camera task has no retained canonical raw; passive `GEO-0006` does not prove a scroll episode occurred. |
-| B30 ordinary gameplay/combat diversity | **COVERED for natural-gameplay diversity** | `EFIELD-003-passive-retarget-60s60`. Do not reinterpret it as a tightly controlled attack sequence. |
-| B31 enemy lifecycle diversity | **COVERED for typed-enemy episode enter/exit diversity** | `EFIELD-003`: 11 type-enter + 11 type-exit edges. Do not rename these exact edges as semantic spawn/death without EFIELD evidence. |
-| B32 target/retarget diversity | **COVERED** | `EFIELD-003`: known-player retargets localized at frames 492, 1827, 3322. |
-| B40 P2/P3 structure replication | **DEFERRED** | Retained P2 GEO raws exist; defer until foundational P1 scene suite is sufficient. |
+| B00 stationary idle | **VALID** | `BASECAP-B00-idle-8s60-20260901-0510Z` |
+| B10 P1 horizontal-only | **VALID LABELED PHASE / REUSE** | `RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z` first operator-confirmed phase |
+| B11 P1 floor/depth-only | **VALID LABELED PHASE / REUSE** | same `RAWMINE-005` second operator-confirmed phase |
+| B12 facing/minimal displacement | **VALID** | `BASECAP-B12R-facing-delayed-30s60-20260901-0527Z` |
+| B13 P1 ordinary-attack/action diversity | **VALID** | `BASECAP-B13-attack-12s60-20260901-0558Z` |
+| B20 camera-scroll discriminator | **VALID** | `BASECAP-B20-camera-scroll-16s60-20260901-0559Z` |
+| B30 natural gameplay/combat diversity | **VALID REUSE** | `EFIELD-003-passive-retarget-60s60` |
+| B31 typed-enemy lifecycle enter/exit diversity | **VALID REUSE** | `EFIELD-003-passive-retarget-60s60` |
+| B32 target/retarget diversity | **VALID REUSE** | `EFIELD-003-passive-retarget-60s60` |
+| B40 P2 horizontal + depth movement | **VALID** | `BASECAP-B40-P2-xy-16s60-20260901-0600Z` |
+| B40 P3 horizontal + depth movement | **VALID** | `BASECAP-B40-P3-xy-16s60-20260901-0601Z` |
 
-## Pending Collector task
+BASECAP 当前没有必须继续向操作者采集的基础场景缺口。
 
-### BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z
-status: QUEUED / NOT VALID  
-queuePath: `tasks/queue/BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z.json`  
-createdAtUtc: `2026-09-01T05:36:00Z`  
-requestedRawPath: `captures/BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z.jsonl.gz`  
-operatorGate: `required=true`; exact READY acceptance must name this taskId. READY helper window may then be closed; `START_WOF_COLLECTOR.bat` must remain open. After exact READY acceptance, operator must provide **12 seconds of no game input** before the attack sequence.  
-operatorActionDuringCapture: after the 12 s delay, perform four isolated ordinary-attack taps. Each tap means key-down then immediate release, **not a hold**. After taps 1, 2, and 3, release all game controls and remain idle for about 2 s. After tap 4, release immediately and provide no further game input until capture ends. No directional input, jump, other action buttons, or P2/P3 input. If the attack animation itself causes minor automatic displacement, do not correct it with movement keys.  
-durationSeconds: `30.0`  
-hz: `60.0`  
-uploadRawStream: `true`  
-layout: P1 + P2 + P3 + 20 enemies; stride `0xE0`; 5152 bytes/frame  
-intentionalChangedVariables: P1 ordinary-attack/action animation state.  
-intentionalHeldStableVariables: no intentional horizontal/depth movement; no jump/other actions; camera intended not to scroll; P2/P3 untouched.  
-intendedReuseQuestions: B13 action/animation-vs-idle discriminator; action-state candidate screening against B00/B10/B11/B12.  
-knownConfounders: exact attack frames are operator-timed rather than explicitly marked in raw; some character attacks may include small built-in animation displacement. The delayed protocol ensures the operator actions occur after formal capture start, but does not create frame-exact event markers.  
-labelSourceEvidence: authoritative queue task plus future matching PASS result/raw and operator completion. No scene label may be inferred from raw numeric values alone.  
-validationRequiredBeforePromotion: matching `taskId` + task blob SHA, result `PASS`, `writesGameMemory=false`, zero read/frame-size errors, retained gzip raw, and operator protocol completion.  
-notes: do not queue B20 until B13 is completed or conclusively invalidated.
+---
 
-## VALID reusable captures
+## 2. Canonical VALID captures
 
-### BASECAP-B12R-facing-delayed-30s60-20260901-0527Z
-status: VALID  
-rawPath: `captures/BASECAP-B12R-facing-delayed-30s60-20260901-0527Z.jsonl.gz`  
-capturedAtUtc: `2026-09-01T05:30:00.518197+00:00` (Collector completion timestamp)  
-taskBlobSha: `881d8a73802a4221936bf15dbd479d2326ebedd0`  
-ROM/game/session: WOF WinKawaks local-discovery capture; exact ROM filename/build not separately retained. Collector session: `WinKawaks.exe`, pid `6968`, RAM base `0xB1AFDFC`, mapping `xor3`, fresh discovery `immutable-player-structure-v2`, unique candidate, cached RAM base not used as discovery input.  
-playerOccupancy: P1 intentionally controlled; P2/P3 explicitly left untouched. Exact joined/occupied state is not separately recorded.  
-preCaptureScene: P1 in a safe open place with no combat and no intentional camera scrolling.  
-operatorGate: `required=true`; label `BASECAP B12R facing minimal displacement delayed protocol`. Exact READY acceptance was required, followed by a 12 s no-input delay to avoid Collector v1's 10 s poll race.  
-operatorActionDuringCapture: after the 12 s delay, short LEFT tap then release and approximately 2 s idle; short RIGHT tap then release and approximately 2 s idle; sequence repeated once if practical. Task semantics define tap as a brief press/release rather than a hold. No UP/DOWN, attack, jump, other action, or P2/P3 input.  
-durationSeconds: `30.0`; `1800` frames  
-hz: target `60.0`; achieved `59.997`  
-layout: P1 + P2 + P3 + 20 enemies; stride `0xE0`; 5152 bytes/frame  
-intentionalChangedVariables: P1 facing through minimal LEFT/RIGHT taps; minimal incidental horizontal displacement.  
-intentionalHeldStableVariables: depth input absent; attacks/jump/other actions absent; camera intended not to scroll; P2/P3 untouched.  
-intendedReuseQuestions: B12 facing/minimal-displacement discrimination; facing candidate screening against B00/B10/B11.  
-knownConfounders: action frames are operator-timed and not explicitly marked in raw. The 12 s delay guarantees a Collector poll opportunity before operator action but does not create frame-exact labels. Minimal horizontal displacement is intentional but not guaranteed to be zero.  
-labelSourceEvidence: authoritative queue task `tasks/queue/BASECAP-B12R-facing-delayed-30s60-20260901-0527Z.json`; matching DONE status and PASS result; retained raw artifact. Operator completion was confirmed in chat after following the delayed task instructions. No label is inferred from raw numeric values.  
-supersedes: canonical use of `BASECAP-B12-facing-minimal-8s60-20260901-0518Z`, whose immediate-after-READY protocol was timing-unsafe.  
-supersededBy: none  
-notes: result `PASS`; `readOnly=true`; `writesGameMemory=false`; raw uploaded; `readErrors=0`; `frameSizeErrors=0`; `distinctRawFrameCount=1695`; original stream bytes `19019530`; original SHA256 `c54ffc9a438f6256ddc23e6b38ba10ff87ab6c276d87e629fe4a2d005ce7cd4e`; compressed bytes `217103`; compressed SHA256 `985ed543577d2bbdc8b3b2c21e4777b45d653e531c4d0fa91ea5fdb0b58c24e2`; retained content SHA `cbc16faba4b4001603b809c483438953d3071cc8`.
+### B00 — `BASECAP-B00-idle-8s60-20260901-0510Z`
 
-### BASECAP-B00-idle-8s60-20260901-0510Z
-status: VALID  
-rawPath: `captures/BASECAP-B00-idle-8s60-20260901-0510Z.jsonl.gz`  
-capturedAtUtc: `2026-09-01T05:17:05.567887+00:00` (Collector completion timestamp)  
-taskBlobSha: `9743cf0a1762b1d0f595cb2639e1ffe1f8b50bb8`  
-ROM/game/session: WOF WinKawaks local-discovery capture; exact ROM filename/build not separately retained. Collector session: `WinKawaks.exe`, pid `6968`, RAM base `0xB1AFDFC`, mapping `xor3`, fresh discovery `immutable-player-structure-v2`, unique candidate, cached RAM base not used as discovery input.  
-playerOccupancy: P1 intentionally prepared as the controlled/observed player. P2/P3 were explicitly required to remain untouched; exact joined/occupied state is not separately recorded.  
-preCaptureScene: P1 placed in a safe place with no combat and no intentional camera scrolling; P2/P3 untouched.  
-operatorGate: `required=true`; label `BASECAP B00 stationary idle`. Operator had to prepare the scene, run `READY_WOF_TASK.bat`, then provide no gameplay input for about 8 seconds.  
-operatorActionDuringCapture: no movement, attack, jump, or other gameplay controls for about 8 seconds; P2/P3 untouched.  
-durationSeconds: `8.0`; `480` frames  
-hz: target `60.0`; achieved `59.951`  
-layout: P1 + P2 + P3 + 20 enemies; stride `0xE0`; 5152 bytes/frame  
-intentionalChangedVariables: none at operator-input level; this is a stationary/no-input baseline.  
-intentionalHeldStableVariables: all intentional P1 gameplay controls absent; no intentional combat or camera scroll; P2/P3 untouched.  
-intendedReuseQuestions: B00 idle/no-input baseline; background animation/timer/noise screening; comparison against controlled movement/action captures; GEO/RAWMINE/EFIELD change-frequency baselining.  
-knownConfounders: `distinctRawFrameCount=453` and `stateChangeObserved=true`, so internal animation/timers/enemy/background state still changed despite no operator input; this is expected and must not be mislabeled as a bytewise static frame. Exact stage/room, ROM build, and P2/P3 occupancy are not separately retained. Operator compliance is supported by the gated acquisition instructions, not independent video telemetry.  
-labelSourceEvidence: authoritative queue task `tasks/queue/BASECAP-B00-idle-8s60-20260901-0510Z.json` with matching task blob SHA; authoritative PASS result `results/by_task/BASECAP-B00-idle-8s60-20260901-0510Z.json`; retained raw artifact at the path above. No scene label is inferred from raw numeric values.  
-supersedes: none  
-supersededBy: none  
-notes: result `PASS`; `readOnly=true`; `writesGameMemory=false`; raw uploaded; `readErrors=0`; `frameSizeErrors=0`; original stream bytes `5071909`; original SHA256 `c034bd3444ca6d771dbaeee1fb342117823bae210edfe7903c5d3875f980151a`; compressed bytes `56792`; compressed SHA256 `60c41b513e74af0994cefe4d7e780b6bf28e62e291166db5f228dd8c8dd7a537`; retained content SHA `50973af7f1eae740bac3d8edfc8b939774c0f769`.
+- status: `VALID`
+- rawPath: `captures/BASECAP-B00-idle-8s60-20260901-0510Z.jsonl.gz`
+- taskBlobSha: `9743cf0a1762b1d0f595cb2639e1ffe1f8b50bb8`
+- capturedAtUtc: `2026-09-01T05:17:05.567887+00:00`
+- duration / hz: `8.0 s`, target `60`, achieved `59.951`
+- frames: `480`
+- bytesPerFrame: `5152`
+- readErrors / frameSizeErrors: `0 / 0`
+- readOnly / writesGameMemory: `true / false`
+- operator scene: P1 安全位置静止；无移动、攻击、跳跃或其它游戏输入；P2/P3 不操作。
+- changed intentionally: none at operator-input level.
+- held stable intentionally: all P1 controls released; no intentional combat/camera scroll; P2/P3 untouched.
+- reuse: idle/no-input baseline；背景动画/计时器/noise 筛选；与移动/攻击 capture 对照。
+- confounder: raw 内部仍有动画/计时器/敌人状态自然变化，不可解释为 bytewise static。
+- source evidence: matching task + PASS result + retained raw；场景标签来自操作协议，不来自 raw 推断。
 
-### RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z
-status: VALID  
-rawPath: `captures/RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z.jsonl.gz`  
-capturedAtUtc: `2026-09-01T00:52:23.634810+00:00` (Collector completion timestamp)  
-taskBlobSha: `3d91bb9b77e3618500db9bde8b2145d909d4b441`  
-ROM/game/session: WOF WinKawaks local discovery; exact ROM filename/build not separately retained. `WinKawaks.exe`, pid `17292`, RAM base `0xB20FDFC`, mapping `xor3`, fresh discovery `immutable-player-structure-v2`, unique candidate.  
-playerOccupancy: P1 intentionally controlled; P2/P3 explicitly kept untouched. Their joined/occupancy state is not separately retained.  
-preCaptureScene: wide open walkable area where both LEFT/RIGHT and UP/DOWN visibly move the controlled character.  
-operatorGate: `required=true`; operator had to wait for exact READY acceptance of this task, then refocus WinKawaks.  
-operatorActionDuringCapture: post-capture operator confirmation recorded by GEO: visible repeated RIGHT/LEFT traversal for roughly 15 s, then visible repeated UP/DOWN floor-depth traversal for roughly 20 s; no attack/jump/extra action; P2/P3 untouched.  
-durationSeconds: `40.0`; `2400` frames  
-hz: target `60.0`; achieved `59.981`  
-layout: P1 + P2 + P3 + 20 enemies; stride `0xE0`; 5152 bytes/frame  
-intentionalChangedVariables: phase A P1 horizontal position; phase B P1 floor/depth position.  
-intentionalHeldStableVariables: orthogonal movement input absent within each phase; no attack/jump/extra actions; P2/P3 untouched.  
-intendedReuseQuestions: B10 horizontal movement, B11 floor/depth movement, P1 cross-axis discriminators, GEO/RAWMINE candidate screening, live-vs-cache timing comparisons.  
-knownConfounders: phase boundary is operator-timed, not frame-marker timestamped. RAWMINE's reconstructed-X positive-control guard reported zero X events and `LONG_WINDOW_PLAYER_ATTRIBUTION_FAILED`; GEO later retained this as an analyzer/positive-control anomaly because operator visible motion was explicitly confirmed and the depth phase had dense P1-specific evidence while P2/P3 controls were stable. Do not invent frame-exact horizontal phase boundaries from raw numbers. Exact ROM build and P2/P3 occupancy are unknown.  
-labelSourceEvidence: queue task `RAWMINE-005...json`; matching PASS result; `parallel/GEO/P1_XY_FRONTIER.md` post-capture operator-confirmation record; `parallel/RAWMINE/CANDIDATE_FRONTIER.md` / completion records for analyzer limitation.  
-supersedes: canonical B11 use of earlier short GEO/RAWMINE depth attempts.  
-supersededBy: none  
-notes: `readOnly=true`; `writesGameMemory=false`; raw uploaded; `readErrors=0`; `frameSizeErrors=0`; `distinctRawFrameCount=2097`; original SHA256 `7ad6545814fcdca86efd683103154a3699e6d6b3d2ce40b243fdd17ef20f6c62`; compressed SHA256 `2389b53ff00ff6c23b4ab39ae8d46c059f87c4bf8f65b04df11d2132005c1efd`.
+### B10/B11 — `RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z`
 
-### EFIELD-003-passive-retarget-60s60
-status: VALID  
-rawPath: `captures/EFIELD-003-passive-retarget-60s60.jsonl.gz`  
-capturedAtUtc: `2026-08-31T16:04:36.616276+00:00`  
-taskBlobSha: `acb475dc253ab599b196f80651e18a2ffa2f2914`  
-ROM/game/session: WOF WinKawaks local discovery; exact ROM build not separately retained. `WinKawaks.exe`, pid `7128`, RAM base `0xB0CFDFC`, mapping `xor3`, fresh discovery `immutable-player-structure-v2`.  
-playerOccupancy: exact occupancy not separately recorded. Retained EFIELD analysis identifies target references to P1/P2/P3; BASECAP does not turn that into an unsupported occupancy assertion.  
-preCaptureScene: exact stage/room not retained; task is passive natural-gameplay retarget expansion.  
-operatorGate: `required=false`; natural gameplay only.  
-operatorActionDuringCapture: not tightly controlled or enumerated; BASECAP does not guess inputs from raw.  
-durationSeconds: `60.0`; `3600` frames  
-hz: target `60.0`; achieved `60.001`  
-layout: P1 + P2 + P3 + 20 enemies; stride `0xE0`; 5152 bytes/frame  
-intentionalChangedVariables: broad natural gameplay state; acquisition purpose prioritized retarget diversity while continuing enemy-object atlas coverage.  
-intentionalHeldStableVariables: none at operator-action level; read-only acquisition only.  
-intendedReuseQuestions: B30 natural gameplay diversity; B31 typed-enemy lifecycle enter/exit; B32 retarget/event windows; candidate screening around known retarget frames.  
-knownConfounders: ungated natural gameplay is not a controlled movement/action experiment. Exact stage, player inputs, ROM build, and occupancy are not retained. Lifecycle evidence is typed-enemy episode enter/exit, not automatically semantic ACTIVE/spawn/death.  
-labelSourceEvidence: task `EFIELD-003-passive-retarget-60s60.json`; matching PASS result; `results/efield/LIFECYCLE.md` reports 11 enter + 11 exit edges for this raw; `results/efield/RUN3_RETARGET.md` identifies retarget frames `492`, `1827`, `3322`.  
-supersedes: none  
-supersededBy: none  
-notes: `readOnly=true`; `writesGameMemory=false`; raw uploaded; `readErrors=0`; `frameSizeErrors=0`; `distinctRawFrameCount=2817`; original SHA256 `765b754b21c043ab231cfbcd9d1adbb2f6f6c7661340978151531dcf67828fc3`; compressed SHA256 `d3e8fae327c7dc9752e2e8f5e8824512cea4a53970d49bc2b7338fa8de4bc8df`.
+- status: `VALID LABELED PHASE / REUSE`
+- rawPath: `captures/RAWMINE-005-p1-depth-wide-window-40s60-20260901-0048Z.jsonl.gz`
+- taskBlobSha: `3d91bb9b77e3618500db9bde8b2145d909d4b441`
+- capturedAtUtc: `2026-09-01T00:52:23.634810+00:00`
+- duration / hz: `40.0 s`, target `60`, achieved `59.981`
+- frames: `2400`
+- readErrors / frameSizeErrors: `0 / 0`
+- operator confirmation:
+  - first phase: visible repeated RIGHT/LEFT traversal roughly `15 s`; no attack/jump/extra action；P2/P3 untouched；用于 B10；
+  - second phase: visible repeated UP/DOWN floor-depth traversal roughly `20 s`; no attack/jump/extra action；P2/P3 untouched；用于 B11。
+- confounder: phase boundary is operator-timed, not frame-marker timestamped. RAWMINE reconstructed-X positive-control anomaly does not erase the authoritative visible operator confirmation; do not invent exact frame boundaries from raw values.
+- reuse: P1 horizontal/depth discriminators；GEO/RAWMINE candidate screening。
 
-## Historical non-canonical records
+### B12 — `BASECAP-B12R-facing-delayed-30s60-20260901-0527Z`
 
-- `BASECAP-B12-facing-minimal-8s60-20260901-0518Z`: **INVALID for canonical B12 timing label**. Collector result is mechanically healthy (`PASS`, 480 frames, ~59.949 Hz, 0 read errors, 0 frame-size errors, raw uploaded), but the task told the operator to act immediately after READY. Since Collector v1 may wait up to one 10 s poll interval before formal capture start, BASECAP cannot guarantee the facing taps occurred inside the retained 8 s raw. Raw is retained at `captures/BASECAP-B12-facing-minimal-8s60-20260901-0518Z.jsonl.gz`; never overwrite it.
-- `GEO-0008-p1-depth-only-5s60-20260831-2115Z`: **SUPERSEDED** for B11 by `RAWMINE-005`. Mechanical PASS and explicit task label exist, but latest GEO classifies it as an earlier insufficient attempt without a usable depth trajectory.
-- `GEO-0009-p1-depth-visible-traverse-8s60-20260901-0024Z`: **INVALID for canonical B11**; latest GEO groups it with ineffective/attribution-limited earlier attempts.
-- `GEO-0010-p1-attribution-depth-calibration-10s60-20260901-0033Z`: **INVALID for intended sequence**. Mechanical PASS exists, but the subsequent RAWMINE-004 task records the operator report that GEO-0010's input sequence was incorrect.
-- `RAWMINE-004-p1-attribution-depth-redo-10s60-20260901-0037Z`: **INVALID for canonical controlled baseline**. Dedicated retained report says player-slot attribution FAIL and manipulation validity FAIL; no later authoritative operator confirmation resolves it.
-- `GEO-0011-p1-attribution-depth-calibration-10s60-20260901-0038Z`: **INVALID for canonical B10/B11**; latest GEO explicitly groups it with earlier insufficient attempts.
-- `GEO-0001`, `GEO-0003`, `GEO-0004`, `GEO-0006`: retained exploratory/passive geometry evidence only; do not relabel as controlled B00/B12/B13/B20.
-- `GEO-0012`, `GEO-0013`: retained for future B40/P2 work; deferred.
-- `RAWMINE-001`: retained as earlier insufficient depth-attempt history.
-- `EFIELD-001`, `EFIELD-002`, `EFIELD-004`, `EFIELD-005`, `EFIELD-005R`, `EFIELD-006`: retained additional natural-gameplay corpus. `EFIELD-003` is the concise canonical pointer for B30/B31/B32 because lifecycle and exact retarget evidence is directly localized.
-- Historical `GEO-0002` facing, `GEO-0005` camera-scroll, and `GEO-0007` horizontal-only tasks have no retained canonical raw. Never reuse those task IDs.
+- status: `VALID`
+- rawPath: `captures/BASECAP-B12R-facing-delayed-30s60-20260901-0527Z.jsonl.gz`
+- taskBlobSha: `881d8a73802a4221936bf15dbd479d2326ebedd0`
+- capturedAtUtc: `2026-09-01T05:30:00.518197+00:00`
+- duration / hz: `30.0 s`, target `60`, achieved `59.997`
+- frames: `1800`
+- readErrors / frameSizeErrors: `0 / 0`
+- operator scene: 安全空旷，无战斗/镜头滚动；旧 v1 时序下使用 12 秒保护后短 LEFT/RIGHT facing taps；无 UP/DOWN、攻击、跳跃或 P2/P3 输入。
+- intended changed: P1 facing，允许最小附带水平位移。
+- reuse: facing/minimal-displacement discriminator。
+- supersedes canonical use of `BASECAP-B12-facing-minimal-8s60-20260901-0518Z`。
 
-## Next-step rule
+### B13 — `BASECAP-B13-attack-12s60-20260901-0558Z`
 
-B00/B10/B11/B12 are covered. Current only active gap task is B13. Do not queue B20 until B13 is completed or conclusively invalidated. For later operator-gated scenes, use the delayed protocol from `OPERATOR_GATE_TIMING_NOTE.md` and the unambiguous input wording from `OPERATOR_ACTION_SEMANTICS.md`.
+- status: `VALID`
+- rawPath: `captures/BASECAP-B13-attack-12s60-20260901-0558Z.jsonl.gz`
+- taskBlobSha: `5f4eba115057e3feed97e03bdb205dade7bd98d1`
+- capturedAtUtc: `2026-09-01T06:19:11.663344+00:00`
+- duration / hz: `12.0 s`, target `60`, achieved `59.941`
+- frames: `720`
+- distinctRawFrameCount: `647`
+- readErrors / frameSizeErrors: `0 / 0`
+- streamSha256: `91d2fc47da509d755e11aab881ce0d284e01980c3f5c57ca9660fa3fb31a9816`
+- compressedSha256: `6a75735c2940642c70acf5c713e46fe4513a821f9299cd6a9d2e2bda9956ff56`
+- operator flow: Collector v2 单窗口；场景准备后在主窗口回车；看到“采集已开始”后执行动作。
+- operator action: P1 原地轻点普通攻击共 4 次；前 3 次每次立即松开后静止 2 秒；第 4 次后不再输入；禁止方向、跳跃、其它动作；P2/P3 不操作。
+- intentional changed: P1 ordinary-attack/action animation state.
+- held stable: no intentional directional movement；camera intended not to scroll；P2/P3 untouched.
+- confounder: 某些攻击动画可能自带少量位移；不得用方向键纠正。动作帧由人工时序产生，没有独立 frame marker。
+- source evidence: exact task + matching PASS result + retained raw + operator completion confirmation。
+
+### B20 — `BASECAP-B20-camera-scroll-16s60-20260901-0559Z`
+
+- status: `VALID`
+- rawPath: `captures/BASECAP-B20-camera-scroll-16s60-20260901-0559Z.jsonl.gz`
+- taskBlobSha: `0de63c648dad1bebbafd5f81b3b9cc01fe26184b`
+- capturedAtUtc: `2026-09-01T06:24:25.073330+00:00`
+- duration / hz: `16.0 s`, target `60`, achieved `59.972`
+- frames: `960`
+- distinctRawFrameCount: `866`
+- readErrors / frameSizeErrors: `0 / 0`
+- streamSha256: `0f4dddc0f1f1b33a46a219d0b58a40374225d543e9166eeda9cfa2336729289c`
+- compressedSha256: `196eb422b9d4a9131a876846b35c3ea3fdc62dd23ddd4497213fff078fff4480`
+- operator action: 看到“采集已开始”后静止 2 秒；P1 持续按住右方向键 6 秒后立即松开；之后静止到结束；禁止其它方向、攻击、跳跃；P2/P3 不操作。
+- required visual condition: 操作者明确确认 6 秒期间背景/整个画面出现明显横向滚动。
+- intentional changed: P1 horizontal progression + camera/background horizontal scroll episode.
+- held stable: no attack/jump/other direction；P2/P3 untouched.
+- source evidence: exact task + matching DONE/PASS + retained raw + operator explicit “有滚动” confirmation。
+
+### B30/B31/B32 — `EFIELD-003-passive-retarget-60s60`
+
+- status: `VALID REUSE`
+- rawPath: `captures/EFIELD-003-passive-retarget-60s60.jsonl.gz`
+- taskBlobSha: `acb475dc253ab599b196f80651e18a2ffa2f2914`
+- capturedAtUtc: `2026-08-31T16:04:36.616276+00:00`
+- duration / hz: `60.0 s`, target `60`, achieved `60.001`
+- frames: `3600`
+- readErrors / frameSizeErrors: `0 / 0`
+- B30 reuse: broad natural-gameplay/combat diversity；不是受控攻击实验。
+- B31 reuse: typed-enemy episode diversity；retained EFIELD evidence reports `11 type-enter + 11 type-exit` edges。**不得未经 EFIELD 证据把这些边缘直接称为 semantic spawn/death。**
+- B32 reuse: known retarget frames `492`, `1827`, `3322`。
+- operator action: ungated natural gameplay，未记录为精确输入序列；BASECAP 不从 raw 猜输入。
+
+### B40-P2 — `BASECAP-B40-P2-xy-16s60-20260901-0600Z`
+
+- status: `VALID`
+- rawPath: `captures/BASECAP-B40-P2-xy-16s60-20260901-0600Z.jsonl.gz`
+- taskBlobSha: `5aa3fbbeb226ee411327ead0177e347841977a78`
+- capturedAtUtc: `2026-09-01T06:27:48.626720+00:00`
+- duration / hz: `16.0 s`, target `60`, achieved `59.997`
+- frames: `960`
+- distinctRawFrameCount: `888`
+- readErrors / frameSizeErrors: `0 / 0`
+- streamSha256: `9d3f36320da411f73ce11a47100c11806ac624589f28a092c6cf162706ee328f`
+- compressedSha256: `2fe969346599d45ca3717857d7137552d305169fc9b1981b6840846cb130d1a1`
+- operator scene: P2 已加入且可独立操作；安全空旷；短距离移动不触发镜头滚动；P1 静止，P3 不操作。
+- operator action: P2 RIGHT hold 2s -> release -> idle 1s；LEFT 2s -> idle 1s；UP 2s -> idle 1s；DOWN 2s -> release -> idle to end；无攻击/跳跃/其它动作。
+- reuse: P2 X/depth structure replication screening。**BASECAP 只提供数据，不宣告 offset 语义。**
+
+### B40-P3 — `BASECAP-B40-P3-xy-16s60-20260901-0601Z`
+
+- status: `VALID`
+- rawPath: `captures/BASECAP-B40-P3-xy-16s60-20260901-0601Z.jsonl.gz`
+- taskBlobSha: `c54ea1e777e4004501bad37cf8f350da8d65f7ea`
+- capturedAtUtc: `2026-09-01T06:29:55.334706+00:00`
+- duration / hz: `16.0 s`, target `60`, achieved `59.963`
+- frames: `960`
+- distinctRawFrameCount: `841`
+- readErrors / frameSizeErrors: `0 / 0`
+- streamSha256: `73018edd1b597b624769eef62c896912ec593a9d9527cb9c93f3b709c2dfb9fe`
+- compressedSha256: `8b2d2225b5bd68facc3a7df5c6393d032f574f226f8c369c35f6d0de3f89b925`
+- operator scene: P3 已加入且可独立操作；安全空旷；短距离移动不触发镜头滚动；P1/P2 静止。
+- operator action: P3 RIGHT hold 2s -> release -> idle 1s；LEFT 2s -> idle 1s；UP 2s -> idle 1s；DOWN 2s -> release -> idle to end；无攻击/跳跃/其它动作。
+- reuse: P3 X/depth structure replication screening。**BASECAP 只提供数据，不宣告 offset 语义。**
+
+---
+
+## 3. Historical NONCANONICAL / INVALID records
+
+这些 raw/尝试保留历史价值，但不得作为对应基础标签的 canonical source。
+
+| Capture/task | Classification | Reason |
+| --- | --- | --- |
+| `BASECAP-B12-facing-minimal-8s60-20260901-0518Z` | **INVALID for canonical B12** | 机械 PASS/raw retained，但旧 Collector v1 要求 READY 后立即动作；短动作可能发生在正式 capture 前。 |
+| `BASECAP-B13-standing-attack-delayed-30s60-20260901-0536Z` | **INVALID / control-plane aborted** | 旧 READY 门控无法可靠推进；操作者多次动作不能证明落入正式 capture；旧 queue 后续移除。 |
+| `BASECAP-B13R-standing-attack-ungated-60s60-20260901-0543Z` | **NONCANONICAL for B13** | 机械 PASS/raw retained，但 `operatorGate.required=false` 导致 Collector 在操作者动作前自动运行；无可靠攻击标签。 |
+| `GEO-0008-p1-depth-only-5s60-20260831-2115Z` | **SUPERSEDED for B11** | 早期不足尝试；B11 由 `RAWMINE-005` 取代。 |
+| `GEO-0009-p1-depth-visible-traverse-8s60-20260901-0024Z` | **INVALID for canonical B11** | GEO 后续归类为 ineffective/attribution-limited。 |
+| `GEO-0010-p1-attribution-depth-calibration-10s60-20260901-0033Z` | **INVALID intended sequence** | 后续操作报告说明输入序列不正确。 |
+| `RAWMINE-004-p1-attribution-depth-redo-10s60-20260901-0037Z` | **INVALID canonical baseline** | retained report: attribution/manipulation validity FAIL。 |
+| `GEO-0011-p1-attribution-depth-calibration-10s60-20260901-0038Z` | **INVALID canonical B10/B11** | 后续 GEO 归类为 earlier insufficient attempt。 |
+| `GEO-0012`, `GEO-0013` | **historical P2 evidence only** | 不替代新的 controlled B40-P2；`GEO-0013` distinct raw coverage 极低。 |
+| `GEO-0001/0003/0004/0006` | **exploratory/passive only** | 不得重命名为受控 B00/B12/B13/B20。 |
+| historical `GEO-0002/0005/0007` | **no canonical retained raw** | 不复用旧 taskId。 |
+
+任何历史 raw 都不得覆盖；需要重做时使用新 taskId。
+
+---
+
+## 4. Collector 控制流版本说明
+
+### 历史 v1
+
+旧流程使用 `READY_WOF_TASK.bat`，READY 与正式 capture start 不同步，因此短动作存在时序竞态。历史 capture 按当时真实协议判定。
+
+### 当前 v2
+
+当前流程：任务自动出现 -> 准备场景 -> 主窗口按一次回车 -> 看到“采集已开始” -> 执行动作 -> 自动上传/结果/下一任务。
+
+`READY_WOF_TASK.bat` 已废弃，新任务不再使用旧 12 秒防竞态延迟。
+
+详见：
+
+```text
+parallel/BASECAP/OPERATOR_INSTRUCTION_STANDARD.md
+parallel/BASECAP/OPERATOR_GATE_TIMING_NOTE.md
+```
+
+---
+
+## 5. Downstream reuse rule
+
+GEO / EFIELD / RAWMINE / future lanes 在新建人工采集前必须先查本目录。
+
+可直接复用：
+
+```text
+B00 idle
+B10 P1 horizontal phase
+B11 P1 depth phase
+B12 facing
+B13 ordinary attack/action
+B20 camera scroll
+B30 natural gameplay diversity
+B31 typed-enemy enter/exit diversity
+B32 retarget diversity
+B40-P2 controlled P2 X/depth motion
+B40-P3 controlled P3 X/depth motion
+```
+
+BASECAP 的标签只描述**已验证的采集场景与操作者动作**，不等于字段语义证明。下游研究仍需自行完成 offset/field/production 结论。
+
+## 6. Completion verdict
+
+`BASECAP v1 = COMPLETE`
+
+理由：
+
+- 基础套件全部覆盖；
+- 当前新增 B13/B20/P2/P3 均 `DONE/PASS`、0 read/frame-size errors、retained raw；
+- B13 操作序列有操作者完成确认；
+- B20 有明确“发生镜头滚动”的肉眼确认；
+- P2/P3 controlled movement raw 已闭合；
+- B30/B31/B32 已从 EFIELD retained corpus 复用；
+- 历史非 canonical 尝试被显式隔离；
+- 无需继续占用操作者进行 BASECAP 基础采集。
