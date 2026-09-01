@@ -2,7 +2,15 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "HUDANCHOR_PLAYER_PROJECTION_REVERSE_V1",
   "promptPath": "parallel/PM/HUDANCHOR_PLAYER_PROJECTION_REVERSE_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "f43593f9471069ff9df7716670fcba9dd6327d8a",
-  "startedAtUtc": "2026-09-01T14:11:19.723117Z"
+  "startedAtUtc": "2026-09-01T14:11:19.723117Z",
+  "completedAtUtc": "2026-09-01T14:24:58Z",
+  "stopCondition": "B",
+  "resultPath": "parallel/HUDANCHOR_REVERSE/RESULT.md",
+  "resultCommit": "6381466b120f9a9fa58252be0cfe71b5d5209a60",
+  "projectionCandidatePath": "parallel/HUDANCHOR_REVERSE/projection_candidate.json",
+  "offlineEvidencePath": "parallel/HUDANCHOR_REVERSE/OFFLINE_EVIDENCE.md",
+  "humanProofUnavoidable": true,
+  "remainingProofPath": "parallel/HUDANCHOR_REVERSE/MINIMAL_LIVE_PROOF.md"
 }
