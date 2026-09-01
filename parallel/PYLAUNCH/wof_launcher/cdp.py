@@ -144,7 +144,7 @@ class CdpClient:
         with self._id_lock:
             message_id = self._next_id
             self._next_id += 1
-        q: queue.Queue[dict[str, Any]]] = queue.Queue(maxsize=1)
+        q: queue.Queue[dict[str, Any]] = queue.Queue(maxsize=1)
         with self._pending_lock:
             self._pending[message_id] = q
         payload: dict[str, Any] = {"id": message_id, "method": method, "params": params or {}}
