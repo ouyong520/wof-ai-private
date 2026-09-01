@@ -4,7 +4,11 @@ Updated: 2026-09-01
 
 Statuses here are management bands, not fake precision.
 
-## Alpha — LATE / START PRODUCTIZATION NOW
+## Alpha — LATE / ENGINEERING FOUNDATION PRESENT / NOT RC
+
+The second PM audit found that Alpha is closer than the initial conservative checklist implied: the repository already has reusable production-shadow/danger-map work and a direct WebGL HUD with reload-safe hook, BroadcastChannel state path, stale/hold behavior and in-game load confirmation.
+
+Those assets reduce implementation work, but they are still historical/research assets until integrated into a bounded release artifact and regression-tested as that artifact.
 
 ### Already strong enough
 
@@ -13,20 +17,24 @@ Statuses here are management bands, not fake precision.
 - target/side evidence for the mature subset;
 - read-only research/collector discipline;
 - explicit evidence hierarchy and known exclusions;
+- production-shadow / danger-map runtime history exists;
+- direct WebGL HUD implementation exists and has prior reload/load-confirmation hardening;
 - enough validated behavior to make a narrow product useful.
 
-### Must close before Alpha release
+### Alpha gate status
 
-- [ ] frozen production rule manifest separated from discovery/experimental rules;
-- [ ] reliable loader/bootstrap for the declared Browser/game build;
-- [ ] runtime identity/version guard;
-- [ ] fail-closed automatic reader/warning runtime;
-- [ ] live target reread + retarget correctness retained in release artifact;
-- [ ] simple non-Console HUD: danger enemy + target + side + supported lead indication;
-- [ ] UNKNOWN silence policy implemented;
-- [ ] regression audit of every frozen production rule;
-- [ ] verify no game RAM writes / no gameplay input injection;
-- [ ] short real Browser acceptance run on release candidate.
+| Gate | Status | PM judgment |
+|---|---|---|
+| frozen production rule manifest | OPEN | `ALPHA_FREEZE_SPEC.md` now defines candidates/exclusions; machine-readable exact manifest still needed |
+| reliable loader/bootstrap | PARTIAL | research loading/resume paths exist; one user release load path is not yet release-audited |
+| runtime identity/version guard | OPEN/PARTIAL | module/RAM discovery guards exist in research scripts; supported-build positive identity + fail-closed release guard still required |
+| fail-closed automatic reader/warning runtime | OPEN | must be separated from research coordinator |
+| live target reread + retarget | STRONG RESEARCH / OPEN RELEASE | Browser logic is mature; must be retained and regression-tested in release artifact |
+| non-Console HUD | PARTIAL-STRONG | direct WebGL HUD exists; must be wired to frozen release runtime and product semantics |
+| UNKNOWN silence policy | OPEN RELEASE | policy defined; implementation audit required |
+| frozen-rule regression | OPEN | must test release artifact, not only research coordinator |
+| no RAM writes / no input injection | STRONG RESEARCH / OPEN RELEASE | existing evidence is strong; final artifact audit still required |
+| real Browser RC acceptance | OPEN | owner action only after RC exists |
 
 ### Not required for Alpha
 
@@ -68,6 +76,6 @@ PM will set a numeric v1 coverage target only after the denominator is trustwort
 
 ## Current release judgment
 
-**Do not release Alpha today as a user build unless the unchecked engineering gates above already exist elsewhere and pass audit. Do start Alpha engineering immediately.**
+**Do not release Alpha yet. Do start the bounded PRODUCT/ALPHA implementation workstream now, using existing HUD/runtime assets rather than rebuilding from scratch.**
 
-Research expansion is no longer a reason to defer this work.
+Research expansion is no longer a reason to defer release engineering.
