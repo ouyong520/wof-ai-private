@@ -1,8 +1,8 @@
 {
   "schema": "wof-owner-oneclick-package-v1",
-  "packageVersion": "2026.09.01.1",
-  "sourceCommit": "94b3b6a9ebd22f120b5045087a3bac903093d439",
-  "baseUrl": "https://raw.githubusercontent.com/ouyong520/wof-ai-private/94b3b6a9ebd22f120b5045087a3bac903093d439/",
+  "packageVersion": "2026.09.01.2",
+  "sourceCommit": "63f832304ccac8b84660f2f0763e2f69d35db300",
+  "baseUrl": "https://raw.githubusercontent.com/ouyong520/wof-ai-private/63f832304ccac8b84660f2f0763e2f69d35db300/",
   "safety": {
     "readOnly": true,
     "ramWrites": 0,
@@ -10,8 +10,11 @@
   },
   "files": [
     {"path": "WOF_一键工具.cmd", "gitBlobSha": "95a6ec8553cd9e0711ee6b2fa97215c9db571235"},
-    {"path": "WOF_TOOLKIT.cmd", "gitBlobSha": "0d8cece67ceedeeba3ab4d8504fcb848a700a989"},
+    {"path": "WOF_TOOLKIT.cmd", "gitBlobSha": "65172ebe8b1d201fd6d0ec7c013dbf1a07e6e8ad"},
+
     {"path": "parallel/OPTOOLKIT/toolkit.py", "gitBlobSha": "6587b66dda4b78c453ca1c51f6244de126865509"},
+    {"path": "parallel/OPTOOLKIT/owner_zh_cn.py", "gitBlobSha": "65ff4dd3b79e5400cb9279b4ef0ed854d556c467"},
+
     {"path": "parallel/PYLAUNCH/launcher.py", "gitBlobSha": "3579ff6de9b703473b049bcd774ed8715775a1ca"},
     {"path": "parallel/PYLAUNCH/requirements.txt", "gitBlobSha": "57aabab0f0fa012e063cbf5571edee2825b208f3"},
     {"path": "parallel/PYLAUNCH/wof_launcher/__init__.py", "gitBlobSha": "6ecb7cbddf1b75991f4c9e32f7ff7652b21dcd07"},
@@ -23,19 +26,24 @@
     {"path": "parallel/PYLAUNCH/wof_launcher/proof.py", "gitBlobSha": "7dd1f98805f6a6108ec26585eb22138a17a8d82b"},
     {"path": "parallel/PYLAUNCH/wof_launcher/state.py", "gitBlobSha": "b01cc230d6d8c60abe3bda350f35d3aa1abceab8"},
     {"path": "parallel/PYLAUNCH/wof_launcher/tray.py", "gitBlobSha": "8fd453987fc85f05b0b82625378f4523273039b8"},
+
+    {"path": "parallel/WOF052L_RECORDER/RUN_WOF052L_RECORDER.cmd", "gitBlobSha": "05f78bcbd504ff70756f085eb4036dcae45e0037"},
+    {"path": "parallel/WOF052L_RECORDER/owner_zh_cn.py", "gitBlobSha": "525ade556aa2466eb9fdc7067205ae7a5484d180"},
+    {"path": "parallel/WOF052L_RECORDER/fleet_recorder.py", "gitBlobSha": "9398ef1569815439e6c141890f069674a30dca0f"},
     {"path": "parallel/WOF052L_RECORDER/recorder.py", "gitBlobSha": "9552d168534f3b742e7390597ff07ea5cfcaeaa2"},
     {"path": "parallel/WOF052L_RECORDER/worker_probe.js", "gitBlobSha": "6947478af04e44088036f8edea62e8b74747995d"},
     {"path": "parallel/WOF052L_RECORDER/requirements.txt", "gitBlobSha": "b46dc37de963d35e04ce18f6c3a66c6c5c5ff734"},
-    {"path": "parallel/BROWSER_FLEET/RUN_WOF_FLEET.cmd", "gitBlobSha": "b4bc640bbfa355cb7cf19b0f403945a3f8f5aa24"},
+
+    {"path": "parallel/BROWSER_FLEET/RUN_WOF_FLEET.cmd", "gitBlobSha": "58c657427e018b173c1923bca1aaf36d82d4de15"},
+    {"path": "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py", "gitBlobSha": "590be8d14616489964ec98f4e118e4fa49ae8adf"},
     {"path": "parallel/BROWSER_FLEET/fleet_manager.py", "gitBlobSha": "1ddcdecb46bcaa38a709c63048790130d636eb22"},
+
     {"path": "product/alpha/regression.mjs", "gitBlobSha": "24795be008b75b0e8156a935df6b37ce778a1f7a"},
     {"path": "product/alpha/wof_alpha_core.js", "gitBlobSha": "267a44190744b6848b0685712c3d5572627d3a8a"},
     {"path": "product/alpha/wof_alpha_hud_model.js", "gitBlobSha": "16641129ff651c2733aebc6fae09a280e4bac49b"},
     {"path": "product/alpha/wof_alpha_bootstrap.user.js", "gitBlobSha": "2729325bae0a860bf9375b47f2c9787b09f8340f"},
     {"path": "product/alpha/wof_alpha_hud.js", "gitBlobSha": "f93f90cc3cc898083d9613841927349159a0d4ae"},
     {"path": "product/alpha/regression_result.json", "gitBlobSha": "54c0ff2ea65ee6b1d7126c09b208ac96e8fd4a64"},
-    {"path": "parallel/ALPHAQA_RC5/independent_bootstrap_retest.mjs", "gitBlobSha": "ec231eeef89959c0e3c430db2cf02dc5c8c51457"},
-    {"path": "parallel/PM/ACTIVE_PRIORITIES.md", "gitBlobSha": "9d6fd0dde25a6775d3d3f090515e071efeec9665"},
-    {"path": "parallel/PM/RELEASE_READINESS.md", "gitBlobSha": "1ca68d9449c4c7510a3edf77bb6b7e7ce21fedd6"}
+    {"path": "parallel/ALPHAQA_RC5/independent_bootstrap_retest.mjs", "gitBlobSha": "ec231eeef89959c0e3c430db2cf02dc5c8c51457"}
   ]
 }
