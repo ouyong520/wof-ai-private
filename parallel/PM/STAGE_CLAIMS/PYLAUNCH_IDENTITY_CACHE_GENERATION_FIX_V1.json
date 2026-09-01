@@ -2,7 +2,10 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "PYLAUNCH_IDENTITY_CACHE_GENERATION_FIX_V1",
   "promptPath": "parallel/PM/PYLAUNCH_IDENTITY_CACHE_GENERATION_FIX_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "96cc572442ba9ba9895ed94a393573c049b3fc33",
-  "startedAtUtc": "2026-09-01T14:55:00Z"
+  "startedAtUtc": "2026-09-01T14:55:00Z",
+  "resultPath": "parallel/PYLAUNCH/IDENTITY_CACHE_GENERATION_FIX_RESULT.md",
+  "resultCommit": "479c7b74095eab390329ef4a6e056cd25a01bced",
+  "completedAtUtc": "2026-09-01T15:10:16Z"
 }
