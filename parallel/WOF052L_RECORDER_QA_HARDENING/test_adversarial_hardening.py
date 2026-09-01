@@ -72,6 +72,55 @@ class StaleIdentityAuthorityAdversarialTests(unittest.TestCase):
         )
 
 
+class EndpointDriftAdversarialTests(unittest.TestCase):
+    def test_explicit_endpoint_that_drifts_cross_port_must_fail_closed_without_fallover(self):
+        calls = []
+        response_count = 0
+
+        def http_json(url):
+            nonlocal response_count
+            calls.append(url)
+            response_count += 1
+            port = int(url.split(":")[-1].split("/")[0])
+            returned_port = port if response_count == 1 else port + 77
+            return {
+                "Browser": "Chromium",
+                "webSocketDebuggerUrl": f"ws://localhost:{returned_port}/devtools/browser/drift",
+            }
+
+        fake = types.SimpleNamespace(
+            http_json=http_json,
+            BrowserEndpoint=lambda host, port, browser, websocket_url: types.SimpleNamespace(
+                host=host,
+                port=port,
+                browser=browser,
+                websocket_url=websocket_url,
+            ),
+            candidate_ports=lambda explicit: [9444, 9555, 9666],
+            launch_debug_browser=lambda *args: None,
+        )
+        hardening._install_endpoint_guard(fake)
+
+        first = fake.find_endpoint("127.0.0.1", 9444)
+        self.assertIsNotNone(first)
+        self.assertEqual(first.port, 9444)
+
+        drifted = fake.find_endpoint("127.0.0.1", 9444)
+        self.assertIsNone(drifted)
+        self.assertEqual(
+            [int(url.split(":")[-1].split("/")[0]) for url in calls],
+            [9444, 9444],
+            "explicit --cdp-port must never fall over after endpoint drift",
+        )
+        self.assertEqual(
+            fake._WOF052L_LAST_ENDPOINT_REJECTION["reason"],
+            "returned-websocket-cross-port",
+        )
+        self.assertTrue(fake._WOF052L_LAST_ENDPOINT_REJECTION["readOnly"])
+        self.assertEqual(fake._WOF052L_LAST_ENDPOINT_REJECTION["ramWrites"], 0)
+        self.assertFalse(fake._WOF052L_LAST_ENDPOINT_REJECTION["inputInjection"])
+
+
 class FakeCandidate:
     def __init__(self, worker_id: str, page_id: str):
         self.target = {"targetId": worker_id}
