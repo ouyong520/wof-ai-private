@@ -1,0 +1,408 @@
+{
+  "schema": "wof-project-status-v1",
+  "generated_at": "2026-09-01T20:20:39+08:00",
+  "repository_root": ".",
+  "repository_name": "wof-ai-private",
+  "source_head": "6a3bfb108197d2882cb0d647ad99e8b202460c8f",
+  "bootstrap_snapshot": true,
+  "safety": {
+    "read_only_scanner": true,
+    "product_alpha_modified": false,
+    "game_ram_writes": 0,
+    "input_injection": false
+  },
+  "priorities": {
+    "p0": [
+      "Fresh PYLAUNCH real Chrome Worker discovery fix"
+    ],
+    "p1": [
+      "Owner one-click package/bootstrap — recent implementation is ahead of the PM summary and needs PM state reconciliation"
+    ],
+    "non_blocking": [
+      "Owner Tools Simplified Chinese UX — PASS",
+      "Evidence Auto-Ingestor — REPOSITORY READY",
+      "Project Status Scanner — REPOSITORY-SIDE READY"
+    ]
+  },
+  "owner_action": {
+    "required": "NO",
+    "reason": "当前不需要项目所有者重新进入游戏或重跑旧 Windows proof；现阶段需要的是工程 fresh stages/仓库侧工作。",
+    "pm_stage_dispatch_required": "YES",
+    "fresh_stage_prompts": [
+      "parallel/PM/PYLAUNCH_WORKER_DISCOVERY_FIX_START_PROMPT.md",
+      "parallel/PM/TOOLS_CHINESE_UX_PASS_START_PROMPT.md",
+      "parallel/PM/OWNER_ONECLICK_PACKAGE_START_PROMPT.md"
+    ]
+  },
+  "release": {
+    "required_sequence": [
+      "fresh PYLAUNCH Worker-discovery fix",
+      "one new minimal real Windows proof reaches Browser/page/Worker/WASM/World/read-only simultaneously while game remains playable",
+      "fresh Alpha safe transport integration implementation using the existing contract",
+      "integrated regression PASS",
+      "bounded real Browser acceptance for detector/HUD/warnings",
+      "PM Alpha release decision"
+    ],
+    "next_fresh_stage": "PYLAUNCH Worker-discovery fix"
+  },
+  "lanes": [
+    {
+      "lane": "PYLAUNCH_WORKER_DISCOVERY_FIX",
+      "path": "parallel/PYLAUNCH",
+      "status": "IN_PROGRESS",
+      "status_zh": "进行中",
+      "result_files": [],
+      "current_result_files": [],
+      "prompt_files": [
+        "parallel/PM/PYLAUNCH_WORKER_DISCOVERY_FIX_START_PROMPT.md"
+      ],
+      "stop_condition": "FIX READY — 只剩一次新的真人 Windows 一键 Proof",
+      "remaining_owner_action": null,
+      "evidence": [
+        "PM current P0: Chrome/CDP 已连接且游戏可玩，但 WOF page/Worker/WASM/World 未发现，identity_reason=no gstyphoon worker target"
+      ],
+      "conflicts": [],
+      "recent_commits": []
+    },
+    {
+      "lane": "ALPHAQA_RC5",
+      "path": "parallel/ALPHAQA_RC5",
+      "status": "CLOSED",
+      "status_zh": "CLOSED",
+      "result_files": [],
+      "current_result_files": [],
+      "prompt_files": [],
+      "stop_condition": "PASS — RC5 ROOM-ENTRY REPAIR QA；旧的 room-entry P0 已关闭",
+      "remaining_owner_action": null,
+      "evidence": [
+        "ACTIVE_PRIORITIES / RELEASE_READINESS 均确认 RC5 independent QA PASS and closed"
+      ],
+      "conflicts": [],
+      "recent_commits": []
+    },
+    {
+      "lane": "BROWSER_FLEET",
+      "path": "parallel/BROWSER_FLEET",
+      "status": "WAITING_HUMAN",
+      "status_zh": "等待真人",
+      "result_files": [
+        "parallel/BROWSER_FLEET/RESULT.md"
+      ],
+      "current_result_files": [
+        "parallel/BROWSER_FLEET/RESULT.md"
+      ],
+      "prompt_files": [],
+      "stop_condition": "仓库侧实现完成；在 PYLAUNCH Worker discovery 修复前不要追加功能或要求 owner 单独 proof。",
+      "remaining_owner_action": "未来只需一次 bounded real Windows proof；当前先等待 PYLAUNCH P0 修复。",
+      "evidence": [
+        "Verdict: REPOSITORY-SIDE READY — one bounded real Windows proof remains."
+      ],
+      "conflicts": [],
+      "recent_commits": [
+        {
+          "sha": "f7665ed611a0ebf10552badce0aa1954368a6819",
+          "date": "2026-09-01T19:47:18+08:00",
+          "subject": "BROWSER_FLEET: record repository-ready result and live proof"
+        }
+      ]
+    },
+    {
+      "lane": "WOF052L_RECORDER",
+      "path": "parallel/WOF052L_RECORDER",
+      "status": "WAITING_HUMAN",
+      "status_zh": "等待真人",
+      "result_files": [],
+      "current_result_files": [],
+      "prompt_files": [],
+      "stop_condition": "实现已达到 live proof stop condition；不要开始长采集，先证明真实 Worker discovery。",
+      "remaining_owner_action": "等待 PYLAUNCH Worker discovery 修复后并入一次组合真人 proof。",
+      "evidence": [
+        "ACTIVE_PRIORITIES: WOF-052L automatic multi-room recorder READY / waiting live proof"
+      ],
+      "conflicts": [],
+      "recent_commits": []
+    },
+    {
+      "lane": "OPTOOLKIT",
+      "path": "parallel/OPTOOLKIT",
+      "status": "READY",
+      "status_zh": "仓库侧 READY",
+      "result_files": [],
+      "current_result_files": [],
+      "prompt_files": [],
+      "stop_condition": "Windows Operator Toolkit core V1 repository-side ready",
+      "remaining_owner_action": null,
+      "evidence": [
+        "ACTIVE_PRIORITIES: Operator Toolkit V1 READY"
+      ],
+      "conflicts": [],
+      "recent_commits": []
+    },
+    {
+      "lane": "OWNER_UX",
+      "path": "parallel/OWNER_UX",
+      "status": "PASS",
+      "status_zh": "PASS",
+      "result_files": [
+        "parallel/OWNER_UX/CHINESE_UX_PASS_RESULT.md"
+      ],
+      "current_result_files": [
+        "parallel/OWNER_UX/CHINESE_UX_PASS_RESULT.md"
+      ],
+      "prompt_files": [
+        "parallel/PM/TOOLS_CHINESE_UX_PASS_START_PROMPT.md"
+      ],
+      "stop_condition": "CHINESE OWNER UX PASS — Browser Fleet / WOF-052L / Operator Toolkit repository-side owner-facing workflow all Simplified Chinese by default",
+      "remaining_owner_action": null,
+      "evidence": [
+        "Overall: PASS",
+        "Windows UTF-8 / 中文路径验证 PASS",
+        "offline UX regression PASS"
+      ],
+      "conflicts": [],
+      "recent_commits": [
+        {
+          "sha": "09ed45adfcf2df5ed70edb5a08cfc95e67b9006e",
+          "date": "2026-09-01T20:14:42+08:00",
+          "subject": "docs(owner-ux): record Simplified Chinese owner tools PASS"
+        }
+      ]
+    },
+    {
+      "lane": "EVIDENCE_INGESTOR",
+      "path": "parallel/EVIDENCE_INGESTOR",
+      "status": "READY",
+      "status_zh": "仓库侧 READY",
+      "result_files": [
+        "parallel/EVIDENCE_INGESTOR/RESULT.md"
+      ],
+      "current_result_files": [
+        "parallel/EVIDENCE_INGESTOR/RESULT.md"
+      ],
+      "prompt_files": [],
+      "stop_condition": "Repository implementation has no blocker; only optional/minimal platform acceptance remains.",
+      "remaining_owner_action": null,
+      "evidence": [
+        "Status: REPOSITORY READY",
+        "13/13 repository-side tests PASS in the recorded result"
+      ],
+      "conflicts": [],
+      "recent_commits": [
+        {
+          "sha": "6aac23310b34426c50bdbc7117a9a63e9fb90ea1",
+          "date": "2026-09-01T20:20:26+08:00",
+          "subject": "docs: finalize evidence ingestor readiness"
+        }
+      ]
+    },
+    {
+      "lane": "OWNER_ONECLICK",
+      "path": "parallel/OWNER_ONECLICK",
+      "status": "NEEDS_PM_REVIEW",
+      "status_zh": "NEEDS_PM_REVIEW",
+      "result_files": [],
+      "current_result_files": [],
+      "prompt_files": [
+        "parallel/PM/OWNER_ONECLICK_PACKAGE_START_PROMPT.md"
+      ],
+      "stop_condition": null,
+      "remaining_owner_action": null,
+      "evidence": [
+        "Recent commits publish and validate immutable Chinese packages through v2026.09.01.4, while ACTIVE_PRIORITIES still lists this as a P1 acceleration fresh stage."
+      ],
+      "conflicts": [
+        "实现提交明显领先于 PM 总控摘要，但当前扫描到的权威结果文件不足以自动宣布 PASS/READY。"
+      ],
+      "recent_commits": [
+        {
+          "sha": "6a3bfb108197d2882cb0d647ad99e8b202460c8f",
+          "date": "2026-09-01T20:20:39+08:00",
+          "subject": "Owner one-click: correct pinned Chinese Toolkit wrapper in v2026.09.01.4"
+        },
+        {
+          "sha": "ebcfdbfd120fa0847f578f2c1d516d6b1c420903",
+          "date": "2026-09-01T20:19:28+08:00",
+          "subject": "Owner one-click: validate package v2026.09.01.3 on Windows"
+        }
+      ]
+    },
+    {
+      "lane": "SAFE_TRANSPORT_CONTRACT",
+      "path": "parallel/PM",
+      "status": "READY",
+      "status_zh": "仓库侧 READY",
+      "result_files": [],
+      "current_result_files": [],
+      "prompt_files": [
+        "parallel/PM/ALPHA_SAFE_TRANSPORT_INTEGRATION_START_PROMPT.md"
+      ],
+      "stop_condition": "Contract implementation-ready; actual Alpha transport implementation waits for PYLAUNCH Worker/WASM/World proof.",
+      "remaining_owner_action": null,
+      "evidence": [
+        "ACTIVE_PRIORITIES: Alpha Safe Transport Integration Contract READY"
+      ],
+      "conflicts": [],
+      "recent_commits": []
+    },
+    {
+      "lane": "ALPHA_TRANSPORT_IMPLEMENTATION",
+      "path": "product/alpha",
+      "status": "BLOCKED",
+      "status_zh": "BLOCKED",
+      "result_files": [],
+      "current_result_files": [],
+      "prompt_files": [
+        "parallel/PM/ALPHA_SAFE_TRANSPORT_INTEGRATION_START_PROMPT.md"
+      ],
+      "stop_condition": "Do not implement until real PYLAUNCH Worker/WASM/World proof passes.",
+      "remaining_owner_action": null,
+      "evidence": [
+        "RELEASE_READINESS: Alpha transport implementation BLOCKED ON PYLAUNCH FIX + PROOF"
+      ],
+      "conflicts": [],
+      "recent_commits": []
+    },
+    {
+      "lane": "WORKER_SURFACE",
+      "path": "parallel/WORKER_SURFACE",
+      "status": "IN_PROGRESS",
+      "status_zh": "进行中",
+      "result_files": [],
+      "current_result_files": [],
+      "prompt_files": [
+        "parallel/PM/WORKER_SURFACE_AUDIT_START_PROMPT.md"
+      ],
+      "stop_condition": null,
+      "remaining_owner_action": null,
+      "evidence": [
+        "Recent commit adds one-click read-only Chrome topology diagnostic"
+      ],
+      "conflicts": [],
+      "recent_commits": [
+        {
+          "sha": "8a0f69a8cf965f0692e559b490711985e28ccaea",
+          "date": "2026-09-01T20:19:20+08:00",
+          "subject": "WORKER_SURFACE: add one-click read-only Chrome topology diagnostic"
+        }
+      ]
+    },
+    {
+      "lane": "PROJECT_STATUS",
+      "path": "parallel/PROJECT_STATUS",
+      "status": "READY",
+      "status_zh": "仓库侧 READY",
+      "result_files": [
+        "parallel/PROJECT_STATUS/RESULT.md"
+      ],
+      "current_result_files": [
+        "parallel/PROJECT_STATUS/RESULT.md"
+      ],
+      "prompt_files": [
+        "parallel/PM/PROJECT_STATUS_SCANNER_START_PROMPT.md"
+      ],
+      "stop_condition": "Repository-side scanner implementation, Chinese one-click runner, tests, CI definition and tracked status outputs are present.",
+      "remaining_owner_action": null,
+      "evidence": [
+        "Scanner is read-only and emits PROJECT_STATUS.json + 项目状态.txt"
+      ],
+      "conflicts": [],
+      "recent_commits": [
+        {
+          "sha": "58023798e0b977ad29bb34b64538cc992750f49c",
+          "date": "2026-09-01T20:19:23+08:00",
+          "subject": "test(project-status): cover git file-list parsing regression"
+        },
+        {
+          "sha": "fa0bbf438a5b0d78306031e6337b66efc69cb51b",
+          "date": "2026-09-01T20:18:57+08:00",
+          "subject": "fix(project-status): parse git file lists correctly and avoid local path leakage"
+        }
+      ]
+    }
+  ],
+  "duplicate_active_lane_risks": [
+    {
+      "lanes": [
+        "PYLAUNCH_WORKER_DISCOVERY_FIX",
+        "WORKER_SURFACE"
+      ],
+      "shared_topics": [
+        "worker-discovery"
+      ],
+      "judgment": "可能存在 Worker topology/discovery 边界重叠；WORKER_SURFACE 应保持独立只读审计/诊断，不修改 PYLAUNCH 实现逻辑，PYLAUNCH lane 继续独占修复。"
+    }
+  ],
+  "old_stage_warnings": [
+    "RC5 independent QA 已 PASS/CLOSED，不要重新打开旧 RC5 QA 阶段。",
+    "旧 PYLAUNCH proof 已经产出足够失败证据；在 Worker-discovery fix 显式 READY 前不要重跑旧 proof。"
+  ],
+  "pm_review": {
+    "required": true,
+    "items": [
+      "OWNER_ONECLICK：近期 v2026.09.01.3/v2026.09.01.4 实现与 Windows 验证提交领先于 ACTIVE_PRIORITIES 的 P1 描述，需要 PM 依据该 lane 最终 RESULT 更新总控状态。",
+      "OWNER_UX：权威结果已经 PASS，但 ACTIVE_PRIORITIES 仍保留‘fresh Chinese UX pass required’的旧描述，需要 PM 合并状态。",
+      "PYLAUNCH_WORKER_DISCOVERY_FIX 与 WORKER_SURFACE 存在 Worker discovery 主题交叉，需继续保持修复/审计 scope 隔离。"
+    ]
+  },
+  "recent_commits": [
+    {
+      "sha": "6a3bfb108197d2882cb0d647ad99e8b202460c8f",
+      "date": "2026-09-01T20:20:39+08:00",
+      "subject": "Owner one-click: correct pinned Chinese Toolkit wrapper in v2026.09.01.4",
+      "files": []
+    },
+    {
+      "sha": "6aac23310b34426c50bdbc7117a9a63e9fb90ea1",
+      "date": "2026-09-01T20:20:26+08:00",
+      "subject": "docs: finalize evidence ingestor readiness",
+      "files": []
+    },
+    {
+      "sha": "53d5aeed6e0ae4ec637b5b9c908cb8bc400500a0",
+      "date": "2026-09-01T20:20:11+08:00",
+      "subject": "docs: record full evidence ingestor regression pass",
+      "files": []
+    },
+    {
+      "sha": "d5e85bf29a99263e1770e7e4a0f27737a9ad9504",
+      "date": "2026-09-01T20:19:44+08:00",
+      "subject": "EVIDENCE: expose automatic ingest in Toolkit menu",
+      "files": []
+    },
+    {
+      "sha": "ebcfdbfd120fa0847f578f2c1d516d6b1c420903",
+      "date": "2026-09-01T20:19:28+08:00",
+      "subject": "Owner one-click: validate package v2026.09.01.3 on Windows",
+      "files": []
+    },
+    {
+      "sha": "58023798e0b977ad29bb34b64538cc992750f49c",
+      "date": "2026-09-01T20:19:23+08:00",
+      "subject": "test(project-status): cover git file-list parsing regression",
+      "files": [
+        "parallel/PROJECT_STATUS/tests/test_scanner.py"
+      ]
+    },
+    {
+      "sha": "8a0f69a8cf965f0692e559b490711985e28ccaea",
+      "date": "2026-09-01T20:19:20+08:00",
+      "subject": "WORKER_SURFACE: add one-click read-only Chrome topology diagnostic",
+      "files": []
+    },
+    {
+      "sha": "fa0bbf438a5b0d78306031e6337b66efc69cb51b",
+      "date": "2026-09-01T20:18:57+08:00",
+      "subject": "fix(project-status): parse git file lists correctly and avoid local path leakage",
+      "files": [
+        "parallel/PROJECT_STATUS/scan_project_status.py"
+      ]
+    }
+  ],
+  "inputs": {
+    "active_priorities": "parallel/PM/ACTIVE_PRIORITIES.md",
+    "owner_actions": "parallel/PM/OWNER_ACTIONS.md",
+    "release_readiness": "parallel/PM/RELEASE_READINESS.md",
+    "chinese_ui_requirement": "parallel/PM/CHINESE_UI_UX_REQUIREMENT.md",
+    "snapshot_note": "This tracked bootstrap snapshot was seeded from authoritative PM files, current result files and recent connected GitHub commits. Normal local runs regenerate this file from the full repository tree and git history."
+  }
+}
