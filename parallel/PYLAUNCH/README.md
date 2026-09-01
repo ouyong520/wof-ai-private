@@ -50,6 +50,34 @@ Normal behavior:
 
 The browser keeps working if the launcher exits or fails to attach.
 
+## Browser Fleet attachment
+
+`parallel/BROWSER_FLEET/` writes the advisory registry:
+
+`%LOCALAPPDATA%\WOF Future Danger\Fleet\instances.json`
+
+PYLAUNCH can consume it without changing the normal `9223` proof path.
+
+Attach to the first currently live Fleet instance:
+
+```bat
+.venv\Scripts\python launcher.py --fleet-auto --no-tray
+```
+
+Attach to a numbered Fleet instance:
+
+```bat
+.venv\Scripts\python launcher.py --fleet-instance 3 --no-tray
+```
+
+Optional non-default manifest:
+
+```bat
+.venv\Scripts\python launcher.py --fleet-instance 3 --fleet-manifest D:\path\instances.json --no-tray
+```
+
+Fleet mode is always attach-only. The registry helper re-probes the listed localhost CDP endpoint and ignores stale/down entries; PYLAUNCH never starts or replaces a Fleet browser when these flags are used. After selection, the existing authoritative page / native Worker / WASM / heap / World-921031 discovery is unchanged.
+
 ## Useful commands
 
 Attach only to an already-debuggable browser:
