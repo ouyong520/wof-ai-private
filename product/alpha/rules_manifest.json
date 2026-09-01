@@ -1,7 +1,7 @@
 {
   "manifestVersion": "wof-alpha-rules-v3",
   "artifactVersion": "wof-alpha-rc3",
-  "status": "alpha-rc3-ready-for-fresh-independent-qa",
+  "status": "alpha-rc5-bootstrap-candidate-rules-unchanged",
   "supportedIdentity": {
     "game": "wof",
     "description": "Warriors of Fate (World 921031)",
@@ -32,9 +32,10 @@
     "unknown": "silent",
     "sameTypeSameSlotContinuity": "UNKNOWN; never sufficient for history-derived production warnings",
     "productionHistoryState": "none",
-    "transport": "per-page 128-bit random session; unique BroadcastChannel plus message nonce match",
-    "researchRuntimeIsolation": "legacy WOFHUD must be disposed before Alpha takeover",
-    "normalUserBootstrap": "document-start userscript intercepts gstyphoon Worker and pairs detector/HUD automatically",
+    "transport": "per-page 128-bit random session and message nonce remain required when a non-replacing live-Worker transport is present",
+    "researchRuntimeIsolation": "legacy WOFHUD must be disposed before Alpha HUD takeover",
+    "normalUserBootstrap": "RC5 document-start userscript leaves native window.Worker completely untouched and stays warning-silent until a paired non-replacing live-Worker transport exists",
+    "gameplayFailOpen": "Alpha bootstrap/attach/listener/HUD failure must not change Worker construction semantics or block base-game startup/room entry",
     "productionExperimentalIsolation": true
   },
   "activeProductionRules": [
