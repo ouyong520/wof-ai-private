@@ -1,0 +1,197 @@
+{
+  "schema": "wof-052l-10room-endurance-matrix-v1",
+  "stageId": "WOF052L_10ROOM_ENDURANCE_SIM_V1",
+  "status": "PASS",
+  "stopCondition": "WOF052L 10-ROOM ENDURANCE SIM READY",
+  "generatedAt": "2026-09-01T13:57:23Z",
+  "timeAcceleration": {
+    "mode": "event-time",
+    "realBrowserRequired": false,
+    "durationsSeconds": [
+      3600,
+      7200,
+      28800
+    ]
+  },
+  "contracts": {
+    "verifiedGitBlobs": {
+      "parallel/WOF052L_RECORDER/recorder.py": "9552d168534f3b742e7390597ff07ea5cfcaeaa2",
+      "parallel/WOF052L_RECORDER/fleet_recorder.py": "9398ef1569815439e6c141890f069674a30dca0f",
+      "parallel/WOF052L_RECORDER/hardening_v2.py": "4268d39f62d62a624966e7d9fd4afda65f6e94c0",
+      "parallel/BROWSER_FLEET/DISCOVERY_CONTRACT.md": "0de1fcf7aa1a540f682b6edd0ed8316831f7d912",
+      "parallel/WOF052L_LIVE_CAPTURE/live_capture.py": "4482c8e8e5d65b603f16698d5183cc3bdaa7e9ee",
+      "parallel/WOF052L_ANALYSIS/analyzer.py": "0da2a7ba50bf5cc47df03eb73f0e2f2cdcd838cb",
+      "parallel/WOF052L_ANALYSIS/ingest.py": "d057f98dd2dba7e7602a74509ac8c8e4fadce135",
+      "parallel/WOF052L_PROSPECTIVE_HANDOFF/handoff.py": "8ec85c45eede320adc888320c3fc97d1e6c82df0"
+    },
+    "recorderSchema": "wof-052l-recorder-v1",
+    "fleetSchema": "wof-052l-fleet-supervisor-v1",
+    "analysisSchema": "wof-052l-analysis-v1",
+    "handoffStatusSchema": "wof-052l-prospective-handoff-v1",
+    "world": "Warriors of Fate (World 921031)",
+    "sha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62"
+  },
+  "repoRootUsedForLiveCompatibility": null,
+  "summary": {
+    "total": 16,
+    "passed": 16,
+    "failed": 0
+  },
+  "results": [
+    {
+      "scenario": "normal-10room-1h",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {
+        "tenActive": true,
+        "equivalentSeconds": true,
+        "checkpointCadence": true,
+        "tenFinal": true
+      },
+      "metrics": {"seconds": 3600},
+      "detailsZh": "10 房间按事件时间加速完成，无真实等待。"
+    },
+    {
+      "scenario": "normal-10room-2h",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"tenActive": true, "equivalentSeconds": true, "checkpointCadence": true, "tenFinal": true},
+      "metrics": {"seconds": 7200},
+      "detailsZh": "10 房间按事件时间加速完成，无真实等待。"
+    },
+    {
+      "scenario": "normal-10room-overnight-8h",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"tenActive": true, "equivalentSeconds": true, "checkpointCadence": true, "tenFinal": true},
+      "metrics": {"seconds": 28800},
+      "detailsZh": "10 房间按事件时间加速完成，无真实等待。"
+    },
+    {
+      "scenario": "single-room-disconnect",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"failedStopped": true, "otherNineContinue": true},
+      "metrics": {},
+      "detailsZh": "单房 CDP 断开只收尾该 child，其余 9 房继续。"
+    },
+    {
+      "scenario": "worker-reload-replacement",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"room4Epoch": true, "room4IdsChanged": true, "otherNineStable": true},
+      "metrics": {},
+      "detailsZh": "Worker replacement 只提升对应房间 epoch；其他房间 target/session 不变。"
+    },
+    {
+      "scenario": "page-close-finalize",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"finalJson": true, "checkpointCleaned": true, "otherNineActive": true},
+      "metrics": {},
+      "detailsZh": "page close 触发对应房间 final JSON，正常 checkpoint 被清理。"
+    },
+    {
+      "scenario": "endpoint-stale-recover",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"pausedOnlyRoom5": true, "newEpoch": true, "resumed": true, "otherNineStillContinue": true},
+      "metrics": {},
+      "detailsZh": "endpoint stale 期间只暂停对应房间；recover 后新 epoch 继续。"
+    },
+    {
+      "scenario": "checkpoint-periodic-write",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"360PerRoom": true, "cleanOnFinal": true},
+      "metrics": {},
+      "detailsZh": "按当前 Recorder 10 秒周期模拟逻辑 checkpoint；事件时间加速只物化最新快照。"
+    },
+    {
+      "scenario": "per-room-final-json",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"tenFiles": true, "schema": true, "identity": true, "safety": true},
+      "metrics": {},
+      "detailsZh": "每房最终 JSON 与 Recorder v1 room schema 对齐。"
+    },
+    {
+      "scenario": "merged-run-json",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"fleetSchema": true, "tenChildRefs": true, "fortyCandidateTraces": true, "safety": true},
+      "metrics": {},
+      "detailsZh": "child merged + Fleet merged index 与当前聚合合同一致。"
+    },
+    {
+      "scenario": "ctrl-c-graceful-shutdown",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"allFinalized": true, "fleetFinal": true},
+      "metrics": {},
+      "detailsZh": "Ctrl+C 等价路径收尾全部 child 后再写 Fleet final index。"
+    },
+    {
+      "scenario": "abrupt-child-failure",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"checkpointRetained": true, "localFinalRetained": true, "recoveryBundle": true, "otherNineContinue": true},
+      "metrics": {},
+      "detailsZh": "异常 child 保留最后 checkpoint + local final + recovery bundle；其他 9 房继续。"
+    },
+    {
+      "scenario": "analyzer-watch-final-fixture-compat",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"fleetSchema": true, "tenChildren": true, "fortyTraces": true, "safety": true},
+      "metrics": {},
+      "detailsZh": "未挂载整仓库；按已读取 HEAD ingest/fixture 合同执行静态兼容检查。"
+    },
+    {
+      "scenario": "prospective-handoff-freeze-hash-compat",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"researchOnly": true, "canonicalHashStable": true, "mutationChangesHash": true, "safety": true},
+      "metrics": {},
+      "detailsZh": "按当前 HEAD canonical JSON SHA-256 规则验证冻结兼容。"
+    },
+    {
+      "scenario": "room-session-isolation",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"tenUniqueTuples": true, "uniquePorts": true, "traceRoomBound": true},
+      "metrics": {},
+      "detailsZh": "endpoint/page/Worker/session/roomId 均唯一，trace roomId 不跨房。"
+    },
+    {
+      "scenario": "read-only-safety-assertions",
+      "pass": true,
+      "layer": null,
+      "failedAssertions": [],
+      "assertions": {"readOnly": true, "ramWritesZero": true, "inputInjectionFalse": true, "windowWorkerReplacementFalse": true},
+      "metrics": {},
+      "detailsZh": "模拟器只生成 JSON 证据，不连接浏览器、不执行 CDP、不写 RAM、不注入输入。"
+    }
+  ],
+  "remainingRealOnlyFactsZh": [
+    "真实 Windows Chrome/Edge 1h/2h/overnight 的 OS/GPU/网络稳定性。",
+    "真实 WOF page/Worker/WASM 的长时间资源与 reload/CDP 时序。",
+    "真人 10 房间真实事件分布、覆盖率和 prospective 证据速度。",
+    "真实 OS Ctrl+C/窗口关闭/浏览器崩溃/杀进程边界。"
+  ]
+}
