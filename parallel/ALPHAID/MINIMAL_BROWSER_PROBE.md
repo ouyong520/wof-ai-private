@@ -271,11 +271,10 @@ The two canonical half SHA-1s must match exactly, in one common orientation, to:
 
 ```text
 19e09ad6f9edc7997b030cddfe1d9c96d88135f2
-a9?  <-- DO NOT USE; see exact second line below
 9fb8ae06856fe115addfb6794c28978a4f6716ec
 ```
 
-The middle `a9?` line above is intentionally marked **DO NOT USE** and is not a hash; only the first and third lines are the canonical pair. This warning exists to make copy/paste review visually obvious. The command itself contains the exact two canonical values and is authoritative.
+The Console command contains these same values. Any mismatch means the Browser run is not yet positively bound to the supported canonical `wofr1` program and must fail closed.
 
 ## Expected interpretation
 
