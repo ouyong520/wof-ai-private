@@ -27,7 +27,7 @@ echo 扫描目录：%%USERPROFILE%%\Documents\WOF_RESULTS
 echo 将自动检查 JSON、版本、安全字段、World 921031、重复文件和损坏文件。
 echo 原始证据不会被删除、移动或修改。
 echo.
-%PY% "%HERE%\ingestor.py" --package
+%PY% "%HERE%\run.py" --package
 set "RC=%ERRORLEVEL%"
 
 echo.
