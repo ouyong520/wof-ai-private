@@ -23,13 +23,13 @@ Chrome 136+ does not honor remote-debugging switches against the default Chrome 
 
 ## One remaining owner proof
 
-On Windows, from this directory run exactly:
+On Windows, open `parallel\PYLAUNCH` and double-click exactly:
 
-```bat
-py -3 -m venv .venv && .venv\Scripts\python -m pip install -r requirements.txt && .venv\Scripts\python launcher.py
+```text
+RUN_WOF_LAUNCHER.bat
 ```
 
-Then enter the WOF room normally in the Chrome/Edge window opened by the launcher. Do not open DevTools and do not paste JavaScript.
+Then enter the WOF room normally in the Chrome/Edge window opened by the launcher. The batch file only creates the local Python venv, installs launcher UI/CDP dependencies, and starts the read-only launcher. Do not open DevTools and do not paste JavaScript.
 
 Pass condition: tray status reaches all of these simultaneously:
 

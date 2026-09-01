@@ -55,6 +55,7 @@ class TrayApp:
             return lambda _item: fn(self.status.get())
 
         return pystray.Menu(
+            pystray.MenuItem("Open status", lambda *_: self.show_diagnostics(), default=True),
             pystray.MenuItem(text(lambda s: f"Connection: {s.state}"), None, enabled=False),
             pystray.MenuItem(text(lambda s: f"Browser: {self._yes(s.browser_connected)}"), None, enabled=False),
             pystray.MenuItem(text(lambda s: f"WOF page: {self._yes(s.wof_page_found)}"), None, enabled=False),
@@ -105,7 +106,7 @@ class TrayApp:
 
         general = ttk.Frame(notebook); notebook.add(general, text="General")
         ttk.Label(general, text="Foundation mode: attach through localhost CDP after the game starts normally.").pack(anchor="w", padx=12, pady=12)
-        ttk.Label(general, text="Browser profile / URL are configured by launcher.json or CLI in this foundation build.").pack(anchor="w", padx=12)
+        ttk.Label(general, text="Browser profile / game URL are configured by CLI in this foundation build.").pack(anchor="w", padx=12)
         ttk.Label(general, text="Start minimized: tray is the default behavior.").pack(anchor="w", padx=12, pady=(10, 0))
         ttk.Label(general, text="Start with Windows: reserved for packaging stage.").pack(anchor="w", padx=12)
         ttk.Button(general, text="Reconnect now", command=self.reconnect_action).pack(anchor="w", padx=12, pady=12)

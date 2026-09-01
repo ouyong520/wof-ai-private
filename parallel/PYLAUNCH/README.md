@@ -28,7 +28,9 @@ The launcher does **not** require the game Worker to be changed. The only browse
 
 ## Windows setup
 
-Use 64-bit Python 3.11+.
+Use 64-bit Python 3.11+. The smallest owner path is to double-click `RUN_WOF_LAUNCHER.bat` (or run it from a terminal). It creates `.venv`, installs the three small dependencies, and starts the tray launcher.
+
+Manual equivalent:
 
 ```bat
 cd parallel\PYLAUNCH
@@ -76,7 +78,7 @@ Open a configured game URL in the dedicated debug profile:
 
 ## Tray UI
 
-Right-click the WOF tray icon for:
+Single-click/default activation opens the status dialog where supported by the tray backend. Right-click the WOF tray icon for:
 
 - Connection status;
 - Browser;
