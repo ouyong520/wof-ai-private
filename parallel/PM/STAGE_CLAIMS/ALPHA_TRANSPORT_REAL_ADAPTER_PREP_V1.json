@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "ALPHA_TRANSPORT_REAL_ADAPTER_PREP_V1",
+  "promptPath": "parallel/PM/ALPHA_TRANSPORT_REAL_ADAPTER_PREP_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "4557ae4daea0bdcdd204027aeae7e331172808e1",
+  "startedAtUtc": "2026-09-01T14:20:30Z"
+}
