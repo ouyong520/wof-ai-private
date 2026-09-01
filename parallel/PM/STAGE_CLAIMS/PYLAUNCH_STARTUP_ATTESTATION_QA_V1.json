@@ -2,7 +2,11 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "PYLAUNCH_STARTUP_ATTESTATION_QA_V1",
   "promptPath": "parallel/PM/PYLAUNCH_STARTUP_ATTESTATION_QA_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "2f1778ac51b5ecd8d36810379fc8442551fc40c6",
-  "startedAtUtc": "2026-09-01T16:08:02Z"
+  "startedAtUtc": "2026-09-01T16:08:02Z",
+  "completedAtUtc": "2026-09-01T16:17:24Z",
+  "resultPath": "parallel/PYLAUNCH_QA_STARTUP_ATTESTATION/RESULT.md",
+  "machineResultPath": "parallel/PYLAUNCH_QA_STARTUP_ATTESTATION/RESULT.json",
+  "result": "PASS — PYLAUNCH STARTUP ATTESTATION FRESH QA — RELEASE GATE CLOSED"
 }
