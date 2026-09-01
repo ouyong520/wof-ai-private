@@ -43,7 +43,7 @@ test('horizontal movement follows live player X', () => {
   const b = resolver.resolve({ player: 'P1', nowMs: 1000, playerState: makePlayer(70, 20, 0), projectionState: projection, drawingBufferState: db });
   assert.equal(a.ok, true);
   assert.equal(b.ok, true);
-  assert.equal(b.xDb - a.xDb, 60);
+  assert.equal(b.xDb - a.xDb, 60); // 30 native px * 2 drawing-buffer scale.
 });
 
 test('camera scroll is part of projection and prevents drift', () => {
@@ -116,6 +116,16 @@ test('resize/fullscreen remaps current anchor from live drawing buffer', () => {
   assert.equal(b.xDb / a.xDb, 1.5);
   assert.equal(b.yDb / a.yDb, 1.5);
   assert.notEqual(a.mappingKey, b.mappingKey);
+});
+
+test('DPR-only change does not drift when drawing-buffer mapping is unchanged', () => {
+  const resolver = new PlayerAnchorResolver();
+  const projection = makeSyntheticProjection();
+  const player = makePlayer(40, 20, 0);
+  const a = resolver.resolve({ player: 'P1', nowMs: 1000, playerState: player, projectionState: projection, drawingBufferState: makeDrawingBuffer({ dpr: 1 }) });
+  const b = resolver.resolve({ player: 'P1', nowMs: 1000, playerState: player, projectionState: projection, drawingBufferState: makeDrawingBuffer({ dpr: 2 }) });
+  assert.equal(a.xDb, b.xDb);
+  assert.equal(a.yDb, b.yDb);
 });
 
 test('stale projection fails closed to fixed HUD fallback', () => {
