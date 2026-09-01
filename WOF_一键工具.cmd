@@ -12,7 +12,9 @@ echo              WOF 一键工具
 echo ================================================
 echo 正在启动 WOF 工具安装/更新程序...
 
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -UseBasicParsing -Uri '%BOOT_URL%' -OutFile '%BOOT_PS1%' -TimeoutSec 45"
+rem Windows PowerShell 5.1 treats UTF-8 .ps1 without BOM as the legacy ANSI code page.
+rem Download as text, then write an explicit UTF-8 BOM so Chinese bootstrap source parses safely.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $r=Invoke-WebRequest -UseBasicParsing -Uri '%BOOT_URL%' -TimeoutSec 45; $enc=New-Object System.Text.UTF8Encoding($true); [System.IO.File]::WriteAllText('%BOOT_PS1%', [string]$r.Content, $enc)"
 if errorlevel 1 goto :download_fail
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%BOOT_PS1%" %*
