@@ -1,0 +1,178 @@
+{
+  "schema": "wof-assist-move-command-model-v1",
+  "stageId": "WOF_ASSIST_ONECLICK_MOVE_COMMAND_REVERSE_V1",
+  "status": "PARKED_LIVE_ONLY",
+  "scope": {
+    "userInitiatedOnly": true,
+    "autoplay": false,
+    "combatAI": false,
+    "liveInjectionImplemented": false,
+    "failClosed": true
+  },
+  "evidenceAnchors": [
+    {
+      "path": "parallel/WOF_ASSIST_INPUT_ARCH/INTERFACE.md",
+      "blobSha": "d30ee8122ba815bedc4882a62bbd21fe47aa42b2",
+      "proves": [
+        "executor consumes planId/deadlineMs/ordered symbolic steps",
+        "step ops are press/release/hold",
+        "symbols are opaque and bindings are not inferred",
+        "explicit user trigger and request_id are mandatory",
+        "precondition/ack/deadline/cancel hooks are available",
+        "real game timing and live ACK semantics are intentionally unproved"
+      ]
+    },
+    {
+      "path": "wof_selector_6a_action_causal_proof.js",
+      "blobSha": "78cfed2fa3d88a677ca041e27a3ae5afa5b38592",
+      "proves": [
+        "selected-player pointer reaches a +0x29 == 4 comparison",
+        "the 0x683E branch lands on an action dispatch reading player +0x2A",
+        "one known action target subdispatches on player +0x2B"
+      ]
+    },
+    {
+      "path": "wof_selector_6a_action_handler_map_v2.js",
+      "blobSha": "be4d9a9a7294e43dfe97ffba3a7e2822ba6ac660",
+      "proves": [
+        "the +0x29 comparator to +0x2A action-dispatch bridge is structurally reproducible",
+        "+0x2A and +0x2B are dispatch selectors/candidate observation fields, not named move IDs"
+      ]
+    },
+    {
+      "path": "parallel/GEO/P1_XY_FRONTIER.md",
+      "blobSha": "8ee963686c6f2e8bebf90c36b4441b0cac5ac4a5",
+      "proves": [
+        "P1 X = 256*U8(+0x0B)+U8(+0x04)",
+        "P1 floor/depth Y = U8(+0x08)",
+        "historic operator capture observed explicit RIGHT/LEFT and UP/DOWN locomotion while read-only"
+      ]
+    }
+  ],
+  "semanticLayer": {
+    "purpose": "Represent a proved command without conflating game semantics with emulator/keyboard bindings.",
+    "atomTypes": [
+      {
+        "type": "direction",
+        "value": "opaque semantic direction token",
+        "bindingStatus": "UNRESOLVED"
+      },
+      {
+        "type": "button",
+        "value": "opaque semantic button token",
+        "bindingStatus": "UNRESOLVED"
+      }
+    ],
+    "sequence": "ordered atoms with explicit edge/hold intent; compile only proved atoms to executor press/release/hold steps",
+    "timing": {
+      "ordering": "explicit sequence order",
+      "holdMs": "must come from evidence per command; never inferred from fixtures",
+      "interStepWindowMs": "UNRESOLVED_LIVE_ONLY",
+      "totalDeadlineMs": "executor budget only; not a game timing claim"
+    }
+  },
+  "executorNormalization": {
+    "targetSchema": "parallel/WOF_ASSIST_INPUT_ARCH/command_plan.schema.json",
+    "planId": "stable command-plan identifier",
+    "requestId": "non-empty per user invocation; carried by TriggerContext, not by command plan",
+    "allowedOps": ["press", "release", "hold"],
+    "triggerSources": ["hotkey", "explicit-ui", "test"],
+    "defaultMode": "dry_run",
+    "noAutomaticRetry": true,
+    "dedupKey": "request_id + planId"
+  },
+  "representativeFamilies": [
+    {
+      "id": "p1-cardinal-locomotion",
+      "status": "PARTIALLY_GROUNDED",
+      "observedSemantics": ["RIGHT", "LEFT", "UP", "DOWN"],
+      "evidence": "P1_XY_FRONTIER historical operator manipulation and coordinate response",
+      "exactInputBinding": "UNRESOLVED",
+      "exactPressHoldReleaseTiming": "UNRESOLVED",
+      "safeForLiveExecutor": false,
+      "reason": "movement semantics are observed, but a deterministic live adapter/binding/timing contract is not proved"
+    },
+    {
+      "id": "direction-plus-button-command",
+      "status": "UNRESOLVED_LIVE_ONLY",
+      "observedSemantics": [],
+      "exactSequence": null,
+      "timingWindowMs": null,
+      "acceptanceSignal": null,
+      "completionSignal": null,
+      "recoverySignal": null,
+      "safeForLiveExecutor": false,
+      "reason": "repository reverse artifacts contain no grounded direction+button command trace or timing window"
+    }
+  ],
+  "gameStateObservables": {
+    "p1": {
+      "x": "256*U8(+0x0B)+U8(+0x04)",
+      "floorDepthY": "U8(+0x08)",
+      "selectorGate": {
+        "expression": "U8(+0x29) == 4",
+        "meaning": "UNKNOWN; observed ROM comparator only",
+        "mayBeUsedAsNamedPrecondition": false
+      },
+      "actionSelector": {
+        "offset": "+0x2A",
+        "meaning": "action-dispatch selector/candidate observation field",
+        "specificMoveMapping": "UNRESOLVED"
+      },
+      "subActionSelector": {
+        "offset": "+0x2B",
+        "meaning": "subdispatch selector at a known action target/candidate observation field",
+        "specificMoveMapping": "UNRESOLVED"
+      }
+    }
+  },
+  "admissibility": {
+    "provedArchitecturePreconditions": [
+      "explicit user trigger",
+      "known trigger source",
+      "non-empty request_id",
+      "all adapter-owned preconditions true",
+      "synthetic-only adapter for current prototype"
+    ],
+    "gameSpecificPreconditions": "UNRESOLVED_LIVE_ONLY",
+    "rule": "do not translate +0x29/+0x2A/+0x2B numeric values into named game states without evidence"
+  },
+  "signals": {
+    "commandStart": "executor step_started is transport-level only",
+    "gameAcceptance": "UNRESOLVED_LIVE_ONLY; +0x2A/+0x2B changes are candidates, not proved ACKs",
+    "gameCompletion": "UNRESOLVED_LIVE_ONLY",
+    "gameRecovery": "UNRESOLVED_LIVE_ONLY",
+    "transportCompletion": "execution_completed",
+    "transportFailure": [
+      "precondition failure",
+      "cancelled",
+      "step_timeout",
+      "deadline_exceeded",
+      "missing/failed ack",
+      "execution_failed"
+    ],
+    "cleanup": "deterministic safety release of logically pressed symbols in the synthetic executor"
+  },
+  "minimumLiveEvidenceRequest": {
+    "id": "WOF_ASSIST_MOVE_LIVE_EVIDENCE_001",
+    "whyUnavoidable": "Offline repository evidence does not map any concrete direction+button sequence to a move, does not bound its game timing window, and does not prove a game-state ACK/completion/recovery signal.",
+    "mode": "operator-performed, passive read-only capture; no autonomous input and no RAM writes",
+    "singleBoundedSession": {
+      "command": "one representative known direction+button move chosen by the operator",
+      "startState": "repeatable neutral/idle state documented by video/frame marker",
+      "trials": {
+        "successful": 3,
+        "intentionallyRejected": 2,
+        "rejectedVariation": "change only one timing/order boundary at a time"
+      },
+      "recordAtOrAboveHz": 60,
+      "record": [
+        "monotonic timestamped raw direction/button press and release edges",
+        "P1 U8(+0x29), U8(+0x2A), U8(+0x2B)",
+        "P1 U8(+0x04), U8(+0x0B), U8(+0x08)",
+        "synchronized video/frame marker sufficient to label command attempted/accepted/completed/recovered"
+      ]
+    },
+    "exitFact": "Derive exactly one concrete command sequence, bounded ordering/timing constraints, admissible start-state predicate, and one discriminating acceptance/completion/recovery observation. If the candidate fields do not discriminate success vs rejection, report that negative result rather than widening scope."
+  }
+}
