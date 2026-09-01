@@ -103,7 +103,7 @@ jobs:
           $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
           $release = Join-Path $root 'releases\2026.09.01.5'
           $proofCmd = Join-Path $release 'parallel\PYLAUNCH\RUN_WINDOWS_PROOF.cmd'
-          $cmdLine = 'call "' + $proofCmd + '"'
+          $cmdLine = 'chcp 65001 >nul & call "' + $proofCmd + '"'
           cmd.exe /d /c $cmdLine
           if ($LASTEXITCODE -ne 0) { throw ('Chinese Windows proof did not start: ' + $LASTEXITCODE) }
           $status = Join-Path $release 'parallel\PYLAUNCH\WINDOWS_PROOF_STATUS.json'
