@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "ALPHA_TRANSPORT_REFERENCE_QA_V1",
+  "promptPath": "parallel/PM/ALPHA_TRANSPORT_REFERENCE_QA_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "186465bc124df9dbd51223ab982feb8553dddc9b",
+  "startedAtUtc": "2026-09-01T14:37:33.998809Z"
+}
