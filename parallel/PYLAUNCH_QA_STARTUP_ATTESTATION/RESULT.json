@@ -1,0 +1,42 @@
+{
+  "schema": "wof-pylqa-result-v1",
+  "stageId": "PYLAUNCH_STARTUP_ATTESTATION_QA_V1",
+  "status": "PASS",
+  "decision": "PASS — PYLAUNCH STARTUP ATTESTATION FRESH QA — RELEASE GATE CLOSED",
+  "completedAtUtc": "2026-09-01T16:17:24Z",
+  "claimStartCommit": "2f1778ac51b5ecd8d36810379fc8442551fc40c6",
+  "validatedProductBlobs": {
+    "parallel/PYLAUNCH/wof_launcher/browser.py": "d6f7fa93aaf8d15da6ce77cfa35c4f72c4c3b332",
+    "parallel/PYLAUNCH/wof_launcher/monitor.py": "8e3c5c527fdd5a845bbfc135f55014de22078cf4",
+    "parallel/PYLAUNCH/wof_launcher/discovery_v2.py": "ec9d27bfe26557a11187a23853893b898a3366d1",
+    "parallel/PYLAUNCH/tests/test_startup_attestation.py": "c71070f6356b3c03bb89e4b7ad681efd3edc14af",
+    "parallel/PYLAUNCH/tests/test_endpoint_hardening.py": "242a76e8c9cddf28ba60bc3e5aee93060bd6d1ae",
+    "parallel/PYLAUNCH/tests/test_identity_cache_generation.py": "ed7a7af17060ae234687b6ef546ac50a0c0dcfef",
+    "parallel/PYLAUNCH_QA_IDENTITY_GENERATION/test_startup_attestation_regression.py": "04db971b44e72cf45e441913c49afaf077068415"
+  },
+  "tests": {
+    "freshIndependent": {"passed": 11, "failed": 0},
+    "currentStartupAttestation": {"passed": 15, "failed": 0},
+    "currentEndpointHardening": {"passed": 5, "failed": 0},
+    "currentIdentityGeneration": {"passed": 2, "failed": 0},
+    "priorAdversarialReproducer": {"passed": 2, "failed": 0},
+    "total": {"passed": 35, "failed": 0}
+  },
+  "attacks": {
+    "missingOrEmptyBrowserMetadata": "PASS_FAIL_CLOSED",
+    "malformedProductVersionShapes": "PASS_FAIL_CLOSED",
+    "websocketHostPortMismatch": "PASS_FAIL_CLOSED",
+    "staleEndpointMetadataAfterReconnect": "PASS_FRESH_REATTESTATION",
+    "sameTargetIdAcrossRuntimeGenerations": "PASS_REPROBED_NO_STALE_AUTHORITY",
+    "malformedDevToolsVersionResponse": "PASS_FAIL_CLOSED",
+    "rejectedAttestationInvalidatesStaleAuthority": "PASS",
+    "validChromeEdgeChromiumLoopback": "PASS_ACCEPTED"
+  },
+  "safety": {
+    "productCodeModifiedByQa": false,
+    "writesOutsideQaLaneAndOwnClaim": false,
+    "ownerActionRequired": false
+  },
+  "reproducer": "python parallel/PYLAUNCH_QA_STARTUP_ATTESTATION/runner.py",
+  "fixtures": "parallel/PYLAUNCH_QA_STARTUP_ATTESTATION/fixtures.json"
+}
