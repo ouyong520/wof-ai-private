@@ -1,0 +1,16 @@
+{
+  "schema": "wof-prospective-corpus-v1",
+  "runId": "mock-discovery-v1",
+  "evidenceClass": "discovery",
+  "traces": [
+    {
+      "roomId": "old-room",
+      "activeAttack": 4704,
+      "leadMs": 50.0,
+      "states": [
+        {"signature": "S0/A4/B2|BODY4728|FE8b660|NX8b204|Vffff|TM1|P6C4736"},
+        {"signature": "S0/A6/B4|BODY4728|FE8b660|NX8b204|Vffff|TM1|P6C4736"}
+      ]
+    }
+  ]
+}
