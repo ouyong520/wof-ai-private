@@ -1,6 +1,6 @@
 {
   "schema": "wof-regression-orchestrator-manifest-v1",
-  "version": 1,
+  "version": 2,
   "ownerLanguage": "zh-CN",
   "guardRoots": [
     "parallel/REGRESSION_ORCH",
@@ -23,7 +23,10 @@
     "parallel/PYLAUNCH/tests/test_fleet_registry.py",
     "parallel/PYLAUNCH/tests/test_windows_proof.py",
     "parallel/BROWSER_FLEET/tests/test_fleet_manager.py",
+    "parallel/BROWSER_FLEET/tests/test_fleet_discovery_v2.py",
+    "parallel/BROWSER_FLEET/tests/test_fleet_manager_v2.py",
     "parallel/WOF052L_RECORDER/test_fleet_recorder.py",
+    "parallel/WOF052L_RECORDER/test_discovery_v2_sync.py",
     "parallel/PROSPECTIVE_VALIDATOR/test_validator.py",
     "parallel/OPTOOLKIT/tests/test_chinese_owner_ux.py",
     "parallel/OPTOOLKIT/tests/test_toolkit.py",
@@ -65,22 +68,30 @@
       "id": "browser_fleet",
       "nameZh": "Browser Fleet 离线回归",
       "safetyCritical": true,
-      "requiredPaths": ["parallel/BROWSER_FLEET/tests/test_fleet_manager.py"],
+      "requiredPaths": [
+        "parallel/BROWSER_FLEET/tests/test_fleet_manager.py",
+        "parallel/BROWSER_FLEET/tests/test_fleet_discovery_v2.py",
+        "parallel/BROWSER_FLEET/tests/test_fleet_manager_v2.py"
+      ],
       "commands": [
-        {"cwd": "parallel/BROWSER_FLEET", "argv": ["{python}", "tests/test_fleet_manager.py"]}
+        {"cwd": "parallel/BROWSER_FLEET", "argv": ["{python}", "tests/test_fleet_manager.py"]},
+        {"cwd": "parallel/BROWSER_FLEET", "argv": ["{python}", "tests/test_fleet_discovery_v2.py"]},
+        {"cwd": "parallel/BROWSER_FLEET", "argv": ["{python}", "tests/test_fleet_manager_v2.py"]}
       ]
     },
     {
       "id": "wof052l_recorder",
-      "nameZh": "WOF-052L Recorder 自检 / Fleet 回归",
+      "nameZh": "WOF-052L Recorder 自检 / Fleet / Discovery v2 回归",
       "safetyCritical": true,
       "requiredPaths": [
         "parallel/WOF052L_RECORDER/owner_zh_cn.py",
-        "parallel/WOF052L_RECORDER/test_fleet_recorder.py"
+        "parallel/WOF052L_RECORDER/test_fleet_recorder.py",
+        "parallel/WOF052L_RECORDER/test_discovery_v2_sync.py"
       ],
       "commands": [
         {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "owner_zh_cn.py", "--self-test"]},
-        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "test_fleet_recorder.py"]}
+        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "test_fleet_recorder.py"]},
+        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "test_discovery_v2_sync.py"]}
       ]
     },
     {
