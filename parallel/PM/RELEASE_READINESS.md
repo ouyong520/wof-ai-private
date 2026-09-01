@@ -1,6 +1,6 @@
 # WOF Future Danger AI — Release Readiness
 
-Updated: 2026-09-01 — RC3 candidate complete / fresh independent QA required
+Updated: 2026-09-01 — RC3 candidate complete / fresh independent QA pending
 
 ## Alpha — **RC3 CANDIDATE / WAITING FRESH QA**
 
@@ -16,7 +16,7 @@ RC3 has corrected the two PM blockers that rejected RC2.
 
 **Same-type hidden replacement safety — CLOSED conservatively in candidate**
 - no positive Browser enemy instance token exists;
-- user-facing production therefore has no history/watch continuity dependency;
+- user-facing production has no history/watch continuity dependency;
 - only two current-level T18 rules remain active;
 - F1-F4 history-derived candidates are quarantined.
 
@@ -48,7 +48,7 @@ RC3 has corrected the two PM blockers that rejected RC2.
 | UNKNOWN/stale silence | PASS offline / fresh QA required |
 | no RAM writes / no input | PASS offline/static / fresh QA required |
 | RC3 product regression | PASS |
-| fresh independent RC3 QA | **NEXT** |
+| fresh independent RC3 QA | **PENDING — no verdict commit yet** |
 | real Browser acceptance | WAIT FOR QA PASS |
 | Alpha release | WAIT |
 
@@ -57,19 +57,27 @@ Fresh QA bootstrap:
 
 ## Release sequence
 
-1. close completed RC3 implementation thread;
-2. run a fresh independent RC3 QA stage;
+1. keep completed RC3 implementation thread closed;
+2. run fresh independent RC3 QA;
 3. if QA finds P0/P1, close QA and open a fresh next fix stage;
 4. if QA passes, run one bounded real Browser acceptance;
 5. if Browser acceptance passes, release Alpha.
 
-Do not use the old RC2 QA harness contract to demand that all six frozen candidates remain production-visible. RC3 intentionally narrows user-facing production for safety.
+Do not use the RC2 QA contract to demand that all six frozen candidates remain production-visible. RC3 intentionally narrows user-facing production for safety.
 
-## Parallel non-blocking support
+## Parallel support status
 
-- Local WinKawaks ROM identity: strong title evidence indicates World 921002, one cryptographic local probe remains; not an Alpha Browser blocker.
-- Runtime Speed audit: determines local-vs-Browser timing comparability; not an Alpha blocker unless Browser lead-time methodology itself is disproven.
-- Player-anchored HUD: Beta support, not Alpha blocker.
+### Local ROM identity — human-gated, non-blocking
+
+Retained local evidence strongly indicates `wofr1 / World 921002`; exactly one read-only local ROM hash command remains for cryptographic proof. Even if revisions differ, local corpus remains discovery evidence and Browser World 921031 remains production authority.
+
+### Runtime Speed — human-gated, non-blocking
+
+Audit verdict is `INSUFFICIENT — ONE MINIMAL TEST REQUIRED` only for local simulation speed. Collector Hz is wall-clock sampling, not game-frame rate. Browser Alpha lead labels require no change and local timing must not be numerically equated with Browser milliseconds until calibrated.
+
+### Player-Anchored HUD — Beta handoff, human-gated
+
+Research handoff is complete with classification `NEEDS ONE MINIMAL BROWSER PROOF`. It does not block Alpha. Fixed in-game HUD remains the safe fallback until authoritative player/camera/native projection constants are proven.
 
 ## Beta — MID
 
@@ -81,4 +89,4 @@ Requires stable Beta, trustworthy breadth denominator, intentional silence for u
 
 ## Current release judgment
 
-**Alpha is now one fresh independent QA stage plus one bounded real-Browser acceptance away from release, assuming no new P0/P1 appears.**
+**Alpha is one fresh independent QA stage plus one bounded real-Browser acceptance away from release, assuming no new P0/P1 appears.**
