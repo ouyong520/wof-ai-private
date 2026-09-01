@@ -1,0 +1,137 @@
+{
+  "version": "seqminer-feature-contract-v3",
+  "updated": "2026-09-01",
+  "namespace": "WinKawaks-local-discovery-only",
+  "productionPromotion": false,
+  "supportUnit": "unique_resolved_cycle",
+  "eventModes": {
+    "phase73-structural-proxy": {
+      "zeroCondition": "+0x73 == 0",
+      "futureEvent": "first same-object +0x73 != 0",
+      "semanticMeaning": "structural executor phase proxy only",
+      "attackSemanticAllowed": false
+    },
+    "explicit-local-attack": {
+      "precondition": "a WinKawaks-local exact move/attack field has been independently proven",
+      "zeroCondition": "explicit attack field == 0",
+      "futureEvent": "first same-object explicit attack field != 0",
+      "attackSemanticAllowed": true,
+      "browserOffsetEquivalence": false
+    }
+  },
+  "episodeGuard": [
+    "type +0x24",
+    "episode-stable profile +0xB4",
+    "episode-stable profile +0xB6"
+  ],
+  "episodeGuardExclusions": {
+    "+0xB0": "mutable within retained episodes; context only"
+  },
+  "coreDistinctState": [
+    "type +0x24",
+    "control +0x2D",
+    "state +0x2E",
+    "logical cursor +0x2F..+0x32 with 0x001C0000 flags masked",
+    "embedded cursor flags 0x001C0000",
+    "mode +0x35",
+    "gate +0x37",
+    "phase tuple +0x6C,+0x70,+0x72,+0x73,+0x77"
+  ],
+  "contextStrata": [
+    "live target +0x6D..+0x6E",
+    "stored association +0x3D..+0x3E/+0xC6",
+    "split player reference +0x6F/+0x68",
+    "association sync checkpoint +0xCC",
+    "timer/counter +0x42",
+    "profile +0xB0/+0xB4/+0xB6",
+    "sparse +0x28/+0x99",
+    "locomotion +0xB9/+0xBB"
+  ],
+  "timer34": {
+    "stateLocal": [
+      "timerStart",
+      "timerEnd",
+      "timerMin",
+      "timerMax",
+      "terminalTimer1Frames",
+      "same-core positiveTimer34Reloads"
+    ],
+    "normalization": {
+      "basis": "observed logical-record timer ceiling",
+      "ceilingDistanceBuckets": ["0", "1", "2", "3-5", "6-10", "11+"],
+      "terminalTimer1HoldBuckets": ["0", "1", "2-3", "4-9", "10-29", "30+"]
+    },
+    "cycleLevelReloadEdge": {
+      "reason": "positive +0x34 loads may coincide with a +0x35/core transition, so state-local tracking alone can miss the edge",
+      "prefixOnly": true,
+      "eventEdgeExcludedFromPredictor": true,
+      "fields": [
+        "from/to +0x34",
+        "coreFrom/coreTo",
+        "cursorFrom/cursorTo",
+        "mode35From/mode35To",
+        "phaseFrom/phaseTo",
+        "timer42From/timer42To",
+        "timer1FramesBeforeReload",
+        "sameCore/cursorChanged/mode35Changed/timer42Changed",
+        "record-relative from/to buckets",
+        "reload delta bucket"
+      ]
+    }
+  },
+  "featureFamilies": [
+    "final",
+    "final_context",
+    "final_timer_exact",
+    "final_timer_norm",
+    "tail2/tail3",
+    "tail2/tail3_context",
+    "tail2/tail3_timer_exact",
+    "tail2/tail3_timer_norm",
+    "pair/triple",
+    "pair/triple_timer_exact",
+    "pair/triple_timer_norm",
+    "timer34_reload_exact",
+    "timer34_reload_norm",
+    "cross_core_reload_exact",
+    "cross_core_reload_norm"
+  ],
+  "confidenceRules": {
+    "featureSupport": "a signature contributes at most one support unit per resolved cycle",
+    "branchpointAttackDistribution": "one support unit per anchor per resolved cycle",
+    "rawRepeatedLoopVisits": "reported separately as raw_occurrence_distribution and never used as independent confidence",
+    "singleCyclePerfectPurity": "discovery only",
+    "phase73ProxyCandidatePromotion": "forbidden",
+    "explicitAttackProspectiveCandidateMinimum": "purity 1.0, support >= 3 cycles, >= 2 independent source captures"
+  },
+  "sceneMetadata": {
+    "authoritativeKeys": ["stage", "scene", "sceneId", "room", "wave"],
+    "composition": "retain all present dimensions in one explicit label",
+    "fallback": "capture filename",
+    "fallbackMayCountAsSceneEvidence": false
+  },
+  "targetRules": {
+    "preserveTargetChangesInsidePrefix": true,
+    "preserveTargetChangeAtFutureEventEdge": true,
+    "targetStableFractionReported": true,
+    "associationMustNotBeCollapsedIntoLiveTarget": true
+  },
+  "evidenceClasses": [
+    "discovery_correlation",
+    "same_cycle_evidence",
+    "potentially_prospectively_testable_candidate"
+  ],
+  "browserPriority": [
+    "T18 BODY4728 post-anchor ordered split for A4704 vs A4712",
+    "T23 A5888 BODY4936 ordered tail",
+    "T23 branch-set tail2/tail3 validator",
+    "cross-target invariance for surviving Browser candidates"
+  ],
+  "hardGuards": [
+    "no game-memory writes",
+    "no WinKawaks-to-Browser numeric offset equivalence",
+    "no Browser production-rule promotion from local evidence",
+    "no fabricated stage/scene/wave labels",
+    "no generic Collector recapture request solely to increase volume"
+  ]
+}
