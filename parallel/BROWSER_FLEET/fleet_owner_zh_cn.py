@@ -33,6 +33,12 @@ def human_error(detail: object) -> str:
         return "浏览器调试端口已被占用。"
     if "browser exited" in low:
         return "这个浏览器房间已经退出。"
+    if "cdp endpoint unavailable" in low:
+        return "暂时无法连接这个浏览器房间的本机调试端点。"
+    if "crossed fleet port boundary" in low:
+        return "检测到浏览器调试连接指向了另一个房间，已安全拒绝连接。"
+    if "worker discovery unavailable" in low or "status refresh failed" in low:
+        return "暂时无法读取这个房间的 Worker 状态。"
     if "target list unavailable" in low:
         return "暂时无法读取这个浏览器房间的页面状态。"
     if "target list malformed" in low:
@@ -74,6 +80,7 @@ class ChineseFleetManager(FleetManager):
         print(f"浏览器程序：{self.browser_executable or '自动查找'}")
         print(f"共享状态文件：{self.manifest_path}")
         print("只读模式：开启｜游戏内存写入：0｜游戏输入注入：无｜window.Worker 替换：无")
+        print("Worker 状态：仅用于快速发现；World 921031 身份确认仍以 PYLAUNCH 只读验证为准。")
         print("-" * 88)
         print("编号  端口   浏览器      WOF 页面     Worker       PID      独立配置")
         for runtime in sorted(self.instances.values(), key=lambda item: item.instance_id):
@@ -159,6 +166,7 @@ def status_from_manifest(path: Path) -> int:
     print("WOF 多房间浏览器状态")
     print(f"状态文件：{path}")
     print("只读模式：开启｜游戏内存写入：0｜游戏输入注入：无｜window.Worker 替换：无")
+    print("Worker 状态：仅用于快速发现；World 921031 身份确认仍以 PYLAUNCH 只读验证为准。")
     for item in instances:
         if not isinstance(item, dict):
             continue
