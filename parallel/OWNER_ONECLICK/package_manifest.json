@@ -22,7 +22,7 @@
     {"path": "WOF_TOOLKIT.cmd", "gitBlobSha": "65172ebe8b1d201fd6d0ec7c013dbf1a07e6e8ad"},
 
     {"path": "parallel/OPTOOLKIT/toolkit.py", "gitBlobSha": "6587b66dda4b78c453ca1c51f6244de126865509"},
-    {"path": "parallel/OPTOOLKIT/owner_zh_cn.py", "gitBlobSha": "525ecd95a30e277cd77e014abdebde673945dee1"},
+    {"path": "parallel/OPTOOLKIT/owner_zh_cn.py", "gitBlobSha": "0461e23f15aee15db2169f9c761c9558a62af416"},
 
     {"path": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd", "gitBlobSha": "a6c52c436d1d7f1fa1cffcd8c24849ec14dd806d"},
     {"path": "parallel/PYLAUNCH/RUN_WOF_LAUNCHER.bat", "gitBlobSha": "8dd04159a16ca88ea2977177e203eda710e5e966"},
