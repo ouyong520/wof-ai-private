@@ -2,7 +2,17 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "UNIFIED_WINDOWS_LIVE_PROOF_FAILCLOSED_FIX_V1",
   "promptPath": "parallel/PM/UNIFIED_WINDOWS_LIVE_PROOF_FAILCLOSED_FIX_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "700eaa5bf36bce8ff49bd877e6532da964c2b896",
-  "startedAtUtc": "2026-09-01T13:32:30Z"
+  "startedAtUtc": "2026-09-01T13:32:30Z",
+  "completedAtUtc": "2026-09-01T13:44:30Z",
+  "resultPath": "parallel/LIVE_PROOF_BUNDLE/FAILCLOSED_FIX_RESULT.md",
+  "statusPath": "parallel/LIVE_PROOF_BUNDLE/FAILCLOSED_FIX_STATUS.json",
+  "resultCommit": "f52fcf0c6861df65e3e9fd8dcd64b413ffff1855",
+  "statusCommit": "a485256da2474b7e59d807b5f0c12f93cb0144f1",
+  "implementationCommits": [
+    "e6984d1f05d9bc8a5cb86efc237c01e7151c7f39",
+    "926104f519acc05df7b1cc1e4e43c8771e9ad85e"
+  ],
+  "stopCondition": "UNIFIED WINDOWS LIVE PROOF FAIL-CLOSED FIX READY — READY FOR FRESH INDEPENDENT QA"
 }
