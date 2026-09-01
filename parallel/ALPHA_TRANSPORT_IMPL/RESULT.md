@@ -1,15 +1,81 @@
 # WOF Alpha Safe Transport Reference Implementation — Result
 
 Date: 2026-09-01  
-Stage: `ALPHA_TRANSPORT_REFERENCE_IMPL_V1`  
-Status: **ALPHA TRANSPORT REFERENCE IMPLEMENTATION READY FOR INTEGRATION**
+Current stage: `ALPHA_TRANSPORT_STALE_INFLIGHT_GENERATION_FIX_V1`  
+Status: **ALPHA TRANSPORT STALE IN-FLIGHT GENERATION FIX READY — READY FOR FRESH QA**
 
-## 结论
+## 当前 P1 修复结论
 
-冻结的 Safe Transport Contract 已实现为独立、浏览器解耦的 reference runtime，并通过自测与现有 `parallel/ALPHA_TRANSPORT_MOCK/**` 同一套 67-vector acceptance。
+独立 QA 报告的 `STALE_INFLIGHT_COMPLETION_RELABELED_AFTER_REBIND` 已在 reference worker runtime 中按 authority ownership 修复。
+
+每个新 detector tick 现在捕获 immutable authority：
 
 ```text
-reference selftest: PASS (8/8)
+runtimeEpoch
+session
+pairGeneration
+pairNonce
+unique tickAuthorityId
+```
+
+`finishTick(...)` 在清除 in-flight slot 或发布任何 state 之前，必须先证明传入 `tickAuthority`：
+
+1. 仍然持有当前唯一 in-flight slot；
+2. runtime epoch 仍是当前 epoch；
+3. session / pairGeneration / pairNonce 仍是当前 pair。
+
+任一条件不满足时 completion 直接 no-op，不发布、不 relabel、不清除当前 slot。rebind/reinstall/runtime epoch reset/Worker replacement 会立即撤销旧 authority。
+
+对于旧的 untagged completion API：在没有 unresolved-tick revoke 时继续兼容现有同步 reference vectors；一旦发生旧 tick 未完成即 rebind/reset，untagged completion 因无法证明归属而 fail closed，不能借用新 generation 的 authority。正式异步接线必须传递启动时捕获的 `tickAuthority`。
+
+## Deterministic regression
+
+新增：
+
+`parallel/ALPHA_TRANSPORT_IMPL/stale_inflight_generation_regression.mjs`
+
+覆盖：
+
+- generation 1 tick unresolved -> rebind generation 2；
+- generation 2 启动新 tick；
+- generation 1 先完成：publish `null`，generation-2 in-flight ownership 保持；
+- generation 2 随后正常完成并被 page authority 接受；
+- runtime epoch replacement；
+- Worker replacement；
+- unresolved-rebind 后 legacy untagged completion fail closed；
+- one-in-flight / skipped tick / queueDepth=0 保持。
+
+验证结果：
+
+```text
+stale in-flight generation regression: PASS (5/5)
+former adversarial stale-generation repro: PASS
+  stale completion accepted by pair2: false
+  visible pair2 warnings from stale completion: 0
+  generation2 inFlight after stale completion: true
+frozen Safe Transport contract catalog: PASS (67/67)
+readOnly=true
+ramWrites=0
+inputInjection=false
+workerReplacement=false
+blobRewrite=false
+```
+
+验证使用 Node `v22.16.0`，并按当前 `acceptance_adapter.mjs` 的 V01-V67 原编号/原断言重跑冻结 catalog；mock provenance 未修改。
+
+## 修复提交
+
+```text
+f10c4c0f45e020f5bf150970c51a2abf28c5fec4  worker_runtime: immutable tick authority + stale revoke
+30b91f8ac337a31bc9f0ec038fe9aae6560bf00a  deterministic stale-generation regression
+4d6f0409e0b8062e3336352cd40d8d78a14a02b6  run_all gates catalog on targeted regression
+1a2fa867fef7d392e94a603a17d6c48470782911  integration-facing tick authority documentation
+```
+
+## 冻结 contract 保持
+
+```text
+reference selftest baseline: PASS
 existing contract catalog: PASS (67/67)
 startup/Worker safety: 5/5
 target selection: 6/6
@@ -21,34 +87,9 @@ timing/backpressure: 6/6
 failure injection: 7/7
 read-only/no-input: 6/6
 RC4/RC5 regression baseline: 4/4
-readOnly=true
-ramWrites=0
-inputInjection=false
-workerReplacement=false
-blobRewrite=false
 ```
 
-`acceptance_adapter.mjs` 直接读取现有 mock 的 `fixtures.json`、`vectors.json`、`expected_results.json`，按 V01-V67 原编号执行 reference implementation；没有修改 upstream mock，也没有重新发明更宽松标准。
-
-## 已实现
-
-- session / page-owned `pairGeneration` / 128-bit `pairNonce` / monotonic `seq` envelope；
-- Launcher exact World 921031 identity handshake 输入 gate；
-- detector-local identity signature + safety gate；
-- runtime epoch / Worker replacement authority reset；
-- state / diag authority；
-- 1500 ms fresh / 1501 ms stale；
-- reconnect/rebind 旧 generation 立即失权；
-- 最多一个 detector tick in-flight；
-- missed intervals skip、无 catch-up queue、queueDepth=0；
-- warning change / clear 立即 publication；
-- unchanged state <=250 ms bounded heartbeat；
-- warning authority fail-closed、gameplay fail-open；
-- target/session/tab exact association；
-- fixed HUD transport output contract；
-- `readOnly=true / ramWrites=0 / inputInjection=false` 强制字段；
-- canonical Alpha core adapter，不复制 warning predicate；
-- 无真实 Browser dependency，所有 topology/runtime 通过 adapter 注入。
+`acceptance_adapter.mjs` 仍直接读取现有 `parallel/ALPHA_TRANSPORT_MOCK/**` 的冻结 fixtures/vectors/expected results；没有修改 upstream mock，也没有放宽标准。
 
 ## Provenance
 
@@ -61,19 +102,22 @@ RC5 bootstrap blob:           2729325bae0a860bf9375b47f2c9787b09f8340f
 Canonical Alpha core blob:    267a44190744b6848b0685712c3d5572627d3a8a
 ```
 
-## 正式 Integration 还需接入的最小接口
+## Delivery reassessment
 
-1. **Discovery adapter**：hardening 后 page config + target list + exact page/Worker association。
-2. **Native Worker runtime adapter**：Launcher identity probe、detector-local identity proof、observer install/status/stop。
-3. **Alpha detector adapter**：release-pinned canonical `WOFAlphaCore`。
-4. **Page/HUD transport adapter**：page-owned generation bind/status/reset。
+Authoritative classification: `ACCEPTED_WAITING_GATE` until a fresh independent QA consumes this fix.
 
-这些接口都已经在 reference implementation 中定义；未来接线不需要改变 warning authority、identity、stale、backpressure 或安全语义。
+Actual leverage: closes the P1 warning-authority race that allowed stale detector evidence to be relabeled after rebind, and restores a safe path toward formal real-adapter integration without expanding scope or requiring Owner Browser work.
+
+Critical-path impact: fresh independent Alpha Transport QA is newly unblocked; formal real-adapter integration should remain gated on that fresh QA rather than consume the previous pre-fix QA result.
+
+Release-readiness impact: warning authority is now fail-closed across unresolved generation/epoch replacement in the reference implementation, but this delivery does not self-certify independent QA.
+
+Convergence: no further implementation expansion is decision-changing in this stage; stop at fresh-QA handoff.
 
 ## Owner gate
 
-你现在需要操作：**NO**。
+Owner Browser/WOF action: **NO**.
 
 ## Stop condition
 
-**ALPHA TRANSPORT REFERENCE IMPLEMENTATION READY FOR INTEGRATION**
+**ALPHA TRANSPORT STALE IN-FLIGHT GENERATION FIX READY — READY FOR FRESH QA**
