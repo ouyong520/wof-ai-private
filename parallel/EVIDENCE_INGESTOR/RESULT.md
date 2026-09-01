@@ -1,0 +1,55 @@
+# Evidence Auto-Ingestor Result
+
+Date: 2026-09-01
+Status: **REPOSITORY READY**
+
+## Implemented
+
+- 独立 `parallel/EVIDENCE_INGESTOR/**`，Python 标准库实现，无新增 pip 依赖。
+- 默认只读扫描 `%USERPROFILE%\Documents\WOF_RESULTS`。
+- 识别 PYLAUNCH proof、WOF-052L room/merged/fleet、Browser Fleet status、Toolkit Regression/Diagnostics、RC5 regression/QA、日志文本。
+- JSON 损坏隔离；单文件失败不会阻断整批。
+- known schema/version/artifact 校验。
+- `readOnly` / `ramWrites` / `inputInjection` 安全汇总。
+- World 921031 + golden SHA-256 校验（仅在该证据类型具备身份职责时强制）。
+- SHA-256 内容去重，不删除原始文件。
+- run / room / tool / date 分类。
+- 输出紧凑 `SUMMARY.json` 和中文 `结果汇总.txt`。
+- 可选/一键 ZIP 结果包；重复内容只打包一次。
+- 自动排除 `_自动整理/**`，重复运行不会自吞输出。
+- 所有正常用户可见 CLI/CMD 信息默认简体中文。
+
+## Safety boundary
+
+- `product/alpha/**`: untouched
+- PYLAUNCH Worker discovery: untouched
+- WOF-052L collection logic: untouched
+- game RAM writes: 0
+- gameplay input injection: 0
+- source evidence mutation/deletion: 0
+
+## Automated tests
+
+`python -m unittest discover -s parallel/EVIDENCE_INGESTOR/tests -p test_*.py -v`
+
+Result: **13/13 PASS** on repository-side implementation fixture tests.
+
+Coverage includes:
+
+- valid PYLAUNCH + World 921031
+- broken JSON isolation
+- duplicate detection
+- RAM write violation
+- World SHA mismatch
+- WOF-052L merged
+- Browser Fleet
+- unknown schema warning
+- output self-exclusion
+- ZIP package
+- log indexing
+- Alpha RC5 regression recognition
+- Alpha RC5 QA recognition
+
+## Remaining real-Windows proof
+
+Repository implementation has no blocker. The only platform-specific acceptance is the minimal double-click proof documented in `README.md`; it does not require DevTools/JS/game input.
