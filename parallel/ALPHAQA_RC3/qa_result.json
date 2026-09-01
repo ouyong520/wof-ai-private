@@ -1,0 +1,41 @@
+{
+  "version": "wof-alpha-rc3-independent-qa-v1",
+  "date": "2026-09-01",
+  "verdict": "BLOCKED_P1",
+  "eligibleForOwnerBrowserAcceptance": false,
+  "productFilesModifiedByQa": 0,
+  "blockers": [
+    {
+      "id": "ALPHAQA-RC3-001",
+      "severity": "P1",
+      "title": "runtime diagnostic does not immediately invalidate the last warning",
+      "deterministic": true,
+      "maximumObservedByControlFlowMs": 1500,
+      "requiredInvariant": "warning state -> runtime diag -> zero user warnings immediately"
+    }
+  ],
+  "checks": {
+    "world921031ExactFullSha256FailClosed": "PASS_OFFLINE_SOURCE",
+    "goldenSha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
+    "sameTypeSlotReuseNoHistoryInheritance": "PASS_OFFLINE_SOURCE",
+    "productionRuleCount": 2,
+    "productionRules": [
+      "T18_5440_CYCLE_BODY7512_TM4_LEVEL_90",
+      "T18_5424_CYCLE_BODY7520_TM4_LEVEL_90"
+    ],
+    "quarantinedRuleCount": 4,
+    "f1ToF4UserAlertPath": "ABSENT_PASS",
+    "sessionIsolation": "PASS_OFFLINE_SOURCE",
+    "multiWarningHudModel": "PASS_OFFLINE_SOURCE",
+    "legacyHudDispose": "PASS_OFFLINE_SOURCE",
+    "normalUserBootstrap": "PASS_OFFLINE_SOURCE_LIVE_DEFERRED",
+    "targetSideUnknown": "PASS_OFFLINE_SOURCE_EXCEPT_RUNTIME_DIAG_CLEAR",
+    "readOnlyNoInput": "PASS_OFFLINE_SOURCE",
+    "glRestoration": "PASS_OFFLINE_SOURCE",
+    "runtimeErrorImmediateClear": "FAIL_P1"
+  },
+  "humanBrowserTests": {
+    "requested": false,
+    "reason": "stop condition B reached before Browser acceptance; fix P1 first"
+  }
+}
