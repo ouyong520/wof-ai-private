@@ -228,9 +228,24 @@ def normalize_pylaunch(
     return out
 
 
+def _trusted_fleet_supervisor_heartbeat(text: str) -> bool:
+    """Match only the exact periodic status emitted by FleetSupervisor.run()."""
+    prefix = "Fleet entries "
+    middle = " | Recorder workers "
+    suffix = " | READ ONLY / RAM writes 0"
+    if not text.startswith(prefix) or not text.endswith(suffix):
+        return False
+    body = text[len(prefix):-len(suffix)]
+    parts = body.split(middle)
+    if len(parts) != 2 or not parts[0].isdigit() or not parts[1].isdigit():
+        return False
+    entries, workers = int(parts[0]), int(parts[1])
+    return entries >= 1 and workers >= 1
+
+
 @dataclass
 class RecorderEvidence:
-    # Current authority. A fatal event explicitly revokes these fields.
+    # Current admission authority. A fatal event explicitly revokes these fields.
     admitted: bool = False
     admission_line: str | None = None
     fatal: bool = False
@@ -239,11 +254,20 @@ class RecorderEvidence:
     admission_generation: int | None = None
     fatal_generation: int | None = None
 
-    # Child-output heartbeat/generation. Any stdout line, including the
-    # supervisor's carriage-return status line, advances this generation.
+    # Generic child stdout is diagnostic only. It must never renew authority.
     output_generation: int = 0
     admission_output_generation: int | None = None
     last_output_utc: str | None = None
+    _last_diagnostic_output_monotonic: float | None = field(default=None, repr=False)
+
+    # Trusted authority heartbeat/admission generation. Keep the historical
+    # _last_output_monotonic field name as the internal authority freshness
+    # clock so existing repository fixtures that explicitly age it stay valid.
+    authority_generation: int = 0
+    admission_authority_generation: int | None = None
+    last_authority_utc: str | None = None
+    last_authority_kind: str | None = None
+    last_heartbeat_line: str | None = None
     _last_output_monotonic: float | None = field(default=None, repr=False)
 
     # Historical evidence is retained for diagnostics but never satisfies readiness.
@@ -252,6 +276,14 @@ class RecorderEvidence:
     ever_fatal: bool = False
     last_fatal_line: str | None = None
     lines: list[str] = field(default_factory=list)
+
+    def _advance_authority(self, kind: str, line: str) -> None:
+        self.authority_generation += 1
+        self.last_authority_utc = utc_now()
+        self.last_authority_kind = kind
+        self._last_output_monotonic = time.monotonic()
+        if kind == "supervisor-heartbeat":
+            self.last_heartbeat_line = line
 
     @property
     def current_fresh(self) -> bool:
@@ -262,6 +294,12 @@ class RecorderEvidence:
 
     @property
     def output_age_seconds(self) -> float | None:
+        if self._last_diagnostic_output_monotonic is None:
+            return None
+        return round(max(0.0, time.monotonic() - self._last_diagnostic_output_monotonic), 3)
+
+    @property
+    def authority_age_seconds(self) -> float | None:
         if self._last_output_monotonic is None:
             return None
         return round(max(0.0, time.monotonic() - self._last_output_monotonic), 3)
@@ -285,11 +323,28 @@ class RecorderEvidence:
         if not text:
             return
 
+        # Every non-empty fragment remains available as diagnostics, but this
+        # generic path deliberately does not touch authority freshness.
         self.output_generation += 1
         self.last_output_utc = utc_now()
-        self._last_output_monotonic = time.monotonic()
+        self._last_diagnostic_output_monotonic = time.monotonic()
         self.lines.append(text)
         self.lines[:] = self.lines[-120:]
+
+        # Revocation wins even if malformed text happens to contain a positive marker.
+        if any(mark in text for mark in FATAL_MARKERS):
+            self.generation += 1
+            self.fatal = True
+            self.fatal_line = text
+            self.fatal_generation = self.generation
+            self.admitted = False
+            self.admission_line = None
+            self.admission_generation = None
+            self.admission_output_generation = None
+            self.admission_authority_generation = None
+            self.ever_fatal = True
+            self.last_fatal_line = text
+            return
 
         if any(mark in text for mark in ADMISSION_MARKERS):
             self.generation += 1
@@ -301,18 +356,15 @@ class RecorderEvidence:
             self.fatal_line = None
             self.ever_admitted = True
             self.last_admission_line = text
+            self._advance_authority("admission", text)
+            self.admission_authority_generation = self.authority_generation
+            return
 
-        if any(mark in text for mark in FATAL_MARKERS):
-            self.generation += 1
-            self.fatal = True
-            self.fatal_line = text
-            self.fatal_generation = self.generation
-            self.admitted = False
-            self.admission_line = None
-            self.admission_generation = None
-            self.admission_output_generation = None
-            self.ever_fatal = True
-            self.last_fatal_line = text
+        # The only non-admission freshness renewal is the exact FleetSupervisor
+        # periodic status line from fleet_recorder.py, and only while an existing
+        # admission is still the current, non-revoked identity authority.
+        if self.admitted and not self.fatal and _trusted_fleet_supervisor_heartbeat(text):
+            self._advance_authority("supervisor-heartbeat", text)
 
 
 def _valid_exit_code(value: Any) -> bool:
@@ -543,6 +595,7 @@ def build_status(
         },
         "freshnessPolicy": {
             "pylaunchMaxAgeSeconds": PYLAUNCH_FRESHNESS_SECONDS,
+            "recorderAuthorityMaxAgeSeconds": RECORDER_FRESHNESS_SECONDS,
             "recorderOutputMaxAgeSeconds": RECORDER_FRESHNESS_SECONDS,
             "processObservationMaxAgeSeconds": PROCESS_FRESHNESS_SECONDS,
             "generationAdvanceWaitSeconds": GENERATION_ADVANCE_WAIT_SECONDS,
@@ -561,6 +614,12 @@ def build_status(
                 "fatalEvidence": recorder.fatal_line,
                 "currentHealth": recorder.current_health,
                 "currentFresh": recorder.current_fresh,
+                "lastAuthorityUtc": recorder.last_authority_utc,
+                "authorityAgeSeconds": recorder.authority_age_seconds,
+                "authorityGeneration": recorder.authority_generation,
+                "admissionAuthorityGeneration": recorder.admission_authority_generation,
+                "lastAuthorityKind": recorder.last_authority_kind,
+                "lastHeartbeatEvidence": recorder.last_heartbeat_line,
                 "lastOutputUtc": recorder.last_output_utc,
                 "outputAgeSeconds": recorder.output_age_seconds,
                 "outputGeneration": recorder.output_generation,
@@ -612,7 +671,7 @@ def authority_generation_snapshot(status: dict[str, Any]) -> dict[str, Any]:
     processes = live.get("processes") if isinstance(live.get("processes"), dict) else {}
     return {
         "pylaunch": pylaunch.get("authorityGeneration"),
-        "recorder": recorder.get("outputGeneration"),
+        "recorder": recorder.get("authorityGeneration"),
         "process": processes.get("observationGeneration"),
     }
 
@@ -894,8 +953,8 @@ def run_live(root: Path) -> int:
             value = persist("LIVE_WAITING")
             if value["live"]["ownerPromptEligible"]:
                 # A stale-but-still-within-age-window PASS is not enough.
-                # Require a newer PYLAUNCH proof generation and a newer Recorder
-                # heartbeat before the Owner prompt becomes reachable.
+                # Require a newer PYLAUNCH proof generation and a newer trusted
+                # Recorder authority heartbeat before the Owner prompt is reachable.
                 before_prompt = authority_generation_snapshot(value)
                 gate, advanced = wait_for_new_current_generation(
                     before_prompt, "PLAYABILITY_GATE"
