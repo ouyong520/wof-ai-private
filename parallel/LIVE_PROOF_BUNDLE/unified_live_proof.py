@@ -35,6 +35,14 @@ READINESS = {
     "analysis": "repository-ready",
 }
 
+# PYLAUNCH and Recorder both normally publish/update at about 1 Hz.
+# Keep a few missed polls of tolerance, but never let stale success retain authority.
+PYLAUNCH_FRESHNESS_SECONDS = 8.0
+RECORDER_FRESHNESS_SECONDS = 8.0
+PROCESS_FRESHNESS_SECONDS = 2.0
+CLOCK_SKEW_TOLERANCE_SECONDS = 2.0
+GENERATION_ADVANCE_WAIT_SECONDS = 5.0
+
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
@@ -68,6 +76,33 @@ def choose_free_port(start: int = 9423, end: int = 9499) -> int:
             except OSError:
                 pass
     raise RuntimeError("没有可用的本机 Proof CDP 端口（9423..9499）")
+
+
+def _parse_utc(value: Any) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    text = value.strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return None
+    return parsed.astimezone(timezone.utc)
+
+
+def _age_seconds(value: Any, *, now: datetime | None = None) -> float | None:
+    parsed = _parse_utc(value)
+    if parsed is None:
+        return None
+    current = now or datetime.now(timezone.utc)
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=timezone.utc)
+    else:
+        current = current.astimezone(timezone.utc)
+    return (current - parsed).total_seconds()
 
 
 def normalize_fleet(manifest: dict[str, Any] | None) -> dict[str, Any]:
@@ -112,20 +147,64 @@ def normalize_fleet(manifest: dict[str, Any] | None) -> dict[str, Any]:
     return out
 
 
-def normalize_pylaunch(proof: dict[str, Any] | None) -> dict[str, Any]:
+def normalize_pylaunch(
+    proof: dict[str, Any] | None,
+    *,
+    now: datetime | None = None,
+) -> dict[str, Any]:
     out = {
-        "available": False, "automatedPass": False, "browser": False, "page": False,
-        "worker": False, "wasmHeap": False, "world921031": False, "readOnly": None,
-        "ramWrites": None, "inputInjection": None, "worldSha256": None,
-        "identityReason": None, "discoveryPath": None, "lastError": None,
+        "available": False,
+        # automatedPass is retained as historical/diagnostic positive evidence.
+        "automatedPass": False,
+        # currentAutomatedPass is the only success authority used by readiness.
+        "currentAutomatedPass": False,
+        "browser": False,
+        "page": False,
+        "worker": False,
+        "wasmHeap": False,
+        "world921031": False,
+        "readOnly": None,
+        "ramWrites": None,
+        "inputInjection": None,
+        "worldSha256": None,
+        "identityReason": None,
+        "discoveryPath": None,
+        "lastError": None,
         "targetTopology": None,
+        "lastUpdateUtc": None,
+        "freshnessKnown": False,
+        "fresh": False,
+        "ageSeconds": None,
+        "freshnessLimitSeconds": PYLAUNCH_FRESHNESS_SECONDS,
+        "freshnessReason": "proof unavailable",
+        "authorityGeneration": None,
     }
     if not proof:
         return out
+
     c = proof.get("checks") if isinstance(proof.get("checks"), dict) else {}
+    raw_pass = proof.get("automatedResult") == "PASS"
+    last_update = proof.get("lastUpdateUtc")
+    age = _age_seconds(last_update, now=now)
+    freshness_known = age is not None
+    fresh = bool(
+        freshness_known
+        and age is not None
+        and -CLOCK_SKEW_TOLERANCE_SECONDS <= age <= PYLAUNCH_FRESHNESS_SECONDS
+    )
+    if not freshness_known:
+        freshness_reason = "lastUpdateUtc 缺失或格式错误"
+    elif age is not None and age < -CLOCK_SKEW_TOLERANCE_SECONDS:
+        freshness_reason = "lastUpdateUtc 位于不可接受的未来时间"
+    elif age is not None and age > PYLAUNCH_FRESHNESS_SECONDS:
+        freshness_reason = "PYLAUNCH 当前成功证据已过期"
+    else:
+        freshness_reason = "current"
+
     out.update({
         "available": True,
-        "automatedPass": proof.get("automatedResult") == "PASS",
+        "automatedPass": raw_pass,
+        "currentAutomatedPass": bool(raw_pass and fresh),
         "browser": c.get("Browser") == "OK",
         "page": c.get("WOF page") == "OK",
         "worker": c.get("Worker") == "OK",
@@ -139,6 +218,12 @@ def normalize_pylaunch(proof: dict[str, Any] | None) -> dict[str, Any]:
         "discoveryPath": proof.get("discoveryPath"),
         "lastError": proof.get("lastError"),
         "targetTopology": proof.get("targetTopology"),
+        "lastUpdateUtc": last_update,
+        "freshnessKnown": freshness_known,
+        "fresh": fresh,
+        "ageSeconds": round(age, 3) if age is not None else None,
+        "freshnessReason": freshness_reason,
+        "authorityGeneration": last_update if freshness_known else None,
     })
     return out
 
@@ -154,6 +239,13 @@ class RecorderEvidence:
     admission_generation: int | None = None
     fatal_generation: int | None = None
 
+    # Child-output heartbeat/generation. Any stdout line, including the
+    # supervisor's carriage-return status line, advances this generation.
+    output_generation: int = 0
+    admission_output_generation: int | None = None
+    last_output_utc: str | None = None
+    _last_output_monotonic: float | None = field(default=None, repr=False)
+
     # Historical evidence is retained for diagnostics but never satisfies readiness.
     ever_admitted: bool = False
     last_admission_line: str | None = None
@@ -162,13 +254,28 @@ class RecorderEvidence:
     lines: list[str] = field(default_factory=list)
 
     @property
+    def current_fresh(self) -> bool:
+        if self._last_output_monotonic is None:
+            return False
+        age = max(0.0, time.monotonic() - self._last_output_monotonic)
+        return age <= RECORDER_FRESHNESS_SECONDS
+
+    @property
+    def output_age_seconds(self) -> float | None:
+        if self._last_output_monotonic is None:
+            return None
+        return round(max(0.0, time.monotonic() - self._last_output_monotonic), 3)
+
+    @property
     def current_healthy(self) -> bool:
-        return self.admitted and not self.fatal
+        return self.admitted and not self.fatal and self.current_fresh
 
     @property
     def current_health(self) -> str:
         if self.fatal:
             return "FATAL"
+        if self.admitted and not self.current_fresh:
+            return "STALE"
         if self.admitted:
             return "HEALTHY"
         return "WAITING"
@@ -177,6 +284,10 @@ class RecorderEvidence:
         text = line.strip()
         if not text:
             return
+
+        self.output_generation += 1
+        self.last_output_utc = utc_now()
+        self._last_output_monotonic = time.monotonic()
         self.lines.append(text)
         self.lines[:] = self.lines[-120:]
 
@@ -185,6 +296,7 @@ class RecorderEvidence:
             self.admitted = True
             self.admission_line = text
             self.admission_generation = self.generation
+            self.admission_output_generation = self.output_generation
             self.fatal = False
             self.fatal_line = None
             self.ever_admitted = True
@@ -198,30 +310,115 @@ class RecorderEvidence:
             self.admitted = False
             self.admission_line = None
             self.admission_generation = None
+            self.admission_output_generation = None
             self.ever_fatal = True
             self.last_fatal_line = text
 
 
+def _valid_exit_code(value: Any) -> bool:
+    return value is None or (isinstance(value, int) and not isinstance(value, bool))
+
+
 def normalize_process_health(process_state: dict[str, Any] | None) -> dict[str, Any]:
-    health_known = process_state is not None
-    state = dict(process_state or {})
-    launcher_required = bool(state.get("launcherRequired", False))
-    recorder_required = bool(state.get("recorderRequired", False))
+    required_fields = (
+        "observedAtUtc",
+        "observationGeneration",
+        "launcherRequired",
+        "recorderRequired",
+        "launcherLive",
+        "recorderLive",
+        "launcherExitCode",
+        "recorderExitCode",
+    )
+    state = dict(process_state) if isinstance(process_state, dict) else {}
+    missing = [name for name in required_fields if name not in state]
+    malformed: list[str] = []
+
+    if process_state is None:
+        malformed.append("process mapping unavailable")
+    elif not isinstance(process_state, dict):
+        malformed.append("process mapping is not an object")
+
+    launcher_required = state.get("launcherRequired")
+    recorder_required = state.get("recorderRequired")
+    launcher_live = state.get("launcherLive")
+    recorder_live = state.get("recorderLive")
     launcher_exit = state.get("launcherExitCode")
     recorder_exit = state.get("recorderExitCode")
-    launcher_live = None if not launcher_required else launcher_exit is None
-    recorder_live = None if not recorder_required else recorder_exit is None
+    generation = state.get("observationGeneration")
+    observed = state.get("observedAtUtc")
+
+    for name, value in (
+        ("launcherRequired", launcher_required),
+        ("recorderRequired", recorder_required),
+        ("launcherLive", launcher_live),
+        ("recorderLive", recorder_live),
+    ):
+        if name in state and not isinstance(value, bool):
+            malformed.append(f"{name} must be boolean")
+
+    if "launcherExitCode" in state and not _valid_exit_code(launcher_exit):
+        malformed.append("launcherExitCode must be integer or null")
+    if "recorderExitCode" in state and not _valid_exit_code(recorder_exit):
+        malformed.append("recorderExitCode must be integer or null")
+    if "observationGeneration" in state and (
+        not isinstance(generation, int) or isinstance(generation, bool) or generation <= 0
+    ):
+        malformed.append("observationGeneration must be positive integer")
+
+    age = _age_seconds(observed)
+    if "observedAtUtc" in state and age is None:
+        malformed.append("observedAtUtc must be timezone-aware ISO-8601")
+
+    # Explicit live facts and exit facts must agree.
+    if isinstance(launcher_live, bool) and _valid_exit_code(launcher_exit):
+        if launcher_live and launcher_exit is not None:
+            malformed.append("launcherLive conflicts with launcherExitCode")
+        if launcher_required is True and launcher_live is False and launcher_exit is None:
+            malformed.append("launcher exit code missing for non-live required launcher")
+    if isinstance(recorder_live, bool) and _valid_exit_code(recorder_exit):
+        if recorder_live and recorder_exit is not None:
+            malformed.append("recorderLive conflicts with recorderExitCode")
+        if recorder_required is True and recorder_live is False and recorder_exit is None:
+            malformed.append("recorder exit code missing for non-live required recorder")
+
+    health_known = bool(not missing and not malformed)
+    current = bool(
+        health_known
+        and age is not None
+        and -CLOCK_SKEW_TOLERANCE_SECONDS <= age <= PROCESS_FRESHNESS_SECONDS
+    )
+    if not health_known:
+        freshness_reason = "process health mapping 不完整或格式错误"
+    elif age is not None and age < -CLOCK_SKEW_TOLERANCE_SECONDS:
+        freshness_reason = "process observation 位于不可接受的未来时间"
+    elif age is not None and age > PROCESS_FRESHNESS_SECONDS:
+        freshness_reason = "process observation 已过期"
+    else:
+        freshness_reason = "current"
+
     healthy = bool(
         health_known
-        and (not launcher_required or launcher_live is True)
-        and (not recorder_required or recorder_live is True)
+        and current
+        and launcher_required is True
+        and recorder_required is True
+        and launcher_live is True
+        and recorder_live is True
     )
     state.update({
         "healthKnown": health_known,
+        "current": current,
+        "missingFields": missing,
+        "malformedReasons": malformed,
+        "observedAgeSeconds": round(age, 3) if age is not None else None,
+        "freshnessLimitSeconds": PROCESS_FRESHNESS_SECONDS,
+        "freshnessReason": freshness_reason,
         "launcherRequired": launcher_required,
         "recorderRequired": recorder_required,
         "launcherLive": launcher_live,
         "recorderLive": recorder_live,
+        "launcherExitCode": launcher_exit,
+        "recorderExitCode": recorder_exit,
         "healthy": healthy,
     })
     return state
@@ -232,17 +429,45 @@ def _append_unique(items: list[str], value: str) -> None:
         items.append(value)
 
 
-def current_blockers(blockers: list[str], recorder: RecorderEvidence,
-                     process_state: dict[str, Any] | None) -> tuple[list[str], dict[str, Any]]:
+def current_blockers(
+    blockers: list[str],
+    recorder: RecorderEvidence,
+    process_state: dict[str, Any] | None,
+    pylaunch: dict[str, Any] | None = None,
+) -> tuple[list[str], dict[str, Any]]:
     effective = list(blockers)
     process = normalize_process_health(process_state)
+
     if recorder.fatal:
         detail = recorder.fatal_line or recorder.last_fatal_line or "Recorder 当前处于 fatal 状态"
         _append_unique(effective, "Recorder 致命状态：" + detail)
-    if process.get("launcherRequired") and process.get("launcherLive") is False:
-        _append_unique(effective, f"PYLAUNCH 子进程已退出（code={process.get('launcherExitCode')}）")
-    if process.get("recorderRequired") and process.get("recorderLive") is False:
-        _append_unique(effective, f"Recorder 子进程已退出（code={process.get('recorderExitCode')}）")
+    elif recorder.admitted and not recorder.current_fresh:
+        _append_unique(effective, "Recorder 当前成功证据已过期；旧 admission 仅保留用于诊断")
+
+    if process_state is not None and not process.get("healthKnown"):
+        _append_unique(effective, "PYLAUNCH/Recorder 子进程健康信息不完整或格式错误")
+    elif process.get("healthKnown") and not process.get("current"):
+        _append_unique(effective, "PYLAUNCH/Recorder 子进程健康观测已过期")
+    elif process.get("healthKnown"):
+        positive_child_success = bool(
+            (pylaunch and pylaunch.get("automatedPass") is True) or recorder.admitted
+        )
+        if (
+            positive_child_success
+            and (
+                process.get("launcherRequired") is not True
+                or process.get("recorderRequired") is not True
+            )
+        ):
+            _append_unique(effective, "统一验证要求 PYLAUNCH 与 Recorder 两个子进程都必须显式 required")
+        if process.get("launcherRequired") is True and process.get("launcherLive") is False:
+            _append_unique(effective, f"PYLAUNCH 子进程已退出（code={process.get('launcherExitCode')}）")
+        if process.get("recorderRequired") is True and process.get("recorderLive") is False:
+            _append_unique(effective, f"Recorder 子进程已退出（code={process.get('recorderExitCode')}）")
+
+    if pylaunch and pylaunch.get("automatedPass") is True and pylaunch.get("fresh") is not True:
+        reason = pylaunch.get("freshnessReason") or "PYLAUNCH 当前成功证据 freshness 未知"
+        _append_unique(effective, "PYLAUNCH PASS 不能作为当前 authority：" + str(reason))
     return effective, process
 
 
@@ -255,27 +480,44 @@ def safety_ok(fleet: dict[str, Any], pylaunch: dict[str, Any], recorder: Recorde
     )
 
 
-def automated_ready(fleet: dict[str, Any], pylaunch: dict[str, Any], recorder: RecorderEvidence,
-                    process_state: dict[str, Any] | None = None,
-                    blockers: list[str] | None = None) -> bool:
-    effective_blockers, process = current_blockers(list(blockers or []), recorder, process_state)
+def automated_ready(
+    fleet: dict[str, Any],
+    pylaunch: dict[str, Any],
+    recorder: RecorderEvidence,
+    process_state: dict[str, Any] | None = None,
+    blockers: list[str] | None = None,
+) -> bool:
+    effective_blockers, process = current_blockers(
+        list(blockers or []), recorder, process_state, pylaunch
+    )
     return bool(
         not effective_blockers and process.get("healthy") is True
         and fleet.get("browser") and fleet.get("page") and fleet.get("workerIndicator")
         and fleet.get("workerAuthority") == "cheap-indicator-only"
         and fleet.get("world921031Authoritative") is False
-        and pylaunch.get("automatedPass") and pylaunch.get("world921031")
-        and recorder.current_healthy and safety_ok(fleet, pylaunch, recorder)
+        and pylaunch.get("currentAutomatedPass") is True
+        and pylaunch.get("world921031")
+        and recorder.current_healthy
+        and safety_ok(fleet, pylaunch, recorder)
     )
 
 
-def build_status(*, run_id: str, run_dir: Path, fleet_manifest: dict[str, Any] | None,
-                 pylaunch_proof: dict[str, Any] | None, recorder: RecorderEvidence,
-                 playability: str, stage: str, blockers: list[str],
-                 process_state: dict[str, Any] | None = None) -> dict[str, Any]:
+def build_status(
+    *,
+    run_id: str,
+    run_dir: Path,
+    fleet_manifest: dict[str, Any] | None,
+    pylaunch_proof: dict[str, Any] | None,
+    recorder: RecorderEvidence,
+    playability: str,
+    stage: str,
+    blockers: list[str],
+    process_state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    now = datetime.now(timezone.utc)
     fleet = normalize_fleet(fleet_manifest)
-    pylaunch = normalize_pylaunch(pylaunch_proof)
-    effective_blockers, process = current_blockers(blockers, recorder, process_state)
+    pylaunch = normalize_pylaunch(pylaunch_proof, now=now)
+    effective_blockers, process = current_blockers(blockers, recorder, process_state, pylaunch)
     auto = automated_ready(fleet, pylaunch, recorder, process_state, effective_blockers)
     owner_prompt_eligible = auto and playability == "NOT_READY"
     passed = bool(not effective_blockers and auto and playability == "CONFIRMED")
@@ -289,18 +531,41 @@ def build_status(*, run_id: str, run_dir: Path, fleet_manifest: dict[str, Any] |
     )
     safe = safety_ok(fleet, pylaunch, recorder)
     return {
-        "schema": SCHEMA, "runId": run_id, "updatedAtUtc": utc_now(), "stage": stage,
-        "repository": {"result": "PASS", "liveProofClaimed": False,
-                       "readiness": READINESS, "stopCondition": STOP_CONDITION},
+        "schema": SCHEMA,
+        "runId": run_id,
+        "updatedAtUtc": utc_now(),
+        "stage": stage,
+        "repository": {
+            "result": "PASS",
+            "liveProofClaimed": False,
+            "readiness": READINESS,
+            "stopCondition": STOP_CONDITION,
+        },
+        "freshnessPolicy": {
+            "pylaunchMaxAgeSeconds": PYLAUNCH_FRESHNESS_SECONDS,
+            "recorderOutputMaxAgeSeconds": RECORDER_FRESHNESS_SECONDS,
+            "processObservationMaxAgeSeconds": PROCESS_FRESHNESS_SECONDS,
+            "generationAdvanceWaitSeconds": GENERATION_ADVANCE_WAIT_SECONDS,
+        },
         "live": {
-            "result": result, "automatedChecksReady": auto,
+            "result": result,
+            "automatedChecksReady": auto,
             "ownerPromptEligible": owner_prompt_eligible,
             "ownerPlayabilityConfirmation": playability,
-            "fleetDiscoveryV2": fleet, "pylaunchAuthoritativeProof": pylaunch,
+            "fleetDiscoveryV2": fleet,
+            "pylaunchAuthoritativeProof": pylaunch,
             "recorderDiscoveryV2Admission": {
-                "admitted": recorder.admitted, "evidence": recorder.admission_line,
-                "fatal": recorder.fatal, "fatalEvidence": recorder.fatal_line,
+                "admitted": recorder.admitted,
+                "evidence": recorder.admission_line,
+                "fatal": recorder.fatal,
+                "fatalEvidence": recorder.fatal_line,
                 "currentHealth": recorder.current_health,
+                "currentFresh": recorder.current_fresh,
+                "lastOutputUtc": recorder.last_output_utc,
+                "outputAgeSeconds": recorder.output_age_seconds,
+                "outputGeneration": recorder.output_generation,
+                "admissionOutputGeneration": recorder.admission_output_generation,
+                "freshnessLimitSeconds": RECORDER_FRESHNESS_SECONDS,
                 "generation": recorder.generation,
                 "admissionGeneration": recorder.admission_generation,
                 "fatalGeneration": recorder.fatal_generation,
@@ -312,36 +577,117 @@ def build_status(*, run_id: str, run_dir: Path, fleet_manifest: dict[str, Any] |
                 },
                 "recentOutput": recorder.lines[-30:],
             },
-            "safety": {"pass": safe, "readOnly": True if safe else None,
-                       "ramWrites": 0 if safe else None,
-                       "inputInjection": False if safe else None,
-                       "workerReplacement": False, "blobWorker": False},
-            "processes": process, "blockers": effective_blockers,
+            "safety": {
+                "pass": safe,
+                "readOnly": True if safe else None,
+                "ramWrites": 0 if safe else None,
+                "inputInjection": False if safe else None,
+                "workerReplacement": False,
+                "blobWorker": False,
+            },
+            "processes": process,
+            "blockers": effective_blockers,
         },
-        "overallResult": result, "tenRoomLongCaptureReady": passed,
-        "longCaptureAutoStarted": False, "ownerSummaryZh": summary,
-        "ownerReturn": {"json": str(run_dir / "UNIFIED_LIVE_PROOF_STATUS.json"),
-                        "alternative": "最终中文状态截图"},
+        "overallResult": result,
+        "tenRoomLongCaptureReady": passed,
+        "longCaptureAutoStarted": False,
+        "ownerSummaryZh": summary,
+        "ownerReturn": {
+            "json": str(run_dir / "UNIFIED_LIVE_PROOF_STATUS.json"),
+            "alternative": "最终中文状态截图",
+        },
     }
 
 
-def reader(proc: subprocess.Popen[str], prefix: str, evidence: RecorderEvidence | None,
-           q: "queue.Queue[tuple[str, str]]") -> None:
+def authority_generation_snapshot(status: dict[str, Any]) -> dict[str, Any]:
+    live = status.get("live") if isinstance(status.get("live"), dict) else {}
+    pylaunch = (
+        live.get("pylaunchAuthoritativeProof")
+        if isinstance(live.get("pylaunchAuthoritativeProof"), dict) else {}
+    )
+    recorder = (
+        live.get("recorderDiscoveryV2Admission")
+        if isinstance(live.get("recorderDiscoveryV2Admission"), dict) else {}
+    )
+    processes = live.get("processes") if isinstance(live.get("processes"), dict) else {}
+    return {
+        "pylaunch": pylaunch.get("authorityGeneration"),
+        "recorder": recorder.get("outputGeneration"),
+        "process": processes.get("observationGeneration"),
+    }
+
+
+def authority_generations_advanced(
+    previous: dict[str, Any],
+    current: dict[str, Any],
+) -> bool:
+    before_py = previous.get("pylaunch")
+    after_py = current.get("pylaunch")
+    before_rec = previous.get("recorder")
+    after_rec = current.get("recorder")
+    before_proc = previous.get("process")
+    after_proc = current.get("process")
+    return bool(
+        isinstance(before_py, str) and isinstance(after_py, str) and after_py != before_py
+        and isinstance(before_rec, int) and not isinstance(before_rec, bool)
+        and isinstance(after_rec, int) and not isinstance(after_rec, bool)
+        and after_rec > before_rec
+        and isinstance(before_proc, int) and not isinstance(before_proc, bool)
+        and isinstance(after_proc, int) and not isinstance(after_proc, bool)
+        and after_proc > before_proc
+    )
+
+
+def reader(
+    proc: subprocess.Popen[str],
+    prefix: str,
+    evidence: RecorderEvidence | None,
+    q: "queue.Queue[tuple[str, str]]",
+) -> None:
     if proc.stdout is None:
         return
-    for raw in proc.stdout:
-        line = raw.rstrip("\r\n")
+
+    # Recorder supervisor heartbeat uses '\r' + flush without '\n'. Read by
+    # character so that heartbeat is visible to freshness logic instead of
+    # being trapped indefinitely by line iteration.
+    buf: list[str] = []
+
+    def emit() -> None:
+        if not buf:
+            return
+        line = "".join(buf)
+        buf.clear()
         if evidence is not None:
             evidence.feed(line)
         q.put((prefix, line))
 
+    while True:
+        ch = proc.stdout.read(1)
+        if not ch:
+            break
+        if ch in {"\r", "\n"}:
+            emit()
+            continue
+        buf.append(ch)
+        if len(buf) >= 16384:
+            emit()
+    emit()
+
 
 def start_child(cmd: list[str], cwd: Path) -> subprocess.Popen[str]:
     flags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) if os.name == "nt" else 0
-    return subprocess.Popen(cmd, cwd=str(cwd), stdin=subprocess.DEVNULL,
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                            text=True, encoding="utf-8", errors="replace", bufsize=1,
-                            creationflags=flags)
+    return subprocess.Popen(
+        cmd,
+        cwd=str(cwd),
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        bufsize=1,
+        creationflags=flags,
+    )
 
 
 def stop_child(proc: subprocess.Popen[str] | None) -> None:
@@ -355,7 +701,8 @@ def stop_child(proc: subprocess.Popen[str] | None) -> None:
     except Exception:
         pass
     try:
-        proc.terminate(); proc.wait(timeout=5)
+        proc.terminate()
+        proc.wait(timeout=5)
     except Exception:
         try:
             proc.kill()
@@ -387,9 +734,10 @@ def run_live(root: Path) -> int:
     blockers: list[str] = []
     q: "queue.Queue[tuple[str, str]]" = queue.Queue()
     playability = "NOT_READY"
-    pyproc = None
-    recproc = None
-    terminal = None
+    pyproc: subprocess.Popen[str] | None = None
+    recproc: subprocess.Popen[str] | None = None
+    terminal: dict[str, Any] | None = None
+    process_generation = 0
 
     class ProofFleet(ChineseFleetManager):
         def _profile_for(self, instance_id: int) -> Path:
@@ -402,11 +750,19 @@ def run_live(root: Path) -> int:
     mgr.settings.save(settings)
 
     def process_snapshot() -> dict[str, Any]:
+        nonlocal process_generation
+        process_generation += 1
+        launcher_exit = pyproc.poll() if pyproc is not None else None
+        recorder_exit = recproc.poll() if recproc is not None else None
         return {
+            "observedAtUtc": utc_now(),
+            "observationGeneration": process_generation,
             "launcherRequired": pyproc is not None,
             "recorderRequired": recproc is not None,
-            "launcherExitCode": pyproc.poll() if pyproc else None,
-            "recorderExitCode": recproc.poll() if recproc else None,
+            "launcherLive": bool(pyproc is not None and launcher_exit is None),
+            "recorderLive": bool(recproc is not None and recorder_exit is None),
+            "launcherExitCode": launcher_exit,
+            "recorderExitCode": recorder_exit,
             "fleetManifest": str(manifest),
         }
 
@@ -419,17 +775,64 @@ def run_live(root: Path) -> int:
             detail = evidence.fatal_line or evidence.last_fatal_line or "未知 fatal"
             _append_unique(blockers, "Recorder 致命状态：" + detail)
 
-    def persist(stage: str) -> dict[str, Any]:
-        value = build_status(run_id=run_id, run_dir=run_dir, fleet_manifest=load_json(manifest),
-                             pylaunch_proof=load_json(pyproof), recorder=evidence,
-                             playability=playability, stage=stage, blockers=list(blockers),
-                             process_state=process_snapshot())
+    def drain_queue() -> None:
+        while True:
+            try:
+                prefix, line = q.get_nowait()
+            except queue.Empty:
+                break
+            if any(x in line for x in ("已确认", "失败", "ERROR", "拒绝")):
+                print(f"[{prefix}] {line}")
+
+    def persist(stage: str, *, playability_override: str | None = None) -> dict[str, Any]:
+        value = build_status(
+            run_id=run_id,
+            run_dir=run_dir,
+            fleet_manifest=load_json(manifest),
+            pylaunch_proof=load_json(pyproof),
+            recorder=evidence,
+            playability=playability if playability_override is None else playability_override,
+            stage=stage,
+            blockers=list(blockers),
+            process_state=process_snapshot(),
+        )
         atomic_write_json(status_path, value)
         try:
             shutil.copy2(status_path, latest)
         except OSError:
             pass
         return value
+
+    def retain_dynamic_blockers(value: dict[str, Any]) -> None:
+        live = value.get("live") if isinstance(value.get("live"), dict) else {}
+        for item in live.get("blockers") or []:
+            if isinstance(item, str):
+                _append_unique(blockers, item)
+
+    def wait_for_new_current_generation(
+        previous: dict[str, Any],
+        stage: str,
+    ) -> tuple[dict[str, Any], bool]:
+        deadline = time.monotonic() + GENERATION_ADVANCE_WAIT_SECONDS
+        latest_value = persist(stage, playability_override="NOT_READY")
+        while True:
+            drain_queue()
+            observe_failures()
+            latest_value = persist(stage, playability_override="NOT_READY")
+            if latest_value["live"]["blockers"] or not latest_value["live"]["automatedChecksReady"]:
+                retain_dynamic_blockers(latest_value)
+                return latest_value, False
+            if authority_generations_advanced(
+                previous, authority_generation_snapshot(latest_value)
+            ):
+                return latest_value, True
+            if time.monotonic() >= deadline:
+                _append_unique(
+                    blockers,
+                    "PYLAUNCH/Recorder 当前成功证据未在 freshness gate 内产生新代次；按 fail-closed 阻断",
+                )
+                return latest_value, False
+            time.sleep(0.2)
 
     print("\n============================================================")
     print("  WOF 统一 Windows 真人短验证")
@@ -442,59 +845,100 @@ def run_live(root: Path) -> int:
         mgr.start(1)
         mgr.print_status()
         persist("BROWSER_STARTED")
-        pyproc = start_child([sys.executable, "-u", str(py_dir / "launcher.py"),
-                              "--fleet-instance", "1", "--fleet-manifest", str(manifest),
-                              "--no-tray", "--proof-json", str(pyproof)], py_dir)
-        recproc = start_child([sys.executable, "-u", str(rec_dir / "owner_v2_zh_cn.py"),
-                               "--output-dir", str(rec_out), "--fleet-manifest", str(manifest),
-                               "--no-launch-browser"], rec_dir)
-        threading.Thread(target=reader, args=(pyproc, "PYLAUNCH", None, q), daemon=True).start()
-        threading.Thread(target=reader, args=(recproc, "RECORDER", evidence, q), daemon=True).start()
+        pyproc = start_child(
+            [
+                sys.executable, "-u", str(py_dir / "launcher.py"),
+                "--fleet-instance", "1", "--fleet-manifest", str(manifest),
+                "--no-tray", "--proof-json", str(pyproof),
+            ],
+            py_dir,
+        )
+        recproc = start_child(
+            [
+                sys.executable, "-u", str(rec_dir / "owner_v2_zh_cn.py"),
+                "--output-dir", str(rec_out), "--fleet-manifest", str(manifest),
+                "--no-launch-browser",
+            ],
+            rec_dir,
+        )
+        threading.Thread(
+            target=reader, args=(pyproc, "PYLAUNCH", None, q), daemon=True
+        ).start()
+        threading.Thread(
+            target=reader, args=(recproc, "RECORDER", evidence, q), daemon=True
+        ).start()
         print("请在专用浏览器中正常进入一个 WOF 房间，其他检查自动完成。")
         last = 0.0
-        while True:
-            while True:
-                try:
-                    prefix, line = q.get_nowait()
-                except queue.Empty:
-                    break
-                if any(x in line for x in ("已确认", "失败", "ERROR", "拒绝")):
-                    print(f"[{prefix}] {line}")
 
+        while True:
+            drain_queue()
             observe_failures()
+
             if time.monotonic() - last >= 2:
                 f = normalize_fleet(load_json(manifest))
                 p = normalize_pylaunch(load_json(pyproof))
-                print("\rBrowser:%s | Page:%s | Fleet Worker:%s | World:%s | Recorder:%s      " % (
-                    "OK" if f["browser"] else "WAIT", "OK" if f["page"] else "WAIT",
-                    "OK" if f["workerIndicator"] else "WAIT", "OK" if p["world921031"] else "WAIT",
-                    "OK" if evidence.current_healthy else "WAIT"), end="", flush=True)
+                print(
+                    "\rBrowser:%s | Page:%s | Fleet Worker:%s | World:%s | Recorder:%s      "
+                    % (
+                        "OK" if f["browser"] else "WAIT",
+                        "OK" if f["page"] else "WAIT",
+                        "OK" if f["workerIndicator"] else "WAIT",
+                        "OK" if p["world921031"] and p["fresh"] else "WAIT",
+                        "OK" if evidence.current_healthy else "WAIT",
+                    ),
+                    end="",
+                    flush=True,
+                )
                 last = time.monotonic()
 
             value = persist("LIVE_WAITING")
             if value["live"]["ownerPromptEligible"]:
-                # Re-check immediately before asking so a just-exited child cannot rely on stale PASS.
-                observe_failures()
-                value = persist("PLAYABILITY_GATE")
-                if not value["live"]["ownerPromptEligible"]:
+                # A stale-but-still-within-age-window PASS is not enough.
+                # Require a newer PYLAUNCH proof generation and a newer Recorder
+                # heartbeat before the Owner prompt becomes reachable.
+                before_prompt = authority_generation_snapshot(value)
+                gate, advanced = wait_for_new_current_generation(
+                    before_prompt, "PLAYABILITY_GATE"
+                )
+                if not advanced or not gate["live"]["ownerPromptEligible"]:
+                    retain_dynamic_blockers(gate)
                     terminal = persist("BLOCKED")
                     break
+
                 print("\n\n自动只读验证当前全部通过。")
                 ans = input("当前 WOF 房间仍能正常运行？正常输入 Y，异常输入 N：").strip().lower()
                 playability = "CONFIRMED" if ans in {"y", "yes", "是", "正常"} else "FAILED"
                 if playability == "FAILED":
                     _append_unique(blockers, "Owner 确认游戏运行异常")
-                # Any automatic lane may regress while the owner is answering. Re-check all current state.
+                    terminal = persist("BLOCKED")
+                    break
+
+                # Require another new generation after the Owner answer. This
+                # closes the live-but-hung window where a recently written PASS
+                # might still be under the age threshold.
+                after_prompt_baseline = authority_generation_snapshot(gate)
+                recheck_wait, advanced = wait_for_new_current_generation(
+                    after_prompt_baseline, "FINAL_FRESHNESS_GATE"
+                )
+                if not advanced:
+                    retain_dynamic_blockers(recheck_wait)
+                    terminal = persist("BLOCKED")
+                    break
+
                 observe_failures()
                 recheck = persist("FINAL_RECHECK")
-                if playability == "CONFIRMED" and not recheck["live"]["automatedChecksReady"]:
+                if not recheck["live"]["automatedChecksReady"]:
+                    retain_dynamic_blockers(recheck)
                     _append_unique(blockers, "Owner 确认期间自动检查不再保持当前 PASS")
-                terminal = persist("COMPLETE" if playability == "CONFIRMED" and not blockers else "BLOCKED")
+                terminal = persist("COMPLETE" if not blockers else "BLOCKED")
                 break
+
             if value["live"]["blockers"]:
+                retain_dynamic_blockers(value)
                 terminal = persist("BLOCKED")
                 break
             time.sleep(0.5)
+
     except KeyboardInterrupt:
         _append_unique(blockers, "Owner 中断了真人短验证")
         terminal = persist("INTERRUPTED")
@@ -538,9 +982,11 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     root = Path(parse_args().project_root).expanduser().resolve()
-    required = [root / "parallel" / "PYLAUNCH" / "launcher.py",
-                root / "parallel" / "BROWSER_FLEET" / "fleet_owner_zh_cn.py",
-                root / "parallel" / "WOF052L_RECORDER" / "owner_v2_zh_cn.py"]
+    required = [
+        root / "parallel" / "PYLAUNCH" / "launcher.py",
+        root / "parallel" / "BROWSER_FLEET" / "fleet_owner_zh_cn.py",
+        root / "parallel" / "WOF052L_RECORDER" / "owner_v2_zh_cn.py",
+    ]
     if any(not p.is_file() for p in required):
         print("缺少统一真人短验证所需的 WOF 工具文件")
         return 3
