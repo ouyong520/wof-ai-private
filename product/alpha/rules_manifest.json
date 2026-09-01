@@ -1,32 +1,50 @@
 {
-  "manifestVersion": "wof-alpha-rules-v1",
-  "artifactVersion": "wof-alpha-rc1",
-  "status": "alpha-rc-pending-browser-acceptance",
+  "manifestVersion": "wof-alpha-rules-v2",
+  "artifactVersion": "wof-alpha-rc2",
+  "status": "alpha-rc2-ready-for-fresh-browser-qa",
   "supportedIdentity": {
     "declaredGame": "WOF / Warriors of Fate / 三国志II, World 921002 / wofr1",
-    "browserLayoutSignature": "wofr1-world-921002-browser-layout-v1",
+    "signature": "wofr1-world-921002-browser-rom-v2",
     "positiveChecks": [
       "WASM HEAPU8/HEAPU32 share one buffer",
-      "CPS RAM base HEAPU32[0x2e39e4>>2] is non-zero and in bounds",
-      "P1/P2/P3 +0x7C self-index values are exactly 0/4/8"
+      "CPS RAM base HEAPU32[0x2e39e4>>2] is non-zero and 64 KiB RAM window is in bounds",
+      "P1/P2/P3 +0x7C self-index values are exactly 0/4/8",
+      "Browser/WASM ROM reset vectors SP=0x00FF62EE and PC=0x0000754A",
+      "Browser ROM type-dispatch table at 0x25DC matches retained five-entry executable fingerprint, with only the bounded uniform live-ROM delta already supported by the Browser ROM probe"
     ],
-    "onMismatch": "fail-closed: publish diagnostic, no warnings"
+    "romDispatchExpected": [
+      "0x06F4E4",
+      "0x07494C",
+      "0x071ADA",
+      "0x077B8E",
+      "0x07C6D2"
+    ],
+    "maxUniformDelta": "0x1000",
+    "provenance": "wof_rom_focus_probe.js (Browser/WASM ROM locator/fingerprint evidence)",
+    "onMismatch": "fail-closed: diagnostic only; no danger warnings"
   },
   "globalPolicies": {
     "readOnly": true,
     "ramWrites": 0,
     "inputInjection": false,
-    "target": "live reread enemy+0x7E on every poll; 0=P1,4=P2,8=P3",
+    "target": "live reread enemy+0x7E every poll; 0=P1,4=P2,8=P3",
     "side": "live recompute from current enemy/target X; UI threat side is enemy relative to current target",
     "unknown": "silent",
+    "sameTypeSameSlotContinuity": "conservative: any zero-attack drift away from the exact armed rule base invalidates the watch and starts a new episode",
+    "transport": "per-page 128-bit random session; unique BroadcastChannel plus message nonce match",
+    "researchRuntimeIsolation": "legacy WOFHUD must be disposed before Alpha takeover; otherwise Alpha HUD refuses takeover",
+    "normalUserBootstrap": "document-start userscript intercepts gstyphoon Worker and pairs detector/HUD automatically",
     "productionExperimentalIsolation": true
   },
   "rules": [
     {
       "id": "T16_B4_DANGER_40",
       "freezeStatus": "freeze-candidate",
-      "releaseStatus": "alpha-rc-pending-browser-acceptance",
-      "browserType": {"decimal": 16, "hex": "0x10"},
+      "releaseStatus": "alpha-rc2-browser-qa",
+      "browserType": {
+        "decimal": 16,
+        "hex": "0x10"
+      },
       "predicateSource": "wof_future_danger_descriptor_family_validator_v38.js, carried by WOF-041R/WOF-051 audits",
       "trigger": "entry into exact predicate once per zero->ACTIVE cycle",
       "exactPredicate": "type=16, attack=0, body=4856, frameEnd=0x851AE, next=0x84C44, value30=0xFFFF, timer34=1, action2A=4, b2B=4, state99 in {0,2,4}",
@@ -42,8 +60,11 @@
     {
       "id": "T20_5136_B0_TO_B255_1250",
       "freezeStatus": "freeze-candidate",
-      "releaseStatus": "alpha-rc-pending-browser-acceptance",
-      "browserType": {"decimal": 20, "hex": "0x14"},
+      "releaseStatus": "alpha-rc2-browser-qa",
+      "browserType": {
+        "decimal": 20,
+        "hex": "0x14"
+      },
       "predicateSource": "WOF-038 exact T20 predicate, horizon/tail patched by WOF-043R; WOF-051 audit",
       "trigger": "exact B0 -> B255 transition",
       "exactPredicate": "both samples: type=20, attack=0, state99=2, action2A=4, body=0, frameEnd=0x839C4, next=0x82B0A, value30=0x100000, timer34=20, payload6C=0; b2B transitions 0->255",
@@ -59,8 +80,20 @@
     {
       "id": "D867BA_3232_TM6_220",
       "freezeStatus": "freeze-candidate",
-      "releaseStatus": "alpha-rc-pending-browser-acceptance",
-      "browserType": {"predicateScope": "not type-constrained", "observed": [{"decimal": 33, "hex": "0x21"}, {"decimal": 9, "hex": "0x09"}]},
+      "releaseStatus": "alpha-rc2-browser-qa",
+      "browserType": {
+        "predicateScope": "not type-constrained",
+        "observed": [
+          {
+            "decimal": 33,
+            "hex": "0x21"
+          },
+          {
+            "decimal": 9,
+            "hex": "0x09"
+          }
+        ]
+      },
       "predicateSource": "WOF-038 descriptor predicate, promoted/horizon retained through WOF-043R; WOF-051 audit",
       "trigger": "entry into exact descriptor predicate once per zero->ACTIVE cycle",
       "exactPredicate": "attack=0, body=2872, frameEnd=0x867BA, next=0x85ECE, value30=0x100000, payload6C=2784, action2A=4, b2B=2, state99 in {2,4}, timer34=6",
@@ -76,8 +109,20 @@
     {
       "id": "D8811E_3232_TM6_135",
       "freezeStatus": "freeze-candidate",
-      "releaseStatus": "alpha-rc-pending-browser-acceptance",
-      "browserType": {"predicateScope": "not type-constrained", "observed": [{"decimal": 34, "hex": "0x22"}, {"decimal": 11, "hex": "0x0B"}]},
+      "releaseStatus": "alpha-rc2-browser-qa",
+      "browserType": {
+        "predicateScope": "not type-constrained",
+        "observed": [
+          {
+            "decimal": 34,
+            "hex": "0x22"
+          },
+          {
+            "decimal": 11,
+            "hex": "0x0B"
+          }
+        ]
+      },
       "predicateSource": "WOF-038 descriptor predicate, horizon patched by WOF-043R; WOF-051 audit",
       "trigger": "entry into exact descriptor predicate once per zero->ACTIVE cycle",
       "exactPredicate": "attack=0, body=2872, frameEnd=0x8811E, next=0x879E2, value30=0x100000, payload6C=2784, action2A=4, b2B=2, state99 in {2,4}, timer34=6",
@@ -93,8 +138,11 @@
     {
       "id": "T18_5440_CYCLE_BODY7512_TM4_LEVEL_90",
       "freezeStatus": "freeze-candidate",
-      "releaseStatus": "alpha-rc-pending-browser-acceptance",
-      "browserType": {"decimal": 18, "hex": "0x12"},
+      "releaseStatus": "alpha-rc2-browser-qa",
+      "browserType": {
+        "decimal": 18,
+        "hex": "0x12"
+      },
       "predicateSource": "WOF-045R exact cycle-level predicate, production-shadow in WOF-046R, WOF-051 audit",
       "trigger": "level-arm once per zero->ACTIVE cycle",
       "exactPredicate": "type=18, attack=0, state99=2, action2A=2, b2B=4, body=7512, frameEnd=0x8BBB2, next=0x8B290, value30=0x180001, timer34=4, payload6C=0",
@@ -110,8 +158,11 @@
     {
       "id": "T18_5424_CYCLE_BODY7520_TM4_LEVEL_90",
       "freezeStatus": "freeze-candidate",
-      "releaseStatus": "alpha-rc-pending-browser-acceptance",
-      "browserType": {"decimal": 18, "hex": "0x12"},
+      "releaseStatus": "alpha-rc2-browser-qa",
+      "browserType": {
+        "decimal": 18,
+        "hex": "0x12"
+      },
       "predicateSource": "WOF-045R exact cycle-level predicate, production-shadow in WOF-046R, WOF-051 audit",
       "trigger": "level-arm once per zero->ACTIVE cycle",
       "exactPredicate": "type=18, attack=0, state99=2, action2A=2, b2B=4, body=7520, frameEnd=0x8BBDE, next=0x8B2A4, value30=0x180001, timer34=4, payload6C=0",
