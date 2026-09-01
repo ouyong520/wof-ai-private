@@ -1,38 +1,39 @@
 # WOF Future Danger AI — Owner Actions
 
-Updated: 2026-09-01 — real Browser room-entry blocker found
+Updated: 2026-09-01 — RC5 candidate ready / owner room-entry retest next
 
-## Current owner action required: YES — open fresh RC5 fix thread
+## Current owner action required: YES — one minimal RC5 Browser retest
 
-Real Browser A/B evidence is now sufficient to stop acceptance:
-- Acceptance helper OFF + normal Alpha userscript ON -> cannot enter room.
-- Both WOF userscripts OFF -> can enter normally.
+RC5 engineering is complete for this stage.
 
-This is a P0 Alpha bootstrap/real-host compatibility blocker.
+Authoritative result:
+- `product/alpha/ALPHA_RC5_REPORT.md`
+- full product regression: PASS
+- current bootstrap: `WOF Future Danger Alpha RC5 Safe Bootstrap`
+- RC5 no longer replaces/wraps `window.Worker`, creates no Blob Worker, and leaves native game Worker construction untouched.
 
-## Action O1 — keep WOF userscripts disabled
+## Action O1 — update the installed Alpha userscript to RC5
 
-For normal play, keep both disabled:
-- `WOF Future Danger Alpha RC3`
-- `WOF Alpha Browser Acceptance Loader`
+Use the current repository file:
+- `product/alpha/wof_alpha_bootstrap.user.js`
 
-Do not repeat the failing room-entry test on the current candidate.
+Keep Browser Acceptance Helper disabled for this retest.
 
-## Action O2 — open fresh Alpha RC5 Browser Bootstrap Fix thread
+## Action O2 — one question only
 
-Use:
+1. close all current WOF game tabs;
+2. enable only the RC5 Alpha userscript;
+3. reopen/refresh the normal WOF game page;
+4. try to enter one normal room;
+5. report only: `RC5 能进房` or `RC5 还是不能进房`.
 
-`parallel/PM/ALPHA_RC5_BROWSER_BOOTSTRAP_FIX_START_PROMPT.md`
+No Console, Worker selection, attack triggering, warning test, multi-tab test, ROM identity recheck, or JSON collection is required.
 
-The RC5 stage owns the product fix. It may modify `product/alpha/**` only as needed to restore normal room/game entry while preserving the passed RC4 safety gates.
+## Decision after result
 
-## Do not do yet
+- If `RC5 能进房`: close the P0 room-entry blocker, close RC5 engineering stage, then open a fresh independent RC5 QA/retest stage before resuming full Browser acceptance.
+- If `RC5 还是不能进房`: preserve the observation and open a fresh targeted real-host bootstrap diagnostic/fix stage; do not revive the completed RC5 thread.
 
-- Do not rerun Browser acceptance.
-- Do not release Alpha.
-- Do not revive RC4 implementation or QA threads.
-- Do not restart WOF-052 or Beta work as an Alpha blocker substitute.
+## Other lanes
 
-## Next PM trigger
-
-After RC5 publishes a candidate and exact minimal Browser retest, PM will open a fresh independent QA/retest stage.
+WOF-052 evening capture and Python Launcher foundation may continue independently. They are not substitutes for this Alpha release gate.
