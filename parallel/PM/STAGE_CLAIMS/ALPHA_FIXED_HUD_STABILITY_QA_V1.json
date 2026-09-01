@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "ALPHA_FIXED_HUD_STABILITY_QA_V1",
+  "promptPath": "parallel/PM/ALPHA_FIXED_HUD_STABILITY_QA_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "47389e321ca465b551ab30fa0835844e433da5d7",
+  "startedAtUtc": "2026-09-01T13:43:22Z"
+}
