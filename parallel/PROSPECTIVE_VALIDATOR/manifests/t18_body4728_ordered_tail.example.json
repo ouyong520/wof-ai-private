@@ -1,0 +1,27 @@
+{
+  "schema": "wof-prospective-candidate-v1",
+  "id": "T18_BODY4728_ORDERED_TAIL_EXAMPLE",
+  "promotion": "research-only",
+  "identity": {
+    "world": "Warriors of Fate (World 921031)",
+    "sha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62"
+  },
+  "rule": {
+    "sequence": {
+      "kind": "tail2",
+      "states": [
+        {"signature": "S0/A4/B2|BODY4728|FE8b660|NX8b204|Vffff|TM1|P6C4736"},
+        {"family": "S0/A6/B4|BODY4728|FE8b660|NX8b204|Vffff|TM*|P6C4736"}
+      ]
+    },
+    "currentPredicates": [
+      {"path": "body", "op": "eq", "value": 4728}
+    ]
+  },
+  "outcome": {"expectedAttacks": [4704]},
+  "windows": {"strictMaxMs": 120, "jitterMaxMs": 180, "lateMaxMs": 500, "hardMissMs": 1200},
+  "gate": {"minProspectiveSignals": 2, "minProspectiveRooms": 2, "requireZeroHardMiss": true},
+  "notes": [
+    "Expression-only example. WOF-051 proved the single BODY4728 state is ambiguous; this manifest does not claim this post-state is a real discriminator."
+  ]
+}
