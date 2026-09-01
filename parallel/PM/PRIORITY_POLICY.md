@@ -94,6 +94,60 @@ Before assigning an accelerator task, PM asks:
 
 If most answers are YES, it is a legitimate P2 accelerator and should not be ignored merely because it is not the current product surface.
 
+## Accelerator convergence / anti-scope-creep rule
+
+Accelerators are important because they multiply project speed, but they are **not allowed to become a second endless project**.
+
+Every accelerator stage must be bounded before work starts. Its start prompt must state:
+- the exact mainline bottleneck or future repeated cost it is intended to reduce;
+- the concrete reusable artifact it will produce;
+- the first downstream consumer that will use it;
+- the stop condition;
+- the kill/park condition;
+- the maximum research breadth for that stage.
+
+### Mandatory stop discipline
+
+An accelerator must stop or park when any of the following becomes true:
+- the needed stable field/variable/logic is already identified well enough for the current product stage;
+- additional reverse engineering would not change an Alpha/Beta/Safe Path decision;
+- the next useful fact now requires real evidence that cannot be inferred offline;
+- the same question is already answered by a reusable fixture/corpus/adapter;
+- marginal discoveries are mostly descriptive rather than reducing future work;
+- a higher-priority mainline blocker needs the same scarce write scope or engineering attention;
+- the work begins expanding into unrelated game internals with no named downstream consumer.
+
+### Stage-slicing rule
+
+Do not open broad prompts such as “reverse engineer the whole game”, “map every field”, or “understand all logic”.
+
+Prefer small accelerator stages such as:
+- identify the authoritative player/camera fields required for HUD/Safe Path;
+- prove enemy slot lifecycle identity/reuse semantics;
+- identify attack-dispatch state needed to distinguish one ambiguous T18 branch;
+- build a replay adapter for one existing capture schema;
+- prove Browser-vs-WinKawaks simulation timing conversion;
+- expose only the geometry fields required by the next planner prototype.
+
+Once that bounded output is sufficient, close the thread and return resources to the highest-priority queue.
+
+### Product-size control
+
+PM must continuously ask:
+
+> Is this accelerator making the existing product path shorter, or is it merely making the project larger?
+
+If the answer is mainly “larger”, park it.
+
+The default allocation principle is:
+- mainline blockers always receive first priority;
+- durable accelerators may use spare slots;
+- accelerators must have explicit consumers and stop conditions;
+- no accelerator may delay the first usable Alpha merely to achieve completeness;
+- after Alpha, reopen only the accelerator work needed for the next Beta/Safe Path gate.
+
+This ensures reverse engineering, field collection, emulator research and logic analysis remain powerful project multipliers without allowing WOF to become an endless research program.
+
 ## Mainline definition — current
 
 Current shortest product path:
@@ -120,6 +174,7 @@ Before PM creates or offers a fresh stage, answer:
 4. Does it duplicate an existing lane/tool/result?
 5. Does it reduce Owner work or repeated real testing?
 6. If it is an accelerator, is the expected future time saved clearly larger than the cost of building it?
+7. What exact condition will stop/park this accelerator before it grows into open-ended research?
 
 If answers are weak, leave the slot idle.
 
