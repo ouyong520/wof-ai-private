@@ -1,96 +1,139 @@
-# WOF-052L Automatic Multi-Room Recorder — Implementation Result
+# WOF-052L Recorder Worker Discovery V2 Sync — Implementation Result
+
+Date: 2026-09-01
 
 ## Verdict
 
-**READY FOR FRESH WINDOWS/BROWSER LIVE PROOF**
+**WOF-052L DISCOVERY V2 READY — 可进入 10 房间真人长采集 proof**
 
-The PM-revised WOF-052L workflow is implemented as a standalone Windows CMD/Python recorder. No `product/alpha/**` or `parallel/PYLAUNCH/**` file is modified.
+本次只修改 `parallel/WOF052L_RECORDER/**`。没有修改 `parallel/PYLAUNCH/**`，没有修改 `product/alpha/**`。
 
-## Implemented
+## 已完成
 
-- one-time remembered output directory;
-- one double-click CMD entry point;
-- automatic Chrome/Edge CDP discovery;
-- optional safe dedicated debug-browser launch when no CDP endpoint exists;
-- automatic discovery of any number of `gstyphoon*.js` Worker targets;
-- post-start module readiness check;
-- exact World 921031 SHA-256 gate before capture;
-- independent persistent CDP session / capture state per Worker;
-- room close/reload/disconnect finalizes only that Worker;
-- new Workers can join at any time;
-- no fixed duration;
-- 10 ms event-state sampling inside each supported Worker;
-- 1 s event drain to Python;
-- atomic 10 s per-room checkpoint;
-- automatic per-room final JSON;
-- rolling merged run JSON;
-- final merged JSON on `Ctrl+C`;
-- live CMD counters for rooms, T18, candidate, A4704, A4712, T23 and safety.
+WOF-052L Recorder 已从旧的 browser-level `Target.getTargets -> type=worker + gstyphoon*.js` 假设升级为与最新 PYLAUNCH 一致的 topology discovery 思路：
 
-## WOF-052 mandatory evidence
+```text
+Browser CDP endpoint
+-> page target
+-> page session Target.setAutoAttach
+-> related iframe / worker target tree
+-> read-only WASM / heap preflight
+-> exact World 921031 SHA-256
+-> existing WOF-052L worker_probe.js
+-> capture
+```
 
-The recorder specifically preserves candidate-containing:
+同时保留 direct Worker 兼容 fallback。
 
-`T18 S0/A4/B2 | BODY4728 | FE8b660 | NX8b204 | Vffff | TM1 | P6C4736`
+支持：
+- direct worker；
+- root Worker 缺失但 page-attached Worker 可见；
+- page -> iframe -> Worker；
+- worker / shared_worker / service_worker；
+- Worker URL shape variation；
+- reload / Worker replacement 后新 target/session 独立重发现；
+- Browser Fleet 每个 CDP endpoint 独立 discovery/client/session。
 
-zero->ACTIVE cycles and groups them by eventual ACTIVE attack.
+## Fail-closed 准入
 
-Per-room and merged outputs compute:
+开始 WOF-052L 采集前必须同时满足：
+- WASM module 可用；
+- heap 可用；
+- CPS RAM base 在 heap 内；
+- 唯一 page/Worker 关联；
+- 精确 `Warriors of Fate (World 921031)`；
+- SHA-256：`5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`。
 
-- exact final/tail2/tail3;
-- timer-normalized `TM*` final/tail2/tail3;
-- ordered transition pairs;
-- ordered transition triples;
-- candidate first/last lead;
-- target/side stability;
-- retargets including active-edge retarget.
+拒绝/等待：
+- 多个通过身份门的 Worker 对同一 page 关联不唯一；
+- direct Worker 页面关联不唯一；
+- wrong identity；
+- WASM/heap 尚未 ready；
+- Blob/Data/JavaScript Worker URL。
 
-The implementation does not infer/promote a discriminator. WOF-051 remains authoritative that the single candidate state is ambiguous until enough ordered A4704 and A4712 evidence is collected.
+Live page topology 会周期性重新审计；如果原本唯一的关联后来变成歧义，当前房间立即结束准入/采集，防止跨房间串采。
 
-## Secondary evidence
+## 生命周期
 
-Bounded compact collection also retains:
+- identity cache 只按当前 manager 内的 `targetId` 保存；
+- replacement 获得新 `targetId` 后必须重新做 identity preflight；
+- page-autoattach session 同时保留 page owner session，维持 child Worker CDP session 生命周期；
+- page 关闭/reload、Worker CDP poll 失效、browser disconnect 都只结束对应房间；
+- 其他 Fleet endpoint 不受影响。
 
-- type sample frequency;
-- type/ACTIVE-attack frequency;
-- other T18 cycles;
-- T23 cycles and natural A5888 cycles;
-- player occupancy;
-- target samples and retarget counts;
-- descriptor/attack edge examples;
-- enemy-type-set encounter/scene proxy coverage.
+## 输出兼容
 
-No long-duration full raw frames are stored.
+没有改变原 WOF-052L 采集字段、T18/T23 研究语义或基础 schema。
+
+仅新增向后兼容 diagnostics：
+- `topologyDiagnostics`
+- `target.discoveryPath`
+
+原 `worker_probe.js` 仍负责最终 identity gate 和原采集逻辑。
+
+## Owner 简体中文 UX
+
+默认双击入口：
+
+`RUN_WOF052L_RECORDER.cmd`
+
+现在进入：
+
+`owner_v2_zh_cn.py`
+
+正常 owner 流程无需：
+- DevTools；
+- Worker Console；
+- 手工选 target；
+- 粘贴 JavaScript。
+
+新增 discovery 状态/错误均先显示简体中文，技术详情只作为第二层信息。
 
 ## Safety
 
-Static/runtime self-test passes with:
+保持：
+- `readOnly=true`
+- `ramWrites=0`
+- `inputInjection=false`
+- no Worker replacement/wrap
+- no Blob URL rewrite
+- no game speed/input control
+- no `Input.*`
+- no `Runtime.callFunctionOn`
 
-- read-only CDP allowlist only;
-- `ramWrites=0`;
-- no input CDP methods;
-- no Worker replacement/Blob URL rewrite;
-- no fixed-duration loop;
-- no Alpha dependency.
+CDP allowlist 只新增 `Target.setAutoAttach` 用于 target topology discovery，不写游戏 RAM、不注入输入。
 
-Local self-test command:
+## Offline regression
 
-`python recorder.py --self-test`
+Discovery V2 专项回归已通过，覆盖启动提示要求的矩阵：
 
-Result:
+1. old direct-worker compatibility — PASS
+2. root worker missing / page-attached worker — PASS
+3. iframe -> Worker — PASS
+4. Worker URL shape variation — PASS
+5. ambiguity fail closed — PASS
+6. wrong World identity — PASS
+7. WASM not ready — PASS
+8. reload / replacement identity reset — PASS
+9. 10 Fleet endpoint isolation — PASS
+10. read-only allowlist — PASS
 
-`SELF-TEST PASS — WOF-052L recorder invariants and sequence aggregation`
+同时保留原 `test_fleet_recorder.py` 的 localhost manifest/isolation约束。
 
-## Remaining live gate
+专项测试文件：
 
-A real Windows browser/WOF Worker is required only to prove the external environment:
+`parallel/WOF052L_RECORDER/test_discovery_v2_sync.py`
 
-- Browser endpoint is reachable;
-- multiple real room Workers surface in CDP;
-- exact SHA gate passes;
-- files appear in the selected Windows directory;
-- closing/reloading one room leaves other room captures running.
+## Remaining gate
 
-Owner operation is now reduced to:
+仓库侧没有剩余 discovery blocker。
 
-**choose save folder once -> double-click one CMD -> open/close WOF rooms -> JSON appears automatically.**
+下一步不是继续修改 Recorder，而是做一次真实 Windows / Chrome 151 / Browser Fleet 的 **10 房间长采集 proof**，确认真实 topology 下：
+- 每个 endpoint 自动发现自己的 WOF page/Worker；
+- WASM/heap + World 921031 identity 全部通过；
+- 10 房间不会串采；
+- reload/replacement 只重启对应房间采集；
+- checkpoint/merged JSON 持续生成；
+- `ramWrites=0`。
+
+**WOF-052L DISCOVERY V2 READY — 可进入 10 房间真人长采集 proof**
