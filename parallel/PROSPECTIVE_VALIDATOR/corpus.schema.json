@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wof-prospective-corpus-v1",
+  "title": "WOF Prospective Corpus v1",
+  "type": "object",
+  "required": ["schema", "traces"],
+  "properties": {
+    "schema": {"const": "wof-prospective-corpus-v1"},
+    "runId": {"type": "string"},
+    "candidateId": {"type": "string"},
+    "candidateSha256": {"type": "string"},
+    "frozenAt": {"type": "string"},
+    "evidenceClass": {"enum": ["discovery", "prospective"]},
+    "safety": {
+      "type": "object",
+      "properties": {
+        "readOnly": {"const": true},
+        "ramWrites": {"const": 0},
+        "inputInjection": {"const": false},
+        "windowWorkerReplacement": {"const": false}
+      }
+    },
+    "traces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "roomId": {"type": "string"},
+          "evidenceClass": {"enum": ["discovery", "prospective"]},
+          "activeAttack": {"type": ["integer", "null"]},
+          "leadMs": {"type": ["number", "null"]},
+          "censored": {"type": "boolean"},
+          "targetStable": {"type": ["boolean", "null"]},
+          "sideStable": {"type": ["boolean", "null"]},
+          "retargets": {"type": "array"},
+          "states": {"type": "array"},
+          "current": {"type": "object"}
+        }
+      }
+    }
+  }
+}
