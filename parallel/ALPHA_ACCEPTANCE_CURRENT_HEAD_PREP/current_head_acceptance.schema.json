@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wof-alpha-current-head-acceptance-v1",
+  "title": "WOF Alpha Current-HEAD Acceptance Result",
+  "type": "object",
+  "required": ["schema", "result", "snapshotCommit", "safety", "failures", "ownerStatusZh"],
+  "properties": {
+    "schema": {"const": "wof-alpha-current-head-acceptance-v1"},
+    "result": {
+      "enum": [
+        "PASS — CURRENT-HEAD REAL BROWSER ACCEPTANCE",
+        "FAIL — CURRENT-HEAD REAL BROWSER ACCEPTANCE",
+        "INCOMPLETE — CURRENT-HEAD REAL BROWSER ACCEPTANCE",
+        "BLOCKED — RELEASE GATES NOT GREEN",
+        "BLOCKED — BROWSER ATTESTATION"
+      ]
+    },
+    "snapshotCommit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "release": {"const": "wof-alpha-rc3"},
+    "transportVersion": {"const": "wof-alpha-safe-transport-v1"},
+    "world921031": {
+      "type": "object",
+      "properties": {
+        "sha256": {"const": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62"},
+        "identitySignature": {"const": "wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8"}
+      },
+      "additionalProperties": false
+    },
+    "repositoryGates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "pass", "exitCode"],
+        "properties": {
+          "name": {"type": "string"},
+          "pass": {"type": "boolean"},
+          "exitCode": {"type": "integer"},
+          "tail": {"type": "string"}
+        }
+      }
+    },
+    "browserAttestation": {
+      "type": "object",
+      "required": ["result", "browser", "loopback", "browserLevelWebSocket"],
+      "properties": {
+        "result": {"const": "PASS"},
+        "browser": {"type": "string", "minLength": 1},
+        "loopback": {"const": true},
+        "browserLevelWebSocket": {"const": true}
+      }
+    },
+    "runtimeIdentity": {
+      "type": "object",
+      "required": ["result", "pageWorkerWasmUnique", "launcherGateA", "detectorGateB"],
+      "properties": {
+        "result": {"const": "PASS"},
+        "pageWorkerWasmUnique": {"const": true},
+        "launcherGateA": {"const": true},
+        "detectorGateB": {"const": true}
+      }
+    },
+    "transport": {
+      "type": "object",
+      "required": ["session", "initialGeneration", "initialNonce", "reboundGeneration", "reboundNonce", "generationIncreased", "nonceChanged"],
+      "properties": {
+        "session": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "initialGeneration": {"type": "integer", "minimum": 1},
+        "initialNonce": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "reboundGeneration": {"type": "integer", "minimum": 2},
+        "reboundNonce": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "generationIncreased": {"const": true},
+        "nonceChanged": {"const": true}
+      }
+    },
+    "warning": {
+      "type": "object",
+      "required": ["firstValidWarning", "observedRows", "invalidRows"],
+      "properties": {
+        "firstValidWarning": {"enum": ["PASS", "NOT_EXERCISED"]},
+        "observedRows": {"type": "integer", "minimum": 0},
+        "invalidRows": {"type": "array"}
+      }
+    },
+    "clearStale": {
+      "type": "object",
+      "required": ["pageResetImmediateClear", "ordinaryStale", "exact1500_1501OfflineGate"],
+      "properties": {
+        "pageResetImmediateClear": {"type": "boolean"},
+        "ordinaryStale": {"enum": ["PASS", "OFFLINE_GATE_ONLY"]},
+        "exact1500_1501OfflineGate": {"const": "PASS"}
+      }
+    },
+    "reconnectRebind": {
+      "type": "object",
+      "required": ["result", "freshPair", "oldAuthorityInherited"],
+      "properties": {
+        "result": {"enum": ["PASS", "FAIL"]},
+        "freshPair": {"type": "boolean"},
+        "oldAuthorityInherited": {"const": false}
+      }
+    },
+    "negativePairRejection": {"type": "object"},
+    "gameplay": {
+      "type": "object",
+      "properties": {
+        "ownerConfirmedPlayableAtStart": {"type": "boolean"},
+        "renderAliveAcrossRebind": {"type": "boolean"},
+        "navigationInjected": {"const": false},
+        "gameplayInputInjected": {"const": false}
+      }
+    },
+    "safety": {
+      "type": "object",
+      "required": ["readOnly", "ramWrites", "inputInjection", "windowWorkerReplacement"],
+      "properties": {
+        "readOnly": {"const": true},
+        "ramWrites": {"const": 0},
+        "inputInjection": {"const": false},
+        "windowWorkerReplacement": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "class", "detail", "messageZh"],
+        "properties": {
+          "code": {"type": "string"},
+          "class": {"enum": ["BLOCKED", "INCOMPLETE", "FAIL"]},
+          "detail": {"type": "string"},
+          "messageZh": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "ownerStatusZh": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"result": {"const": "PASS — CURRENT-HEAD REAL BROWSER ACCEPTANCE"}}},
+      "then": {
+        "required": ["world921031", "repositoryGates", "browserAttestation", "runtimeIdentity", "transport", "warning", "clearStale", "reconnectRebind", "negativePairRejection", "gameplay"],
+        "properties": {"failures": {"maxItems": 0}}
+      }
+    }
+  ],
+  "additionalProperties": true
+}
