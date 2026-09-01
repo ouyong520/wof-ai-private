@@ -1,0 +1,70 @@
+{
+  "schema": "wof-unified-live-proof-failclosed-independent-qa-v1",
+  "stageId": "UNIFIED_WINDOWS_LIVE_PROOF_FAILCLOSED_QA_V1",
+  "verdict": "BLOCKED",
+  "stopCondition": "BLOCKED — UNIFIED LIVE PROOF FAIL-CLOSED QA — P1 stale/unknown child success can still become PASS",
+  "severity": "P1",
+  "testedTarget": {
+    "unifiedLiveProofBlob": "b3098a586dae8a1d3070e6667c536ea011911e6b",
+    "implementationTestsBlob": "05b739158d4147ac5d87a16520f75be5497c6028",
+    "pylaunchProofBlob": "7cddae420b08bba627b05f2164083289569e5f5a",
+    "pylaunchMonitorBlob": "5ee0ce9a84988d7841799d907ebdfe2a3e68ea56",
+    "pylaunchStateBlob": "7f00e9a2e948f86c30a99cab04809d726b60c95d"
+  },
+  "independentAdversarialFixture": "parallel/LIVE_PROOF_BUNDLE_QA_FAILCLOSED/test_failclosed_adversarial.py",
+  "blockers": [
+    {
+      "id": "P1-CHILD-HEALTH-UNKNOWN-ACCEPTED",
+      "requirement": 5,
+      "summary": "normalize_process_health treats any non-null mapping as healthKnown. Empty or partial mappings can become healthy without proving both required children exist and are alive.",
+      "observed": {
+        "emptyProcessState": {
+          "healthKnown": true,
+          "launcherRequired": false,
+          "recorderRequired": false,
+          "launcherLive": null,
+          "recorderLive": null,
+          "healthy": true
+        },
+        "finalConsequenceWithOtherwiseCleanEvidenceAndOwnerConfirmed": {
+          "overallResult": "PASS",
+          "tenRoomLongCaptureReady": true
+        }
+      }
+    },
+    {
+      "id": "P1-STALE-PYLAUNCH-PASS-NO-FRESHNESS-GATE",
+      "requirements": [6, 10],
+      "summary": "PYLAUNCH proof carries lastUpdateUtc, but Unified Proof normalization/readiness ignores it. A live-but-hung launcher process can therefore leave an arbitrarily stale PASS JSON with current authority, including across the Owner-answer final re-check.",
+      "observed": {
+        "fixtureLastUpdateUtc": "2000-01-01T00:00:00+00:00",
+        "launcherProcess": "poll()==None / treated live",
+        "recorderProcess": "poll()==None / treated live",
+        "finalConsequenceWithOtherwiseCleanEvidenceAndOwnerConfirmed": {
+          "overallResult": "PASS",
+          "tenRoomLongCaptureReady": true
+        }
+      }
+    }
+  ],
+  "confirmedClosedVectorsBeforeStop": [
+    "Recorder admission then fatal revokes current admission authority",
+    "sticky blocker plus Owner confirmation remains BLOCKED",
+    "PYLAUNCH exit-after-PASS is BLOCKED",
+    "Recorder exit-after-admission is BLOCKED",
+    "RAM-write safety violation is not ready",
+    "longCaptureAutoStarted remains false"
+  ],
+  "notClaimed": [
+    "No real Windows/Browser live PASS was performed",
+    "No product/runtime implementation was modified",
+    "No Owner action was requested"
+  ],
+  "requiredFixDirection": [
+    "Make child-health knowledge structurally complete: unified live proof must require explicit required/live state for both PYLAUNCH and Recorder before automated readiness can be true.",
+    "Consume PYLAUNCH lastUpdateUtc (or a stronger monotonic generation/heartbeat) and reject stale PASS evidence even while the process remains alive.",
+    "Apply the same current/freshness semantics in the pre-prompt and post-Owner final re-check so stale evidence cannot survive the race window.",
+    "Fresh fix must be followed by a new independent QA stage; this QA thread must not patch LIVE_PROOF_BUNDLE."
+  ],
+  "ownerIntervention": "NO"
+}
