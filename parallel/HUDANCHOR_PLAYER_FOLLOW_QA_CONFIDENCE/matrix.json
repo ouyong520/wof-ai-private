@@ -1,0 +1,51 @@
+{
+  "schema": "hudanchor-player-follow-confidence-fresh-qa-v1",
+  "stageId": "HUDANCHOR_PLAYER_FOLLOW_CONFIDENCE_FAILCLOSED_QA_V1",
+  "status": "PASS",
+  "execution": {
+    "nodeVersion": "v22.16.0",
+    "sutBlob": "e36e80fdad7bcf7f73485f9093aa9014428c86b1",
+    "fixtureBlob": "79e42e675d371ec91715116227fecf0ed3c27d97",
+    "freshQaBlob": "3958316d4a47189de63158bbb180c6b9109cb0b8",
+    "freshQa": { "passed": 12, "total": 12 },
+    "existingConfidence": {
+      "blob": "1efcac65e9cc5598358c86e968a6b148d9e970a2",
+      "passed": 18,
+      "total": 18
+    },
+    "existingBounds": {
+      "blob": "d5798e3470625d440092aa00a05142157f99799b",
+      "passed": 8,
+      "total": 8
+    },
+    "existingSynthetic": {
+      "blob": "b7d56a74ef520bccb47055bc59558da6dfcb6139",
+      "passed": 15,
+      "total": 15
+    }
+  },
+  "freshAttackMatrix": {
+    "invalidValuesPerSurface": ["NaN", "+Infinity", "-Infinity", "undefined", "null", "string", "object", "array"],
+    "surfaces": ["player", "projection", "drawingBuffer", "projected"],
+    "thresholdBoundaries": ["0", "Number.EPSILON", "0.5", "1-Number.EPSILON", "1", "-Number.EPSILON", "1+Number.EPSILON"],
+    "stateTransitions": [
+      "valid-high -> invalid -> valid-low clears stale confidence/follow state",
+      "retarget P1 -> P2 during invalid confidence invalidates P1 immediately",
+      "invalid -> valid recovery resets smoothing",
+      "valid -> invalid immediately uses fixed HUD"
+    ],
+    "boundsInteraction": [
+      "valid near-edge anchor stays anchored and only final rectangle clamps",
+      "same near-edge geometry with invalid confidence uses fixed HUD and no drawRect attachment",
+      "finite out-of-bounds anchor remains PROJECTION_OUT_OF_BOUNDS and is never clamped into attachment"
+    ],
+    "bodyProjectionInteraction": "finite body/anchor coordinates cannot override invalid projection/projected confidence"
+  },
+  "invariants": {
+    "noStalePlayerFollowCue": true,
+    "noEdgeClampMasqueradingAsAttachment": true,
+    "invalidConfidenceAlwaysFixedHud": true,
+    "implementationModifiedByQa": false
+  },
+  "scope": "SYNTHETIC REPOSITORY QA ONLY; NOT REAL BROWSER/WOF PROJECTION PROOF"
+}
