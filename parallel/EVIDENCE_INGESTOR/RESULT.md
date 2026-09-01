@@ -15,9 +15,10 @@ Status: **REPOSITORY READY**
 - SHA-256 内容去重，不删除原始文件。
 - run / room / tool / date 分类。
 - 输出紧凑 `SUMMARY.json` 和中文 `结果汇总.txt`。
-- 可选/一键 ZIP 结果包；重复内容只打包一次。
+- 一键 ZIP 结果包；重复内容只打包一次。
 - 自动排除 `_自动整理/**`，重复运行不会自吞输出。
 - 所有正常用户可见 CLI/CMD 信息默认简体中文。
+- 已接入当前简体中文 Operator Toolkit：根目录 `WOF_TOOLKIT.cmd` -> 菜单 `8` -> Evidence Auto-Ingestor。
 
 ## Safety boundary
 
@@ -50,6 +51,22 @@ Coverage includes:
 - Alpha RC5 regression recognition
 - Alpha RC5 QA recognition
 
+## Owner workflow
+
+Preferred:
+
+```text
+双击 WOF_TOOLKIT.cmd
+→ 8 自动整理并打包结果
+→ Documents\WOF_RESULTS\_自动整理\<时间>\SUMMARY.json
+```
+
+Standalone fallback:
+
+```text
+parallel\EVIDENCE_INGESTOR\RUN_EVIDENCE_INGESTOR.cmd
+```
+
 ## Remaining real-Windows proof
 
-Repository implementation has no blocker. The only platform-specific acceptance is the minimal double-click proof documented in `README.md`; it does not require DevTools/JS/game input.
+Repository implementation has no blocker. The only platform-specific acceptance is one minimal double-click/menu-8 proof; it does not require DevTools, Worker Console, JavaScript paste, game RAM write, or game input.
