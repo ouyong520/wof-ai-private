@@ -1,15 +1,15 @@
 {
   "schema": "wof-owner-oneclick-package-v1",
-  "packageVersion": "2026.09.01.2",
-  "sourceCommit": "63f832304ccac8b84660f2f0763e2f69d35db300",
-  "baseUrl": "https://raw.githubusercontent.com/ouyong520/wof-ai-private/63f832304ccac8b84660f2f0763e2f69d35db300/",
+  "packageVersion": "2026.09.01.3",
+  "sourceCommit": "1dfe9fda26ad774609d7864165e3873191878591",
+  "baseUrl": "https://raw.githubusercontent.com/ouyong520/wof-ai-private/1dfe9fda26ad774609d7864165e3873191878591/",
   "safety": {
     "readOnly": true,
     "ramWrites": 0,
     "inputInjection": false
   },
   "files": [
-    {"path": "WOF_一键工具.cmd", "gitBlobSha": "95a6ec8553cd9e0711ee6b2fa97215c9db571235"},
+    {"path": "WOF_一键工具.cmd", "gitBlobSha": "7bd9288719f4fea76e98400d45ae631492df06b0"},
     {"path": "WOF_TOOLKIT.cmd", "gitBlobSha": "65172ebe8b1d201fd6d0ec7c013dbf1a07e6e8ad"},
 
     {"path": "parallel/OPTOOLKIT/toolkit.py", "gitBlobSha": "6587b66dda4b78c453ca1c51f6244de126865509"},
