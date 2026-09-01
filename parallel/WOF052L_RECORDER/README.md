@@ -1,114 +1,96 @@
 # WOF-052L 自动多房间事件采集器
 
-这是 PM 已批准的 WOF-052L 长时间只读采集工具。正常 owner 工作流默认使用简体中文。
+这是 WOF-052L 长时间只读采集工具。默认 owner 工作流使用简体中文，并已同步 **Worker Discovery V2**。
 
 ## 你实际怎么用
 
 1. 双击 `RUN_WOF052L_RECORDER.cmd`。
-2. 第一次运行时，选择保存 JSON 的目录。
+2. 第一次运行时选择 JSON 保存目录。
 3. 在采集器连接/启动的 Chrome 或 Edge 中正常进入 WOF 房间。
-4. 不需要逐个房间点“开始”。支持的 `gstyphoon*.js` Worker 会在 WASM/heap 就绪后自动发现和连接。
-5. 可以运行几分钟、几小时或过夜。
-6. 完成时按 `Ctrl+C`。采集器会结束所有在线房间，并自动写入最终合并 JSON。
+4. 不需要 DevTools、Worker Console、手选 Worker 或粘贴 JavaScript。
+5. Recorder 会自动从 page / iframe / Worker topology 找到真实游戏运行时；通过 WASM/heap + 精确 World 921031 SHA-256 后才开始采集。
+6. 可以运行几分钟、几小时或过夜；完成时按 `Ctrl+C` 写入最终合并 JSON。
 
 记住的保存目录位于：
 
 `%LOCALAPPDATA%\WOF052LRecorder\settings.json`
 
-以后要重新选择目录：
+重新选择目录：
 
 ```bat
 RUN_WOF052L_RECORDER.cmd --reset-output
 ```
 
-或者直接指定：
-
-```bat
-RUN_WOF052L_RECORDER.cmd --output-dir D:\WOF_CAPTURE
-```
-
-中文路径同样支持，例如：
+直接指定：
 
 ```bat
 RUN_WOF052L_RECORDER.cmd --output-dir "D:\WOF采集结果"
 ```
 
+## Worker Discovery V2
+
+默认 CMD 入口现在是：
+
+`RUN_WOF052L_RECORDER.cmd -> owner_v2_zh_cn.py -> discovery_v2_sync.py -> 原 Recorder/Fleet`
+
+发现顺序：
+
+```text
+Browser CDP endpoint
+-> page target
+-> page session Target.setAutoAttach
+-> related iframe / worker target tree
+-> read-only WASM / heap preflight
+-> exact World 921031 SHA-256
+-> 原有 WOF-052L worker_probe.js
+-> 开始采集
+```
+
+兼容路径包括：
+- 旧式 browser-level direct worker；
+- root `Target.getTargets` 没有 Worker、但 page-attached Worker 可见；
+- page -> iframe -> Worker；
+- `worker` / `shared_worker` / `service_worker`；
+- Worker URL shape variation，不再要求唯一固定的 `gstyphoon*.js` 顶层 URL 形状。
+
+仍然 fail closed：
+- Blob/Data/JavaScript Worker URL 不接受；
+- 同一页面出现多个通过身份门的 Worker 而关联不唯一时，不采集；
+- direct Worker 无法唯一关联页面时，不采集；
+- WASM/heap 未就绪时继续等待；
+- World 921031 SHA-256 不匹配时拒绝；
+- reload / Worker replacement 使用新的 target/session 独立重发现，不继承旧 target identity cache。
+
+每个房间 JSON 可额外包含向后兼容的 `topologyDiagnostics` 和 `target.discoveryPath`。原采集 schema、T18/T23 字段与研究语义不变。
+
 ## Browser Fleet 多房间模式
 
-正常双击 CMD 会经过中文 owner 入口 `owner_zh_cn.py`，底层继续复用现有 `fleet_recorder.py` / `recorder.py`，不改变采集逻辑。
-
 如果 `%LOCALAPPDATA%\WOF Future Danger\Fleet\instances.json` 中存在 Browser Fleet 房间：
-- 每个编号的 localhost CDP endpoint 都拥有独立 `RecorderManager`；
-- 房间/profile/端口隔离保持不变；
-- 一个浏览器房间重启或断开，只影响它自己的 Worker session；
-- 其他房间继续采集；
-- 新加入的 Fleet 房间会自动发现；
-- 每个子采集器保留自己的合并 JSON；
-- 停止时另外生成一个 Fleet 总合并/index JSON。
+- 每个 localhost CDP endpoint 拥有独立 `RecorderManager`；
+- 每个 child 只使用自己的 host/port/client，不跨 endpoint 搜索；
+- 一个房间关闭、刷新、Worker replacement 或浏览器断开，只结束该房间；
+- 其他房间继续；
+- 新 Fleet endpoint 会自动加入；
+- 停止时生成每个 child run JSON 和 Fleet 总 index JSON。
 
-如果没有 Fleet manifest，工具会自动使用原有单浏览器模式。
+因此 10 个 Fleet endpoint 可以同时独立运行 Discovery V2。
 
-可选高级参数：
+如果没有 Fleet manifest，自动使用单浏览器模式。
+
+高级参数：
 
 ```bat
 RUN_WOF052L_RECORDER.cmd --fleet-manifest D:\path\to\instances.json
 RUN_WOF052L_RECORDER.cmd --ignore-browser-fleet
-```
-
-## 浏览器连接行为
-
-没有 Browser Fleet 时，采集器会扫描本机 Chrome/Edge CDP 端口，优先 `9223` 和 `9222`。
-
-- 如果已有兼容浏览器在运行，直接连接；
-- 否则可以启动独立 Chrome/Edge；
-- 在该浏览器正常进入 WOF 房间即可；
-- 不替换 `window.Worker`；
-- 不创建 Blob Worker；
-- 不改写 Worker URL；
-- 只有真实 `gstyphoon*.js` Worker 和 WASM/CPS RAM 就绪后才附加；
-- 连接失败是 fail-open：游戏不受影响，采集器继续等待/重试。
-
-可选参数：
-
-```bat
 RUN_WOF052L_RECORDER.cmd --cdp-port 9223
 RUN_WOF052L_RECORDER.cmd --browser edge
 RUN_WOF052L_RECORDER.cmd --browser chrome
 RUN_WOF052L_RECORDER.cmd --no-launch-browser
-RUN_WOF052L_RECORDER.cmd --game-url https://example.invalid/your-wof-page
 ```
 
-## 中文状态说明
+## 身份与安全门
 
-单浏览器模式会持续显示类似：
-
-```text
-浏览器 已连接 | 在线房间 7 | 已完成房间 12 | T18 样本 3456 | 候选周期 8 | A4704 3 | A4712 5 | T23 周期 4 | 只读模式 开启 / 游戏内存写入 0
-```
-
-Fleet 模式还会显示：
-- 集群房间数量；
-- 正在运行的采集进程数量；
-- 每个 Fleet 房间的浏览器连接状态。
-
-错误会先显示中文说明，再显示：
-
-`技术详情：...`
-
-这样普通操作不要求看懂英文异常栈。
-
-## 房间生命周期
-
-每个支持的 Worker 都是独立采集状态：
-- 新 Worker：先严格确认 World 921031，再自动开始；
-- 房间关闭 / 刷新 / Worker 重建：只结束该 Worker；
-- 其他房间继续；
-- 替换出来的新 Worker 会作为新 session 自动加入；
-- 新房间可随时加入；
-- 没有固定一小时或 120 秒自动停止；
-- 实际房间数量主要受浏览器/电脑资源限制。
-
-严格身份仍是：
+唯一允许采集的版本：
 
 `Warriors of Fate (World 921031)`
 
@@ -116,88 +98,81 @@ Fleet 模式还会显示：
 
 `5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62`
 
+固定安全约束：
+- `readOnly=true`
+- `ramWrites=0`
+- `inputInjection=false`
+- 不替换/包装 `window.Worker`
+- 不创建或改写 Blob/Data/ObjectURL Worker
+- 不使用 `Input.*`
+- 不使用 `Runtime.callFunctionOn`
+- 不写游戏 RAM
+- 不控制游戏速度
+- 不修改 `product/alpha/**`
+
+Discovery V2 仅新增 `Target.setAutoAttach` 到现有 CDP allowlist，用于只读 topology/session discovery。
+
+## 房间生命周期
+
+每个通过身份门的 Worker 是独立采集 session：
+- 新 Worker：重新做 WASM/heap + World SHA 准入；
+- reload / replacement：旧 session 结束，新 targetId 独立验证；
+- Worker poll/session 失效：只结束该房间；
+- 定期重新审计 live page topology；若出现多 Worker 关联歧义，立即 fail closed，避免跨房间串采；
+- 没有固定一小时或 120 秒自动停止。
+
 ## 保存的数据
 
-采集器不会保存长时间逐帧完整 RAM 历史。
-
-主要保存：
+原 WOF-052L 采集语义保持不变，主要保存：
 - T18 `BODY4728/A4/B2/TM1 -> A4704 / A4712` 有序证据；
 - T18/T23 有界序列证据；
 - enemy type / attack 频率；
 - 玩家数量与 target 样本；
 - bounded descriptor+attack edge；
 - 场景/敌人类型集合覆盖；
-- 每房间 checkpoint 和最终 JSON；
-- 全局 rolling / final merged JSON。
+- 每房间 checkpoint / final JSON；
+- rolling / final merged JSON。
 
-所有 ordered discovery 都仍然只是研究证据，不会自动提升为 Alpha 产品规则。
+不会保存长时间逐帧完整 RAM history。Ordered discovery 仍是研究证据，不会自动提升为 Alpha 产品规则。
 
-## 输出文件
-
-保存目录下：
+## 输出目录
 
 ```text
 rooms/
   <timestamp>_<room-id>.json
-
 checkpoints/
   <run-id>_<room-id>.checkpoint.json
-
 runs/
   <run-id>_merged.json
 ```
 
-内部 JSON key / schema 为了兼容继续使用英文，例如：
-- `schema`
-- `runId`
-- `status`
-- `counts`
-- `readOnly`
-- `ramWrites`
-- `inputInjection`
-- `rooms`
+内部 JSON keys 为兼容可继续使用英文；owner 可见菜单、状态、错误默认简体中文。
 
-中文化只发生在你看到的 CLI、窗口、错误和说明层，不改机器消费格式。
+## 离线回归
 
-## 安全边界
-
-固定安全约束：
-- `readOnly=true`
-- `ramWrites=0`
-- `inputInjection=false`
-- 不注入键盘/手柄输入；
-- 不改游戏速度；
-- 不替换/拦截 Worker；
-- 不依赖 Alpha bootstrap；
-- 不修改 `product/alpha/**`；
-- 不做长时间完整 raw RAM dump。
-
-Python CDP client 仍然只允许 target discovery/attach/detach、`Runtime.enable` 和 `Runtime.evaluate` 等现有只读方法。
-
-## 离线自检
-
-不打开浏览器也可以执行：
+基础 Recorder 自检：
 
 ```bat
 RUN_WOF052L_RECORDER.cmd --self-test
 ```
 
-中文默认输出：
+Discovery V2 专项回归：
 
-```text
-自检通过 — WOF-052L 采集器安全约束与序列汇总正常
+```bat
+.venv\Scripts\python.exe -m unittest -v test_discovery_v2_sync.py test_fleet_recorder.py
 ```
 
-自检继续验证序列汇总、原子 JSON 写入、无固定采集时长和只读 CDP method 边界。
+覆盖：direct worker、page-attached worker、iframe Worker、URL variation、ambiguity、wrong identity、WASM not ready、reload replacement、10 endpoint isolation、read-only allowlist。
 
-## 真人验证
+## 真人长采集 proof
 
-单浏览器模式：
-1. 双击 `RUN_WOF052L_RECORDER.cmd`；
-2. 第一次选择保存目录；
-3. 打开一个或多个 WOF 房间；
-4. 观察“在线房间”自动增加并出现 JSON/checkpoint；
-5. 关闭/刷新一个房间，确认只有该房间进入“已完成”；
-6. 按 `Ctrl+C`，确认 `runs/<run-id>_merged.json`。
+仓库侧 Discovery V2 已完成。下一阶段只需：
 
-Browser Fleet 模式：先启动 Fleet，再双击同一个 Recorder CMD。应自动为每个 Fleet endpoint 启动独立采集，不需要 Worker Console，也不需要粘贴 JavaScript。
+1. 启动 Browser Fleet（目标 10 房间）；
+2. 双击 `RUN_WOF052L_RECORDER.cmd`；
+3. 正常进入 WOF 房间；
+4. 确认 10 个 endpoint 各自自动通过 page / Worker / WASM / World 921031 准入并生成 checkpoint；
+5. 做一次房间刷新/replacement，确认该房间独立重发现、其他 9 房不受影响；
+6. 开始长时间采集。
+
+不需要 DevTools、Worker Console 或手工 JavaScript。
