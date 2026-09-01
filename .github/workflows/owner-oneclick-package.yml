@@ -72,6 +72,8 @@ jobs:
     runs-on: windows-latest
     env:
       WOF_BOOTSTRAP_URL: https://raw.githubusercontent.com/ouyong520/wof-ai-private/${{ github.sha }}/parallel/OWNER_ONECLICK/bootstrap_v2.ps1
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: utf-8
     steps:
       - uses: actions/checkout@v4
         with:
