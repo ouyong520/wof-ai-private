@@ -47,6 +47,19 @@ def discover_candidates(root: Path) -> list[str]:
     ]
 
 
+def is_discovery_v2_safety_candidate(path: str | Path) -> bool:
+    """Conservatively promote untrusted Discovery V2 tests outside known component roots.
+
+    Parallel hardening/QA lanes are intentionally allowed to land outside the four
+    component directories. A test path carrying DISCOVERY_V2 is therefore treated as
+    safety-critical until it is explicitly reviewed and allowlisted.
+    """
+    path_n = _norm(path)
+    if not core.is_test_candidate(Path(path_n)):
+        return False
+    return any("DISCOVERY_V2" in part.upper() for part in Path(path_n).parts)
+
+
 def _under_root(path: str, root: str) -> bool:
     path_n = _norm(path)
     root_n = _norm(root)
@@ -153,21 +166,46 @@ def validate_discovery_v2_manifest(manifest: dict[str, Any]) -> list[str]:
     return errors
 
 
+def _append_block_reason(guard: dict[str, Any], reason: str) -> None:
+    if guard.get("reasonZh"):
+        guard["reasonZh"] = str(guard["reasonZh"]) + "；" + reason
+    else:
+        guard["reasonZh"] = reason
+    guard["status"] = "BLOCKED"
+
+
 def build_allowlist_guard(
     root: Path,
     manifest: dict[str, Any],
 ) -> tuple[dict[str, Any], list[str]]:
     guard, outside_unknown = _CORE_BUILD_ALLOWLIST_GUARD(root, manifest)
+
+    promoted = sorted(
+        path for path in outside_unknown
+        if is_discovery_v2_safety_candidate(path)
+    )
+    if promoted:
+        existing = list(guard.get("unallowlisted", []))
+        guard["unallowlisted"] = sorted(set(existing + promoted))
+        guard["promotedDiscoveryV2SafetyTests"] = promoted
+        _append_block_reason(
+            guard,
+            "发现 guard 外新增 Discovery V2 safety-critical test，必须显式评审/allowlist："
+            + "、".join(promoted),
+        )
+        promoted_set = set(promoted)
+        outside_unknown = [path for path in outside_unknown if path not in promoted_set]
+    else:
+        guard["promotedDiscoveryV2SafetyTests"] = []
+
     contract_errors = validate_discovery_v2_manifest(manifest)
     guard["manifestContractStatus"] = "PASS" if not contract_errors else "BLOCKED"
     guard["contractErrors"] = contract_errors
     if contract_errors:
-        contract_reason = "Discovery V2 manifest 契约不完整：" + "；".join(contract_errors)
-        if guard.get("reasonZh"):
-            guard["reasonZh"] = str(guard["reasonZh"]) + "；" + contract_reason
-        else:
-            guard["reasonZh"] = contract_reason
-        guard["status"] = "BLOCKED"
+        _append_block_reason(
+            guard,
+            "Discovery V2 manifest 契约不完整：" + "；".join(contract_errors),
+        )
     return guard, outside_unknown
 
 
