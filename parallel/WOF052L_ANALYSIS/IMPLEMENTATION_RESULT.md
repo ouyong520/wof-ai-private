@@ -74,8 +74,11 @@ Recorder checkpoint JSON is intentionally excluded from primary scanning, avoidi
 - ordinary merged JSON is preferred over same-run room JSON for aggregate counts;
 - same-run room JSON may supplement T23 traces and rare descriptor+attack detail omitted from merged output;
 - Fleet index is skipped when all referenced child merged runs are available;
+- when a Fleet index must fill missing child runs, its aggregate replaces overlapping child aggregate input instead of being added on top;
+- per-room traces are explicitly namespaced by real `roomId` and run identity before fingerprint de-duplication;
 - candidate/t23 traces are fingerprint-deduplicated across copied room/merged/fleet representations;
-- ordered pair/triple support counts cycles containing a pattern, not repeated occurrences inside one cycle.
+- ordered pair/triple support counts cycles containing a pattern, not repeated occurrences inside one cycle;
+- rare descriptor counts prefer diagnostics totals and use individual edge events only as fallback, preventing double counting.
 
 ## Validation
 
@@ -87,7 +90,7 @@ python -m unittest -v
 python analyzer.py --self-test
 ```
 
-Regression cases: 6/6 PASS.
+Regression cases: 9/9 PASS.
 
 Covered cases:
 
@@ -96,6 +99,9 @@ Covered cases:
 - target/side/retarget instability blocks resolution;
 - wrong ROM identity blocks resolution;
 - merged-first aggregation plus room T23/rare-detail supplementation;
+- identical traces from distinct per-room JSON stay room-isolated instead of being falsely deduplicated;
+- partial Fleet + available child merged input does not double Fleet totals/evidence;
+- missing safety metadata blocks a resolved verdict;
 - zero T18 target coverage reproduces the historical WOF-052 conclusion `仍不足`.
 
 A smoke test using a WOF-052-shaped zero-target merged payload produced:
