@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "WOF052L_10ROOM_ENDURANCE_SIM_V1",
+  "promptPath": "parallel/PM/WOF052L_10ROOM_ENDURANCE_SIM_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "ff002df0f23a3dff6f44275ffd5a093145bb806f",
+  "startedAtUtc": "2026-09-01T13:43:00Z"
+}
