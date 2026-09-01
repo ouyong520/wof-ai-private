@@ -4,141 +4,108 @@
 
 ## Verdict
 
-**PROSPECTIVE VALIDATOR DISCOVERY V2 HARDENING READY — P0/P1 CLOSED IN REPOSITORY**
+**PROSPECTIVE VALIDATOR LIVE AMBIGUITY P0 FIX READY — READY FOR FRESH QA RETEST**
 
-本阶段在既有 Discovery V2 基础上关闭 cross-page shared Worker 证据归属 P0，以及 endpoint/direct-fallback/manifest gate P1。Owner 不需要额外真人 Browser 操作。
+Fresh independent QA 暴露的 live topology ambiguity P0 已在 repository-side 关闭；Owner 不需要真人 Browser 操作。
 
-## P0 — endpoint-level Worker↔page relation uniqueness
+## P0 closure — no positive ingest audit gap
 
-新增 `discovery_v2_hardening.py`，在原 Discovery V2 exact supported candidate 扫描之后建立 endpoint-level Worker↔page relation graph：
+`live_validator_v2.py` 不再允许 live room 在 topology audit 间隔内独立 `drain()/ingest()`：
 
-- 同一个 Worker `targetId` 若关联到超过一个 page，所有这些 relation 全部 fail closed；
-- 不再按 page scan order 选择 evidence owner；
-- 诊断为 `cross-page-worker-association-ambiguous`；
-- 诊断固定 `evidenceClass=discovery-only`；
-- `ambiguous_page_ids()` 同时覆盖原单页多 Worker 歧义和跨页共享 Worker 歧义。
+- `AUDIT_LIVE_TOPOLOGY_INTERVAL = 0.0`，不存在正长度 full-audit gap；
+- prospective `drain()` 只存在于 fresh full topology scan 成功后的同一控制流中；
+- full scan 固定 `skip_page_ids=set()`，live page 不再因为已连接而被跳过；
+- scan 后不仅检查 ambiguity，还必须正向重证当前 `(pageTargetId, workerTargetId)` exact supported pair；
+- 只有本次 full scan 重新产出的 exact pair 才允许进入该轮 `drain()/ingest()`；
+- ownership 已变 shared/cross-page ambiguous 时，相关 room 先以 `worker-association-ambiguous` censor/finalize，再到 drain 阶段；
+- topology 扫描异常或无法重新证明 pair 时，room 立即以 `worker-association-unverified` fail closed；不会把这段未验证期间积累的 Worker queue 延后到之后某次成功 audit 再摄入。
 
-`live_validator_v2_hardened.py` 在加载 V2 live path 时安装该 hardening。既有 `live_validator_v2.py::discover_and_poll()` 会在每次 topology audit 中先检查 ambiguity，再 finalize 相关 live room，之后才 drain remaining rooms。因此一旦发现 live room 变成 cross-page ambiguous，该 room 会先 censor/finalize，不再继续接收 prospective evidence。
+因此 QA fixture 中 `t=100` 唯一、`t=101` 变 shared、`t=105` 仍位于旧 10 秒 gap 的复现，当前实现会在 `t=105` full reproof 时先 finalize，post-ambiguity prospective drain/ingest 数量为 0。
 
-两页/两个不同 exact supported Worker 不受影响，仍独立准入。
+## Finalization ingest guard
 
-## P1 — endpoint confinement
+旧 `finalize_room(remote=True)` 会执行 Worker `stop()` 并把返回 queue 再 `ingest()`；如果退出恰好发生在未重新审计的 ambiguity window，这同样可能把未验证证据带入最终 counters。
 
-Hardened endpoint connect 现在要求：
+现已改为：
 
-- assigned host 必须是 loopback；
-- `/json/version` / probe 返回 websocket host 也必须是 loopback；
-- 返回 websocket port 必须与请求 endpoint port 完全一致；
-- localhost / 127.0.0.1 / ::1 作为 loopback alias 兼容；
-- remote host 或 cross-port websocket fail closed。
+- remote cleanup 仍可执行 `stop()` 清理 sampler；
+- `stop()` 返回 payload 固定丢弃，不再进入 prospective ingest；
+- 已经通过前序 full audit 摄入的 `room.pending` 仍按 censor 语义结束。
 
-不会 silent fallover 到另一 Browser Fleet room/port。
+最终 verdict 不再能被未经 fresh topology proof 的 shutdown payload 推动。
 
-## P1 — direct Worker association
+## QA fixture + regression absorbed
 
-Direct compatibility fallback 不再使用 Worker `openerId` 作为 parent authority。
+已把 independent QA fixture 吸收到 Validator lane：
 
-优先级现在是：
+- `fixtures/live_unique_to_shared_worker.json`
+- `test_live_ambiguity_p0_fix.py`
+- `LIVE_AMBIGUITY_P0_FIX_RESULT.json`
 
-1. `parentId` -> exact page target；
-2. `parentFrameId` -> 可唯一映射 page/frame；
-3. 否则仅 endpoint 上唯一可识别 WOF page 才允许兼容 direct Worker；
-4. 其余情况 fail closed。
+新增 4 个 targeted regression：
 
-existing blob/data/hashed/no-extension Worker 的 URL-hint 语义保持不变：Worker URL shape 仍不是身份 gate，最终仍由 runtime readiness + exact World 921031 SHA-256 决定。
+1. unique -> shared Worker：必须先 finalize，drain=0 / ingest=0；
+2. two pages / two distinct Workers：各自 exact pair 重新证明后可独立 drain；
+3. topology reproof failure：立即 censor/finalize，不允许 deferred buffered ingest；
+4. remote cleanup payload：没有 fresh audit 时不得进入 ingest。
 
-## P1 — conservative manifest gates
+本阶段对 production method 做 repository-equivalent extracted control-flow smoke，4/4 PASS；同时按原 independent QA 的静态判据复算：旧 conditional live-page skip pattern 已不存在、audit interval 为 0、unsafe-window predicate 为 false。
 
-`validator.py` 的最终 verdict 现在执行全部当前受支持 conservative gates：
+Repository test surface 由原 **40** cases 增至 **44** cases；原 hardening / validator / discovery tests 文件未被修改。
 
-- `minProspectiveSignals`
-- `minProspectiveRooms`
-- `requireZeroHardMiss`
-- `minDistinctTargets`
-- `minObservedTypes`
-- `requireLifecycleReset`
+## Preserved hardening and conservative gates
 
-result JSON 对每个 gate 均输出：
+此前 Discovery V2 hardening 保持不变：
 
-- `required`
-- `observed`
-- `passed`
+- endpoint-level Worker↔page relation graph；
+- shared Worker under two pages 全部 fail closed；
+- two pages / two distinct exact Workers 独立；
+- direct fallback 不使用 Worker `openerId` 作为 parent authority；
+- `parentId` / `parentFrameId` authority 与唯一 WOF page compatibility 规则保持；
+- assigned endpoint / returned websocket 仍必须 loopback + exact same port；
+- blob/data/hashed/no-extension Worker URL shape 仍不是身份 gate；
+- exact World 921031 SHA-256 identity 保持；
+- candidate freeze/hash 与 mutation rejection 保持；
+- discovery-only evidence 不进入 prospective counters；
+- conservative gates 仍执行 `minProspectiveSignals` / `minProspectiveRooms` / `requireZeroHardMiss` / `minDistinctTargets` / `minObservedTypes` / `requireLifecycleReset`；
+- unknown conservative gate fail closed；
+- PASS 仍固定 `PROSPECTIVE_PASS_RESEARCH_ONLY`；
+- `productionPromotionAllowed=false`。
 
-未知 conservative gate 不再静默忽略；`validate_manifest()` 直接 fail closed，返回明确 unsupported gate 错误。
-
-`minDistinctTargets` 从 prospective matched evidence 的 target identity 统计；`minObservedTypes` 从 matched enemy type 统计；`requireLifecycleReset` 只在 prospective matched evidence 明确携带 `lifecycleReset=true` 时满足。
-
-PASS 仍固定为 `PROSPECTIVE_PASS_RESEARCH_ONLY`，`productionPromotionAllowed=false`。
-
-## Freeze / evidence / safety invariants
+## Safety invariants
 
 保持：
 
-- candidate canonical freeze/hash；
-- manifest mutation after freeze reject；
-- pre-freeze discovery exclusion；
-- post-freeze prospective inclusion；
-- discovery diagnostics 不进入 prospective corpus；
-- research-only；
-- no production auto-promotion；
 - `readOnly=true`；
 - `ramWrites=0`；
 - `inputInjection=false`；
 - no `window.Worker` replacement；
-- no Blob/Data/ObjectURL Worker rewrite。
+- no Blob/Data/ObjectURL Worker rewrite；
+- 不修改游戏 RAM；
+- 不注入游戏输入；
+- research-only / no production promotion。
 
 ## Owner entrypoints
 
-- `RUN_PROSPECTIVE_VALIDATOR.cmd` -> `live_validator_v2_hardened.py`
-- direct `python live_validator.py ...` -> hardened V2
-- hardened wrapper installs relation-graph, direct-fallback, and endpoint confinement guards before V2 main starts。
+保持：
 
-## Regression
+- `RUN_PROSPECTIVE_VALIDATOR.cmd` -> `live_validator_v2_hardened.py`；
+- direct `python live_validator.py ...` -> hardened V2；
+- hardened wrapper 继续安装 relation-graph、direct-fallback、endpoint confinement guards。
 
-Repository regression surface now totals **40 test cases**:
+## Stage artifacts / commits
 
-- existing `test_validator.py`: 12 cases；
-- existing `test_discovery_v2.py`: 12 cases；
-- existing `test_entrypoint_v2.py`: 4 cases；
-- new `test_discovery_v2_hardening.py`: 5 cases；
-- new `test_validator_hardening.py`: 7 cases。
+- core P0 fix: `2d732329d43362f0dc34c5e1a8391b90b5109725`
+- absorbed fixture: `e45557d08e804e39ff6ae6c0c3d11fd62efa4597`
+- targeted regression: `9103f8b1d992f45e25a8e914dac0e42c34297092`
+- machine result: `634dca2fffe8419c06b6a9f6f39e4ef92c48c4ee`
 
-New hardening coverage includes：
+## Owner action
 
-1. shared Worker under two pages => no admission；
-2. two pages / two distinct exact Workers => independent admission；
-3. misleading openerId cannot become parent authority；
-4. real parentId remains authoritative；
-5. remote/cross-port websocket reject + normalized loopback accept；
-6. all declared conservative gates satisfied => research-only PASS；
-7. target shortfall => insufficient；
-8. observed type shortfall => insufficient；
-9. lifecycle reset shortfall => insufficient；
-10. zero-hard-miss remains enforced；
-11. unknown conservative gate => fail closed；
-12. discovery rows never satisfy new prospective gates。
+**你现在需要操作：NO**
 
-Local repository-equivalent smoke checks executed during this stage passed for：
-
-- validator syntax/targeted conservative-gate behavior；
-- legacy ordered-tail/current-level verdict behavior；
-- freeze hash mutation rejection；
-- relation graph shared-Worker rejection；
-- endpoint same-port/loopback checks；
-- direct fallback openerId non-authority。
-
-Existing Discovery V2 blob/data/hashed/no-extension URL semantics were not removed or weakened。
-
-## Write scope
-
-本阶段只写：
-
-`parallel/PROSPECTIVE_VALIDATOR/**`
-
-以及 mandatory PM stage claim state。
-
-没有修改 Recorder、PYLAUNCH、Browser Fleet、Beta manifests 或 `product/alpha/**`。
+下一步应由新的 fresh QA stage 独立复测本 P0，不在本 fix 线程自证 QA。
 
 ## Stop condition
 
-**PROSPECTIVE VALIDATOR DISCOVERY V2 HARDENING READY — P0/P1 CLOSED IN REPOSITORY**
+**PROSPECTIVE VALIDATOR LIVE AMBIGUITY P0 FIX READY — READY FOR FRESH QA RETEST**
