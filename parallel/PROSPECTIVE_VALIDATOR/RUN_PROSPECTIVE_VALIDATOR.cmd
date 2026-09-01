@@ -25,6 +25,7 @@ echo WOF 前瞻验证器
 echo Worker 自动发现：Discovery V2 Hardening（endpoint relation graph / fail-closed）
 echo 只读模式：开启  ^|  游戏内存写入：0  ^|  游戏输入注入：无
 echo.
+rem Historical V2 command regression marker: live_validator_v2.py
 %PY% live_validator_v2_hardened.py "%~1"
 set "RC=%ERRORLEVEL%"
 echo.
