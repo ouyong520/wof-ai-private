@@ -26,6 +26,9 @@ Authoritative bridge outputs include:
 - `results/rawmine/candidate_screen_summary.md`
 - `results/rawmine/player_slot_depth_long_window.json`
 - `results/rawmine/depth_pair_timing.json`
+- `results/rawmine/basecap_incremental_audit.json`
+- `results/rawmine/basecap_incremental_audit_detail.md`
+- `results/rawmine/basecap_p2_depth_pair_focus.json`
 
 ## GEO — P1 X
 
@@ -78,6 +81,34 @@ RAWMINE interpretation: this is strong neutral timing evidence that `+0x08` and 
 
 No further RAWMINE capture is justified for this question unless GEO identifies a new concrete ambiguity that cannot be discriminated from the retained 2400-frame raw.
 
+## Post-completion BASECAP bounded audit
+
+Audit artifact:
+
+`parallel/RAWMINE/BASECAP_INCREMENTAL_AUDIT_20260901.md`
+
+Final bounded verdict: **A — MATERIAL_INCREMENT**, narrowly because canonical `BASECAP-B40-P2-xy-16s60-20260901-0600Z` adds new P2-only evidence for the existing `+0x08/+0xA2` temporal family.
+
+P2 controlled evidence:
+
+- `+0x08`: 10 changes, frequency 0.010428, player specificity 1.0, domain 99..112 / 11 values, one-direction small-step trajectory;
+- `+0xA2`: 11 changes, frequency 0.011470, player specificity 1.0, domain 99..113 / 12 values, one-direction small-step trajectory;
+- same-frame event Jaccard `0.615385`;
+- dynamic-union-frame lag `A2[t] ~= 08[t-1]`: P2 `10/13 = 0.769231`, versus existing P1 reference `509/648 = 0.785494`;
+- on A2-change frames: P2 `8/11 = 0.727273`, P1 reference `397/536 = 0.740672`.
+
+This is candidate/structural-family evidence only. The P2 run does not provide bidirectional `+0x08/+0xA2` coverage and provides no new controlled `+0x04/+0x0B` motion evidence, so RAWMINE makes no P2 same-offset promotion.
+
+`BASECAP-B40-P3-xy-16s60-20260901-0601Z` adds no usable P3 geometry dynamic under the retained object-record screen; it is not treated as negative proof against P3 structural equivalence.
+
+B13 vs B00 adds no material attack/action ranking improvement. B20 vs B00 adds no material object-record camera candidate; a standalone camera global outside the 23 object records remains outside this raw's visibility.
+
+### GEO handoff status
+
+`READY_FOR_GEO_P2_SAME_STRUCTURE_CANDIDATE_REVIEW`
+
+RAWMINE does not modify GEO conclusions and does not request a new capture.
+
 ## EFIELD
 
 EFIELD's bounded high-value mapping phase is complete. RAWMINE keeps the existing residual lifecycle, retarget, executor-transition, and action/state rankings evidence-only and requests no generic EFIELD acquisition.
@@ -87,6 +118,7 @@ EFIELD's bounded high-value mapping phase is complete. RAWMINE keeps the existin
 - EFIELD: no further RAWMINE acquisition justified.
 - GEO P1 X: already screened; semantic ownership remains GEO.
 - GEO P1 Y/depth: wide-window controlled evidence and `+0x08/+0xA2` timing discriminator are complete and handed back to GEO.
+- BASECAP post-completion audit: completed; P2 incremental evidence handed to GEO; B13/B20/P3 produced no material follow-up requirement.
 - Active RAWMINE operator-gated tasks: **none**.
 
-Current RAWMINE assignment is complete. Future work starts only from a new concrete owner question.
+Current RAWMINE assignment remains sealed/complete after the bounded audit. Future work starts only from a new concrete owner question.
