@@ -1,5 +1,23 @@
 # WOF-052L 10-Room Long Capture — Fresh Chinese P1 Fix Start Prompt
 
+stageId: `WOF052L_LONG_CAPTURE_CN_P1_FIX_V1`
+
+## 启动去重守卫（必须最先执行）
+
+开始任何实现前必须先读取：
+- `parallel/PM/STAGE_DEDUP_GUARD.md`
+- GitHub 默认分支最新状态
+- 本阶段可能已有的 RESULT / STATUS / stop-condition commit
+
+然后按顺序执行：
+1. 如果本阶段 stop condition 已经满足，立即停止，输出：`ALREADY COMPLETE — SAFE TO CLOSE — 当前线程空闲`。
+2. 如果 `parallel/PM/STAGE_CLAIMS/WOF052L_LONG_CAPTURE_CN_P1_FIX_V1.json` 已存在且该阶段尚未完成，立即停止，输出：`ALREADY CLAIMED — SAFE TO CLOSE — 当前线程空闲`。
+3. 只有确认未完成、未被认领后，才允许用 GitHub create-file 原子创建上述 claim 文件；创建失败视为已被其他线程抢先认领，重新读取后停止。
+4. claim 成功后输出：`CLAIM ACQUIRED — WORK STARTED`，再继续下面任务。
+5. 达到 stop condition 后把 claim 更新为 `COMPLETE`；精确 blocker 则更新为 `BLOCKED`。不要删除 claim。
+
+不要因为任务已完成/已认领而自行扩展相似工作。让本线程直接空闲退出，由 PM 补其他 stage。
+
 你负责 WOF-052L 10-room long capture 的 fresh 最小 P1 修复线。
 
 仓库：`ouyong520/wof-ai-private`
