@@ -1,0 +1,52 @@
+{
+  "schema": "wof-alpha-current-head-acceptance-prep-result-v1",
+  "stageId": "ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP_V1",
+  "result": "READY_WAITING_RELEASE_GATES",
+  "stopCondition": "ALPHA CURRENT-HEAD ACCEPTANCE PREP READY — WAITING RELEASE GATES",
+  "ownerActionRequired": false,
+  "runtimeAcceptanceExecuted": false,
+  "runtimeEvidenceClaimed": false,
+  "identity": {
+    "game": "wof",
+    "description": "Warriors of Fate (World 921031)",
+    "logicalBytes": 1048576,
+    "sha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
+    "signature": "wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8"
+  },
+  "contracts": {
+    "safeTransportBlob": "f8186d051862c16d0757a48a915fff338bc652a0",
+    "browserAttestationBlob": "d6f7fa93aaf8d15da6ce77cfa35c4f72c4c3b332",
+    "discoveryV2Blob": "ec9d27bfe26557a11187a23853893b898a3366d1",
+    "formalRealAdapterBlobAtFinalAudit": "1a5c6a255468c096ddd5df79993851e4d41e23cb",
+    "realWorkerBlob": "9c63a2c6a185ead8406487edd10038c035d41623",
+    "supportCollectorBlob": "1ca2b4014bd7498a9cc9380ecd8194bee0e5da49"
+  },
+  "preparedArtifacts": [
+    "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/acceptance_orchestrator.py",
+    "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/RUN_CURRENT_HEAD_ACCEPTANCE.cmd",
+    "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/current_head_acceptance.schema.json",
+    "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/failure_classification.json",
+    "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/fixtures/acceptance_result.template.json",
+    "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/README.md"
+  ],
+  "currentReleaseGateObservation": {
+    "formalIntegrationRecoveryClaim": "ACTIVE",
+    "formalIntegrationDurableResultPresent": false,
+    "adversarialReviewClaim": "BLOCKED",
+    "adversarialReviewKnownBlocker": "P1 detector-local exact World 921031 identity freshness; current real-adapter changed during prep in the fix direction, but independent gate has not yet certified closure",
+    "ownerBrowserAllowedNow": false
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false,
+    "gameplayNavigationInjected": false
+  },
+  "notes": [
+    "Fixture is explicitly non-evidence and does not contain fabricated Browser/WOF observations.",
+    "One-click driver blocks before Browser until upstream integration/review claims are COMPLETE and current offline gates pass.",
+    "Natural approved T18 warning may be NOT_EXERCISED; the acceptance driver never injects gameplay input to manufacture warning evidence.",
+    "Exact 1500/1501 stale boundary remains an offline frozen-gate authority; no unsafe live publication-suppression surface is invented by this prep lane."
+  ]
+}
