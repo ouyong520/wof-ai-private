@@ -4,8 +4,14 @@ import builtins
 import re
 from pathlib import Path
 
-import fleet_recorder
+import discovery_v2_sync
+import hardening_v2
 import recorder
+
+discovery_v2_sync.install(recorder)
+hardening_v2.install(recorder, discovery_v2_sync)
+
+import fleet_recorder
 
 
 _ORIGINAL_PRINT = builtins.print
