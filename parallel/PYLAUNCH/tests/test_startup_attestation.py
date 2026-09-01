@@ -50,7 +50,7 @@ class StartupAttestationTests(unittest.TestCase):
         self.assertIn("Chrome/Chromium/Edge", reason or "")
 
     def test_malformed_browser_metadata_fails_closed(self) -> None:
-        for browser in (123, "", "Chrome/"):
+        for browser in (123, "", "Chrome/", "Chrome//136", "Chrome/136 bad"):
             with self.subTest(browser=browser):
                 with patch("wof_launcher.browser._http_json", return_value=self._payload(browser=browser)):
                     self.assertIsNone(probe_endpoint("127.0.0.1", 9223))
