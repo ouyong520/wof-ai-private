@@ -2,7 +2,22 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "HUDANCHOR_PLAYER_FOLLOW_CONFIDENCE_FAILCLOSED_QA_V1",
   "promptPath": "parallel/PM/HUDANCHOR_PLAYER_FOLLOW_CONFIDENCE_FAILCLOSED_QA_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "2f1778ac51b5ecd8d36810379fc8442551fc40c6",
-  "startedAtUtc": "2026-09-01T16:07:30Z"
+  "startedAtUtc": "2026-09-01T16:07:30Z",
+  "completedAtUtc": "2026-09-01T16:15:00Z",
+  "resultPath": "parallel/HUDANCHOR_PLAYER_FOLLOW_QA_CONFIDENCE/RESULT.md",
+  "resultCommit": "bf41c111d6dc84f3f0304833981bc97ba76df971",
+  "qaHarnessPath": "parallel/HUDANCHOR_PLAYER_FOLLOW_QA_CONFIDENCE/qa_confidence_matrix.js",
+  "qaHarnessCommit": "a1a414f6e17ac4eea221d730b749a5fd64274631",
+  "qaHarnessBlob": "3958316d4a47189de63158bbb180c6b9109cb0b8",
+  "matrixCommit": "d05f69873c1a291c96866b9240da2d689eb21e3c",
+  "sutBlob": "e36e80fdad7bcf7f73485f9093aa9014428c86b1",
+  "regressions": {
+    "confidence": { "blob": "1efcac65e9cc5598358c86e968a6b148d9e970a2", "passed": 18, "total": 18 },
+    "bounds": { "blob": "d5798e3470625d440092aa00a05142157f99799b", "passed": 8, "total": 8 },
+    "synthetic": { "blob": "b7d56a74ef520bccb47055bc59558da6dfcb6139", "passed": 15, "total": 15 },
+    "freshQa": { "blob": "3958316d4a47189de63158bbb180c6b9109cb0b8", "passed": 12, "total": 12 }
+  },
+  "stopCondition": "PASS — HUDANCHOR CONFIDENCE FAIL-CLOSED FRESH QA — READY FOR LONG-STRESS V2"
 }
