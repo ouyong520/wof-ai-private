@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='wof-alpha-hud-rc3';
+const VERSION='wof-alpha-hud-rc4';
 const SCHEMA='wof-alpha-v2';
 const cfg=window.__WOF_ALPHA_CONFIG;
 if(!cfg||cfg.release!=='wof-alpha-rc3'||typeof cfg.session!=='string'||cfg.session.length<16||typeof cfg.channel!=='string')throw new Error('WOF Alpha RC3 session config missing');
@@ -129,7 +129,7 @@ function drawHud(){
     const W=gl.drawingBufferWidth||canvas.width,w=Math.min(520,W-8);drawTexture(Math.max(4,(W-w)/2),8,w,h);return;
   }
   if(now-loadedAt<STARTUP_MS){
-    const h=paintBox('WOF Alpha RC3 已加载',[fresh?'检测器已连接 · 当前无生产危险':'等待 921031 身份校验/检测器连接']);
+    const h=paintBox('WOF Alpha RC4 已加载',[fresh?'检测器已连接 · 当前无生产危险':'等待 921031 身份校验/检测器连接']);
     const W=gl.drawingBufferWidth||canvas.width,w=Math.min(520,W-8);drawTexture(Math.max(4,(W-w)/2),8,w,h);
   }
 }
@@ -140,7 +140,7 @@ bc.onmessage=e=>{
   const m=e.data;
   if(!(m&&m.schema===SCHEMA&&m.session===SESSION))return;
   if(m.kind==='state'){lastMsg=m;lastRx=Date.now();lastDiag=null;lastKey='';}
-  else if(m.kind==='diag'){lastDiag={at:Date.now(),reason:m.reason||m.status||'diagnostic'};lastKey='';}
+  else if(m.kind==='diag'){lastMsg=null;lastRx=0;lastDiag={at:Date.now(),reason:m.reason||m.status||'diagnostic'};lastKey='';}
 };
 
 function dispose(){
@@ -159,5 +159,5 @@ window.WOFALPHAHUD={
       researchHudDisposed:true};
   }
 };
-console.log('✅ WOF Alpha RC3 HUD installed · session',SESSION.slice(0,8));
+console.log('✅ WOF Alpha RC4 HUD installed · session',SESSION.slice(0,8));
 })();
