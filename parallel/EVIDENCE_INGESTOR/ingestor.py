@@ -14,7 +14,7 @@ GENERATED_DIR_NAME = "_自动整理"
 SUPPORTED_SUFFIXES = {".json", ".log", ".txt"}
 SAFETY = {"readOnly": True, "ramWrites": 0, "inputInjection": False}
 KNOWN_SCHEMAS = {"wof-python-launcher-windows-proof-v1", "wof-052l-recorder-v1", "wof-052l-fleet-supervisor-v1"}
-KNOWN_VERSIONS = {"wof-browser-fleet-v1", "wof-windows-operator-toolkit-v1"}
+KNOWN_VERSIONS = {"wof-browser-fleet-v1", "wof-windows-operator-toolkit-v1", "wof-windows-operator-toolkit-v2-cn"}
 KNOWN_ARTIFACTS = {"wof-alpha-rc5", "wof-alpha-rc5-independent-qa-retest"}
 
 
@@ -74,7 +74,7 @@ def classify(payload: dict[str, Any], rel: str):
     if a == "wof-alpha-rc5": return "Regression", "ALPHA_REGRESSION_RESULT", s, a
     if a == "wof-alpha-rc5-independent-qa-retest": return "Alpha QA", "ALPHA_QA_RESULT", s, a
     t = payload.get("toolkit")
-    if t == "wof-windows-operator-toolkit-v1":
+    if t in {"wof-windows-operator-toolkit-v1", "wof-windows-operator-toolkit-v2-cn"}:
         if isinstance(payload.get("checks"), list) and "overall" in payload: return "Regression", "REGRESSION_SUMMARY", s, t
         if isinstance(payload.get("components"), dict) and "platform" in payload: return "Diagnostics", "DIAGNOSTICS_SUMMARY", s, t
         if "included" in payload and "created" in payload: return "Toolkit", "PACKAGE_MANIFEST", s, t
