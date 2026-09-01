@@ -1,0 +1,88 @@
+name: Alpha Transport True 5h Endurance
+
+on:
+  push:
+    paths:
+      - '.github/workflows/alpha-transport-true-5h-endurance.yml'
+      - 'parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alpha-transport-true-5h-endurance-v1
+  cancel-in-progress: false
+
+jobs:
+  endurance:
+    name: Endurance segment ${{ matrix.segment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        segment: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    env:
+      ENDURANCE_SEGMENT_INDEX: ${{ matrix.segment }}
+      ENDURANCE_SEGMENT_MS: '1500000'
+      ENDURANCE_CHECKPOINT_PATH: parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/checkpoints/segment-${{ matrix.segment }}.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run non-idle deterministic transport stress segment
+        shell: bash
+        run: |
+          set -o pipefail
+          node parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/endurance_runner.mjs 2>&1 | tee parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/checkpoints/segment-${{ matrix.segment }}.log
+      - name: Upload durable segment checkpoint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-transport-endurance-segment-${{ matrix.segment }}
+          path: |
+            parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/checkpoints/segment-${{ matrix.segment }}.json
+            parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/checkpoints/segment-${{ matrix.segment }}.log
+          if-no-files-found: warn
+          retention-days: 14
+
+  summarize:
+    name: Summarize true endurance evidence
+    if: ${{ always() }}
+    needs: endurance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Download surviving checkpoints
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: alpha-transport-endurance-segment-*
+          path: parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/downloaded-checkpoints
+          merge-multiple: true
+      - name: Aggregate machine-readable final summary
+        env:
+          ENDURANCE_AGGREGATE_INPUT: parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/downloaded-checkpoints
+          ENDURANCE_FINAL_SUMMARY_PATH: parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/final-summary.json
+          ENDURANCE_EXPECTED_SEGMENTS: '13'
+          ENDURANCE_TOTAL_INTENDED_MS: '19500000'
+        run: node parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/endurance_runner.mjs --aggregate
+      - name: Upload final machine-readable summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-transport-true-5h-endurance-final
+          path: parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/final-summary.json
+          if-no-files-found: warn
+          retention-days: 30
