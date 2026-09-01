@@ -55,6 +55,61 @@ Browser observation/question
 -> only then promote to production conclusion/rule
 ```
 
+## Reuse before recapture
+
+Before creating a new WinKawaks Collector task, first check the shared labeled baseline catalog:
+
+```text
+parallel/BASECAP/BASE_CAPTURE_CATALOG.md
+```
+
+If a retained capture already matches the required scene, controlled variable, player configuration, sampling rate, and other material conditions, reuse that capture rather than asking the operator to repeat the same collection.
+
+The preferred local-discovery flow is:
+
+```text
+research question
+-> inspect BASECAP catalog
+-> reuse matching retained raw if available
+-> run GEO / EFIELD / RAWMINE analysis against that capture
+-> only create a new capture for a missing condition or explicit discriminator
+```
+
+Reusable baseline data should normally be collected with:
+
+```json
+"uploadRawStream": true
+```
+
+so it remains available at the immutable task-specific path:
+
+```text
+captures/<taskId>.jsonl.gz
+```
+
+Collector artifacts are task-specific. A new unique `taskId` produces a new task/result/raw identity rather than intentionally replacing an older capture. Research producers MUST NEVER reuse an old task ID for a new dataset. If a scene must be repeated, use a new ID and mark the old catalog entry `SUPERSEDED` when appropriate.
+
+Every reusable capture must be labeled with enough acquisition metadata to make later reuse safe. At minimum record:
+
+```text
+captureId / taskId
+raw path
+capture time
+ROM/game/session identity when known
+player occupancy/configuration
+scene before capture / before READY
+operator action during the burst
+duration + Hz
+object layout / bytes per frame
+intentional changed variable
+intentional held-stable variables
+intended research questions
+known confounders / limitations
+VALID / SUPERSEDED / INVALID
+```
+
+Do not infer a missing scene label from raw bytes alone. A capture with uncertain acquisition conditions may still be useful for exploratory analysis, but it is not a canonical reusable baseline.
+
 ## Frozen Collector v1 consumer contract
 
 ```text
@@ -99,6 +154,8 @@ The collector returns:
 ```text
 captures/<taskId>.jsonl.gz
 ```
+
+For reusable BASECAP datasets, prefer `uploadRawStream=true` so future AI chats can consume the exact same capture without asking the operator to recapture it. Collector v1 still applies its per-capture compressed GitHub size limit from the contract.
 
 ## Source namespace rule
 
