@@ -110,10 +110,23 @@ python parallel\EVIDENCE_INGESTOR\run.py --root D:\Some\WOF_RESULTS --package
 python -m unittest discover -s parallel\EVIDENCE_INGESTOR\tests -p test_*.py -v
 ```
 
-基础实现已有 13 项 fixture 回归 PASS；当前仓库另外增加 3 项兼容回归，覆盖：
+当前完整测试集已实际执行：**18/18 PASS**。
 
-- Toolkit v2-cn Regression 不被误报未知版本；
-- Toolkit v2-cn Diagnostics 不被误报未知版本；
+覆盖包括：
+
+- PYLAUNCH + World 921031 / golden SHA；
+- 损坏 JSON 隔离；
+- 重复内容检测；
+- RAM write 非 0 阻断；
+- World SHA 不匹配阻断；
+- WOF-052L merged；
+- Browser Fleet；
+- 未知 schema 警告；
+- `_自动整理` 自排除；
+- ZIP 结果包；
+- 日志索引；
+- Alpha RC5 regression / QA；
+- Toolkit v2-cn Regression / Diagnostics；
 - 一键 CMD 确认走 `run.py` 当前兼容入口。
 
 ## 最小 Windows proof
