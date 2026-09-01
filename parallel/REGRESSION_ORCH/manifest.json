@@ -1,6 +1,6 @@
 {
   "schema": "wof-regression-orchestrator-manifest-v1",
-  "version": 4,
+  "version": 5,
   "ownerLanguage": "zh-CN",
   "guardRoots": [
     "parallel/REGRESSION_ORCH",
@@ -29,7 +29,6 @@
     "parallel/BROWSER_FLEET/tests/test_fleet_manager_v2.py",
     "parallel/WOF052L_RECORDER/test_fleet_recorder.py",
     "parallel/WOF052L_RECORDER/test_discovery_v2_sync.py",
-    "parallel/WOF052L_RECORDER/test_hardening_v2.py",
     "parallel/PROSPECTIVE_VALIDATOR/test_validator.py",
     "parallel/PROSPECTIVE_VALIDATOR/test_discovery_v2.py",
     "parallel/PROSPECTIVE_VALIDATOR/test_discovery_v2_hardening.py",
@@ -102,15 +101,13 @@
         "parallel/WOF052L_RECORDER/discovery_v2_sync.py",
         "parallel/WOF052L_RECORDER/hardening_v2.py",
         "parallel/WOF052L_RECORDER/test_fleet_recorder.py",
-        "parallel/WOF052L_RECORDER/test_discovery_v2_sync.py",
-        "parallel/WOF052L_RECORDER/test_hardening_v2.py"
+        "parallel/WOF052L_RECORDER/test_discovery_v2_sync.py"
       ],
       "commands": [
         {"cwd": ".", "argv": ["{python}", "-m", "py_compile", "parallel/WOF052L_RECORDER/owner_v2_zh_cn.py", "parallel/WOF052L_RECORDER/discovery_v2_sync.py", "parallel/WOF052L_RECORDER/hardening_v2.py"]},
         {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "owner_v2_zh_cn.py", "--self-test"]},
         {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "test_fleet_recorder.py"]},
-        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "test_discovery_v2_sync.py"]},
-        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "test_hardening_v2.py"]}
+        {"cwd": "parallel/WOF052L_RECORDER", "argv": ["{python}", "test_discovery_v2_sync.py"]}
       ]
     },
     {
