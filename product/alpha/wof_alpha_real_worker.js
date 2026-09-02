@@ -14,10 +14,12 @@ const SCHEMA='wof-alpha-v2';
 const TRANSPORT='wof-alpha-safe-transport-v1';
 const CORE_VERSION='wof-alpha-core-rc3';
 const LABELS_VERSION='wof-alpha-enemy-target-labels-v1';
+const PLAYER_HEAD_VERSION='wof-alpha-player-head-warning-v1';
 const GOLDEN_SHA='5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62';
 const IDENTITY_SIGNATURE='wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8';
 const RAW='https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/product/alpha/';
 const HEX32=/^[0-9a-f]{32}$/;
+const PLAYER_SPATIAL_PUBLISH_MS=20;
 const SAFETY=Object.freeze({readOnly:true,ramWrites:0,inputInjection:false,workerReplacement:false,blobRewrite:false,gamePostMessageControl:false,heapWrites:false,assistMode:false});
 
 function validBinding(b){
@@ -87,6 +89,23 @@ async function loadEnemyHeadProjection(scope,labelApi){
   const profile=await response.json();
   const valid=labelApi.validateProofProfile(profile);
   return valid?.ok?Object.freeze({...profile}):null;
+}
+async function ensurePlayerHeadWarning(scope){
+  if(scope.WOFAlphaPlayerHeadWarning?.VERSION===PLAYER_HEAD_VERSION)return scope.WOFAlphaPlayerHeadWarning;
+  if(typeof scope.fetch!=='function')throw new Error('玩家头顶提醒模块加载接口不可用');
+  const response=await scope.fetch(RAW+'wof_alpha_player_head_warning.js?transport='+encodeURIComponent(TRANSPORT)+'&x='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw new Error('玩家头顶提醒模块加载失败 HTTP '+response.status);
+  (0,eval)(await response.text());
+  if(scope.WOFAlphaPlayerHeadWarning?.VERSION!==PLAYER_HEAD_VERSION)throw new Error('玩家头顶提醒模块身份不匹配');
+  return scope.WOFAlphaPlayerHeadWarning;
+}
+async function loadPlayerHeadProjection(scope,playerHeadApi){
+  if(typeof scope.fetch!=='function'||!playerHeadApi?.validateProofProfile)return{profile:null,error:'PLAYER_HEAD_PROJECTION_API_UNAVAILABLE'};
+  const response=await scope.fetch(RAW+'wof_alpha_player_head_projection.json?x='+Date.now(),{cache:'no-store'});
+  if(!response.ok)return{profile:null,error:'PLAYER_HEAD_PROJECTION_PROFILE_HTTP_'+response.status};
+  const profile=await response.json();
+  const valid=playerHeadApi.validateProofProfile(profile);
+  return valid?.ok?{profile:Object.freeze({...profile}),error:null}:{profile:null,error:valid?.reason||'PLAYER_HEAD_PROJECTION_UNPROVED'};
 }
 async function localIdentity(scope,mod,binding){
   try{
@@ -158,6 +177,14 @@ async function install(scope,binding){
     projectionProfile=await loadEnemyHeadProjection(scope,labelApi);
   }catch(error){markerSetupError=String(error?.message||error);}
 
+  let playerHeadApi=null,playerProjectionProfile=null,playerProjectionError=null;
+  try{
+    playerHeadApi=await ensurePlayerHeadWarning(scope);
+    const loaded=await loadPlayerHeadProjection(scope,playerHeadApi);
+    playerProjectionProfile=loaded.profile;
+    playerProjectionError=loaded.error;
+  }catch(error){playerProjectionError=String(error?.message||error);}
+
   const M=mod.HEAPU8,R=mod.HEAPU32[0x2e39e4>>>2]>>>0;
   const B=a=>M[R+((((a-0xFF0000)&0xffff)^1))]>>>0;
   const U16=a=>((B(a)<<8)|B(a+1))>>>0;
@@ -166,6 +193,7 @@ async function install(scope,binding){
   const F16=a=>S32(a)/65536;
   const X=a=>Math.round(F16(a+4));
   const ENEMY=0xFFC0BC,STRIDE=0xE0,SLOTS=20,PBASE={0:0xFFBE1C,4:0xFFBEFC,8:0xFFBFDC};
+  const PLAYER_BASES=Object.freeze({P1:0xFFBE1C,P2:0xFFBEFC,P3:0xFFBFDC});
   function snap(i){
     const a=ENEMY+i*STRIDE,type=U16(a+0x20);if(type>=47)return null;
     const frameEnd=U32(a+0x12),next=U32(a+0x2C);if(!frameEnd&&!next)return null;
@@ -193,11 +221,34 @@ async function install(scope,binding){
       return{projection:null,markers:[],projectionOk:false,error:String(error?.message||error)};
     }
   }
+  function playerSpatialSnapshot(sampleAt){
+    const players={};
+    for(const [name,base] of Object.entries(PLAYER_BASES)){
+      const present=!!B(base);
+      if(!present){
+        players[name]={present:false,sampleAt,confidence:1,epoch:binding.runtimeEpoch,projectionEpoch:binding.runtimeEpoch};
+        continue;
+      }
+      players[name]={present:true,x:F16(base+0x04),y:F16(base+0x08),z:F16(base+0x0C),
+        sampleAt,confidence:1,epoch:binding.runtimeEpoch,projectionEpoch:binding.runtimeEpoch};
+    }
+    let projection=null,error=playerProjectionError;
+    if(playerHeadApi&&playerProjectionProfile){
+      try{
+        const cameraRaw=U16(playerProjectionProfile.cameraAddress);
+        const built=playerHeadApi.buildProjectionSnapshot(playerProjectionProfile,{cameraRaw,epoch:binding.runtimeEpoch,sampleAt});
+        projection=built?.ok?built.projection:null;
+        error=built?.ok?null:(built?.reason||'PLAYER_HEAD_PROJECTION_BUILD_FAILED');
+      }catch(e){error=String(e?.message||e);}
+    }
+    return{players,projection,error};
+  }
 
   const bc=new scope.BroadcastChannel(binding.channel);
   const engine=core.createEngine();
   let running=true,timer=0,polls=0,lastError=null,lastHash=null,lastPublishedAt=null,seq=0;
   let markerSeq=0,lastMarkerTargetHash=null,lastMarkerPublishedAt=null,lastMarkerError=markerSetupError;
+  let playerSpatialSeq=0,lastPlayerSpatialPublishedAt=null,lastPlayerSpatialError=playerProjectionError;
   const nowMono=()=>Number(scope.performance?.now?.()||Date.now());
   const envelope=(kind,payload={})=>({schema:SCHEMA,kind,release:RELEASE,coreVersion:CORE_VERSION,transportVersion:TRANSPORT,
     session:binding.session,pairGeneration:binding.pairGeneration,pairNonce:binding.pairNonce,runtimeEpoch:binding.runtimeEpoch,identitySignature:IDENTITY_SIGNATURE,sentAt:Date.now(),...SAFETY,...payload});
@@ -207,22 +258,33 @@ async function install(scope,binding){
     if(!running)return;
     const authority=gate.start();
     if(!authority)return;
-    let rows=[];
-    try{for(let i=0;i<SLOTS;i++){const s=snap(i);if(s)rows.push(s);}}
-    catch(error){
+    const sampledAt=nowMono(),sampleAtEpoch=Date.now();
+    let rows=[],playerSpatial=null;
+    try{
+      for(let i=0;i<SLOTS;i++){const s=snap(i);if(s)rows.push(s);}
+      playerSpatial=playerSpatialSnapshot(sampleAtEpoch);
+    }catch(error){
       if(gate.finish(authority)){lastError=String(error?.message||error);running=false;postDiag('只读快照失败：'+lastError);}
       return;
     }
-    const sampledAt=nowMono(),sampleAtEpoch=Date.now();
     Promise.resolve().then(()=>engine.step(rows,sampledAt)).then(state=>{
       if(!gate.finish(authority))return;
       polls++;
       const warnings=Array.isArray(state?.warnings)?state.warnings:[];
       const hash=stableWarningsHash(warnings),changed=hash!==lastHash,heartbeat=lastPublishedAt===null||sampledAt-lastPublishedAt>=250;
-      if(changed||heartbeat){
+      const statePublished=changed||heartbeat;
+      if(statePublished){
         seq++;
-        bc.postMessage(envelope('state',{seq,warnings}));
+        bc.postMessage(envelope('state',{seq,warnings,sampleAt:sampleAtEpoch}));
         lastHash=hash;lastPublishedAt=sampledAt;
+      }
+
+      const spatialHeartbeat=lastPlayerSpatialPublishedAt===null||sampledAt-lastPlayerSpatialPublishedAt>=PLAYER_SPATIAL_PUBLISH_MS;
+      if(playerSpatial&&(statePublished||(warnings.length>0&&spatialHeartbeat))){
+        playerSpatialSeq++;
+        lastPlayerSpatialError=playerSpatial.error;
+        bc.postMessage(envelope('player-head-spatial',{playerSpatialSeq,sampleAt:sampleAtEpoch,players:playerSpatial.players,projection:playerSpatial.projection}));
+        lastPlayerSpatialPublishedAt=sampledAt;
       }
 
       const markerState=markerSnapshot(rows,sampleAtEpoch);
@@ -252,6 +314,8 @@ async function install(scope,binding){
       running=false;runtime.running=false;try{clearInterval(timer);}catch(_){};gate.revoke();try{engine.reset();}catch(_){};try{bc.close();}catch(_){};return true;
     },
     status(){return{version:TRANSPORT,release:RELEASE,running:running&&gate.status().active,identitySignature:IDENTITY_SIGNATURE,identity,...SAFETY,polls,lastError,
+      playerHeadWarning:{moduleReady:!!playerHeadApi,projectionReady:!!playerProjectionProfile,proofId:playerProjectionProfile?.proofId??null,playerSpatialSeq,lastError:lastPlayerSpatialError,
+        holdMs:0,smoothing:false,maxPublishHz:1000/PLAYER_SPATIAL_PUBLISH_MS,maxSpatialAgeMs:playerHeadApi?.MAX_PLAYER_AGE_MS??80},
       enemyTargetLabels:{moduleReady:!!labelApi,projectionReady:!!projectionProfile,proofId:projectionProfile?.proofId??null,markerSeq,lastError:lastMarkerError,holdMs:0,smoothing:false,maxPublishHz:20},...gate.status()};}
   };
   scope.__WOF_ALPHA_REAL_TRANSPORT=runtime;

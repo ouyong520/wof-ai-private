@@ -19,6 +19,7 @@ if(typeof window!=='undefined'&&window===globalThis){
   try{window.WOFALPHAHUD?.dispose?.();}catch(_){}
   await load('wof_alpha_hud_model.js');
   await load('wof_alpha_enemy_target_labels.js');
+  await load('wof_alpha_player_head_warning.js');
   await load('wof_alpha_hud.js');
   window.WOFALPHA={release:RELEASE,schema:SCHEMA,session:SESSION,mode:'page',status:()=>window.WOFALPHAHUD?.status?.()||null};
   return window.WOFALPHA;

@@ -1,0 +1,15 @@
+{
+  "schema": "wof-alpha-player-head-projection-v1",
+  "status": "UNPROVED",
+  "activation": "DISABLED_UNTIL_BOUNDED_BROWSER_WOF_PROOF",
+  "projectionKind": "world-camera-floor-z-affine-v1",
+  "proofId": null,
+  "projectionVersion": null,
+  "source": "HUDANCHOR repository evidence audit",
+  "reason": "Authoritative Browser/WOF camera/native Y-Z/head-clearance facts are not yet retained as a proved production profile.",
+  "safety": {
+    "failClosed": true,
+    "fixedHudFallback": true,
+    "guessedConstants": false
+  }
+}
