@@ -37,7 +37,7 @@ Do not start a final freeze audit while required release-owned fixes are still m
 1. Formal Real-Adapter Integration Recovery V2 COMPLETE;
 2. `ALPHA_TRANSPORT_FORMAL_REAL_ADAPTER_INTEGRATION_FRESH_QA_V1` COMPLETE/PASS on current production blobs;
 3. `PYLAUNCH_STARTUP_ATTESTATION_QA_V1` COMPLETE/PASS and tested PYLAUNCH blobs still current;
-4. `UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_FRESH_QA_V1` COMPLETE/PASS on current Unified runtime;
+4. `UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_V1` COMPLETE/PASS on current Unified runtime;
 5. `OWNER_ONECLICK_CURRENT_HEAD_RELEASE_REFRESH_V3` COMPLETE/PASS with manifest matching current selected release runtime;
 6. `ALPHA_ACCEPTANCE_SUPERSEDING_GATE_RECONCILIATION_V1` COMPLETE/PASS and repo-only acceptance preflight green;
 7. current required Safe Transport regression gates green;
