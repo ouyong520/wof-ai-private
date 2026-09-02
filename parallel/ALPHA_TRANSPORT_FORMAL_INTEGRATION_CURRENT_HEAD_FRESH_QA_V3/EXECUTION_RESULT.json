@@ -7,8 +7,16 @@
     "product/alpha/wof_alpha_hud.js": "50d944c451ac94b114e4f86441aeae8ad6b25c78",
     "product/alpha/wof_alpha_player_head_warning.js": "af7f2359514dc6f86f74fac0c47858e8a6acf107",
     "product/alpha/wof_alpha_bootstrap.user.js": "5aed15ff14aa39d95eade187cefb63dbd00848e6",
+    "product/alpha/wof_alpha_loader.js": "66aee09fc2dd009c2f295d2092f3129548605efb",
     "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/real_adapter.py": "1a5c6a255468c096ddd5df79993851e4d41e23cb",
-    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/adapter_test.py": "824323123cef3d736efb0d8152264303a59d14a9"
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/adapter_test.py": "824323123cef3d736efb0d8152264303a59d14a9",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/integration_test.mjs": "4b2b2eccb83e16e149a6ddd4f36c438c325c50b9",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/detector_local_identity_test.mjs": "4140d22114a6e10a8cef345f388b0b479dea1f5b",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/formal_integration_qa_sut.mjs": "46c36dca6e906b8134dda76068ada2b3aaedff5a",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION_QA_PREP/formal_integration_qa.mjs": "4eaa6c6f24d885a3036391bc8bcd20a1f2230a91",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION_QA_PREP/expected_outcomes.json": "f5bed29cc31f57288f2f17f0b0549322e5a8a510",
+    "parallel/PYLAUNCH/wof_launcher/discovery_v2.py": "ec9d27bfe26557a11187a23853893b898a3366d1",
+    "parallel/PYLAUNCH/wof_launcher/probe.py": "789a6849b826b35542b22d56a4d2ca3628d285a1"
   },
   "exactBlobReconstruction": {
     "realWorker": true,
@@ -16,19 +24,31 @@
     "playerHeadWarning": true,
     "bootstrap": true,
     "realAdapter": true,
-    "adapterTest": true
+    "adapterTest": true,
+    "integrationTest": true,
+    "detectorLocalIdentityTest": true,
+    "formalSut": true
   },
   "runs": [
     {"id":"exact-current-worker-adversarial","status":"PASS","caseCount":8,"passCount":8,"failCount":0,"coverage":["exact safety API","one-in-flight/no-catch-up","late completion after revoke","generation/epoch/pair isolation","player-head-spatial only after gate.finish","250ms heartbeat","detector-local exact SHA source","same-targetId nongolden runtime install fail-closed"]},
     {"id":"exact-current-hud-authority-adversarial","status":"PASS","caseCount":8,"passCount":8,"failCount":0,"coverage":["1500ms stale constant","all inbound kinds exact current-pair filtered","only state refreshes warning lastRx","spatial cannot create warning state","render requires fresh state","anchored warning binds semantic state epoch/sample","diag/reset revoke state and spatial","status warningCount uses state freshness only"]},
     {"id":"exact-current-player-head-transport-adversarial","status":"PASS","caseCount":20,"passCount":20,"failCount":0,"coverage":["strict warningSampleAt malformed values","spatial-before-warning rejection","player/projection/drawing-buffer epoch mismatch","80/81ms player freshness","one-in-flight","late completion","generation rebind","pair envelope mismatch","launcher SHA rejection","249/250ms","1500/1501ms","exact safety"]},
-    {"id":"exact-current-formal-adapter-regression","status":"PASS","caseCount":10,"passCount":10,"failCount":0,"coverage":["exact World identity admission","wrong SHA rejection","input injection rejection","same-page revoke","same-worker stop","replacement revoke ordering","runtime-epoch replacement invalidation","fresh detector-local SHA required","revoke-before-bind-install","unsupported discovery fail-closed/gameplay playable"]},
-    {"id":"exact-current-bootstrap-adversarial","status":"PASS","caseCount":3,"passCount":3,"failCount":0,"coverage":["RNG/transport failure game unaffected","reset increments generation and clears authority","foreign pair cannot pair"]}
+    {"id":"exact-current-formal-adapter-regression","status":"PASS","caseCount":10,"passCount":10,"failCount":0,"rawResultPath":"parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION_CURRENT_HEAD_FRESH_QA_V3/ADAPTER_RESULT.json"},
+    {"id":"exact-current-bootstrap-adversarial","status":"PASS","caseCount":3,"passCount":3,"failCount":0,"coverage":["RNG/transport failure game unaffected","reset increments generation and clears authority","foreign pair cannot pair"]},
+    {"id":"exact-current-integration-regression","status":"PASS","caseCount":20,"passCount":20,"failCount":0,"rawResultPath":"parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION_CURRENT_HEAD_FRESH_QA_V3/INTEGRATION_RESULT.json"},
+    {"id":"exact-current-detector-local-identity-regression","status":"PASS","caseCount":2,"passCount":2,"failCount":0,"rawResultPath":"parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION_CURRENT_HEAD_FRESH_QA_V3/DETECTOR_LOCAL_IDENTITY_RESULT.json"},
+    {"id":"exact-current-formal-sut-equivalent-replay","status":"PASS","caseCount":14,"passCount":14,"failCount":0,"rawResultPath":"parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION_CURRENT_HEAD_FRESH_QA_V3/FORMAL_SUT_RESULT.json","coverage":["normal attach/publish/clear","adapter unavailable fail-open gameplay","stale completion after rebind","new generation survives old return","runtime epoch revoke","worker replacement/reinstall","foreign pair rejection","disconnect/reconnect","249/250 heartbeat","1500/1501 stale","unsupported identity","one-in-flight/no-catch-up","Chinese fail-closed status","exact safety and bootstrap game-unaffected"]}
   ],
-  "totals": {"caseCount":49,"passCount":49,"failCount":0},
+  "totals": {"caseCount":85,"passCount":85,"failCount":0},
+  "frozenSafeTransportConsumerGate": {
+    "status": "PASS_CURRENT_EQUIVALENT",
+    "basis": ["exact-current-integration-regression","exact-current-formal-sut-equivalent-replay","exact-current-worker-adversarial","exact-current-bootstrap-adversarial"],
+    "historical67Of67CountedAsFresh": false
+  },
   "notes": [
-    "Each current-source mirror listed above was Git-blob hashed before execution and matched its current GitHub blob exactly.",
-    "Historical Recovery V2 executions are supportive only and are excluded from fresh totals.",
+    "Each current-source mirror marked exact above was Git-blob hashed before execution and matched its current GitHub blob exactly.",
+    "The formal SUT replay executed the exact current SUT seam against the exact current worker/bootstrap/HUD/adapter sources with the current 14 contracted scenario semantics; the historical Recovery V2 formal harness execution was not counted as fresh.",
+    "Historical Recovery V2 and historical frozen 67/67 executions are supportive only and are excluded from fresh totals.",
     "No Browser/WOF process was launched."
   ]
 }
