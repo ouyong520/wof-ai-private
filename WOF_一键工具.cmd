@@ -1,5 +1,5 @@
 @echo off
-setlocal EnableExtensions
+setlocal EnableExtensions EnableDelayedExpansion
 chcp 65001 >nul 2>&1
 set "PYTHONUTF8=1"
 set "PYTHONIOENCODING=utf-8"
@@ -17,9 +17,9 @@ if exist "%CURRENT_FILE%" (
   set "CURRENT_VERSION="
   set /p CURRENT_VERSION=<"%CURRENT_FILE%"
   if defined CURRENT_VERSION (
-    set "CURRENT_RELEASE=%PORTABLE_ROOT%\releases\%CURRENT_VERSION%"
+    set "CURRENT_RELEASE=%PORTABLE_ROOT%\releases\!CURRENT_VERSION!"
     set "CURRENT_PY=%PORTABLE_ROOT%\venv\Scripts\python.exe"
-    if exist "%PORTABLE_ROOT%\releases\%CURRENT_VERSION%\installed.ok" if exist "%PORTABLE_ROOT%\releases\%CURRENT_VERSION%\PACKAGE_MANIFEST.json" if exist "%PORTABLE_ROOT%\releases\%CURRENT_VERSION%\parallel\OPTOOLKIT\owner_zh_cn.py" if exist "%PORTABLE_ROOT%\venv\Scripts\python.exe" goto :direct
+    if exist "%PORTABLE_ROOT%\releases\!CURRENT_VERSION!\installed.ok" if exist "%PORTABLE_ROOT%\releases\!CURRENT_VERSION!\PACKAGE_MANIFEST.json" if exist "%PORTABLE_ROOT%\releases\!CURRENT_VERSION!\parallel\OPTOOLKIT\owner_zh_cn.py" if exist "%PORTABLE_ROOT%\venv\Scripts\python.exe" goto :direct
   )
 )
 
