@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wof-training-farm-runtime-policy-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "headless", "audioOutput", "hostKeyboardInjection", "hostMouseInjection", "focusStealing", "gameplayInputAuthority", "foregroundFriendly", "internalFramebufferAllowed", "windowPresentationRequired", "resourceBudget", "stageGuard"],
+  "properties": {
+    "schema": {"const": "wof-training-farm-runtime-policy-v1"},
+    "headless": {"const": true},
+    "audioOutput": {"const": "discard"},
+    "hostKeyboardInjection": {"const": false},
+    "hostMouseInjection": {"const": false},
+    "focusStealing": {"const": false},
+    "gameplayInputAuthority": {"const": "emulator-core-api-only"},
+    "foregroundFriendly": {"const": true},
+    "internalFramebufferAllowed": {"const": true},
+    "windowPresentationRequired": {"const": false},
+    "resourceBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["configuredWorkerCeiling", "foregroundActiveWorkerTarget", "idleWorkerTarget", "pressureHighWorkerTarget", "processPriorityIntent", "cpuBudgetPercent", "memoryBudgetMiB", "cpuPressureHighPercent", "cpuPressureRecoverPercent", "memoryPressureHighPercent", "memoryPressureRecoverPercent", "transitionCooldownMs"],
+      "properties": {
+        "configuredWorkerCeiling": {"type": "integer", "minimum": 1, "maximum": 10},
+        "foregroundActiveWorkerTarget": {"type": "integer", "minimum": 0, "maximum": 10},
+        "idleWorkerTarget": {"type": "integer", "minimum": 0, "maximum": 10},
+        "pressureHighWorkerTarget": {"type": "integer", "minimum": 0, "maximum": 1},
+        "processPriorityIntent": {"const": "background"},
+        "cpuBudgetPercent": {"type": "integer", "minimum": 1, "maximum": 100},
+        "memoryBudgetMiB": {"type": "integer", "minimum": 64, "maximum": 1048576},
+        "cpuPressureHighPercent": {"type": "integer", "minimum": 1, "maximum": 100},
+        "cpuPressureRecoverPercent": {"type": "integer", "minimum": 0, "maximum": 99},
+        "memoryPressureHighPercent": {"type": "integer", "minimum": 1, "maximum": 100},
+        "memoryPressureRecoverPercent": {"type": "integer", "minimum": 0, "maximum": 99},
+        "transitionCooldownMs": {"type": "integer", "minimum": 0, "maximum": 600000}
+      }
+    },
+    "stageGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxRealEmulatorWorkersThisStage", "realWorkerLaunchEnabled", "realWofProofClaimed", "r0_5Authorized"],
+      "properties": {
+        "maxRealEmulatorWorkersThisStage": {"const": 1},
+        "realWorkerLaunchEnabled": {"const": false},
+        "realWofProofClaimed": {"const": false},
+        "r0_5Authorized": {"const": false}
+      }
+    }
+  }
+}
