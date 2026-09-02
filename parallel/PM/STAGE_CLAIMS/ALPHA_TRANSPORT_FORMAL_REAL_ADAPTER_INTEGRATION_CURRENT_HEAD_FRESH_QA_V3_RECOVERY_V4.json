@@ -5,7 +5,12 @@
   "effectiveDedupKey": "alpha.transport.formal-real-adapter-integration.current-head-fresh-qa-v3-recovery-v4",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.transport.formal-real-adapter-integration.current-head-fresh-qa-v3-recovery-v4.json",
   "claimToken": "8043a101-0319-4034-9502-9e2795f18a31",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "36808b1ecdfbd1b72a85c76e64e8839883cc65b7",
-  "supersedesInterruptedClaim": "parallel/PM/DEDUP_CLAIMS/alpha.transport.formal-real-adapter-integration.current-head-fresh-qa-v3.json"
+  "resultPath": "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION_CURRENT_HEAD_FRESH_QA_V3_RECOVERY_V4/RESULT.md",
+  "resultCommit": "5fc37df2e87500b3ca12ef0a4731a8b1addb95ba",
+  "statusPath": "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION_CURRENT_HEAD_FRESH_QA_V3_RECOVERY_V4/STATUS.json",
+  "statusCommit": "76ec4c36e16ea614dea4e49a12e86e02744af0b6",
+  "supersedesInterruptedClaim": "parallel/PM/DEDUP_CLAIMS/alpha.transport.formal-real-adapter-integration.current-head-fresh-qa-v3.json",
+  "verdict": "PASS — ALPHA FORMAL REAL-ADAPTER INTEGRATION CURRENT-HEAD FRESH QA V3 RECOVERY V4 — CURRENT RELEASE RUNTIME VERIFIED / V3 INTERRUPTION SUPERSEDED"
 }
