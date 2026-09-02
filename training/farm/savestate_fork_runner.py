@@ -6,15 +6,42 @@ import uuid
 from typing import Callable
 from .adapter import TrainingFarmAdapter, TrainingFarmError
 from .determinism import action_sequence_sha256
-from .identity import SOURCE_NAMESPACE, validate_runtime_identity
+from .identity import SOURCE_NAMESPACE, runtime_identity_sha256, validate_runtime_identity
 from .observation_discovery import evaluate_r02_proof_gate
 from .savestate_fork_branch import capture_root, outcome_fingerprint, run_branch
 from .savestate_fork_contract import (
     RESULT_SCHEMA, PROOF_SCOPE_FIXTURE, PROOF_SCOPE_REAL, MAX_BRANCHES,
     ForkContractError, BranchSpec, ForkPlan, _sha_json, _strict_int, _strict_sha,
     branch_identity_sha256, branch_specification_payload, checkpoint_frames,
-    fork_plan_authority_sha256, root_hash_payload,
+    fork_plan_authority_sha256, root_hash_payload, stable_runtime_authority,
 )
+
+_RESULT_KEYS = {
+    "schema", "runId", "status", "reasonCode", "message", "proofScope", "realWofProof",
+    "sourceNamespace", "forkSetId", "forkPlanAuthoritySha256", "forkSetAuthoritySha256",
+    "rootAuthority", "branchSpecifications", "repetitionsRequired", "branchesRequired",
+    "branchesAttempted", "branchesCompleted", "branches", "deterministic", "firstDivergence",
+    "resume", "r0_2ProofGate",
+}
+_ROOT_KEYS = {
+    "schema", "sourceNamespace", "forkSetId", "rootId", "rootCaptureMode", "rootLogicalFrame",
+    "rootSavestateSha256", "rootRamSha256", "rootRamBlocksSha256", "memoryLayoutIdentity",
+    "runtimeIdentity", "runtimeIdentitySha256", "stableRuntimeAuthority", "romSha256",
+    "farmCandidateSha256", "forkCandidateSha256", "forkSourceFiles", "inputIsolationMode",
+    "rootAuthoritySha256",
+}
+_BRANCH_KEYS = {
+    "branchId", "branchIdentitySha256", "actionSequenceSha256", "horizonFrames", "status",
+    "reasonCode", "message", "repetitionsRequired", "repetitionsCompleted", "deterministic",
+    "firstDivergence", "reusedFromResume", "outcomes",
+}
+_OUTCOME_KEYS = {
+    "branchId", "branchIdentitySha256", "actionSequenceSha256", "horizonFrames", "framesExecuted",
+    "rootSavestateSha256", "restoredRamSha256", "restoredRamBlocksSha256",
+    "roundtripRootSavestateSha256", "finalRamSha256", "finalRamBlocksSha256",
+    "finalSavestateSha256", "memoryLayoutIdentitySha256", "checkpoints",
+    "outcomeFingerprintSha256", "repetitionIndex",
+}
 
 def _base(plan: ForkPlan, scope: str) -> dict[str, object]:
     return {"schema": RESULT_SCHEMA, "runId": uuid.uuid4().hex, "status": "ERROR", "reasonCode": "UNINITIALIZED",
@@ -26,15 +53,49 @@ def _base(plan: ForkPlan, scope: str) -> dict[str, object]:
             "branchesCompleted": 0, "branches": [], "deterministic": False, "firstDivergence": None,
             "resume": {"requested": False, "acceptedBranchIds": [], "sourceResultSha256": None}, "r0_2ProofGate": None}
 
+def _validate_resume_envelope(v: object, plan: ForkPlan, proof_scope: str) -> dict[str, object]:
+    if type(v) is not dict or set(v) != _RESULT_KEYS:
+        raise ForkContractError("resume result must exactly match the published result envelope")
+    if v["schema"] != RESULT_SCHEMA or v["sourceNamespace"] != SOURCE_NAMESPACE:
+        raise ForkContractError("resume result schema/source mismatch")
+    run_id = v["runId"]
+    if type(run_id) is not str or len(run_id) != 32 or any(ch not in "0123456789abcdef" for ch in run_id):
+        raise ForkContractError("resume runId must be 32 lowercase hex characters")
+    status = v["status"]
+    if status not in ("PASS", "PARTIAL", "FAIL", "ERROR", "SKIP"):
+        raise ForkContractError("resume result status is invalid")
+    if type(v["reasonCode"]) is not str or not v["reasonCode"] or type(v["message"]) is not str:
+        raise ForkContractError("resume result reason/message is malformed")
+    if v["proofScope"] != proof_scope or v["forkSetId"] != plan.fork_set_id or v["forkPlanAuthoritySha256"] != fork_plan_authority_sha256(plan):
+        raise ForkContractError("resume result fork plan/scope mismatch")
+    if type(v["realWofProof"]) is not bool or type(v["deterministic"]) is not bool:
+        raise ForkContractError("resume result proof/deterministic flags must be strict booleans")
+    expected_real = proof_scope == PROOF_SCOPE_REAL and status == "PASS"
+    if v["realWofProof"] is not expected_real or v["deterministic"] is not (status == "PASS"):
+        raise ForkContractError("resume result status/proof flags are inconsistent")
+    if v["firstDivergence"] is not None and type(v["firstDivergence"]) is not dict:
+        raise ForkContractError("resume result firstDivergence is malformed")
+    if v["repetitionsRequired"] != plan.repetitions or v["branchesRequired"] != len(plan.branches):
+        raise ForkContractError("resume result required-count authority mismatch")
+    _strict_int(v["branchesAttempted"], "resume.branchesAttempted", 0, MAX_BRANCHES)
+    _strict_int(v["branchesCompleted"], "resume.branchesCompleted", 0, MAX_BRANCHES)
+    resume = v["resume"]
+    if type(resume) is not dict or set(resume) != {"requested", "acceptedBranchIds", "sourceResultSha256"}:
+        raise ForkContractError("resume provenance envelope is malformed")
+    if type(resume["requested"]) is not bool or type(resume["acceptedBranchIds"]) is not list:
+        raise ForkContractError("resume provenance fields are malformed")
+    accepted = resume["acceptedBranchIds"]
+    if len(accepted) != len(set(accepted)) or any(type(bid) is not str or bid not in {b.branch_id for b in plan.branches} for bid in accepted):
+        raise ForkContractError("resume provenance branch ids are malformed")
+    if resume["sourceResultSha256"] is not None:
+        _strict_sha(resume["sourceResultSha256"], "resume.sourceResultSha256")
+    if v["r0_2ProofGate"] is not None and type(v["r0_2ProofGate"]) is not dict:
+        raise ForkContractError("resume R0.2 proof gate is malformed")
+    return v
+
 def _validate_outcome(o: object, b: BranchSpec, root: dict[str, object], index: int) -> dict[str, object]:
-    if type(o) is not dict:
-        raise ForkContractError("resume outcome must be an object")
-    required = ("branchId", "branchIdentitySha256", "actionSequenceSha256", "horizonFrames", "framesExecuted",
-                "rootSavestateSha256", "restoredRamSha256", "restoredRamBlocksSha256", "roundtripRootSavestateSha256",
-                "finalRamSha256", "finalRamBlocksSha256", "finalSavestateSha256", "memoryLayoutIdentitySha256",
-                "checkpoints", "outcomeFingerprintSha256", "repetitionIndex")
-    if any(k not in o for k in required):
-        raise ForkContractError("resume outcome is missing required authority fields")
+    if type(o) is not dict or set(o) != _OUTCOME_KEYS:
+        raise ForkContractError("resume outcome must exactly match the published outcome envelope")
     if o["repetitionIndex"] != index or o["branchId"] != b.branch_id or o["horizonFrames"] != b.horizon_frames or o["framesExecuted"] != b.horizon_frames:
         raise ForkContractError("resume outcome branch/repetition/frame binding mismatch")
     if o["branchIdentitySha256"] != branch_identity_sha256(b) or o["actionSequenceSha256"] != action_sequence_sha256(b.steps):
@@ -58,52 +119,90 @@ def _validate_outcome(o: object, b: BranchSpec, root: dict[str, object], index: 
     return copy.deepcopy(o)
 
 def validate_resume_result(v: object, plan: ForkPlan, root: dict[str, object], *, proof_scope: str) -> dict[str, dict[str, object]]:
-    if type(v) is not dict or v.get("schema") != RESULT_SCHEMA or v.get("sourceNamespace") != SOURCE_NAMESPACE:
-        raise ForkContractError("resume result schema/source mismatch")
-    if v.get("proofScope") != proof_scope or v.get("forkSetId") != plan.fork_set_id or v.get("forkPlanAuthoritySha256") != fork_plan_authority_sha256(plan):
-        raise ForkContractError("resume result fork plan/scope mismatch")
-    prior_root = v.get("rootAuthority")
-    if type(prior_root) is not dict or prior_root.get("rootAuthoritySha256") != _sha_json(root_hash_payload(prior_root)):
+    v = _validate_resume_envelope(v, plan, proof_scope)
+    prior_root = v["rootAuthority"]
+    if type(prior_root) is not dict or set(prior_root) != _ROOT_KEYS:
+        raise ForkContractError("resume root authority must exactly match the published root envelope")
+    real = proof_scope == PROOF_SCOPE_REAL
+    prior_identity = validate_runtime_identity(prior_root["runtimeIdentity"], require_real_rom=real)
+    if prior_root["runtimeIdentitySha256"] != runtime_identity_sha256(prior_identity, require_real_rom=real):
+        raise ForkContractError("resume root runtime identity SHA-256 mismatch")
+    if prior_root["stableRuntimeAuthority"] != stable_runtime_authority(prior_identity):
+        raise ForkContractError("resume root stable runtime authority mismatch")
+    if prior_root["romSha256"] != prior_identity["romSha256"] or prior_root["farmCandidateSha256"] != prior_identity["farmCandidateSha256"]:
+        raise ForkContractError("resume root runtime/ROM/Farm binding mismatch")
+    if prior_root.get("rootAuthoritySha256") != _sha_json(root_hash_payload(prior_root)):
         raise ForkContractError("resume root authority is malformed/self-inconsistent")
     if prior_root["rootAuthoritySha256"] != root["rootAuthoritySha256"]:
         raise ForkContractError("resume root/runtime/ROM/source/layout authority mismatch")
     expected_set = _sha_json({"forkPlanAuthoritySha256": fork_plan_authority_sha256(plan), "rootAuthoritySha256": root["rootAuthoritySha256"]})
-    if v.get("forkSetAuthoritySha256") != expected_set:
+    if v["forkSetAuthoritySha256"] != expected_set:
         raise ForkContractError("resume fork-set authority mismatch")
-    specs = v.get("branchSpecifications")
+    specs = v["branchSpecifications"]
     if type(specs) is not list or len(specs) != len(plan.branches):
         raise ForkContractError("resume branch specification set is incomplete")
-    spec_by_id = {s.get("branchId"): s for s in specs if type(s) is dict}
+    spec_by_id: dict[str, dict[str, object]] = {}
+    for spec in specs:
+        if type(spec) is not dict or set(spec) != {"branchId", "horizonFrames", "actions", "actionSequenceSha256", "branchIdentitySha256", "metadata"}:
+            raise ForkContractError("resume branch specification is malformed")
+        bid = spec["branchId"]
+        if type(bid) is not str or bid in spec_by_id:
+            raise ForkContractError("resume branch specification ids are malformed or duplicated")
+        metadata = spec["metadata"]
+        if type(metadata) is not dict or set(metadata) != {"label"} or (metadata["label"] is not None and (type(metadata["label"]) is not str or len(metadata["label"]) > 256)):
+            raise ForkContractError("resume branch specification metadata is malformed")
+        spec_by_id[bid] = spec
     if set(spec_by_id) != {b.branch_id for b in plan.branches}:
         raise ForkContractError("resume branch specification ids mismatch")
     for b in plan.branches:
-        s = spec_by_id[b.branch_id]
-        if s.get("horizonFrames") != b.horizon_frames or s.get("actionSequenceSha256") != action_sequence_sha256(b.steps) or s.get("branchIdentitySha256") != branch_identity_sha256(b):
-            raise ForkContractError("resume branch specification authority mismatch")
-    rows = v.get("branches")
+        s = spec_by_id[b.branch_id]; expected = branch_specification_payload(b)
+        for field in ("branchId", "horizonFrames", "actions", "actionSequenceSha256", "branchIdentitySha256"):
+            if s[field] != expected[field]:
+                raise ForkContractError("resume branch specification authority mismatch")
+    rows = v["branches"]
     if type(rows) is not list:
         raise ForkContractError("resume branches must be an array")
+    if v["branchesAttempted"] != len(rows):
+        raise ForkContractError("resume attempted-branch count mismatch")
     reusable: dict[str, dict[str, object]] = {}; branches = {b.branch_id: b for b in plan.branches}
+    pass_count = 0
     for row in rows:
-        if type(row) is not dict:
-            raise ForkContractError("resume branch result must be object")
-        bid = row.get("branchId")
+        if type(row) is not dict or set(row) != _BRANCH_KEYS:
+            raise ForkContractError("resume branch result must exactly match the published branch envelope")
+        bid = row["branchId"]
         if bid not in branches or bid in reusable:
             raise ForkContractError("resume branch id is unknown or duplicated")
         b = branches[bid]
-        if row.get("status") != "PASS" or row.get("reasonCode") != "BRANCH_DETERMINISTIC" or row.get("deterministic") is not True:
-            continue
-        if row.get("branchIdentitySha256") != branch_identity_sha256(b) or row.get("actionSequenceSha256") != action_sequence_sha256(b.steps) or row.get("horizonFrames") != b.horizon_frames:
-            raise ForkContractError("resume completed branch authority mismatch")
-        if row.get("repetitionsRequired") != plan.repetitions or row.get("repetitionsCompleted") != plan.repetitions:
-            raise ForkContractError("resume completed branch repetitions mismatch")
-        raw = row.get("outcomes")
-        if type(raw) is not list or len(raw) != plan.repetitions:
-            raise ForkContractError("resume completed branch outcomes incomplete")
+        if row["branchIdentitySha256"] != branch_identity_sha256(b) or row["actionSequenceSha256"] != action_sequence_sha256(b.steps) or row["horizonFrames"] != b.horizon_frames:
+            raise ForkContractError("resume branch authority mismatch")
+        if row["status"] not in ("PASS", "FAIL", "ERROR") or type(row["reasonCode"]) is not str or not row["reasonCode"] or type(row["message"]) is not str:
+            raise ForkContractError("resume branch status/reason/message is malformed")
+        if row["repetitionsRequired"] != plan.repetitions:
+            raise ForkContractError("resume branch repetitionsRequired mismatch")
+        completed = _strict_int(row["repetitionsCompleted"], "resume.repetitionsCompleted", 0, plan.repetitions)
+        if type(row["deterministic"]) is not bool or type(row["reusedFromResume"]) is not bool or (row["firstDivergence"] is not None and type(row["firstDivergence"]) is not dict):
+            raise ForkContractError("resume branch flags/divergence are malformed")
+        raw = row["outcomes"]
+        if type(raw) is not list or len(raw) != completed:
+            raise ForkContractError("resume branch outcome count mismatch")
         outcomes = [_validate_outcome(o, b, root, i) for i, o in enumerate(raw)]
-        if len({o["outcomeFingerprintSha256"] for o in outcomes}) != 1:
-            raise ForkContractError("resume deterministic branch contains divergent outcomes")
-        copied = copy.deepcopy(row); copied["outcomes"] = outcomes; copied["reusedFromResume"] = True; reusable[bid] = copied
+        if row["status"] == "PASS":
+            pass_count += 1
+            if row["reasonCode"] != "BRANCH_DETERMINISTIC" or row["deterministic"] is not True or completed != plan.repetitions:
+                raise ForkContractError("resume PASS branch completion authority mismatch")
+            if len({o["outcomeFingerprintSha256"] for o in outcomes}) != 1:
+                raise ForkContractError("resume deterministic branch contains divergent outcomes")
+            copied = copy.deepcopy(row); copied["outcomes"] = outcomes; copied["reusedFromResume"] = True; reusable[bid] = copied
+        elif row["deterministic"] is not False:
+            raise ForkContractError("resume non-PASS branch cannot claim deterministic")
+    if v["branchesCompleted"] != pass_count:
+        raise ForkContractError("resume completed-branch count mismatch")
+    if v["status"] in ("ERROR", "SKIP") and rows:
+        raise ForkContractError("resume ERROR/SKIP result cannot contain branch execution evidence")
+    if v["status"] == "PASS" and (len(rows) != len(plan.branches) or pass_count != len(plan.branches)):
+        raise ForkContractError("resume PASS result is missing required deterministic branches")
+    if v["status"] == "FAIL" and (len(rows) != len(plan.branches) or pass_count == len(plan.branches)):
+        raise ForkContractError("resume FAIL result has inconsistent branch completion")
     return reusable
 
 def _finalize(base: dict[str, object], rows: list[dict[str, object]], *, real: bool, interrupted: bool, limited: bool) -> dict[str, object]:
