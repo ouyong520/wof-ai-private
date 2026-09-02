@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_V1",
+  "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_START_PROMPT.md",
+  "state": "EXECUTING",
+  "startCommit": "922fe72ad518a6e2ac1d850f56359a468e02725a",
+  "startedAtUtc": "2026-09-02T00:01:30Z",
+  "writeBoundary": [
+    "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_GENERATION/**",
+    "parallel/PM/STAGE_CLAIMS/UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_V1.json"
+  ],
+  "ownerActionRequired": false
+}
