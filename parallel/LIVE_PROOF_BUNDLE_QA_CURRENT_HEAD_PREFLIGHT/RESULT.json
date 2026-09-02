@@ -1,0 +1,105 @@
+{
+  "schema": "wof-unified-live-proof-current-head-preflight-qa-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_CURRENT_HEAD_PREFLIGHT_QA_V1",
+  "result": "BLOCKED",
+  "stopCondition": "BLOCKED — UNIFIED LIVE PROOF CURRENT-HEAD PREFLIGHT — P1 stale superseded gate selectors block current successor PASS evidence",
+  "ownerAction": "NO",
+  "browserWofRun": false,
+  "startHead": "fbbd2e0535edce2dd5173d63be2db9eb12e86eed",
+  "preResultFinalHead": "25f0632d6eb6e0c054c8c66dc6b1b86e07435417",
+  "headDrift": {
+    "classification": "QA-CLAIM-METADATA-ONLY",
+    "detail": "The only drift from startHead to preResultFinalHead is this stage's claim commit; no release-consumed production/preflight blob drift was observed."
+  },
+  "testedBlobs": {
+    "parallel/LIVE_PROOF_BUNDLE/unified_preflight.py": "c7dc2113609ff6b3cfda4344ea7b27f43d77afa0",
+    "parallel/LIVE_PROOF_BUNDLE/unified_preflight_entrypoint.py": "1a73d02f8171dbbd50cabff52a83c989541de2f7",
+    "parallel/LIVE_PROOF_BUNDLE/test_unified_preflight.py": "ec087a44e4e35afee5369e480ee90b5d848e182f",
+    "parallel/LIVE_PROOF_BUNDLE/UNIFIED_PREFLIGHT_STATUS.json": "b846a03c942ee6ebcd4271eebf8d00ae5ae22b56",
+    "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py": "8df637d370d187660592fe8de0f1c73ff3057804",
+    "parallel/PYLAUNCH/wof_launcher/browser.py": "d6f7fa93aaf8d15da6ce77cfa35c4f72c4c3b332",
+    "parallel/PYLAUNCH/wof_launcher/monitor.py": "8e3c5c527fdd5a845bbfc135f55014de22078cf4",
+    "parallel/PYLAUNCH/wof_launcher/discovery_v2.py": "ec9d27bfe26557a11187a23853893b898a3366d1"
+  },
+  "authoritativeEvidence": {
+    "recorderCurrentFreshQa": {
+      "path": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_INFLIGHT_ATOMICITY/RESULT.json",
+      "resultBlob": "ca3310641e937ee9c9b55c5f2caa2eae2897fcec",
+      "result": "PASS",
+      "acceptedProductionBlob": "8df637d370d187660592fe8de0f1c73ff3057804",
+      "currentProductionBlobMatches": true
+    },
+    "pylaunchStartupFreshQa": {
+      "path": "parallel/PYLAUNCH_QA_STARTUP_ATTESTATION/RESULT.md",
+      "resultBlob": "a12fff5c6636d0e2b435fe4bd54c791fb6e94d58",
+      "result": "PASS",
+      "currentBrowserBlobMatches": true,
+      "currentMonitorBlobMatches": true,
+      "currentDiscoveryBlobMatches": true
+    },
+    "pylaunchIdentityGenerationFix": {
+      "path": "parallel/PYLAUNCH/IDENTITY_CACHE_GENERATION_FIX_RESULT.md",
+      "resultBlob": "cb10a35ac5592e3cdf35a807f114a4a4a32762a0",
+      "result": "READY_FOR_FRESH_QA",
+      "note": "The historical parentFrame QA blocker was the targetId-only identity cache defect; the fix closed that defect, and the later startup-attestation fresh QA re-ran identity-generation regressions on current blobs."
+    },
+    "browserFleet": {
+      "path": "parallel/BROWSER_FLEET/RESULT.md",
+      "resultBlob": "3a38061cd8bba47139044855336e2bc480e32187",
+      "result": "BROWSER_FLEET_DISCOVERY_V2_READY"
+    },
+    "formalRealAdapterFreshQa": {
+      "path": "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION_QA_RECOVERY_V2/RESULT.md",
+      "resultBlob": "d5651dfe6d64bd1859f291bbe39cee81c12a55f9",
+      "result": "PASS"
+    }
+  },
+  "policyMismatch": {
+    "severity": "P1",
+    "id": "P1-STALE-SUPERSEDED-PREFLIGHT-GATE-SELECTORS",
+    "preflightStatusGatePaths": [
+      "parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/RESULT.md",
+      "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.md",
+      "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.json"
+    ],
+    "historicalState": {
+      "parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/RESULT.md": "BLOCKED — P1-STALE-TARGETID-IDENTITY-CACHE-AUTHORITY",
+      "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.md": "BLOCKED — P1 arbitrary Recorder stdout can refresh stale admission authority",
+      "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.json": "BLOCKED"
+    },
+    "currentSuccessorEvidence": [
+      "parallel/PYLAUNCH/IDENTITY_CACHE_GENERATION_FIX_RESULT.md",
+      "parallel/PYLAUNCH_QA_STARTUP_ATTESTATION/RESULT.md",
+      "parallel/LIVE_PROOF_BUNDLE/RECORDER_AUTHORITY_GENERATION_FIX_RESULT.md",
+      "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_INFLIGHT_ATOMICITY/RESULT.md",
+      "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_INFLIGHT_ATOMICITY/RESULT.json"
+    ],
+    "effect": "Current unified_preflight.py deterministically treats the historical BLOCKED files as authoritative required gates and therefore cannot recognize the now-valid successor PASS chain. Repository admission remains fail-closed, but it is falsely blocked by stale policy references."
+  },
+  "regression": {
+    "currentPreflightCoreSourceExact": {
+      "command": "python -m unittest -v test_unified_preflight.py",
+      "tests": 13,
+      "passed": 13,
+      "failed": 0,
+      "mode": "source-exact isolated reconstruction from current GitHub blobs"
+    },
+    "fullNineCommandNativeRepositoryMatrix": {
+      "status": "NOT_RUN_AFTER_DECISIVE_PREFLIGHT_POLICY_BLOCKER",
+      "reason": "The connected execution container has no private repository checkout and no network resolution to GitHub. Per the stage write boundary, once a production/preflight defect was established, QA records the precise blocker and stops rather than modifying or broadening implementation."
+    }
+  },
+  "failClosed": {
+    "malformedEvidence": "PASS",
+    "staleSnapshot": "PASS",
+    "mixedSnapshot": "PASS",
+    "missingRequiredEvidence": "PASS",
+    "blockedEvidenceStopsLiveStage": "PASS",
+    "chineseFirstBlockerOutput": "PASS",
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false,
+    "longCaptureAutoStarted": false
+  }
+}
