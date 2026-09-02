@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import tempfile
 import unittest
@@ -14,6 +15,11 @@ COMMIT = "a" * 40
 
 def now_iso(delta_seconds: int = 0) -> str:
     return (datetime.now(timezone.utc) + timedelta(seconds=delta_seconds)).isoformat()
+
+
+def git_blob_text(text: str) -> str:
+    data = text.encode("utf-8")
+    return hashlib.sha1(f"blob {len(data)}\0".encode("ascii") + data).hexdigest()
 
 
 class FixtureRepo:
@@ -34,12 +40,18 @@ class FixtureRepo:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
 
+    def write_json(self, rel: str, value: dict) -> None:
+        self.write(rel, json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+
+    def read_json(self, rel: str) -> dict:
+        return json.loads((self.root / rel).read_text(encoding="utf-8"))
+
     def _populate(self) -> None:
         for paths in p.REQUIRED_FILES.values():
             for rel in paths:
                 self.write(rel, "placeholder\n")
 
-        self.write("parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py", "# runtime\n")
+        self.write("parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py", "# current unified runtime\n")
         self.write("parallel/LIVE_PROOF_BUNDLE/RUN_WOF_UNIFIED_LIVE_PROOF.cmd", "@echo off\necho 统一 Windows 真人短验证\n")
         self.write("parallel/BROWSER_FLEET/fleet_owner_zh_cn.py", "print('浏览器舰队')\n")
         self.write("parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd", "@echo off\necho 一键验证\n")
@@ -57,6 +69,8 @@ class FixtureRepo:
             "        return True\n"
             "    return related\n",
         )
+        self.write("parallel/PYLAUNCH/wof_launcher/browser.py", "# browser startup attestation\n")
+        self.write("parallel/PYLAUNCH/wof_launcher/monitor.py", "# monitor generation authority\n")
         self.write(
             "parallel/WOF052L_RECORDER/owner_v2_zh_cn.py",
             "discovery_v2_sync.install(recorder)\nhardening_v2.install(recorder, discovery_v2_sync)\n",
@@ -80,37 +94,91 @@ class FixtureRepo:
             '"inputInjection": false, "workerReplacement": false, "urlRewrite": false}\n',
         )
         self.write(
-            "parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/RESULT.md",
-            "PASS — PYLAUNCH PARENTFRAME AUTHORITY FRESH QA\n",
-        )
-        self.write(
             "parallel/WOF052L_RECORDER/DISCOVERY_V2_HARDENING_RESULT.md",
             "WOF052L RECORDER DISCOVERY V2 HARDENING READY\n"
             "readOnly=true ramWrites=0 inputInjection=false no `window.Worker` replacement\n",
         )
-        self.write(
-            "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.md",
-            "PASS — UNIFIED LIVE PROOF FRESHNESS FRESH INDEPENDENT QA\n",
-        )
-        self.write(
+        self.write_json(
             "parallel/LIVE_PROOF_BUNDLE/FRESHNESS_FIX_STATUS.json",
-            json.dumps({
+            {
                 "state": "COMPLETE",
                 "fixes": {
                     "readOnly": True, "ramWrites": 0, "inputInjection": False,
                     "windowWorkerReplacement": False, "longCaptureAutoStarted": False,
                 },
                 "validation": {"combined": {"result": "PASS"}},
-            }),
+            },
+        )
+
+        # Historical durable blockers remain in the repository but are deliberately
+        # not authoritative current gates after their successor fix+QA chains.
+        self.write(
+            "parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/RESULT.md",
+            "BLOCKED — PYLAUNCH PARENTFRAME AUTHORITY FRESH QA — P1-STALE-TARGETID-IDENTITY-CACHE-AUTHORITY\n",
         )
         self.write(
+            "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.md",
+            "BLOCKED — UNIFIED LIVE PROOF FRESHNESS QA — P1 arbitrary Recorder stdout can refresh stale admission authority\n",
+        )
+        self.write_json(
             "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.json",
-            json.dumps({"result": "PASS", "stopCondition": "PASS — UNIFIED LIVE PROOF FRESHNESS FRESH INDEPENDENT QA"}),
+            {"result": "BLOCKED", "stopCondition": "BLOCKED — historical freshness blocker"},
         )
 
         for spec in p.REGRESSIONS:
             self.write(str(Path(spec.cwd) / spec.entrypoint), "def test_fixture():\n    pass\n")
 
+        py_pins = {
+            rel: git_blob_text((self.root / rel).read_text(encoding="utf-8"))
+            for rel in p.PYLAUNCH_PINNED_PRODUCTION
+        }
+        self.write(p.PYLAUNCH_SUCCESSOR_MD, f"# Startup QA\n\n**{p.PYLAUNCH_SUCCESSOR_MARKER}**\n")
+        self.write_json(
+            p.PYLAUNCH_SUCCESSOR_JSON,
+            {
+                "schema": "wof-pylqa-result-v1",
+                "stageId": p.PYLAUNCH_SUCCESSOR_STAGE,
+                "status": "PASS",
+                "decision": p.PYLAUNCH_SUCCESSOR_MARKER,
+                "validatedProductBlobs": py_pins,
+                "safety": {"ownerActionRequired": False},
+            },
+        )
+        self.write_json(
+            p.PYLAUNCH_SUCCESSOR_CLAIM,
+            {
+                "schema": "wof-pm-stage-claim-v1",
+                "stageId": p.PYLAUNCH_SUCCESSOR_STAGE,
+                "state": "COMPLETE",
+                "result": p.PYLAUNCH_SUCCESSOR_MARKER,
+            },
+        )
+
+        unified_blob = git_blob_text((self.root / p.RECORDER_PINNED_PRODUCTION).read_text(encoding="utf-8"))
+        self.write(p.RECORDER_SUCCESSOR_MD, f"# Recorder QA\n\n**{p.RECORDER_SUCCESSOR_MARKER}**\n")
+        self.write_json(
+            p.RECORDER_SUCCESSOR_JSON,
+            {
+                "schema": "wof-unified-live-proof-recorder-inflight-atomicity-fresh-qa-v1",
+                "stageId": p.RECORDER_SUCCESSOR_STAGE,
+                "result": "PASS",
+                "stopCondition": p.RECORDER_SUCCESSOR_MARKER,
+                "production": {"path": p.RECORDER_PINNED_PRODUCTION, "blob": unified_blob},
+                "safety": {
+                    "readOnly": True, "ramWrites": 0, "inputInjection": False,
+                    "longCaptureAutoStarted": False, "ownerAction": "NO",
+                },
+            },
+        )
+        self.write_json(
+            p.RECORDER_SUCCESSOR_CLAIM,
+            {
+                "schema": "wof-pm-stage-claim-v1",
+                "stageId": p.RECORDER_SUCCESSOR_STAGE,
+                "state": "COMPLETE",
+                "stopCondition": p.RECORDER_SUCCESSOR_MARKER,
+            },
+        )
         self.write_manifest()
 
     def write_manifest(self, *, resolved: str | None = None, components: dict | None = None) -> None:
@@ -146,19 +214,24 @@ class UnifiedPreflightTests(unittest.TestCase):
             regression_runner=runner,
         )
 
+    def assert_blocked_check(self, status: dict, check: str) -> None:
+        self.assertEqual(status["result"], "BLOCKED")
+        self.assertTrue(any(x.get("check") == check for x in status["blockers"]), status["blockers"])
+
     def test_all_repository_checks_pass(self):
         status = self.run_pf()
         self.assertEqual(status["result"], "PASS")
+        self.assertEqual(status["gateSelectorVersion"], p.GATE_SELECTOR_VERSION)
         self.assertTrue(status["gates"]["browserLaunchAllowed"])
         self.assertEqual(status["regression"]["testsObserved"], 18)
         self.assertTrue(self.fx.status_out.is_file())
 
     def test_component_blocked_fails_closed(self):
-        self.fx.write("parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/RESULT.md", "BLOCKED — P1 stale identity cache\n")
+        self.fx.write(p.PYLAUNCH_SUCCESSOR_MD, "BLOCKED — P1 current startup attestation\n")
         status = self.run_pf()
         self.assertEqual(status["result"], "BLOCKED")
         self.assertFalse(status["gates"]["ownerWofEntryAllowed"])
-        self.assertTrue(any("stale identity" in str(x.get("detailZh")) for x in status["blockers"]))
+        self.assertTrue(any("startup attestation" in str(x.get("detailZh")).lower() for x in status["blockers"]))
 
     def test_stale_snapshot_fails_closed(self):
         self.fx.write_manifest(resolved=now_iso(-(p.SNAPSHOT_MAX_AGE_SECONDS + 30)))
@@ -204,10 +277,9 @@ class UnifiedPreflightTests(unittest.TestCase):
         self.assertTrue(any(x["check"] == "safety-declarations" and x["component"] == "browserFleet" for x in status["blockers"]))
 
     def test_malformed_result_json_rejected(self):
-        self.fx.write("parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.json", "{broken")
+        self.fx.write(p.RECORDER_SUCCESSOR_JSON, "{broken")
         status = self.run_pf()
-        self.assertEqual(status["result"], "BLOCKED")
-        self.assertTrue(any(x["check"] == "fresh-independent-qa-json" for x in status["blockers"]))
+        self.assert_blocked_check(status, "recorder-inflight-successor-machine-result")
 
     def test_regression_command_failure_rejected(self):
         def bad_runner(root: Path, spec: p.RegressionSpec) -> dict:
@@ -232,7 +304,9 @@ class UnifiedPreflightTests(unittest.TestCase):
         self.assertEqual(calls, ["live"])
 
     def test_fail_never_starts_live_stage(self):
-        self.fx.write("parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.md", "BLOCKED — P1 recorder authority\n")
+        value = self.fx.read_json(p.RECORDER_SUCCESSOR_JSON)
+        value["result"] = "BLOCKED"
+        self.fx.write_json(p.RECORDER_SUCCESSOR_JSON, value)
         calls = []
         rc, status = entry.run_guarded_live(
             self.fx.root,
@@ -246,11 +320,58 @@ class UnifiedPreflightTests(unittest.TestCase):
         self.assertEqual(calls, [])
 
     def test_blocked_output_is_chinese_and_owner_not_required(self):
-        self.fx.write("parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.md", "BLOCKED — P1 recorder authority\n")
+        self.fx.write(p.RECORDER_SUCCESSOR_MD, "BLOCKED — P1 recorder authority\n")
         status = self.run_pf()
         self.assertIn("未启动 Browser", status["ownerSummaryZh"])
         self.assertFalse(status["ownerActionRequired"])
         self.assertFalse(status["gates"]["longCaptureAutoStarted"])
+        self.assertEqual(status["safety"], {"readOnly": True, "ramWrites": 0, "inputInjection": False, "windowWorkerReplacement": False})
+
+    def test_historical_parentframe_blocked_is_superseded_by_current_startup_successor(self):
+        self.fx.write("parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/RESULT.md", "BLOCKED — durable historical blocker\n")
+        self.assertEqual(self.run_pf()["result"], "PASS")
+
+    def test_startup_successor_missing_blocks(self):
+        (self.fx.root / p.PYLAUNCH_SUCCESSOR_JSON).unlink()
+        self.assert_blocked_check(self.run_pf(), "startup-attestation-successor-machine-result")
+
+    def test_startup_successor_blocked_machine_result_blocks_even_with_complete_claim(self):
+        value = self.fx.read_json(p.PYLAUNCH_SUCCESSOR_JSON)
+        value["status"] = "BLOCKED"
+        value["decision"] = "BLOCKED — current startup QA"
+        self.fx.write_json(p.PYLAUNCH_SUCCESSOR_JSON, value)
+        self.assertEqual(self.fx.read_json(p.PYLAUNCH_SUCCESSOR_CLAIM)["state"], "COMPLETE")
+        self.assert_blocked_check(self.run_pf(), "startup-attestation-successor-machine-result")
+
+    def test_startup_successor_stale_current_blob_blocks(self):
+        self.fx.write("parallel/PYLAUNCH/wof_launcher/monitor.py", "# drifted monitor\n")
+        self.assert_blocked_check(self.run_pf(), "startup-attestation-current-production-blobs")
+
+    def test_historical_freshness_blocked_is_superseded_by_current_recorder_successor(self):
+        self.fx.write_json("parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.json", {"result": "BLOCKED"})
+        self.assertEqual(self.run_pf()["result"], "PASS")
+
+    def test_recorder_successor_missing_blocks(self):
+        (self.fx.root / p.RECORDER_SUCCESSOR_JSON).unlink()
+        self.assert_blocked_check(self.run_pf(), "recorder-inflight-successor-machine-result")
+
+    def test_recorder_successor_blocked_machine_result_blocks_even_with_complete_claim(self):
+        value = self.fx.read_json(p.RECORDER_SUCCESSOR_JSON)
+        value["result"] = "BLOCKED"
+        value["stopCondition"] = "BLOCKED — current recorder QA"
+        self.fx.write_json(p.RECORDER_SUCCESSOR_JSON, value)
+        self.assertEqual(self.fx.read_json(p.RECORDER_SUCCESSOR_CLAIM)["state"], "COMPLETE")
+        self.assert_blocked_check(self.run_pf(), "recorder-inflight-successor-machine-result")
+
+    def test_recorder_successor_stale_current_blob_blocks(self):
+        self.fx.write(p.RECORDER_PINNED_PRODUCTION, "# drifted unified runtime\n")
+        self.assert_blocked_check(self.run_pf(), "recorder-inflight-current-production-blob")
+
+    def test_successor_claim_complete_without_pass_semantics_blocks(self):
+        claim = self.fx.read_json(p.PYLAUNCH_SUCCESSOR_CLAIM)
+        claim["result"] = "BLOCKED — stale claim semantics"
+        self.fx.write_json(p.PYLAUNCH_SUCCESSOR_CLAIM, claim)
+        self.assert_blocked_check(self.run_pf(), "startup-attestation-successor-claim")
 
 
 if __name__ == "__main__":
