@@ -10,6 +10,7 @@ PYLAUNCH = HERE.parents[1]
 if str(PYLAUNCH) not in sys.path:
     sys.path.insert(0, str(PYLAUNCH))
 
+from test_owner_calibration_identity_recovery import OwnerCalibrationIdentityRecoveryTests  # noqa: F401
 from wof_launcher.discovery_v2 import TargetChoice
 from wof_launcher.monitor import LauncherMonitor
 from wof_launcher.projection_recovery import ProjectionRecovery, ProjectionRecoveryError
