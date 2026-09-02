@@ -1,0 +1,15 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.enemy-target-head-labels.post-strict-type-fix-fresh-qa",
+  "effectiveDedupKey": "alpha.enemy-target-head-labels.post-strict-type-fix-fresh-qa--iv--alpha-head-labels-post-fix--strict-type-crosscheck-1",
+  "dedupMode": "independent-validation",
+  "independentValidationGroup": "alpha-head-labels-post-fix",
+  "independentValidationKey": "strict-type-crosscheck-1",
+  "stageId": "ALPHA_ENEMY_TARGET_HEAD_LABELS_STRICT_TYPE_CROSSCHECK_V1",
+  "promptPath": "parallel/PM/ALPHA_ENEMY_TARGET_HEAD_LABELS_STRICT_TYPE_CROSSCHECK_START_PROMPT.md",
+  "owner": "chatgpt-alpha-enemy-target-head-labels-strict-type-crosscheck-v1",
+  "claimToken": "abfc83e192613d1e819ff2656faed74e1b9e6e199b9c873d",
+  "state": "ACTIVE",
+  "startCommit": "5cd73fc8c516b80dfc97cfc326b6e08486f71f02"
+}
