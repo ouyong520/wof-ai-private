@@ -8,7 +8,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 PM = ROOT / "parallel" / "PM"
@@ -104,6 +104,22 @@ RELEASE_DOMAIN_TERMS = (
     "package-selected",
     "proof-authority",
     "proof authority",
+    "anchored_overlays_one_session_live_proof_tooling",
+)
+NEGATIVE_SCOPE_TERMS = (
+    "do not modify",
+    "must not modify",
+    "without modifying",
+    "not modify",
+    "no modification",
+    "not affect",
+    "do not affect",
+    "不修改",
+    "不得修改",
+    "禁止修改",
+    "不影响",
+    "不要改",
+    "不得改",
 )
 
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
@@ -240,7 +256,7 @@ def _collect_manifest_pins(value: Any) -> dict[str, str]:
 
 
 def _hardening_gate(head: str) -> tuple[str, dict[str, str], str]:
-    _, _, result_path, result_commit = _claim_pair_complete(
+    _, _, _, result_commit = _claim_pair_complete(
         HARDENING_KEY, HARDENING_STAGE, HARDENING_PASS
     )
     manifest = _read_json(RUN_MANIFEST)
@@ -273,10 +289,6 @@ def _hardening_gate(head: str) -> tuple[str, dict[str, str], str]:
             raise GateBlocked(
                 f"authority-critical post-Hardening blob drifted after fixed tree: {path} expected={wanted} current={current}"
             )
-
-    # The result marker already proves terminal closure; exact tree authority comes from
-    # the repinned RUN_MANIFEST and fixed Git object identities above.
-    _ = result_path
     return fixed, pins, result_commit
 
 
@@ -487,6 +499,16 @@ def _priority_p0_p1(text: str) -> bool:
     return bool(re.search(r"\bP[01]\b", head, re.IGNORECASE))
 
 
+def _positive_scope_text(text: str) -> str:
+    kept: list[str] = []
+    for line in text.splitlines():
+        low = line.lower()
+        if any(term in low for term in NEGATIVE_SCOPE_TERMS):
+            continue
+        kept.append(line)
+    return "\n".join(kept).lower()
+
+
 def _looks_like_release_implementation_owner(text: str) -> bool:
     low = text.lower()
     title = low.splitlines()[0] if low.splitlines() else ""
@@ -494,7 +516,8 @@ def _looks_like_release_implementation_owner(text: str) -> bool:
         return False
     if not any(term in low for term in IMPLEMENTATION_TERMS):
         return False
-    return any(term in low for term in RELEASE_DOMAIN_TERMS)
+    positive = _positive_scope_text(text)
+    return any(term in positive for term in RELEASE_DOMAIN_TERMS)
 
 
 def _is_proof_authority_text(text: str) -> bool:
@@ -513,9 +536,6 @@ def _post_freeze_active_owner_gate(v4_source: str) -> None:
         if not isinstance(claim, dict) or claim.get("state") != "ACTIVE":
             continue
         if claim.get("dedupKey") == HARDENING_KEY:
-            # Hardening is checked as an explicit terminal prerequisite; if we reached
-            # this scan it is already COMPLETE, so an ACTIVE value here would have
-            # failed earlier and cannot be silently ignored.
             continue
         generation = _claim_generation_commit(path, claim)
         if generation is None:
@@ -523,8 +543,8 @@ def _post_freeze_active_owner_gate(v4_source: str) -> None:
                 f"cannot establish generation for ACTIVE canonical claim {_rel(path)}"
             )
         if generation == v4_source or _is_ancestor(generation, v4_source):
-            # Historical ACTIVE claims at/before the immutable V4 baseline were
-            # already reconciled by V4 durable PASS. They are not re-opened here.
+            # Historical ACTIVE claims at/before immutable V4 were already reconciled
+            # by the durable V4 PASS and are not mechanically re-opened here.
             continue
         if not _is_ancestor(v4_source, generation):
             raise GateBlocked(
@@ -538,7 +558,14 @@ def _post_freeze_active_owner_gate(v4_source: str) -> None:
             )
 
 
+def _after(commit: str, generation: str | None) -> bool:
+    if generation is None or generation == commit or _is_ancestor(generation, commit):
+        return False
+    return _is_ancestor(commit, generation)
+
+
 def _post_qa_proof_blocker_gate(qa_result_commit: str) -> None:
+    # Canonical claims are the primary authority.
     for path in sorted(CLAIMS.glob("*.json")):
         try:
             claim = json.loads(path.read_text(encoding="utf-8-sig"))
@@ -547,16 +574,9 @@ def _post_qa_proof_blocker_gate(qa_result_commit: str) -> None:
         if not isinstance(claim, dict) or claim.get("state") not in {"ACTIVE", "BLOCKED"}:
             continue
         generation = _claim_generation_commit(path, claim)
-        if generation is None or generation == qa_result_commit or _is_ancestor(generation, qa_result_commit):
+        if not _after(qa_result_commit, generation):
             continue
-        if not _is_ancestor(qa_result_commit, generation):
-            continue
-        try:
-            text = _prompt_text_for_claim(claim)
-        except GateBlocked:
-            if claim.get("state") == "BLOCKED":
-                raise
-            continue
+        text = _prompt_text_for_claim(claim)
         if not _is_proof_authority_text(text):
             continue
         if claim.get("state") == "BLOCKED":
@@ -568,6 +588,34 @@ def _post_qa_proof_blocker_gate(qa_result_commit: str) -> None:
             raise GateBlocked(
                 "new ACTIVE mandatory proof-authority implementation owner opened after Final Fresh QA: "
                 f"{claim.get('stageId') or claim.get('dedupKey')}"
+            )
+
+    # Fail closed if a stage was durably BLOCKED but its canonical file has not yet
+    # caught up. This protects against the small multi-file claim/result update window.
+    for path in sorted(STAGE_CLAIMS.glob("*.json")):
+        try:
+            stage = json.loads(path.read_text(encoding="utf-8-sig"))
+        except Exception:
+            continue
+        if not isinstance(stage, dict) or stage.get("state") != "BLOCKED":
+            continue
+        generation = _claim_generation_commit(path, stage)
+        if not _after(qa_result_commit, generation):
+            continue
+        evidence = ""
+        canonical_path = stage.get("canonicalClaimPath")
+        if isinstance(canonical_path, str) and (ROOT / canonical_path).is_file():
+            canonical = _read_json(canonical_path)
+            prompt = canonical.get("promptPath")
+            if isinstance(prompt, str) and (ROOT / prompt).is_file():
+                evidence += "\n" + _read_text(prompt)
+        result_path = stage.get("resultPath")
+        if isinstance(result_path, str) and (ROOT / result_path).is_file():
+            evidence += "\n" + _read_text(result_path)
+        if _is_proof_authority_text(evidence):
+            raise GateBlocked(
+                "new mandatory proof-authority BLOCKED stage after Final Fresh QA: "
+                f"{stage.get('stageId') or path.name}"
             )
 
 
