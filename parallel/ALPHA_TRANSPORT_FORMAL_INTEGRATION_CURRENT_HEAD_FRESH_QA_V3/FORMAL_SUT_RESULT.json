@@ -1,0 +1,30 @@
+{
+  "schema": "alpha-formal-current-sut-equivalent-v3",
+  "sutSchema": "wof-alpha-formal-integration-qa-sut-v1",
+  "productionSources": [
+    "product/alpha/wof_alpha_real_worker.js",
+    "product/alpha/wof_alpha_bootstrap.user.js",
+    "product/alpha/wof_alpha_hud.js",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/real_adapter.py"
+  ],
+  "status": "PASS",
+  "caseCount": 14,
+  "passCount": 14,
+  "failCount": 0,
+  "results": [
+    {"id":"FIQA-01","status":"PASS","observation":{"attach":{"ok":true},"publish":{"accepted":true,"visibleWarnings":1,"foreignAuthorityAccepted":false},"clear":{"accepted":true,"visibleWarnings":0},"gameplayPlayable":true}},
+    {"id":"FIQA-02","status":"PASS","observation":{"attach":{"ok":false},"warningAuthority":false,"visibleWarnings":0,"gameplayPlayable":true,"gameplayBlocked":false}},
+    {"id":"FIQA-03","status":"PASS","observation":{"oldCompletion":{"accepted":false,"published":false,"clearedFreshSlot":false},"freshSlotStillOwned":true,"gameplayPlayable":true}},
+    {"id":"FIQA-04","status":"PASS","observation":{"oldCompletion":{"accepted":false},"newCompletion":{"accepted":true,"pairGeneration":2,"visibleWarnings":1,"lostAuthority":false}}},
+    {"id":"FIQA-05","status":"PASS","observation":{"priorCompletion":{"accepted":false,"published":false},"freshCompletion":{"accepted":true},"warningAuthorityRestoredOnlyByFreshPair":true}},
+    {"id":"FIQA-06","status":"PASS","observation":{"priorCompletion":{"accepted":false,"published":false},"replacementCompletion":{"accepted":true},"priorWorkerPublications":0}},
+    {"id":"FIQA-07","status":"PASS","observation":{"sessionMismatchAccepted":false,"generationMismatchAccepted":false,"nonceMismatchAccepted":false,"visibleWarnings":0}},
+    {"id":"FIQA-08","status":"PASS","observation":{"beforeDisconnect":{"visibleWarnings":1},"afterDisconnect":{"visibleWarnings":0,"warningAuthority":false},"afterReconnect":{"oldStateAccepted":false,"freshStateAccepted":true,"oldStateVisible":false}}},
+    {"id":"FIQA-09","status":"PASS","observation":{"heartbeat":{"at249Published":false,"at250Published":true},"stale":{"at1500Visible":true,"at1501Visible":false},"clear":{"immediate":true},"change":{"immediate":true}}},
+    {"id":"FIQA-10","status":"PASS","observation":{"attach":{"ok":false},"warningAuthority":false,"visibleWarnings":0,"gameplayPlayable":true}},
+    {"id":"FIQA-11","status":"PASS","observation":{"maxInFlight":1,"skippedTicks":8,"queueDepthBeforeFinish":0,"queueDepthAfterFinish":0,"catchUpBurst":false}},
+    {"id":"FIQA-12","status":"PASS","observation":{"ownerFacing":{"exposed":true,"language":"zh-CN","warningAuthority":false,"statusText":"传输监听器不可用：BC unavailable"},"gameplayPlayable":true}},
+    {"id":"FIQA-13","status":"PASS","observation":{"safety":{"readOnly":true,"ramWrites":0,"inputInjection":false,"workerReplacement":false,"blobRewrite":false,"gamePostMessageControl":false,"heapWrites":false,"assistMode":false}}},
+    {"id":"FIQA-14","status":"PASS","observation":{"gameplayPlayable":true,"gameWorkerUntouched":true,"workerIntercepted":false,"blobWorkerCreated":false,"warningAuthority":false,"visibleWarnings":0}}
+  ]
+}
