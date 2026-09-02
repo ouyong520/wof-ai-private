@@ -1,0 +1,21 @@
+{
+  "stage": "ALPHA_FORMAL_REAL_ADAPTER_CURRENT_BLOB_REVALIDATION_V1",
+  "owner": "chatgpt-alpha-formal-current-blob-revalidation-v1",
+  "state": "ACTIVE",
+  "start_head": "25b664fea50a593cd46a8aca1ae7259351b8687c",
+  "scope": [
+    "parallel/ALPHA_FORMAL_REAL_ADAPTER_CURRENT_BLOB_REVALIDATION/**",
+    "parallel/PM/STAGE_CLAIMS/ALPHA_FORMAL_REAL_ADAPTER_CURRENT_BLOB_REVALIDATION_V1.json"
+  ],
+  "audited_blobs": {
+    "product/alpha/wof_alpha_real_worker.js": "924d02eb575d1031b168b3bb7450c34107447c85",
+    "product/alpha/wof_alpha_hud.js": "b6f9cbf23ec1c00fe969aa2a2b59ad5e0d5433f4",
+    "product/alpha/wof_alpha_bootstrap.user.js": "5aed15ff14aa39d95eade187cefb63dbd00848e6",
+    "product/alpha/wof_alpha_loader.js": "b1d2bd5cc3f5e4e7a3bed084d6d35ea71489717b",
+    "product/alpha/wof_alpha_core.js": "267a44190744b6848b0685712c3d5572627d3a8a",
+    "product/alpha/wof_alpha_enemy_target_labels.js": "3f6f4410376756e6935a4236e40e76574b289169",
+    "product/alpha/wof_alpha_enemy_head_projection.json": "8de57739818503a0e14702d2fa0bb4eba58228d2",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/real_adapter.py": "1a5c6a255468c096ddd5df79993851e4d41e23cb"
+  },
+  "notes": "Independent repository-only current-blob Formal revalidation. Historical Formal PASS is not reused as freshness proof. No Alpha/Formal implementation writes and no Browser/WOF launch."
+}
