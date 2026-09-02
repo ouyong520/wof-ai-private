@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "OWNER_ONECLICK_CURRENT_HEAD_RELEASE_REFRESH_V4",
+  "dedupKey": "owner.oneclick.current-head.release-refresh-v4",
+  "effectiveDedupKey": "owner.oneclick.current-head.release-refresh-v4",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/owner.oneclick.current-head.release-refresh-v4.json",
+  "claimToken": "f0f42b4d-6b8c-4e0a-a9ec-0ff6e1bf7d5c",
+  "state": "ACTIVE",
+  "startCommit": "c00e458e4cc96c75e6985aa793ac423c7cbac756"
+}
