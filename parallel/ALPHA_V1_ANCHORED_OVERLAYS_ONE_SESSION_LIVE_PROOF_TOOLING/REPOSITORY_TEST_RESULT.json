@@ -1,0 +1,49 @@
+{
+  "schema": "wof-alpha-v1-dual-live-proof-tooling-repository-test-v1",
+  "stageId": "ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_RECOVERY_V2",
+  "evidenceClass": "SYNTHETIC_REPOSITORY_QA_ONLY_NOT_BROWSER_WOF_LIVE_PROOF",
+  "verdict": "PASS",
+  "node": "v22.16.0",
+  "syntaxChecks": [
+    "proof_core.js",
+    "wof_alpha_v1_dual_live_proof_top.js",
+    "wof_alpha_v1_dual_live_proof_worker.js",
+    "wof_alpha_v1_dual_live_proof.js",
+    "tooling_regression.mjs"
+  ],
+  "regression": {
+    "command": "node parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/tooling_regression.mjs",
+    "passed": 19,
+    "failed": 0
+  },
+  "runtimeBlobPins": {
+    "proof_core.js": "fbfa665daa624b7a81b6b75d488af504194bd378",
+    "wof_alpha_v1_dual_live_proof_top.js": "3f2ffdfc2947387518e593445306f8803132345c",
+    "wof_alpha_v1_dual_live_proof_worker.js": "5cc30f3a3b32ee0ef3dfe1b9ac2937dbabc774f3",
+    "wof_alpha_v1_dual_live_proof.js": "30c965bb8b16466810781e2741f2d2eb86a0533d",
+    "tooling_regression.mjs": "b681386040263780370fae85591c227a7553410a"
+  },
+  "coverage": [
+    "HUDANCHOR common-result compatibility",
+    "real-live-only player profile binding",
+    "player yBias/headClearance split fail-closed",
+    "real-live-only enemy type offsets and unproved-type omission",
+    "warningSampleAt/epoch/mapping correlation",
+    "enemy raw target/identity/label correlation",
+    "fixed-HUD and suppress invalid-authority decisions",
+    "anchored-during-invalid-authority failure",
+    "required live phase gating including retarget",
+    "both-surface stale-authority no-draw/fallback gating",
+    "visual confirmation gating",
+    "terminal evidence root shape",
+    "Top helper delegation/no input injection",
+    "Worker official install/proof-only fetch shim/finally restore/read-only RAM",
+    "HUDANCHOR-first loader ordering"
+  ],
+  "boundaries": {
+    "browserWofRunPerformed": false,
+    "syntheticResultUsedAsLiveProof": false,
+    "productAlphaModified": false,
+    "productionProfileActivated": false
+  }
+}
