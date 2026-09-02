@@ -5,6 +5,9 @@
   "effectiveDedupKey": "training.farm.r0.4.6.windows-oneclick-env-bootstrap-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.6.windows-oneclick-env-bootstrap-v1.json",
   "claimToken": "28343a9306bce8e7fcf8933934cf470f813aaccea8cde9e5",
-  "state": "ACTIVE",
-  "startCommit": "62c461b1ce7034812a96bd6f4966206311784bd9"
+  "state": "COMPLETE",
+  "startCommit": "62c461b1ce7034812a96bd6f4966206311784bd9",
+  "sourceCandidate": "1771e3940ed91d1d0a5c68c08f8782b6d1aa1d0c",
+  "resultPath": "parallel/TRAINING_FARM_R0_4_6_WINDOWS_ONECLICK_ENV_BOOTSTRAP_V1/RESULT.md",
+  "resultCommit": "615f63ee3bdd326adb4f4a4b15d59104df4376b0"
 }
