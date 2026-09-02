@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.current-production-danger-coverage-authority-audit",
+  "effectiveDedupKey": "alpha.v1.current-production-danger-coverage-authority-audit",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_CURRENT_DANGER_COVERAGE_AUTHORITY_AUDIT",
+  "promptPath": "parallel/PM/ALPHA_V1_CURRENT_DANGER_COVERAGE_AUTHORITY_AUDIT_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol-danger-coverage-audit",
+  "claimToken": "093b457f520719d3db2f1466c5653669",
+  "state": "ACTIVE",
+  "startCommit": "fa8f48712d3da580ca2b9aec437c1665ed6a8de8"
+}
