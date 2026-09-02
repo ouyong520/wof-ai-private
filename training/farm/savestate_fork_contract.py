@@ -26,7 +26,7 @@ _SHA = re.compile(r"[0-9a-f]{64}\Z")
 _FORK_FILES = (
     "adapter.py", "fake_backend.py", "stable_retro_backend.py", "identity.py",
     "determinism.py", "determinism.schema.json", "observation_discovery.py",
-    "savestate_fork_contract.py", "savestate_fork_execution.py", "savestate_fork.py",
+    "savestate_fork_contract.py", "savestate_fork_branch.py", "savestate_fork_runner.py", "savestate_fork.py",
     "savestate_fork_plan.schema.json", "savestate_fork_result.schema.json",
 )
 
