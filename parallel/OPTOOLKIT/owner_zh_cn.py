@@ -132,7 +132,7 @@ def translated_input(prompt: str = ""):
 
 
 class ChineseToolkit(toolkit.Toolkit):
-    """Only changes owner-facing launch/integration surfaces; core Toolkit behavior stays in toolkit.py."""
+    """Owner-facing integration surface for the immutable packaged runtime."""
 
     def component(self, key):
         if key == "recorder":
@@ -154,27 +154,39 @@ class ChineseToolkit(toolkit.Toolkit):
             return
         return super().component(key)
 
+    def proof(self):
+        print("\n[运行真人 Windows 验证]")
+        entry = self.root / "parallel/PYLAUNCH/launcher.py"
+        if not entry.is_file():
+            print("没有找到 PYLAUNCH。请先选择 1“更新项目”。")
+            return
+        out_dir = self.results / f"live_proof_{toolkit.stamp()}"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        proof_json = out_dir / "WINDOWS_PROOF_STATUS.json"
+        pyw = Path(toolkit.sys.executable).with_name("pythonw.exe")
+        exe = pyw if toolkit.os.name == "nt" and pyw.exists() else Path(toolkit.sys.executable)
+        cmd = [
+            str(exe), str(entry),
+            "--proof-json", str(proof_json),
+            "--activate-alpha",
+            "--package-root", str(self.root),
+        ]
+        toolkit.subprocess.Popen(cmd, cwd=str(entry.parent), env=toolkit.os.environ.copy())
+        print("已启动 package-selected Alpha V1 真人验证。正常进入 WOF 即可，不需要 DevTools，也不需要粘贴 JS。")
+        print("只有当前 World 921031 身份和 runtime generation 都有效时才会启动 Alpha；失效时会自动撤销并 fail-closed。")
+        print("验证 JSON：" + str(proof_json))
+
     def package(self):
         print("\n[自动整理并打包结果]")
-        entry = self.root / "parallel/EVIDENCE_INGESTOR/run.py"
-        if not entry.is_file():
-            print("没有找到自动结果整理器。请先选择 1“更新项目”。")
-            return
+        # Packaging is deliberately local/offline. It must never depend on a tool
+        # that might be absent from the immutable package or require menu 1/network.
         try:
-            cp = toolkit.run([toolkit.sys.executable, str(entry), "--root", str(self.results), "--package"], entry.parent, 600)
+            return super().package()
         except Exception as exc:
-            print("自动结果整理没有完成。原始证据和游戏本身都没有受到影响。")
+            print("结果打包没有完成。原始诊断/验证文件都仍然保留。")
+            print("游戏本身没有受到影响。")
             print(f"技术详情：{exc}")
-            return
-        if cp.stdout:
-            print(cp.stdout.rstrip())
-        if cp.returncode in (0, 1):
-            if cp.returncode == 1:
-                print("整理已完成，但发现严重安全或身份异常。请查看生成的“结果汇总.txt”。")
-            return
-        print("自动结果整理没有完成。原始证据和游戏本身都没有受到影响。")
-        if cp.stderr:
-            print("技术详情：" + cp.stderr[-1500:])
+            return None
 
 
 def main() -> int:
