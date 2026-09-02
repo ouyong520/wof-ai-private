@@ -17,7 +17,9 @@ This is an Owner UX/onboarding implementation result. It does **not** claim that
 - canonical claim: `parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.owner-beginner-real-wof-launcher-v1.json`
 - stage claim: `parallel/PM/STAGE_CLAIMS/TRAINING_FARM_R0_4_OWNER_BEGINNER_REAL_WOF_LAUNCHER_V1.json`
 - duplicate/repost behavior was checked before mutation: no prior equivalent RESULT/launcher and no occupied canonical/stage claim existed; create-only v2 ownership was acquired and token-verified before implementation.
-- closeout state at RESULT creation: token-safe COMPLETE updates are the immediate final repository operation; the final RESULT revision records their commit SHAs.
+- canonical claim closeout: `COMPLETE`, commit `77a80cabcfdc18500d93126932c8d2a843c8c409`.
+- stage claim closeout: `COMPLETE`, commit `a0c083f39c5e7947acf8dcd8cf73661126bca97e`.
+- both closeout records retain the exact original claimToken and reference the durable RESULT path/creation commit `1474541af3f501b6872c3a0524de5a87c5721d09`.
 
 ## Exact implementation candidate
 
