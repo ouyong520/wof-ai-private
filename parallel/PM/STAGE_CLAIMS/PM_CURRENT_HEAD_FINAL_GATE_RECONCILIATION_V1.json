@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "PM_CURRENT_HEAD_FINAL_GATE_RECONCILIATION_V1",
+  "promptPath": "parallel/PM/PM_CURRENT_HEAD_FINAL_GATE_RECONCILIATION_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "922fe72ad518a6e2ac1d850f56359a468e02725a",
+  "startedAtUtc": "2026-09-02T00:01:44Z"
+}
