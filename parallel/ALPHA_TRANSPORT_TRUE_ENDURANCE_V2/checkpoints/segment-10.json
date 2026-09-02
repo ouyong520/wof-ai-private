@@ -1,0 +1,72 @@
+{
+  "schema": "wof-alpha-transport-true-endurance-checkpoint-v2",
+  "stageId": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2",
+  "segmentIndex": 10,
+  "intendedDurationMs": 1500000,
+  "actualElapsedMs": 1500304,
+  "startedAtUtc": "2026-09-02T05:09:47.773Z",
+  "endedAtUtc": "2026-09-02T05:34:48.111Z",
+  "status": "PASS",
+  "blocker": null,
+  "scenarioCount": 118192760,
+  "seedRange": {
+    "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:10:scenario:0",
+    "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:10:scenario:118192759"
+  },
+  "familyCounts": {
+    "stale-old-completion-rebind": 8442340,
+    "session-change": 8442340,
+    "pair-generation-nonce-churn": 8442340,
+    "runtime-epoch-reset": 8442340,
+    "worker-replacement-reinstall": 8442340,
+    "disconnect-reconnect": 8442340,
+    "stale-warning-expiry-boundary": 8442340,
+    "warning-clear-change-race": 8442340,
+    "heartbeat-timing-variation": 8442340,
+    "skipped-tick-one-in-flight-no-catch-up": 8442340,
+    "unsupported-supported-transition": 8442340,
+    "out-of-order-completion": 8442340,
+    "legacy-untagged-compatible": 8442340,
+    "failure-injection-publish-clear-revoke": 8442340
+  },
+  "failureCount": 0,
+  "latestInvariantStatus": "PASS",
+  "rollingEvidenceSha256": "e941f475ad5cdb017dbb13129d06b6ce5da15e2e1e9ab1ea9fe71a60df2f701b",
+  "frozenCatalogControl": {
+    "status": "PASS",
+    "vectorCount": 67,
+    "passCount": 67,
+    "failCount": 0
+  },
+  "sourceIntegrity": {
+    "algorithm": "git-blob-sha1",
+    "observedBlobShas": {
+      "ALPHA_TRANSPORT_IMPL/constants.mjs": "a29cb3ad714598e2e6aeeed64acc9e3eca8b221e",
+      "ALPHA_TRANSPORT_IMPL/page_authority.mjs": "5e53bd2ad40823a8768802df0a1c5431adb19ee9",
+      "ALPHA_TRANSPORT_IMPL/worker_runtime.mjs": "c353b4500640e31950cde42173a934d541f22531",
+      "ALPHA_TRANSPORT_IMPL/acceptance_adapter.mjs": "d79dff0b2708c671ab8a11644fcc4f771ec75003",
+      "ALPHA_TRANSPORT_MOCK/fixtures.json": "35bf36b4c741cda5d94be3f9884511a86653c11f",
+      "ALPHA_TRANSPORT_MOCK/vectors.json": "5a0cbe2ccfcf7eb6e875552f56748f736722c14d",
+      "ALPHA_TRANSPORT_MOCK/expected_results.json": "1231e0946d18068284724d92e732ea185e4e6af8"
+    }
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "workerReplacement": false,
+    "blobRewrite": false
+  },
+  "run": {
+    "workflowRunId": "33577350728",
+    "workflowRunAttempt": "1",
+    "runHeadSha": "de2c86fb3fe528907aad08cd45d8944e3054f680"
+  },
+  "infrastructure": {
+    "baseRunnerPath": "parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/endurance_runner.mjs",
+    "baseRunnerBlobSha": "8d7decc9f61bddecba6c8ce3d5c2b4cc56e0a670",
+    "wrapperBlobSha": "161ca2d9c5a283594808b4f2770b35068edb4f7f",
+    "v1ElapsedReused": false,
+    "idlePadding": false
+  }
+}
