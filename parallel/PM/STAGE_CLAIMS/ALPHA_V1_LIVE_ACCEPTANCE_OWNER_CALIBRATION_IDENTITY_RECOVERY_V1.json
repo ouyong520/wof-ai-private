@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_LIVE_ACCEPTANCE_OWNER_CALIBRATION_IDENTITY_RECOVERY_V1",
+  "dedupKey": "alpha.v1.live-acceptance.owner-calibration-identity-recovery-v1",
+  "effectiveDedupKey": "alpha.v1.live-acceptance.owner-calibration-identity-recovery-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.live-acceptance.owner-calibration-identity-recovery-v1.json",
+  "claimToken": "e27aa886b714309dc65443eda6d999b7fcec7e4f07070768",
+  "state": "ACTIVE",
+  "startCommit": "4d097ced0037729b34df3eeb2db4dc53ca12d8d1"
+}
