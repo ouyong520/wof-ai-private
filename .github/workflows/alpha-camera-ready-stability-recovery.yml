@@ -1,0 +1,43 @@
+name: Alpha Camera READY Stability Recovery
+
+on:
+  push:
+    paths:
+      - '.github/workflows/alpha-camera-ready-stability-recovery.yml'
+      - 'parallel/HUDANCHOR_PROOF/wof_owner_projection_worker.js'
+      - 'parallel/HUDANCHOR_PROOF/wof_owner_projection_top.js'
+      - 'parallel/PYLAUNCH/wof_launcher/state.py'
+      - 'parallel/PYLAUNCH/tests/test_camera_ready_stability_recovery.py'
+      - 'parallel/PYLAUNCH/tests/test_owner_calibration_identity_recovery.py'
+      - 'parallel/PYLAUNCH/tests/test_overlay_reentry_recovery.py'
+  workflow_dispatch:
+
+jobs:
+  camera-ready-self-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Camera READY stability / TOCTOU deterministic self-check
+        run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_camera_ready_stability_recovery.py' -v
+      - name: Lifecycle-aware local identity and retained calibration regression
+        run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_owner_calibration_identity_recovery.py' -v
+      - name: Re-entry / runtime generation regression
+        run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_overlay_reentry_recovery.py' -v
+      - name: Runtime syntax and read-only boundary assertions
+        run: |
+          node --check parallel/HUDANCHOR_PROOF/wof_owner_projection_worker.js
+          node --check parallel/HUDANCHOR_PROOF/wof_owner_projection_top.js
+          python -m py_compile parallel/PYLAUNCH/wof_launcher/state.py
+          python - <<'PY'
+          from pathlib import Path
+          worker = Path('parallel/HUDANCHOR_PROOF/wof_owner_projection_worker.js').read_text(encoding='utf-8')
+          top = Path('parallel/HUDANCHOR_PROOF/wof_owner_projection_top.js').read_text(encoding='utf-8')
+          for src in (worker, top):
+              assert 'readOnly:true' in src and 'ramWrites:0' in src and 'inputInjection:false' in src
+          assert 'READY_STABLE_SAMPLES=20' in worker
+          assert 'AMBIGUOUS_ACTIVE_SAMPLE_LIMIT=1200' in worker
+          assert "kind:'lock-camera'" in top and 'authorityGeneration:auth.authorityGeneration' in top
+          PY
