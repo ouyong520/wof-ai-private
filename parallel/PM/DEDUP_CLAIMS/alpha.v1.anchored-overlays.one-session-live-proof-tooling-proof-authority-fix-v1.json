@@ -8,6 +8,20 @@
   "promptPath": "parallel/PM/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_PROOF_AUTHORITY_FIX_V1_START_PROMPT.md",
   "owner": "chatgpt-proof-authority-fix-v1",
   "claimToken": "9e5f505b-9526-49ba-ad2e-976d12fc2249-f42263e71b13dab610c02dba64a25bed",
-  "state": "ACTIVE",
-  "startCommit": "e930d0c5d8da7efd698b35e21a3112d1d2d0ba7a"
+  "state": "COMPLETE",
+  "startCommit": "e930d0c5d8da7efd698b35e21a3112d1d2d0ba7a",
+  "result": "COMPLETE — ALPHA V1 ANCHORED OVERLAYS ONE-SESSION LIVE PROOF TOOLING PROOF-AUTHORITY FIX V1 — FALSE-PROOF PATHS CLOSED / READY FOR FRESH QA",
+  "resultPath": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/RESULT.md",
+  "resultCommit": "ea69be43b3a21f126722b5ae78d0a15e2f8ff419",
+  "implementationCommit": "e6042741486ed6aae215e282c2f700fd84167811",
+  "manifestCommit": "f2855ed2c554e41b0b8ef6cf2c03a60233c44b64",
+  "evidenceCommit": "b943c58504509e4bc06a45014e7e27e4e75e5309",
+  "proofToolBlobs": {
+    "proof_core.js": "6fa5b5178dd0dedcad2afe7e53c6cdda98c8a701",
+    "wof_alpha_v1_dual_live_proof_top.js": "e0e686cafc3463ce6041d83c5e0fe1030f7eb444",
+    "wof_alpha_v1_dual_live_proof_worker.js": "2b75092fee63cecafb51e108aa2af8b3d83cc696",
+    "wof_alpha_v1_dual_live_proof.js": "e71a802c8d150cf727345c51c4786512a82abb97",
+    "proof_authority_regression.mjs": "e3697ab88cb36922e717b7a85044e0bfca72a444",
+    "tooling_regression.mjs": "cfd3d15a9adc6d7a532d36026494a76e2c41c4d0"
+  }
 }
