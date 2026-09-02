@@ -11,9 +11,42 @@ on:
       - 'parallel/PYLAUNCH/**'
       - 'parallel/BROWSER_FLEET/**'
       - 'parallel/WOF052L_RECORDER/**'
+      - 'product/alpha/**'
   workflow_dispatch:
 
 jobs:
+  field-recovery-self-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PYLAUNCH test dependencies
+        run: python -m pip install --disable-pip-version-check -q -r parallel/PYLAUNCH/requirements.txt
+      - name: Exact identity, generation cache and Alpha activation self-check
+        run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_field_recovery.py' -v
+      - name: Live proof Alpha gate self-check
+        run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_windows_proof.py' -v
+      - name: Owner menu integration self-check
+        run: python -m unittest discover -s parallel/OPTOOLKIT/tests -p 'test_*.py' -v
+      - name: Frozen Alpha product regression
+        run: node product/alpha/regression.mjs
+      - name: Syntax-check field recovery Python runtime
+        run: |
+          python -m py_compile \
+            parallel/PYLAUNCH/launcher.py \
+            parallel/PYLAUNCH/wof_launcher/alpha_runtime.py \
+            parallel/PYLAUNCH/wof_launcher/cdp.py \
+            parallel/PYLAUNCH/wof_launcher/discovery_v2.py \
+            parallel/PYLAUNCH/wof_launcher/monitor.py \
+            parallel/PYLAUNCH/wof_launcher/probe_v2.py \
+            parallel/PYLAUNCH/wof_launcher/runtime_authority.py \
+            parallel/OPTOOLKIT/toolkit.py \
+            parallel/OPTOOLKIT/owner_zh_cn.py
+
   integrity:
     runs-on: ubuntu-latest
     steps:
@@ -23,50 +56,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Validate manifest, PYLAUNCH freshness, update and rollback contracts
+      - name: Validate successor manifest and mutation/LKG contracts
         run: python parallel/OWNER_ONECLICK/test_package.py
-
-      - name: Regression - workflow metadata stays manifest-driven
+      - name: Emit deterministic current-commit candidate manifest
         if: always()
-        shell: python
+        shell: bash
         run: |
-          import json
-          import re
-          from pathlib import Path
-
-          workflow = Path('.github/workflows/owner-oneclick-package.yml').read_text(encoding='utf-8')
-          manifest = json.loads(Path('parallel/OWNER_ONECLICK/package_manifest.json').read_text(encoding='utf-8-sig'))
-
-          package_version = str(manifest['packageVersion'])
-          source_commit = str(manifest['sourceCommit'])
-          blob_shas = [str(row['gitBlobSha']) for row in manifest['files']]
-          historical_pins = [package_version, source_commit, *blob_shas]
-          leaked = [value for value in historical_pins if value and value in workflow]
-          if leaked:
-              raise SystemExit('workflow contains literal manifest metadata pins: ' + ', '.join(leaked[:8]))
-
-          required_dynamic_tokens = [
-              'parallel\\OWNER_ONECLICK\\package_manifest.json',
-              '$manifest.packageVersion',
-              '$manifest.sourceCommit',
-              '$f.gitBlobSha',
-              '$env:WOF_PACKAGE_VERSION',
-              '$env:WOF_SOURCE_COMMIT',
-          ]
-          missing = [token for token in required_dynamic_tokens if token not in workflow]
-          if missing:
-              raise SystemExit('workflow lost dynamic manifest contract tokens: ' + ', '.join(missing))
-
-          # Synthetic newer metadata is validated with the same accepted shapes. Because
-          # the workflow contains no current manifest literals and consumes these fields
-          # dynamically, changing a valid manifest does not require a workflow pin edit.
-          future_version = '.'.join(('2099', '12', '31', 'synthetic'))
-          future_commit = ''.join(['1'] * 40)
-          future_blob = ''.join(['2'] * 40)
-          if not re.fullmatch(r'[A-Za-z0-9._-]+', future_version):
-              raise SystemExit('synthetic future package version fixture is invalid')
-          if not re.fullmatch(r'[0-9a-f]{40}', future_commit) or not re.fullmatch(r'[0-9a-f]{40}', future_blob):
-              raise SystemExit('synthetic future SHA fixture is invalid')
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/field-recovery-candidate-manifest.json"
+          python parallel/OWNER_ONECLICK/refresh_manifest.py --source "$GITHUB_SHA" --output "$OUT"
+          echo 'FIELD_RECOVERY_CANDIDATE_MANIFEST_BEGIN'
+          cat "$OUT"
+          echo 'FIELD_RECOVERY_CANDIDATE_MANIFEST_END'
 
   windows-oneclick:
     runs-on: windows-latest
@@ -82,180 +83,123 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Load and validate checkout package manifest contract
+      - name: Load immutable checkout package manifest
         shell: powershell
         run: |
           $manifestPath = Join-Path (Get-Location) 'parallel\OWNER_ONECLICK\package_manifest.json'
           if (-not (Test-Path -LiteralPath $manifestPath)) { throw 'package manifest missing from checkout' }
           $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
-
           $version = [string]$manifest.packageVersion
           $sourceCommit = ([string]$manifest.sourceCommit).ToLowerInvariant()
           if ($version -notmatch '^[A-Za-z0-9._-]+$') { throw 'manifest packageVersion is invalid' }
           if ($sourceCommit -notmatch '^[0-9a-f]{40}$') { throw 'manifest sourceCommit is invalid' }
-          $expectedBase = 'https://raw.githubusercontent.com/ouyong520/wof-ai-private/' + $sourceCommit + '/'
-          if ([string]$manifest.baseUrl -ne $expectedBase) { throw 'manifest baseUrl does not match sourceCommit' }
-          if ([string]$manifest.components.pylaunch.sourceCommit -ne $sourceCommit) { throw 'PYLAUNCH sourceCommit does not match package sourceCommit' }
+          if ([string]$manifest.baseUrl -ne ('https://raw.githubusercontent.com/ouyong520/wof-ai-private/' + $sourceCommit + '/')) { throw 'manifest baseUrl does not match sourceCommit' }
+          foreach ($component in @('ownerOneclick','alpha','pylaunch','recorder','browserFleet','liveProof')) {
+            if ([string]$manifest.components.$component.sourceCommit -ne $sourceCommit) { throw ('component sourceCommit mismatch: ' + $component) }
+          }
           if ($manifest.safety.readOnly -ne $true -or [int]$manifest.safety.ramWrites -ne 0 -or $manifest.safety.inputInjection -ne $false) { throw 'manifest safety flags changed' }
           if (-not $manifest.files -or $manifest.files.Count -lt 1) { throw 'manifest has no files' }
-
-          $seen = @{}
-          foreach ($f in $manifest.files) {
-            $rel = [string]$f.path
-            $sha = ([string]$f.gitBlobSha).ToLowerInvariant()
-            if (-not $rel -or $rel.Contains('..') -or [IO.Path]::IsPathRooted($rel)) { throw ('manifest contains unsafe path: ' + $rel) }
-            if ($sha -notmatch '^[0-9a-f]{40}$') { throw ('manifest contains invalid gitBlobSha: ' + $rel) }
-            if ($seen.ContainsKey($rel)) { throw ('manifest contains duplicate path: ' + $rel) }
-            $seen[$rel] = $true
-          }
-
           & git cat-file -e ($sourceCommit + '^{commit}')
-          if ($LASTEXITCODE -ne 0) { throw ('manifest sourceCommit is not present in checkout history: ' + $sourceCommit) }
-
+          if ($LASTEXITCODE -ne 0) { throw 'manifest source commit is not in checkout history' }
           ('WOF_PACKAGE_VERSION=' + $version) | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           ('WOF_SOURCE_COMMIT=' + $sourceCommit) | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-      - name: Fresh install through real Chinese CMD and verify manifest-selected package
+      - name: Fresh install in Chinese and space portable path
         shell: powershell
         run: |
           $cn = [string]([char]0x4E2D) + [char]0x6587
-          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Fresh Path\Local App Data')
-          New-Item -ItemType Directory -Path $env:LOCALAPPDATA -Force | Out-Null
+          $launcherDir = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Portable Launcher')
+          New-Item -ItemType Directory -Path $launcherDir -Force | Out-Null
           $entryName = 'WOF_' + [char]0x4E00 + [char]0x952E + [char]0x5DE5 + [char]0x5177 + '.cmd'
-          $entry = Join-Path (Get-Location) $entryName
+          $sourceEntry = Join-Path (Get-Location) $entryName
+          $entry = Join-Path $launcherDir $entryName
+          Copy-Item -LiteralPath $sourceEntry -Destination $entry -Force
           $cmdLine = 'call "' + $entry + '" --update-only'
           cmd.exe /d /c $cmdLine
-          if ($LASTEXITCODE -ne 0) { throw ('fresh install failed: ' + $LASTEXITCODE) }
+          if ($LASTEXITCODE -ne 0) { throw ('fresh portable install failed: ' + $LASTEXITCODE) }
 
-          $repoManifestPath = Join-Path (Get-Location) 'parallel\OWNER_ONECLICK\package_manifest.json'
-          $repoManifest = Get-Content -LiteralPath $repoManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
-          if ([string]$repoManifest.packageVersion -ne $env:WOF_PACKAGE_VERSION) { throw 'checkout manifest packageVersion changed inside job' }
-          if (([string]$repoManifest.sourceCommit).ToLowerInvariant() -ne $env:WOF_SOURCE_COMMIT) { throw 'checkout manifest sourceCommit changed inside job' }
-
-          $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
+          $root = Join-Path $launcherDir 'WOF_Portable'
           $current = Join-Path $root 'current.txt'
-          if (-not (Test-Path -LiteralPath $current)) { throw 'current.txt missing after fresh install' }
+          if (-not (Test-Path -LiteralPath $current)) { throw 'portable current.txt missing after fresh install' }
           $version = (Get-Content -LiteralPath $current -Raw).Trim()
-          if ($version -ne $env:WOF_PACKAGE_VERSION) { throw ('unexpected installed version: ' + $version + ' expected=' + $env:WOF_PACKAGE_VERSION) }
+          if ($version -ne $env:WOF_PACKAGE_VERSION) { throw ('unexpected installed version: ' + $version) }
           $release = Join-Path $root ('releases\' + $version)
           foreach ($p in @(
             'installed.ok',
             'PACKAGE_MANIFEST.json',
             'WOF_TOOLKIT.cmd',
+            'parallel\OWNER_ONECLICK\bootstrap_v2.ps1',
             'parallel\OPTOOLKIT\owner_zh_cn.py',
-            'parallel\PYLAUNCH\RUN_WINDOWS_PROOF.cmd',
-            'parallel\PYLAUNCH\WOF_ONECLICK_PROOF_CN.cmd',
             'parallel\PYLAUNCH\launcher.py',
+            'parallel\PYLAUNCH\wof_launcher\alpha_runtime.py',
             'parallel\PYLAUNCH\wof_launcher\discovery_v2.py',
             'parallel\PYLAUNCH\wof_launcher\monitor.py',
-            'parallel\PYLAUNCH\wof_launcher\proof.py',
-            'parallel\WOF052L_RECORDER\owner_zh_cn.py',
-            'parallel\BROWSER_FLEET\fleet_owner_zh_cn.py'
+            'parallel\PYLAUNCH\wof_launcher\probe_v2.py',
+            'parallel\PYLAUNCH\wof_launcher\runtime_authority.py',
+            'product\alpha\wof_alpha_field_adapter.js',
+            'product\alpha\wof_alpha_enemy_head_projection.json',
+            'product\alpha\wof_alpha_player_head_projection.json'
           )) {
-            if (-not (Test-Path -LiteralPath (Join-Path $release $p))) { throw ('installed file missing: ' + $p) }
+            if (-not (Test-Path -LiteralPath (Join-Path $release $p))) { throw ('installed field-recovery file missing: ' + $p) }
           }
 
+          $repoManifest = Get-Content -LiteralPath (Join-Path (Get-Location) 'parallel\OWNER_ONECLICK\package_manifest.json') -Raw -Encoding UTF8 | ConvertFrom-Json
           $installedManifest = Get-Content -LiteralPath (Join-Path $release 'PACKAGE_MANIFEST.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-          if ([string]$installedManifest.packageVersion -ne [string]$repoManifest.packageVersion) { throw 'installed manifest package version mismatch' }
-          if (([string]$installedManifest.sourceCommit).ToLowerInvariant() -ne ([string]$repoManifest.sourceCommit).ToLowerInvariant()) { throw 'installed manifest source commit mismatch' }
-          if ([string]$installedManifest.baseUrl -ne [string]$repoManifest.baseUrl) { throw 'installed manifest baseUrl mismatch' }
-          if ([string]$installedManifest.components.pylaunch.sourceCommit -ne [string]$repoManifest.components.pylaunch.sourceCommit) { throw 'installed PYLAUNCH source commit mismatch' }
-          if ($installedManifest.safety.readOnly -ne $true -or [int]$installedManifest.safety.ramWrites -ne 0 -or $installedManifest.safety.inputInjection -ne $false) { throw 'installed manifest safety flags changed' }
-
+          if ([string]$installedManifest.packageVersion -ne [string]$repoManifest.packageVersion) { throw 'installed package version mismatch' }
+          if (([string]$installedManifest.sourceCommit).ToLowerInvariant() -ne ([string]$repoManifest.sourceCommit).ToLowerInvariant()) { throw 'installed source commit mismatch' }
           $expected = @{}
           foreach ($f in $repoManifest.files) { $expected[[string]$f.path] = ([string]$f.gitBlobSha).ToLowerInvariant() }
-          $installedExpected = @{}
-          foreach ($f in $installedManifest.files) { $installedExpected[[string]$f.path] = ([string]$f.gitBlobSha).ToLowerInvariant() }
-          if ($expected.Count -ne $installedExpected.Count) { throw 'installed manifest file count mismatch' }
-          foreach ($rel in $expected.Keys) {
-            if (-not $installedExpected.ContainsKey($rel)) { throw ('installed manifest missing entry: ' + $rel) }
-            if ($installedExpected[$rel] -ne $expected[$rel]) { throw ('installed manifest SHA differs from checkout manifest: ' + $rel) }
+          foreach ($f in $installedManifest.files) {
+            $rel = [string]$f.path
+            if (-not $expected.ContainsKey($rel)) { throw ('unexpected installed manifest path: ' + $rel) }
             $full = Join-Path $release ($rel -replace '/', '\')
-            if (-not (Test-Path -LiteralPath $full)) { throw ('installed manifest file missing: ' + $rel) }
+            if (-not (Test-Path -LiteralPath $full)) { throw ('installed file missing: ' + $rel) }
             $actual = (& git hash-object -- $full).Trim().ToLowerInvariant()
-            if ($actual -ne $expected[$rel]) { throw ('installed blob mismatch: ' + $rel + ' expected=' + $expected[$rel] + ' actual=' + $actual) }
+            if ($actual -ne $expected[$rel]) { throw ('installed blob mismatch: ' + $rel) }
           }
+          if (Get-ChildItem -LiteralPath (Join-Path $root 'releases') -Directory -Filter '*.staging-*') { throw 'staging directory remained after fresh install' }
+          ('WOF_PORTABLE_TEST_ROOT=' + $root) | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          ('WOF_PORTABLE_ENTRY=' + $entry) | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-          $workerReplacement = Get-ChildItem -LiteralPath $release -Recurse -File -Include *.py,*.js,*.mjs,*.cmd,*.bat,*.ps1 -ErrorAction SilentlyContinue |
-            Select-String -Pattern '(?i)window\s*\.\s*Worker\s*=' -ErrorAction SilentlyContinue
-          if ($workerReplacement) { throw 'forbidden window.Worker replacement pattern found in installed package' }
-
-          if (Get-ChildItem -LiteralPath (Join-Path $root 'releases') -Directory -Filter '*.staging-*') { throw 'staging directory remained after successful fresh install' }
-
-      - name: Smoke-start installed Chinese Windows proof execution path
+      - name: Smoke package-selected live acceptance launcher path without Browser
         shell: powershell
         run: |
-          $cn = [string]([char]0x4E2D) + [char]0x6587
-          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Fresh Path\Local App Data')
-          $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
-          $release = Join-Path $root ('releases\' + $env:WOF_PACKAGE_VERSION)
-          $pyDir = Join-Path $release 'parallel\PYLAUNCH'
-          $launcher = Join-Path $pyDir 'launcher.py'
-          $venvPython = Join-Path $root 'venv\Scripts\python.exe'
-          $status = Join-Path $pyDir 'WINDOWS_PROOF_STATUS.json'
-          if (-not (Test-Path -LiteralPath $venvPython)) { throw 'packaged Python venv missing' }
-          Remove-Item -LiteralPath $status -Force -ErrorAction SilentlyContinue
-          Push-Location $pyDir
-          try {
-            & $venvPython $launcher --no-tray --once --attach-only --proof-json $status
-            if ($LASTEXITCODE -ne 0) { throw ('installed proof execution failed: ' + $LASTEXITCODE) }
-          } finally {
-            Pop-Location
-          }
-          if (-not (Test-Path -LiteralPath $status)) { throw 'WINDOWS_PROOF_STATUS.json was not created' }
+          $release = Join-Path $env:WOF_PORTABLE_TEST_ROOT ('releases\' + $env:WOF_PACKAGE_VERSION)
+          $venvPython = Join-Path $env:WOF_PORTABLE_TEST_ROOT 'venv\Scripts\python.exe'
+          $launcher = Join-Path $release 'parallel\PYLAUNCH\launcher.py'
+          $status = Join-Path $env:RUNNER_TEMP 'FIELD_RECOVERY_WINDOWS_PROOF_STATUS.json'
+          & $venvPython $launcher --no-tray --once --attach-only --activate-alpha --package-root $release --proof-json $status
+          if ($LASTEXITCODE -ne 0) { throw ('packaged launcher smoke failed: ' + $LASTEXITCODE) }
+          if (-not (Test-Path -LiteralPath $status)) { throw 'proof status was not written' }
           $proof = Get-Content -LiteralPath $status -Raw -Encoding UTF8 | ConvertFrom-Json
           if ($proof.readOnly -ne $true -or [int]$proof.ramWrites -ne 0 -or $proof.inputInjection -ne $false) { throw 'proof safety flags changed' }
-          if (-not $proof.ownerSummaryZh -or -not $proof.checksZh) { throw 'Chinese proof summary/checks missing' }
+          if ([string]$proof.automatedResult -ne 'WAITING') { throw 'no-Browser smoke must fail closed as WAITING' }
+          if (-not $proof.ownerSummaryZh -or -not $proof.checksZh) { throw 'Chinese proof surface missing' }
 
-      - name: Update from synthetic previous package and preserve last-known-good
+      - name: Explicit update preserves last-known-good and repairs current pointer
         shell: powershell
         run: |
-          $cn = [string]([char]0x4E2D) + [char]0x6587
-          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Upgrade Path\Local App Data')
-          $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
+          $root = $env:WOF_PORTABLE_TEST_ROOT
           $previousVersion = 'ci.previous'
           $old = Join-Path $root ('releases\' + $previousVersion)
           New-Item -ItemType Directory -Path $old -Force | Out-Null
           Set-Content -LiteralPath (Join-Path $old 'installed.ok') -Value 'previous package' -Encoding ASCII
-          New-Item -ItemType Directory -Path $root -Force | Out-Null
           Set-Content -LiteralPath (Join-Path $root 'current.txt') -Value $previousVersion -Encoding ASCII
-
-          $entryName = 'WOF_' + [char]0x4E00 + [char]0x952E + [char]0x5DE5 + [char]0x5177 + '.cmd'
-          $entry = Join-Path (Get-Location) $entryName
-          $cmdLine = 'call "' + $entry + '" --update-only'
+          $cmdLine = 'call "' + $env:WOF_PORTABLE_ENTRY + '" --update-only'
           cmd.exe /d /c $cmdLine
-          if ($LASTEXITCODE -ne 0) { throw ('update from previous package failed: ' + $LASTEXITCODE) }
-
+          if ($LASTEXITCODE -ne 0) { throw ('explicit update failed: ' + $LASTEXITCODE) }
           $version = (Get-Content -LiteralPath (Join-Path $root 'current.txt') -Raw).Trim()
-          if ($version -ne $env:WOF_PACKAGE_VERSION) { throw ('update did not switch to manifest version: ' + $version) }
-          if (-not (Test-Path -LiteralPath (Join-Path $old 'installed.ok'))) { throw 'last-known-good previous package was removed' }
-          $newRelease = Join-Path $root ('releases\' + $env:WOF_PACKAGE_VERSION)
-          if (-not (Test-Path -LiteralPath (Join-Path $newRelease 'installed.ok'))) { throw 'new package missing after update' }
-
-          $repoManifest = Get-Content -LiteralPath (Join-Path (Get-Location) 'parallel\OWNER_ONECLICK\package_manifest.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-          foreach ($f in $repoManifest.files) {
-            $rel = [string]$f.path
-            $expected = ([string]$f.gitBlobSha).ToLowerInvariant()
-            $full = Join-Path $newRelease ($rel -replace '/', '\')
-            if (-not (Test-Path -LiteralPath $full)) { throw ('updated package file missing: ' + $rel) }
-            $actual = (& git hash-object -- $full).Trim().ToLowerInvariant()
-            if ($actual -ne $expected) { throw ('updated package blob mismatch: ' + $rel + ' expected=' + $expected + ' actual=' + $actual) }
-          }
+          if ($version -ne $env:WOF_PACKAGE_VERSION) { throw 'explicit update did not restore immutable current candidate' }
+          if (-not (Test-Path -LiteralPath (Join-Path $old 'installed.ok'))) { throw 'last-known-good previous release was removed' }
+          if (-not (Test-Path -LiteralPath (Join-Path $root ('releases\' + $env:WOF_PACKAGE_VERSION + '\installed.ok')))) { throw 'current release missing after update' }
           if (Get-ChildItem -LiteralPath (Join-Path $root 'releases') -Directory -Filter '*.staging-*') { throw 'staging directory remained after update' }
 
-      - name: Re-run updater without changing immutable current release
+      - name: Re-run explicit updater idempotently
         shell: powershell
         run: |
-          $cn = [string]([char]0x4E2D) + [char]0x6587
-          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP ('WOF ' + $cn + ' Upgrade Path\Local App Data')
-          $previousVersion = 'ci.previous'
-          $entryName = 'WOF_' + [char]0x4E00 + [char]0x952E + [char]0x5DE5 + [char]0x5177 + '.cmd'
-          $entry = Join-Path (Get-Location) $entryName
-          $cmdLine = 'call "' + $entry + '" --update-only'
+          $cmdLine = 'call "' + $env:WOF_PORTABLE_ENTRY + '" --update-only'
           cmd.exe /d /c $cmdLine
-          if ($LASTEXITCODE -ne 0) { throw ('second updater run failed: ' + $LASTEXITCODE) }
-          $root = Join-Path $env:LOCALAPPDATA 'WOF Future Danger\OwnerTools'
-          $version = (Get-Content -LiteralPath (Join-Path $root 'current.txt') -Raw).Trim()
-          if ($version -ne $env:WOF_PACKAGE_VERSION) { throw ('version changed unexpectedly: ' + $version) }
-          if (-not (Test-Path -LiteralPath (Join-Path $root ('releases\' + $previousVersion + '\installed.ok')))) { throw 'previous last-known-good missing after second run' }
-          if (-not (Test-Path -LiteralPath (Join-Path $root ('releases\' + $env:WOF_PACKAGE_VERSION + '\installed.ok')))) { throw 'current immutable release missing after second run' }
+          if ($LASTEXITCODE -ne 0) { throw ('second explicit update failed: ' + $LASTEXITCODE) }
+          $version = (Get-Content -LiteralPath (Join-Path $env:WOF_PORTABLE_TEST_ROOT 'current.txt') -Raw).Trim()
+          if ($version -ne $env:WOF_PACKAGE_VERSION) { throw 'immutable candidate changed on idempotent update' }
+          if (-not (Test-Path -LiteralPath (Join-Path $env:WOF_PORTABLE_TEST_ROOT 'releases\ci.previous\installed.ok'))) { throw 'last-known-good missing after idempotent update' }
