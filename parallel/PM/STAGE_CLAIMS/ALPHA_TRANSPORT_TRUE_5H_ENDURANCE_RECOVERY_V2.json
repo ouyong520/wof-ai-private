@@ -2,7 +2,125 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2",
   "promptPath": "parallel/PM/ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "0e24aa5f4e7dc7d64719f9a702dd166cbc24f99c",
-  "startedAtUtc": "2026-09-02T00:51:00Z"
+  "startedAtUtc": "2026-09-02T00:51:00Z",
+  "completedAtUtc": "2026-09-02T06:25:41.321Z",
+  "verdict": "ALPHA TRANSPORT TRUE 5H ENDURANCE V2 PASS — READY AS CURRENT-SNAPSHOT ROBUSTNESS EVIDENCE",
+  "blocker": null,
+  "workflowRunId": "33577350728",
+  "workflowRunAttempt": "1",
+  "runHead": "de2c86fb3fe528907aad08cd45d8944e3054f680",
+  "actualExecutorElapsedMs": 19500882,
+  "actualWallClockMs": 19713232,
+  "checkpointCount": 13,
+  "intendedCheckpointCount": 13,
+  "uniqueGeneratedScenarioCount": 1086849482,
+  "failureCount": 0,
+  "frozenCatalogControls": [
+    {
+      "segmentIndex": 0,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 1,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 2,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 3,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 4,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 5,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 6,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 7,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 8,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 9,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 10,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 11,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 12,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    }
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "workerReplacement": false,
+    "blobRewrite": false
+  },
+  "exactSutInputBlobs": {
+    "ALPHA_TRANSPORT_IMPL/constants.mjs": "a29cb3ad714598e2e6aeeed64acc9e3eca8b221e",
+    "ALPHA_TRANSPORT_IMPL/page_authority.mjs": "5e53bd2ad40823a8768802df0a1c5431adb19ee9",
+    "ALPHA_TRANSPORT_IMPL/worker_runtime.mjs": "c353b4500640e31950cde42173a934d541f22531",
+    "ALPHA_TRANSPORT_IMPL/acceptance_adapter.mjs": "d79dff0b2708c671ab8a11644fcc4f771ec75003",
+    "ALPHA_TRANSPORT_MOCK/fixtures.json": "35bf36b4c741cda5d94be3f9884511a86653c11f",
+    "ALPHA_TRANSPORT_MOCK/vectors.json": "5a0cbe2ccfcf7eb6e875552f56748f736722c14d",
+    "ALPHA_TRANSPORT_MOCK/expected_results.json": "1231e0946d18068284724d92e732ea185e4e6af8"
+  },
+  "finalCurrentMainSnapshot": {
+    "status": "PASS",
+    "exactPinnedBlobsStillCurrent": true
+  },
+  "v1ElapsedReused": false,
+  "resultPath": "parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/RESULT.md",
+  "summaryPath": "parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/final-summary.json",
+  "smokeResultPath": "parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/smoke/SMOKE_RESULT.json",
+  "ownerAction": "NO",
+  "resultCommit": "487f259e513231bae72701b17a47b2b27e70b7f8"
 }
