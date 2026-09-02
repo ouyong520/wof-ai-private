@@ -5,6 +5,10 @@
   "effectiveDedupKey": "training.farm.r0.4.owner-beginner-real-wof-launcher-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.owner-beginner-real-wof-launcher-v1.json",
   "claimToken": "f4a97c3b8e1d4a72b6c095e3d8f21a6c",
-  "state": "ACTIVE",
-  "startCommit": "1e926dc81de0b8e336ef7db01786dc260c498447"
+  "state": "COMPLETE",
+  "startCommit": "1e926dc81de0b8e336ef7db01786dc260c498447",
+  "implementationCommit": "f5edce51a9e2d1bad0c0bb9125adff767cc42199",
+  "resultPath": "parallel/TRAINING_FARM_R0_4_OWNER_BEGINNER_REAL_WOF_LAUNCHER_V1/RESULT.md",
+  "resultCommit": "1474541af3f501b6872c3a0524de5a87c5721d09",
+  "finalState": "COMPLETE — TRAINING FARM R0.4 OWNER BEGINNER REAL-WOF LAUNCHER V1 — READY FOR OWNER DOUBLE-CLICK RUN"
 }
