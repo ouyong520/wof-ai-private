@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_LIVE_ACCEPTANCE_CAMERA_AUTHORITY_READY_STABILITY_RECOVERY_V1",
+  "dedupKey": "alpha.v1.live-acceptance.camera-authority-ready-stability-recovery-v1",
+  "effectiveDedupKey": "alpha.v1.live-acceptance.camera-authority-ready-stability-recovery-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.live-acceptance.camera-authority-ready-stability-recovery-v1.json",
+  "claimToken": "a48c5526-c562-449a-ac19-ae42cfad46d1",
+  "state": "ACTIVE",
+  "startCommit": "0d8322d91677cb80ab64cbac2162d42eced2b133"
+}
