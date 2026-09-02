@@ -1,6 +1,6 @@
 {
-  "schema": "wof-alpha-v1-dual-live-proof-run-manifest-recovery-v2",
-  "implementationCommit": "500acfa96dbcaaeae58c4cb122954189891b6aac",
+  "schema": "wof-alpha-v1-dual-live-proof-run-manifest-proof-authority-fix-v1",
+  "implementationCommit": "e6042741486ed6aae215e282c2f700fd84167811",
   "romSha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
   "evidenceSchema": {
     "path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_LIVE_PROOF_PREP/LIVE_PROOF_EVIDENCE_SCHEMA.json",
@@ -16,15 +16,19 @@
     "loader": {"path": "product/alpha/wof_alpha_loader.js", "sha": "66aee09fc2dd009c2f295d2092f3129548605efb"}
   },
   "proofToolBlobs": {
-    "dualCore": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/proof_core.js", "sha": "fbfa665daa624b7a81b6b75d488af504194bd378"},
-    "dualTop": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/wof_alpha_v1_dual_live_proof_top.js", "sha": "3f2ffdfc2947387518e593445306f8803132345c"},
-    "dualWorker": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/wof_alpha_v1_dual_live_proof_worker.js", "sha": "5cc30f3a3b32ee0ef3dfe1b9ac2937dbabc774f3"},
-    "dualLoader": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/wof_alpha_v1_dual_live_proof.js", "sha": "30c965bb8b16466810781e2741f2d2eb86a0533d"},
+    "dualCore": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/proof_core.js", "sha": "6fa5b5178dd0dedcad2afe7e53c6cdda98c8a701"},
+    "dualTop": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/wof_alpha_v1_dual_live_proof_top.js", "sha": "e0e686cafc3463ce6041d83c5e0fe1030f7eb444"},
+    "dualWorker": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/wof_alpha_v1_dual_live_proof_worker.js", "sha": "2b75092fee63cecafb51e108aa2af8b3d83cc696"},
+    "dualLoader": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/wof_alpha_v1_dual_live_proof.js", "sha": "e71a802c8d150cf727345c51c4786512a82abb97"},
     "hudanchorLoader": {"path": "parallel/HUDANCHOR_PROOF/wof_hudanchor_proof.js", "sha": "8e7a72eb14556f181e4322825e98f7ac57f8eed5"},
     "hudanchorTop": {"path": "parallel/HUDANCHOR_PROOF/wof_hudanchor_top.js", "sha": "95ae41bfb39b42deb1fee267f27da7b13a4b622c"},
     "hudanchorWorker": {"path": "parallel/HUDANCHOR_PROOF/wof_hudanchor_worker.js", "sha": "12f06e40fb457963b082813607eec05e71bf7951"},
     "hudanchorGl": {"path": "parallel/HUDANCHOR_PROOF/wof_hudanchor_gl.js", "sha": "e4f91799ecc2204c68894d25056c5d6b747bfaec"},
     "evidenceSchema": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_LIVE_PROOF_PREP/LIVE_PROOF_EVIDENCE_SCHEMA.json", "sha": "f9213012502b4a307e6cab0df23fbe9f5812f769"}
+  },
+  "regressionBlobs": {
+    "independentProofAuthority": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/proof_authority_regression.mjs", "sha": "e3697ab88cb36922e717b7a85044e0bfca72a444"},
+    "supportiveRecovery": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/tooling_regression.mjs", "sha": "cfd3d15a9adc6d7a532d36026494a76e2c41c4d0"}
   },
   "boundary": {
     "browserWofRunPerformedByThisStage": false,
