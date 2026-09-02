@@ -1,32 +1,44 @@
 {
   "schema": "wof-unified-live-proof-preflight-v1",
-  "artifactKind": "repository-current-admission-example",
-  "date": "2026-09-01",
-  "result": "BLOCKED",
+  "artifactKind": "repository-current-selector-policy-example",
+  "date": "2026-09-02",
+  "result": "PASS",
   "preflightImplementationReady": true,
+  "gateSelectorVersion": "wof-unified-current-successor-gates-v1",
+  "selectorValidationHead": "49995413b3450df96e7e2c77eb9b5ac6b0cf659e",
   "stopCondition": "UNIFIED LIVE PROOF PREFLIGHT HARDENING READY — OWNER NOT NEEDED FOR REPOSITORY CHECKS",
   "discoveryContractVersion": "wof-discovery-v2-hardened-capabilities-v1",
-  "blockers": [
-    {
-      "severity": "P1",
-      "component": "pylaunch",
-      "path": "parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/RESULT.md",
-      "id": "P1-STALE-TARGETID-IDENTITY-CACHE-AUTHORITY",
-      "detailZh": "PYLAUNCH fresh QA 仍阻断：旧 exact World identity authority 可能被复用到新的 browser/runtime generation。"
+  "authoritativeSuccessors": {
+    "pylaunch": {
+      "stageId": "PYLAUNCH_STARTUP_ATTESTATION_QA_V1",
+      "resultPath": "parallel/PYLAUNCH_QA_STARTUP_ATTESTATION/RESULT.json",
+      "decision": "PASS — PYLAUNCH STARTUP ATTESTATION FRESH QA — RELEASE GATE CLOSED",
+      "currentProductionPinsRequired": [
+        "parallel/PYLAUNCH/wof_launcher/browser.py",
+        "parallel/PYLAUNCH/wof_launcher/monitor.py",
+        "parallel/PYLAUNCH/wof_launcher/discovery_v2.py"
+      ]
     },
-    {
-      "severity": "P1",
-      "component": "liveProof",
-      "path": "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.json",
-      "id": "RECORDER_ARBITRARY_STDOUT_REFRESHES_STALE_ADMISSION",
-      "detailZh": "Unified freshness fresh QA 仍阻断：arbitrary Recorder stdout 可刷新旧 admission authority。"
+    "recorder": {
+      "stageId": "UNIFIED_LIVE_PROOF_RECORDER_INFLIGHT_GENERATION_ATOMICITY_QA_V1",
+      "resultPath": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_INFLIGHT_ATOMICITY/RESULT.json",
+      "decision": "PASS — RECORDER IN-FLIGHT GENERATION ATOMICITY FRESH QA — READY FOR CURRENT-HEAD UNIFIED PREFLIGHT",
+      "currentProductionPinsRequired": [
+        "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py"
+      ]
     }
+  },
+  "historicalSupersededEvidencePreserved": [
+    "parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/RESULT.md",
+    "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.md",
+    "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.json"
   ],
+  "blockers": [],
   "gates": {
-    "repositoryChecksPassed": false,
-    "browserLaunchAllowed": false,
-    "ownerWofEntryAllowed": false,
-    "liveStageAllowed": false,
+    "repositoryChecksPassed": true,
+    "browserLaunchAllowed": true,
+    "ownerWofEntryAllowed": true,
+    "liveStageAllowed": true,
     "longCaptureAutoStarted": false
   },
   "safety": {
@@ -36,6 +48,6 @@
     "windowWorkerReplacement": false
   },
   "ownerActionRequired": false,
-  "ownerSummaryZh": "Preflight hardening 已完成，但当前仓库仍有 fresh QA P1；真人入口应在 Browser 启动前自动 BLOCKED。你现在不需要进入 WOF。",
-  "note": "Runtime execution writes a fresh UNIFIED_PREFLIGHT_STATUS.json under the stable LOCALAPPDATA UnifiedLiveProof path with the exact snapshot commit, checks, commands and current blockers."
+  "ownerSummaryZh": "当前 preflight gate selector 已切换到权威 successor QA，并继续要求 PASS 语义与当前 production blob pin 一致。历史 BLOCKED 证据保留但不再误阻断；运行时仍会重新执行 fresh snapshot、regression、Discovery 与 safety fail-closed 检查。不会自动开始长采集。",
+  "note": "这是随仓库保存的 current selector-policy example，不替代运行时 fresh preflight。运行时仍写入 LOCALAPPDATA UnifiedLiveProof 下的 fresh UNIFIED_PREFLIGHT_STATUS.json，并在任何缺失、malformed、BLOCKED、blob drift、mixed snapshot、regression 或 safety failure 时阻断 Browser/WOF live stage。"
 }
