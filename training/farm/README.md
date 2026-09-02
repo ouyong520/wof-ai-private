@@ -4,6 +4,69 @@ This directory is an isolated internal R&D bootstrap. It is **not** part of
 `product/alpha/**`, does not ship ROMs/BIOS, and contains no PPO/SB3, multi-worker
 training, safe-route search, or player-input injection.
 
+## Project-line isolation — Owner policy
+
+Training Farm / `10训` is an **independent non-blocking R&D side lane**. It may
+continue development, deterministic-runtime proof, savestate experiments,
+trajectory/search tooling, and later multi-worker scaling in parallel with Alpha
+V1 and WinKawaks Collector, but it is not part of the Alpha V1 release-critical
+path unless Owner explicitly changes that policy in a later PM authority document.
+
+Hard project-management rule:
+
+```text
+Training Farm incomplete / ACTIVE / BLOCKED / awaiting QA
+!= Alpha V1 release blocker
+!= reason to stop or delay bounded real Browser/WOF acceptance
+!= WinKawaks Collector blocker
+!= reason to stop or delay Collector development/capture
+```
+
+Default Training Farm write ownership is limited to:
+
+```text
+training/farm/**
+Training-Farm-owned tests / docs / schemas / claims / RESULT metadata
+```
+
+Without explicit Owner authority, Training Farm work must not modify, block,
+refactor, or take ownership of:
+
+```text
+product/alpha/**
+Alpha danger rules or target semantics
+Browser/WOF production projection/proof authority
+Transport / Recorder / PYLAUNCH / OneClick
+Alpha acceptance or release gates
+WinKawaks Collector code/config/contracts/results
+Collector read-only/input-safety semantics
+```
+
+If a Training Farm task discovers that a cross-line change is required, it must
+**fail closed**: mark that Training Farm task `BLOCKED`, report the exact external
+dependency, and leave the other project line unchanged. It must not make an
+opportunistic cross-line edit just to make the Farm task pass.
+
+Runtime authority is also isolated. Browser/WASM, WinKawaks, and
+Stable-Retro/FBNeo numeric addresses, layouts, lifecycle identities, timing
+assumptions, and calibrations are not interchangeable. Training Farm memory
+semantics must be independently proven in its own runtime and durable Farm data
+must identify its source as `stable-retro-fbneo`.
+
+Training Farm input remains inside emulator/core APIs only. Permission to automate
+input in this isolated training runtime does not grant permission to add
+SendInput/global keyboard injection, autonomous input to the live Browser product,
+or gameplay input to WinKawaks Collector.
+
+The only intended interaction with the other lanes is operational resource
+scheduling on the same physical machine. Heavy 2/4/8/10-worker Farm runs should
+be paused or capped while a critical Alpha acceptance run or canonical long
+WinKawaks capture needs stable CPU/RAM/I/O/cadence. That is a machine-resource
+precaution only; it does **not** create a project dependency or release gate.
+
+Project-wide runtime/data-source authority remains governed by
+`RUNTIME_DATA_SOURCE_BOUNDARIES.md`.
+
 ## R0.1 API
 
 `TrainingFarmAdapter` exposes the required thin boundary:
@@ -82,7 +145,7 @@ status. Missing ROM is reported but is **not** an R0.1 repository-smoke failure.
 Only on a machine that already has a legal local WOF ROM:
 
 ```bash
-set WOF_ROM_PATH=C:\path\to\wof.zip
+set WOF_ROM_PATH=C:\\path\\to\\wof.zip
 python -m training.farm.probe --runtime
 ```
 
