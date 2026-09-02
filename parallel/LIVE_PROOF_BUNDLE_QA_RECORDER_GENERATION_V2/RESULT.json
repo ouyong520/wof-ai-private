@@ -1,0 +1,66 @@
+{
+  "schema": "wof-recorder-authority-generation-fresh-qa-v2-result-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_V2",
+  "result": "BLOCKED",
+  "auditedHead": "4bbb04f2767d1cf0a3f82b098a05d434f7d3adcc",
+  "startHead": "6d11cc173498c469b371d89f6f1e6e5fb08561da",
+  "production": {
+    "path": "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py",
+    "blob": "6ca839c5651f070a3201193746b9d4df491947b5",
+    "basePath": "parallel/LIVE_PROOF_BUNDLE/unified_live_proof_base.py",
+    "baseBlob": "0d9010007910f58b77c64fde98264697191bb679"
+  },
+  "qaArtifacts": {
+    "raceFixtureCommit": "3447eaf9097f9847b0c5528f4721c8c38b71b04f",
+    "runnerCommit": "4bbb04f2767d1cf0a3f82b098a05d434f7d3adcc"
+  },
+  "blocker": {
+    "severity": "P1",
+    "summary": "Recorder generation rollover is not atomic against already-in-flight old-reader authority mutation: a generation-1 fatal/heartbeat can pass the token check before generation-2 child-start, resume after rollover, and mutate generation-2 authority state.",
+    "rootCause": "RecorderEvidence.feed() and begin_source_generation() do not share a lock or post-check generation epoch. feed validates source_generation, then later mutates fatal/source_revoked or authority freshness; start_child() can roll source_generation between those operations.",
+    "fatalVector": {
+      "afterGeneration2Rollover": {
+        "sourceGeneration": "g2",
+        "fatal": false,
+        "sourceRevoked": false,
+        "admitted": false,
+        "currentFresh": false,
+        "authorityGeneration": 2
+      },
+      "afterGeneration1FatalResumes": {
+        "sourceGeneration": "g2",
+        "fatal": true,
+        "sourceRevoked": true,
+        "admitted": false,
+        "currentFresh": false,
+        "authorityGeneration": 2
+      }
+    },
+    "heartbeatVector": {
+      "afterGeneration2Rollover": {
+        "sourceGeneration": "g2",
+        "admitted": false,
+        "currentFresh": false,
+        "authorityGeneration": 2
+      },
+      "afterGeneration1HeartbeatResumes": {
+        "sourceGeneration": "g2",
+        "admitted": false,
+        "currentFresh": true,
+        "authorityGeneration": 3,
+        "lastAuthorityKind": "supervisor-heartbeat"
+      }
+    }
+  },
+  "execution": {
+    "repositoryCheckoutAvailable": false,
+    "isolatedSourceExactAuthorityReproduction": "REPRODUCED",
+    "fullRegressionDisposition": "NOT_RUN_STOP_ON_BLOCKER"
+  },
+  "releaseGate": {
+    "recorderGenerationReleaseGateClosed": false,
+    "currentHeadUnifiedPreflightUnblocked": false,
+    "ownerActionRequired": false
+  },
+  "stopCondition": "BLOCKED — UNIFIED LIVE PROOF RECORDER AUTHORITY GENERATION FRESH QA V2 — P1 generation rollover is non-atomic against already-in-flight old-reader fatal/heartbeat mutation"
+}
