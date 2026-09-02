@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "WINKAWAKS_COLLECTOR_V4_DATASET_CATALOG_CAPTURE_IDENTITY_INDEX_V1",
+  "dedupKey": "winkawaks.collector.v4.dataset-catalog-capture-identity-index",
+  "effectiveDedupKey": "winkawaks.collector.v4.dataset-catalog-capture-identity-index",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/winkawaks.collector.v4.dataset-catalog-capture-identity-index.json",
+  "claimToken": "e59acc7e8c8e304f545cc7563f6a99ea0b4ccacdd17ef216",
+  "state": "ACTIVE",
+  "startCommit": "5a6e7ed2ff84aea34f323fee91fd5c31b4cb8c4c"
+}
