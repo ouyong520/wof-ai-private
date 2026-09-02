@@ -1,0 +1,265 @@
+{
+  "schema": "wof-alpha-transport-true-5h-endurance-summary-v2",
+  "stageId": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2",
+  "status": "PASS",
+  "verdict": "ALPHA TRANSPORT TRUE 5H ENDURANCE V2 PASS — READY AS CURRENT-SNAPSHOT ROBUSTNESS EVIDENCE",
+  "intendedDurationMs": 19500000,
+  "actualExecutorElapsedMs": 19500882,
+  "actualWallClockMs": 19713232,
+  "checkpointCount": 13,
+  "intendedCheckpointCount": 13,
+  "uniqueGeneratedScenarioCount": 1086849482,
+  "seedScenarioCoverage": {
+    "segments": [
+      {
+        "segmentIndex": 0,
+        "seedRange": {
+          "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:0:scenario:0",
+          "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:0:scenario:78042520"
+        },
+        "scenarioCount": 78042521,
+        "rollingEvidenceSha256": "72e9f10cf8f7cd919620ccb1cbdb7f5b1fd32bf597d2d52feafc968a5356272c"
+      },
+      {
+        "segmentIndex": 1,
+        "seedRange": {
+          "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:1:scenario:0",
+          "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:1:scenario:105095543"
+        },
+        "scenarioCount": 105095544,
+        "rollingEvidenceSha256": "1da8ea65fdbcfbb303457ad4e91c63c895d5f447e0407f689cd083ceebc716f0"
+      },
+      {
+        "segmentIndex": 2,
+        "seedRange": {
+          "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:2:scenario:0",
+          "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:2:scenario:78332638"
+        },
+        "scenarioCount": 78332639,
+        "rollingEvidenceSha256": "0565f9e5ededba991cfbb28f7e994151cc6336c4ee01c28ebfa29df33aa7030e"
+      },
+      {
+        "segmentIndex": 3,
+        "seedRange": {
+          "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:3:scenario:0",
+          "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:3:scenario:80654086"
+        },
+        "scenarioCount": 80654087,
+        "rollingEvidenceSha256": "60d18132b7a7f02dad2e274ed10af57fea428e21423a5e4ec46264437626d14f"
+      },
+      {
+        "segmentIndex": 4,
+        "seedRange": {
+          "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:4:scenario:0",
+          "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:4:scenario:73322179"
+        },
+        "scenarioCount": 73322180,
+        "rollingEvidenceSha256": "a3e682285b4922acde7fa1f1485e4796f426fa15f76a6bd4c69fcf222550aa0f"
+      },
+      {
+        "segmentIndex": 5,
+        "seedRange": {
+          "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:5:scenario:0",
+          "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:5:scenario:75404674"
+        },
+        "scenarioCount": 75404675,
+        "rollingEvidenceSha256": "0328ca52dc4bac080ae15d18a558d35e3963835154f54e84100ab4eecf1a5859"
+      },
+      {
+        "segmentIndex": 6,
+        "seedRange": {
+          "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:6:scenario:0",
+          "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:6:scenario:81068295"
+        },
+        "scenarioCount": 81068296,
+        "rollingEvidenceSha256": "d6acd64f12a9dd3e6a0a3c8c36c35b19b4d431894c68945c376fb55eae82a056"
+      },
+      {
+        "segmentIndex": 7,
+        "seedRange": {
+          "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:7:scenario:0",
+          "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:7:scenario:78357269"
+        },
+        "scenarioCount": 78357270,
+        "rollingEvidenceSha256": "8b8ef2a36fe03d70cc2db114f760723013a5d93e70a9669843b1e7d2a99967e6"
+      },
+      {
+        "segmentIndex": 8,
+        "seedRange": {
+          "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:8:scenario:0",
+          "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:8:scenario:73466996"
+        },
+        "scenarioCount": 73466997,
+        "rollingEvidenceSha256": "35bbc931fd44c81f9082bf8db544fd287da52973e9144e62ee920c2cce8789e7"
+      },
+      {
+        "segmentIndex": 9,
+        "seedRange": {
+          "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:9:scenario:0",
+          "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:9:scenario:88142735"
+        },
+        "scenarioCount": 88142736,
+        "rollingEvidenceSha256": "39b54e10a0c9ce9850dda6c7c0a04388248a5b18e557f4b54cd4fb85b25e95b9"
+      },
+      {
+        "segmentIndex": 10,
+        "seedRange": {
+          "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:10:scenario:0",
+          "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:10:scenario:118192759"
+        },
+        "scenarioCount": 118192760,
+        "rollingEvidenceSha256": "e941f475ad5cdb017dbb13129d06b6ce5da15e2e1e9ab1ea9fe71a60df2f701b"
+      },
+      {
+        "segmentIndex": 11,
+        "seedRange": {
+          "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:11:scenario:0",
+          "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:11:scenario:79746339"
+        },
+        "scenarioCount": 79746340,
+        "rollingEvidenceSha256": "3ae299977b2155fd94008ce1308f8617285bf195f9a94453e4eea359324eb3d7"
+      },
+      {
+        "segmentIndex": 12,
+        "seedRange": {
+          "start": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:12:scenario:0",
+          "end": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2:segment:12:scenario:77023436"
+        },
+        "scenarioCount": 77023437,
+        "rollingEvidenceSha256": "4cafab9e7ebbfaf4a209b1c1fcb99a34ab44d0b33706b27aa7b16e06627adb18"
+      }
+    ],
+    "familyCounts": {
+      "stale-old-completion-rebind": 77632112,
+      "session-change": 77632111,
+      "pair-generation-nonce-churn": 77632110,
+      "runtime-epoch-reset": 77632108,
+      "worker-replacement-reinstall": 77632108,
+      "disconnect-reconnect": 77632108,
+      "stale-warning-expiry-boundary": 77632108,
+      "warning-clear-change-race": 77632107,
+      "heartbeat-timing-variation": 77632104,
+      "skipped-tick-one-in-flight-no-catch-up": 77632103,
+      "unsupported-supported-transition": 77632102,
+      "out-of-order-completion": 77632101,
+      "legacy-untagged-compatible": 77632100,
+      "failure-injection-publish-clear-revoke": 77632100
+    }
+  },
+  "frozenCatalogControls": [
+    {
+      "segmentIndex": 0,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 1,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 2,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 3,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 4,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 5,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 6,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 7,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 8,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 9,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 10,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 11,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    },
+    {
+      "segmentIndex": 12,
+      "status": "PASS",
+      "passCount": 67,
+      "vectorCount": 67
+    }
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "workerReplacement": false,
+    "blobRewrite": false
+  },
+  "exactSutInputBlobs": {
+    "ALPHA_TRANSPORT_IMPL/constants.mjs": "a29cb3ad714598e2e6aeeed64acc9e3eca8b221e",
+    "ALPHA_TRANSPORT_IMPL/page_authority.mjs": "5e53bd2ad40823a8768802df0a1c5431adb19ee9",
+    "ALPHA_TRANSPORT_IMPL/worker_runtime.mjs": "c353b4500640e31950cde42173a934d541f22531",
+    "ALPHA_TRANSPORT_IMPL/acceptance_adapter.mjs": "d79dff0b2708c671ab8a11644fcc4f771ec75003",
+    "ALPHA_TRANSPORT_MOCK/fixtures.json": "35bf36b4c741cda5d94be3f9884511a86653c11f",
+    "ALPHA_TRANSPORT_MOCK/vectors.json": "5a0cbe2ccfcf7eb6e875552f56748f736722c14d",
+    "ALPHA_TRANSPORT_MOCK/expected_results.json": "1231e0946d18068284724d92e732ea185e4e6af8"
+  },
+  "failureCount": 0,
+  "blockers": [],
+  "integrationRequirementChange": "NONE — endurance evidence does not require a reference integration contract change.",
+  "run": {
+    "workflowRunId": "33577350728",
+    "workflowRunAttempt": "1",
+    "runHeadSha": "de2c86fb3fe528907aad08cd45d8944e3054f680"
+  },
+  "infrastructure": {
+    "baseRunnerPath": "parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE/endurance_runner.mjs",
+    "baseRunnerBlobSha": "8d7decc9f61bddecba6c8ce3d5c2b4cc56e0a670",
+    "wrapperBlobSha": "161ca2d9c5a283594808b4f2770b35068edb4f7f",
+    "v1ElapsedReused": false,
+    "idlePadding": false
+  },
+  "blocker": null,
+  "finalCurrentMainSnapshot": {
+    "status": "PASS",
+    "exactPinnedBlobsStillCurrent": true
+  }
+}
