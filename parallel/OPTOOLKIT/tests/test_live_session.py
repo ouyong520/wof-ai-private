@@ -22,6 +22,27 @@ class LiveSessionTests(unittest.TestCase):
         status = {"alphaStatus": {"projectionRecovery": {"proofResult": result}}}
         self.assertEqual(result, live._extract_projection_result(status))
 
+    def test_durable_live_evidence_survives_disconnected_final_snapshot(self):
+        status = {
+            "launcherState": "ERROR",
+            "lastAcceptedAuthority": {"worldSha256": "world", "workerTargetId": "worker-a"},
+            "lastAlphaFailure": {"error": "P1/P2/P3 local identity mismatch"},
+            "lastCalibrationProgress": {"samples": 29, "reason": "NEED_MORE_SAMPLES", "nextCommandZh": "继续当前窗口"},
+            "significantEvents": [{"kind": "accepted-authority"}, {"kind": "calibration-progress"}],
+        }
+        durable = live._durable_live_evidence(status)
+        self.assertEqual("world", durable["lastAcceptedAuthority"]["worldSha256"])
+        self.assertIn("local identity mismatch", durable["lastAlphaFailure"]["error"])
+        self.assertEqual(29, durable["lastCalibrationProgress"]["samples"])
+        self.assertEqual(2, len(durable["significantEvents"]))
+
+    def test_durable_events_are_bounded_to_last_96(self):
+        status = {"significantEvents": [{"n": i} for i in range(120)]}
+        durable = live._durable_live_evidence(status)
+        self.assertEqual(96, len(durable["significantEvents"]))
+        self.assertEqual(24, durable["significantEvents"][0]["n"])
+        self.assertEqual(119, durable["significantEvents"][-1]["n"])
+
     def test_zip_packages_only_session_tree_and_never_recurses_packages(self):
         with tempfile.TemporaryDirectory(prefix="WOF 中文 结果 ") as td:
             root = Path(td); session = root / "live_session_1"; session.mkdir()
