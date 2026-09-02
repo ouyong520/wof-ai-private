@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_ENEMY_TARGET_HEAD_LABELS_DRAWING_BUFFER_EPOCH_FIX_V1",
+  "dedupKey": "alpha.enemy-target-head-labels.drawing-buffer-projection-epoch-fix",
+  "effectiveDedupKey": "alpha.enemy-target-head-labels.drawing-buffer-projection-epoch-fix",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.enemy-target-head-labels.drawing-buffer-projection-epoch-fix.json",
+  "claimToken": "NU-e0qMZH2wmTlrhKVrd6r10npGKoMZPG1zC0nKTkPo",
+  "state": "ACTIVE",
+  "startCommit": "9331307842cf5871e57d501b8e4ab9286f8dea1c",
+  "claimCommit": "7fcf476a4c1d34ba713ee532d7d514e6963498e6",
+  "promptPath": "parallel/PM/ALPHA_ENEMY_TARGET_HEAD_LABELS_DRAWING_BUFFER_EPOCH_FIX_START_PROMPT.md",
+  "owner": "chatgpt-alpha-enemy-target-head-labels-drawing-buffer-epoch-fix"
+}
