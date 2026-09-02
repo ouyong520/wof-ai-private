@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.acceptance.superseding-gate-reconciliation.current-head",
+  "effectiveDedupKey": "alpha.acceptance.superseding-gate-reconciliation.current-head",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_ACCEPTANCE_SUPERSEDING_GATE_RECONCILIATION_V2",
+  "promptPath": "parallel/PM/ALPHA_ACCEPTANCE_SUPERSEDING_GATE_RECONCILIATION_V2_START_PROMPT.md",
+  "owner": "chatgpt-alpha-acceptance-superseding-gate-reconciliation-v2",
+  "claimToken": "hEzQI_6fentWaBMu3jCk8xlBZPup1NdfzM_J5U5FsCA",
+  "state": "ACTIVE",
+  "startCommit": "50ed1718092b795f9789264a50b5c781cd7ab49a"
+}
