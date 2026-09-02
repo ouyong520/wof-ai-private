@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "training.farm.r0.3.observation-discovery-tooling-prep",
+  "effectiveDedupKey": "training.farm.r0.3.observation-discovery-tooling-prep",
+  "dedupMode": "exclusive",
+  "stageId": "TRAINING_FARM_R0_3_OBSERVATION_DISCOVERY_TOOLING_PREP_V1",
+  "promptPath": "parallel/PM/TRAINING_FARM_R0_3_OBSERVATION_DISCOVERY_TOOLING_PREP_START_PROMPT.md",
+  "owner": "gpt-5.6-sol-training-farm-r0.3-observation-discovery-tooling-prep",
+  "claimToken": "9762cb0755c79d857246957a82e7ea3a",
+  "state": "ACTIVE",
+  "startCommit": "2313481ef8cdb9856ba010998e8940e862e4e626"
+}
