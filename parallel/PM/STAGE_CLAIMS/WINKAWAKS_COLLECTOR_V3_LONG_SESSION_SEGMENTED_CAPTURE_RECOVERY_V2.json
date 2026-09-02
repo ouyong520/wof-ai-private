@@ -5,8 +5,16 @@
   "effectiveDedupKey": "winkawaks.collector.v3.long-session-segmented-capture.recovery-v2",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/winkawaks.collector.v3.long-session-segmented-capture.recovery-v2.json",
   "claimToken": "3e759948bf23c19eb6568669b9b55896019c58f37d3dc675",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "0abad06ae56c837c87037c522899739d3a0997ff",
+  "completedAtUtc": "2026-09-02T10:21:26Z",
+  "resultPath": "parallel/PM/WINKAWAKS_COLLECTOR_V3_LONG_SESSION_SEGMENTED_CAPTURE_RECOVERY_V2_RESULT.md",
+  "resultCommit": "8c3d88d2e3db083168b242315f191c60eabaf6b0",
+  "canonicalCloseCommit": "c0cb9de8abe0f3885f3a65e6c1879c85cc74e645",
+  "bridgeHead": "c180e303cb1caf10effde49edceec4ea70a26cc2",
+  "selfCheckRunId": 33618885915,
+  "selfCheckConclusion": "SUCCESS",
   "recoveryOfStageId": "WINKAWAKS_COLLECTOR_V3_LONG_SESSION_SEGMENTED_CAPTURE_V1",
-  "supersedesCanonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/winkawaks.collector.v3.long-session-segmented-capture.json"
+  "supersedesCanonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/winkawaks.collector.v3.long-session-segmented-capture.json",
+  "originalStageDisposition": "Historical original ACTIVE stage claim remains unchanged; this recovery stage is the completed superseding generation."
 }
