@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_TRANSPORT_FORMAL_REAL_ADAPTER_INTEGRATION_CURRENT_HEAD_FRESH_QA_V3",
+  "dedupKey": "alpha.transport.formal-real-adapter-integration.current-head-fresh-qa-v3",
+  "effectiveDedupKey": "alpha.transport.formal-real-adapter-integration.current-head-fresh-qa-v3",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.transport.formal-real-adapter-integration.current-head-fresh-qa-v3.json",
+  "claimToken": "000ac59f-8f51-47a5-8885-4d419ec4693c",
+  "state": "ACTIVE",
+  "startCommit": "e930d0c5d8da7efd698b35e21a3112d1d2d0ba7a"
+}
