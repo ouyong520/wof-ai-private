@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "winkawaks.collector.v8.reuse-first-research-warehouse-query-accelerator",
+  "effectiveDedupKey": "winkawaks.collector.v8.reuse-first-research-warehouse-query-accelerator",
+  "dedupMode": "exclusive",
+  "stageId": "WINKAWAKS_COLLECTOR_V8_REUSE_FIRST_RESEARCH_WAREHOUSE_QUERY_ACCELERATOR_V1",
+  "promptPath": "parallel/PM/WINKAWAKS_COLLECTOR_V8_REUSE_FIRST_RESEARCH_WAREHOUSE_QUERY_ACCELERATOR_START_PROMPT.md",
+  "owner": "gpt-5.6-sol-v8-worker",
+  "claimToken": "5b64913de038f445447bbf85db54aa96008827e44b4e9ccb",
+  "state": "ACTIVE",
+  "startCommit": "d3f92a9efae75a1b032c1fc443ed5fdb142d47d2"
+}
