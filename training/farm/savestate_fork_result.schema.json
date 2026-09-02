@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wof-training-farm-savestate-fork-result-v1",
+  "title": "WOF Training Farm R0.4 deterministic savestate fork result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema","runId","status","reasonCode","message","proofScope","realWofProof","sourceNamespace","forkSetId","forkPlanAuthoritySha256","forkSetAuthoritySha256","rootAuthority","branchSpecifications","repetitionsRequired","branchesRequired","branchesAttempted","branchesCompleted","branches","deterministic","firstDivergence","resume","r0_2ProofGate"],
+  "properties": {
+    "schema": {"const": "wof-training-farm-savestate-fork-result-v1"},
+    "runId": {"type":"string","pattern":"^[0-9a-f]{32}$"},
+    "status": {"enum":["PASS","PARTIAL","FAIL","ERROR","SKIP"]},
+    "reasonCode": {"type":"string","minLength":1},
+    "message": {"type":"string"},
+    "proofScope": {"oneOf":[{"type":"null"},{"enum":["IMPLEMENTATION_FIXTURE","REAL_WOF_FORK"]}]},
+    "realWofProof": {"type":"boolean"},
+    "sourceNamespace": {"const":"stable-retro-fbneo"},
+    "forkSetId": {"oneOf":[{"type":"null"},{"$ref":"#/$defs/id"}]},
+    "forkPlanAuthoritySha256": {"oneOf":[{"type":"null"},{"$ref":"#/$defs/sha"}]},
+    "forkSetAuthoritySha256": {"oneOf":[{"type":"null"},{"$ref":"#/$defs/sha"}]},
+    "rootAuthority": {"oneOf":[{"type":"null"},{"$ref":"#/$defs/root"}]},
+    "branchSpecifications": {"type":"array","maxItems":256,"items":{"$ref":"#/$defs/spec"}},
+    "repetitionsRequired": {"type":"integer","minimum":0,"maximum":10},
+    "branchesRequired": {"type":"integer","minimum":0,"maximum":256},
+    "branchesAttempted": {"type":"integer","minimum":0,"maximum":256},
+    "branchesCompleted": {"type":"integer","minimum":0,"maximum":256},
+    "branches": {"type":"array","maxItems":256,"items":{"$ref":"#/$defs/branch"}},
+    "deterministic": {"type":"boolean"},
+    "firstDivergence": {"oneOf":[{"type":"null"},{"type":"object"}]},
+    "resume": {"type":"object","additionalProperties":false,"required":["requested","acceptedBranchIds","sourceResultSha256"],"properties":{"requested":{"type":"boolean"},"acceptedBranchIds":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/id"}},"sourceResultSha256":{"oneOf":[{"type":"null"},{"$ref":"#/$defs/sha"}]}}},
+    "r0_2ProofGate": {"oneOf":[{"type":"null"},{"type":"object"}]}
+  },
+  "$defs": {
+    "id": {"type":"string","minLength":1,"maxLength":128,"pattern":"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"},
+    "sha": {"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "action": {"type":"object","additionalProperties":false,"required":["frames","inputs"],"properties":{"frames":{"type":"integer","minimum":1,"maximum":100000},"inputs":{"type":"array","minItems":4,"maxItems":4,"items":{"type":"object","additionalProperties":false,"required":["player","pressed"],"properties":{"player":{"type":"integer","minimum":0,"maximum":3},"pressed":{"type":"array","uniqueItems":true,"items":{"type":"integer","minimum":0,"maximum":4095}}}}}}},
+    "spec": {"type":"object","additionalProperties":false,"required":["branchId","horizonFrames","actions","actionSequenceSha256","branchIdentitySha256","metadata"],"properties":{"branchId":{"$ref":"#/$defs/id"},"horizonFrames":{"type":"integer","minimum":1,"maximum":100000},"actions":{"type":"array","minItems":1,"items":{"$ref":"#/$defs/action"}},"actionSequenceSha256":{"$ref":"#/$defs/sha"},"branchIdentitySha256":{"$ref":"#/$defs/sha"},"metadata":{"type":"object","additionalProperties":false,"required":["label"],"properties":{"label":{"oneOf":[{"type":"null"},{"type":"string","maxLength":256}]}}}}},
+    "layout": {"type":"object","additionalProperties":false,"required":["schema","sourceNamespace","addressKind","blocks","layoutIdentitySha256"],"properties":{"schema":{"const":"wof-training-farm-fork-memory-layout-v1"},"sourceNamespace":{"const":"stable-retro-fbneo"},"addressKind":{"const":"stable-retro-memory-block-key-plus-byte-offset"},"blocks":{"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"required":["index","baseAddress","length"],"properties":{"index":{"type":"integer","minimum":0},"baseAddress":{"type":"integer","minimum":0},"length":{"type":"integer","minimum":1}}}},"layoutIdentitySha256":{"$ref":"#/$defs/sha"}}},
+    "root": {"type":"object","additionalProperties":false,"required":["schema","sourceNamespace","forkSetId","rootId","rootCaptureMode","rootLogicalFrame","rootSavestateSha256","rootRamSha256","rootRamBlocksSha256","memoryLayoutIdentity","runtimeIdentity","runtimeIdentitySha256","stableRuntimeAuthority","romSha256","farmCandidateSha256","forkCandidateSha256","forkSourceFiles","inputIsolationMode","rootAuthoritySha256"],"properties":{"schema":{"const":"wof-training-farm-fork-root-authority-v1"},"sourceNamespace":{"const":"stable-retro-fbneo"},"forkSetId":{"$ref":"#/$defs/id"},"rootId":{"$ref":"#/$defs/id"},"rootCaptureMode":{"enum":["RESET_CAPTURE","EXTERNAL_LOCAL_STATE"]},"rootLogicalFrame":{"const":0},"rootSavestateSha256":{"$ref":"#/$defs/sha"},"rootRamSha256":{"$ref":"#/$defs/sha"},"rootRamBlocksSha256":{"$ref":"#/$defs/sha"},"memoryLayoutIdentity":{"$ref":"#/$defs/layout"},"runtimeIdentity":{"type":"object"},"runtimeIdentitySha256":{"$ref":"#/$defs/sha"},"stableRuntimeAuthority":{"type":"object"},"romSha256":{"$ref":"#/$defs/sha"},"farmCandidateSha256":{"$ref":"#/$defs/sha"},"forkCandidateSha256":{"$ref":"#/$defs/sha"},"forkSourceFiles":{"type":"object","minProperties":1,"additionalProperties":{"$ref":"#/$defs/sha"}},"inputIsolationMode":{"const":"explicit-all-player-mask-every-frame"},"rootAuthoritySha256":{"$ref":"#/$defs/sha"}}},
+    "checkpoint": {"type":"object","additionalProperties":false,"required":["frame","actionStep","ramSha256"],"properties":{"frame":{"type":"integer","minimum":1,"maximum":100000},"actionStep":{"type":"integer","minimum":0},"ramSha256":{"$ref":"#/$defs/sha"}}},
+    "outcome": {"type":"object","additionalProperties":false,"required":["repetitionIndex","branchId","branchIdentitySha256","actionSequenceSha256","horizonFrames","framesExecuted","rootSavestateSha256","restoredRamSha256","restoredRamBlocksSha256","roundtripRootSavestateSha256","finalRamSha256","finalRamBlocksSha256","finalSavestateSha256","memoryLayoutIdentitySha256","checkpoints","outcomeFingerprintSha256"],"properties":{"repetitionIndex":{"type":"integer","minimum":0,"maximum":9},"branchId":{"$ref":"#/$defs/id"},"branchIdentitySha256":{"$ref":"#/$defs/sha"},"actionSequenceSha256":{"$ref":"#/$defs/sha"},"horizonFrames":{"type":"integer","minimum":1,"maximum":100000},"framesExecuted":{"type":"integer","minimum":1,"maximum":100000},"rootSavestateSha256":{"$ref":"#/$defs/sha"},"restoredRamSha256":{"$ref":"#/$defs/sha"},"restoredRamBlocksSha256":{"$ref":"#/$defs/sha"},"roundtripRootSavestateSha256":{"$ref":"#/$defs/sha"},"finalRamSha256":{"$ref":"#/$defs/sha"},"finalRamBlocksSha256":{"$ref":"#/$defs/sha"},"finalSavestateSha256":{"$ref":"#/$defs/sha"},"memoryLayoutIdentitySha256":{"$ref":"#/$defs/sha"},"checkpoints":{"type":"array","minItems":1,"maxItems":64,"items":{"$ref":"#/$defs/checkpoint"}},"outcomeFingerprintSha256":{"$ref":"#/$defs/sha"}}},
+    "branch": {"type":"object","additionalProperties":false,"required":["branchId","branchIdentitySha256","actionSequenceSha256","horizonFrames","status","reasonCode","message","repetitionsRequired","repetitionsCompleted","deterministic","firstDivergence","reusedFromResume","outcomes"],"properties":{"branchId":{"$ref":"#/$defs/id"},"branchIdentitySha256":{"$ref":"#/$defs/sha"},"actionSequenceSha256":{"$ref":"#/$defs/sha"},"horizonFrames":{"type":"integer","minimum":1,"maximum":100000},"status":{"enum":["PASS","FAIL","ERROR"]},"reasonCode":{"type":"string","minLength":1},"message":{"type":"string"},"repetitionsRequired":{"type":"integer","minimum":2,"maximum":10},"repetitionsCompleted":{"type":"integer","minimum":0,"maximum":10},"deterministic":{"type":"boolean"},"firstDivergence":{"oneOf":[{"type":"null"},{"type":"object"}]},"reusedFromResume":{"type":"boolean"},"outcomes":{"type":"array","maxItems":10,"items":{"$ref":"#/$defs/outcome"}}}}
+  }
+}
