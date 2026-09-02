@@ -1,6 +1,6 @@
 # WOF Future Danger AI — PM Core Operating Charter
 
-Updated: 2026-09-01
+Updated: 2026-09-02
 Status: **AUTHORITATIVE — ALL PM PRIORITIZATION AND NEW START PROMPTS MUST FOLLOW THIS**
 
 This file records the Owner's operating directives so the project does not drift away from the real product goal.
@@ -106,13 +106,17 @@ GitHub is the durable state. Chats are disposable workers.
 
 All new PM start prompts must follow `parallel/PM/STAGE_DEDUP_GUARD.md`.
 
+For prompts created after canonical-dedup v2 hardening, `stageId` alone is not the ownership gate. New prompts must declare `dedupProtocol: v2`, a stable semantic `dedupKey`, and `dedupMode`. Equivalent logical tasks must contend on the same create-only canonical resource under `parallel/PM/DEDUP_CLAIMS/**`, and a worker must re-read that claim and verify its exact `claimToken` before doing task work.
+
 Before doing work, a worker must check:
 - is an equivalent result already complete?
-- is the same stage already claimed/executing?
+- is the canonical logical work item already claimed/executing, even under another `stageId`?
 
 If yes, it must stop immediately and return that the thread is idle/safe to close.
 
-The Owner may accidentally paste the same prompt twice; duplicate project work should still not occur.
+Intentional second-opinion/cross-check QA remains allowed only when a PM/start prompt explicitly declares the independent-validation mode/group/key defined by the guard. A worker may not invent a new validation slot to bypass an occupied claim.
+
+The Owner may accidentally paste the same or an equivalent prompt twice; duplicate project work should still not occur.
 
 ## 7. PM rolling queue — Owner does not need to remember which prompt was copied
 
