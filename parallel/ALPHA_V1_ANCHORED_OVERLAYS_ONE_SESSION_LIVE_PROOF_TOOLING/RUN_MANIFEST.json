@@ -1,0 +1,34 @@
+{
+  "schema": "wof-alpha-v1-dual-live-proof-run-manifest-recovery-v2",
+  "implementationCommit": "500acfa96dbcaaeae58c4cb122954189891b6aac",
+  "romSha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
+  "evidenceSchema": {
+    "path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_LIVE_PROOF_PREP/LIVE_PROOF_EVIDENCE_SCHEMA.json",
+    "sha": "f9213012502b4a307e6cab0df23fbe9f5812f769"
+  },
+  "productBlobs": {
+    "playerHelper": {"path": "product/alpha/wof_alpha_player_head_warning.js", "sha": "af7f2359514dc6f86f74fac0c47858e8a6acf107"},
+    "playerProjectionProfile": {"path": "product/alpha/wof_alpha_player_head_projection.json", "sha": "bbed0618b348961580ca805bb93e4d17525f0142"},
+    "enemyHelper": {"path": "product/alpha/wof_alpha_enemy_target_labels.js", "sha": "e6e1260559f735b85ce6f69e87803369f125b2de"},
+    "enemyProjectionProfile": {"path": "product/alpha/wof_alpha_enemy_head_projection.json", "sha": "8de57739818503a0e14702d2fa0bb4eba58228d2"},
+    "worker": {"path": "product/alpha/wof_alpha_real_worker.js", "sha": "b7f4506fc90b681ede059df5ad3316e665c6f15e"},
+    "hud": {"path": "product/alpha/wof_alpha_hud.js", "sha": "50d944c451ac94b114e4f86441aeae8ad6b25c78"},
+    "loader": {"path": "product/alpha/wof_alpha_loader.js", "sha": "66aee09fc2dd009c2f295d2092f3129548605efb"}
+  },
+  "proofToolBlobs": {
+    "dualCore": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/proof_core.js", "sha": "fbfa665daa624b7a81b6b75d488af504194bd378"},
+    "dualTop": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/wof_alpha_v1_dual_live_proof_top.js", "sha": "3f2ffdfc2947387518e593445306f8803132345c"},
+    "dualWorker": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/wof_alpha_v1_dual_live_proof_worker.js", "sha": "5cc30f3a3b32ee0ef3dfe1b9ac2937dbabc774f3"},
+    "dualLoader": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/wof_alpha_v1_dual_live_proof.js", "sha": "30c965bb8b16466810781e2741f2d2eb86a0533d"},
+    "hudanchorLoader": {"path": "parallel/HUDANCHOR_PROOF/wof_hudanchor_proof.js", "sha": "8e7a72eb14556f181e4322825e98f7ac57f8eed5"},
+    "hudanchorTop": {"path": "parallel/HUDANCHOR_PROOF/wof_hudanchor_top.js", "sha": "95ae41bfb39b42deb1fee267f27da7b13a4b622c"},
+    "hudanchorWorker": {"path": "parallel/HUDANCHOR_PROOF/wof_hudanchor_worker.js", "sha": "12f06e40fb457963b082813607eec05e71bf7951"},
+    "hudanchorGl": {"path": "parallel/HUDANCHOR_PROOF/wof_hudanchor_gl.js", "sha": "e4f91799ecc2204c68894d25056c5d6b747bfaec"},
+    "evidenceSchema": {"path": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_LIVE_PROOF_PREP/LIVE_PROOF_EVIDENCE_SCHEMA.json", "sha": "f9213012502b4a307e6cab0df23fbe9f5812f769"}
+  },
+  "boundary": {
+    "browserWofRunPerformedByThisStage": false,
+    "productionProfilesActivatedByThisStage": false,
+    "syntheticEvidenceMayActivateProduction": false
+  }
+}
