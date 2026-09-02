@@ -1,0 +1,11 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_ACCEPTANCE_SUPERSEDING_GATE_RECONCILIATION_V2",
+  "dedupKey": "alpha.acceptance.superseding-gate-reconciliation.current-head",
+  "effectiveDedupKey": "alpha.acceptance.superseding-gate-reconciliation.current-head",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.acceptance.superseding-gate-reconciliation.current-head.json",
+  "claimToken": "hEzQI_6fentWaBMu3jCk8xlBZPup1NdfzM_J5U5FsCA",
+  "state": "ACTIVE",
+  "startCommit": "50ed1718092b795f9789264a50b5c781cd7ab49a",
+  "canonicalClaimCommit": "e60e18ff3cbc7bdeb4282ef82d33b8910fccfe90"
+}
