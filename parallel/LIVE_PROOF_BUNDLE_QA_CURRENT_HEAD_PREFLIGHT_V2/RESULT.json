@@ -1,0 +1,61 @@
+{
+  "schema": "wof-unified-current-head-preflight-fresh-qa-v2",
+  "stageId": "UNIFIED_LIVE_PROOF_CURRENT_HEAD_PREFLIGHT_QA_V2",
+  "result": "PASS",
+  "stopCondition": "PASS — UNIFIED LIVE PROOF CURRENT-HEAD PREFLIGHT FRESH QA V2 — REPOSITORY PREFLIGHT GREEN",
+  "completedAtUtc": "2026-09-02T02:17:37Z",
+  "auditedStartCommit": "c0343c12d99574e176765f5dd8ab843a92f2580d",
+  "claimCommit": "26fe29f442193246bf3d131a8c57d5a4cde39dea",
+  "finalAuditHeadBeforeResult": "25b664fea50a593cd46a8aca1ae7259351b8687c",
+  "finalDriftClassification": "concurrent Alpha QA claim metadata only; audited preflight blobs unchanged",
+  "auditedPreflightBlobs": {
+    "parallel/LIVE_PROOF_BUNDLE/unified_preflight.py": "c756b3da7a8a0c092efe20f2587e131d497f5f72",
+    "parallel/LIVE_PROOF_BUNDLE/unified_preflight_entrypoint.py": "1a73d02f8171dbbd50cabff52a83c989541de2f7",
+    "parallel/LIVE_PROOF_BUNDLE/test_unified_preflight.py": "c59edb55e3d99da219bb78d8dffc427cfd2fbb75",
+    "parallel/LIVE_PROOF_BUNDLE/UNIFIED_PREFLIGHT_STATUS.json": "6dc53eee9bc235d43b466ff83ff0aec2b6bfafe1"
+  },
+  "currentSuccessorPins": {
+    "pylaunch": {
+      "decision": "PASS — PYLAUNCH STARTUP ATTESTATION FRESH QA — RELEASE GATE CLOSED",
+      "browser.py": "d6f7fa93aaf8d15da6ce77cfa35c4f72c4c3b332",
+      "monitor.py": "8e3c5c527fdd5a845bbfc135f55014de22078cf4",
+      "discovery_v2.py": "ec9d27bfe26557a11187a23853893b898a3366d1"
+    },
+    "recorder": {
+      "decision": "PASS — RECORDER IN-FLIGHT GENERATION ATOMICITY FRESH QA — READY FOR CURRENT-HEAD UNIFIED PREFLIGHT",
+      "unified_live_proof.py": "8df637d370d187660592fe8de0f1c73ff3057804"
+    }
+  },
+  "verification": {
+    "historicalParentFrameBlockedIgnoredWhenStartupSuccessorCurrentPass": "PASS",
+    "startupMissingBlockedMalformedFailClosed": "PASS",
+    "startupProductionPinDriftFailsClosed": "PASS",
+    "historicalFreshnessBlockedIgnoredWhenRecorderSuccessorCurrentPass": "PASS",
+    "recorderMissingBlockedMalformedFailClosed": "PASS",
+    "recorderProductionPinDriftFailsClosed": "PASS",
+    "completeClaimWithoutPassSemanticsFailsClosed": "PASS",
+    "staleFutureMixedMissingUnsupportedRegressionSafetyFailuresFailClosed": "PASS",
+    "chineseFirstOwnerActionFalseLongCaptureFalseSafetyExact": "PASS",
+    "blockedNeverInvokesLiveRunner": "PASS",
+    "passInvokesOnlyGuardedTestSeam": "PASS"
+  },
+  "execution": {
+    "nativePrivateCheckoutAvailable": false,
+    "mode": "source-exact isolated reconstruction from current GitHub blobs",
+    "sourceExactBlobHashVerified": true,
+    "currentImplementationSuite": {"passed": 22, "failed": 0},
+    "independentAdditionalVectors": {"passed": 10, "failed": 0},
+    "nativeNineRepositoryRegressionEntrypointsClaimedExecuted": false
+  },
+  "safety": {
+    "repositoryOnly": true,
+    "productionImplementationModified": false,
+    "browserWofStarted": false,
+    "longCaptureAutoStarted": false,
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false,
+    "ownerActionRequired": false
+  }
+}
