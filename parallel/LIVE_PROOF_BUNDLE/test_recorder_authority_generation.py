@@ -4,6 +4,7 @@ import io
 import queue
 import time
 import unittest
+from pathlib import Path
 
 import unified_live_proof as u
 
@@ -14,6 +15,18 @@ FATAL = "WOF-052L 采集器没有正常完成：已安全拒绝采集"
 
 
 class RecorderAuthorityGenerationTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._old_base_start = u._BaseStartChild
+        self._old_counter = u._child_generation_counter
+        self._old_active_ref = u._active_recorder_evidence_ref
+        u._child_generation_counter = 0
+        u._active_recorder_evidence_ref = None
+
+    def tearDown(self) -> None:
+        u._BaseStartChild = self._old_base_start
+        u._child_generation_counter = self._old_counter
+        u._active_recorder_evidence_ref = self._old_active_ref
+
     def stale(self, recorder: u.RecorderEvidence) -> None:
         recorder._last_output_monotonic = (
             time.monotonic() - u.RECORDER_FRESHNESS_SECONDS - 1.0
@@ -107,6 +120,89 @@ class RecorderAuthorityGenerationTests(unittest.TestCase):
 
         recorder.feed(HEARTBEAT, source_generation="generation-1")
         self.assertFalse(recorder.current_healthy)
+        self.assertEqual(recorder.authority_generation, authority_before)
+
+    def test_child_start_rollover_revokes_before_new_reader(self):
+        class FakeProc:
+            def __init__(self, pid: int) -> None:
+                self.pid = pid
+                self.stdout = io.StringIO("")
+
+        next_pid = iter((5101, 5102))
+        u._BaseStartChild = lambda cmd, cwd: FakeProc(next(next_pid))
+
+        recorder = u.RecorderEvidence()
+        proc1 = u.start_child(["fake-recorder-1"], Path("."))
+        gen1 = proc1._wof_authority_generation
+        order1 = proc1._wof_authority_generation_order
+        recorder.begin_source_generation(gen1, order=order1)
+        recorder.feed(ADMISSION_G1, source_generation=gen1)
+        recorder.feed(HEARTBEAT, source_generation=gen1)
+        self.assertTrue(recorder.current_healthy)
+        authority_before = recorder.authority_generation
+
+        proc2 = u.start_child(["fake-recorder-2"], Path("."))
+        gen2 = proc2._wof_authority_generation
+        self.assertGreater(proc2._wof_authority_generation_order, order1)
+        self.assertEqual(recorder.source_generation, gen2)
+        self.assertFalse(recorder.admitted)
+        self.assertFalse(recorder.current_fresh)
+        self.assertFalse(recorder.current_healthy)
+
+        recorder.feed(HEARTBEAT, source_generation=gen1)
+        self.assertEqual(recorder.authority_generation, authority_before)
+        self.assertFalse(recorder.current_healthy)
+
+    def test_failed_recorder_child_start_does_not_restore_old_authority(self):
+        class FakeProc:
+            pid = 5201
+            stdout = io.StringIO("")
+
+        u._BaseStartChild = lambda cmd, cwd: FakeProc()
+        recorder = u.RecorderEvidence()
+        proc1 = u.start_child(["fake-recorder-1"], Path("."))
+        gen1 = proc1._wof_authority_generation
+        order1 = proc1._wof_authority_generation_order
+        recorder.begin_source_generation(gen1, order=order1)
+        recorder.feed(ADMISSION_G1, source_generation=gen1)
+        recorder.feed(HEARTBEAT, source_generation=gen1)
+        authority_before = recorder.authority_generation
+        self.assertTrue(recorder.current_healthy)
+
+        def fail_start(cmd, cwd):
+            raise OSError("synthetic recorder spawn failure")
+
+        u._BaseStartChild = fail_start
+        with self.assertRaises(OSError):
+            u.start_child(["fake-recorder-2"], Path("."))
+
+        self.assertNotEqual(recorder.source_generation, gen1)
+        self.assertIsNotNone(recorder.source_generation_order)
+        self.assertGreater(recorder.source_generation_order, order1)
+        self.assertFalse(recorder.admitted)
+        self.assertFalse(recorder.current_fresh)
+        self.assertFalse(recorder.current_healthy)
+
+        recorder.feed(HEARTBEAT, source_generation=gen1)
+        self.assertEqual(recorder.authority_generation, authority_before)
+        self.assertFalse(recorder.current_healthy)
+
+    def test_non_recorder_child_start_does_not_roll_recorder_generation(self):
+        class FakeProc:
+            pid = 5301
+            stdout = io.StringIO("")
+
+        u._BaseStartChild = lambda cmd, cwd: FakeProc()
+        recorder = u.RecorderEvidence()
+        recorder.begin_source_generation("generation-1", order=1)
+        recorder.feed(ADMISSION_G1, source_generation="generation-1")
+        recorder.feed(HEARTBEAT, source_generation="generation-1")
+        authority_before = recorder.authority_generation
+
+        u.start_child(["python", "launcher.py", "--proof-json", "proof.json"], Path("."))
+
+        self.assertEqual(recorder.source_generation, "generation-1")
+        self.assertTrue(recorder.current_healthy)
         self.assertEqual(recorder.authority_generation, authority_before)
 
     def test_delayed_out_of_order_old_events_do_not_mutate_current_slot(self):
