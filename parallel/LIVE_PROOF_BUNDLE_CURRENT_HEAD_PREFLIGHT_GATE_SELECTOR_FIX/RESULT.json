@@ -1,0 +1,81 @@
+{
+  "schema": "wof-unified-current-head-preflight-gate-selector-fix-result-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_CURRENT_HEAD_PREFLIGHT_GATE_SELECTOR_FIX_V1",
+  "result": "COMPLETE",
+  "stopCondition": "COMPLETE — UNIFIED CURRENT-HEAD PREFLIGHT GATE SELECTOR FIX — READY FOR FRESH INDEPENDENT QA",
+  "startHead": "b4e1981d36f86d320b396edd9b33997bc84f4827",
+  "claimCommit": "852aba75a495006624a24bed2ccb2aaf4a8f0e72",
+  "implementationHeadBeforeResultArtifacts": "a663dd466a7c029e904f0eb6b347d14c9d93e7bc",
+  "completedAtUtc": "2026-09-02T02:06:50Z",
+  "changedBlobs": {
+    "parallel/LIVE_PROOF_BUNDLE/unified_preflight.py": "c756b3da7a8a0c092efe20f2587e131d497f5f72",
+    "parallel/LIVE_PROOF_BUNDLE/test_unified_preflight.py": "c59edb55e3d99da219bb78d8dffc427cfd2fbb75",
+    "parallel/LIVE_PROOF_BUNDLE/UNIFIED_PREFLIGHT_STATUS.json": "6dc53eee9bc235d43b466ff83ff0aec2b6bfafe1"
+  },
+  "unchangedEntrypointBlob": "1a73d02f8171dbbd50cabff52a83c989541de2f7",
+  "authoritativeSuccessors": {
+    "pylaunch": {
+      "stageId": "PYLAUNCH_STARTUP_ATTESTATION_QA_V1",
+      "marker": "PASS — PYLAUNCH STARTUP ATTESTATION FRESH QA — RELEASE GATE CLOSED",
+      "machineResult": "parallel/PYLAUNCH_QA_STARTUP_ATTESTATION/RESULT.json",
+      "claim": "parallel/PM/STAGE_CLAIMS/PYLAUNCH_STARTUP_ATTESTATION_QA_V1.json",
+      "productionPins": {
+        "parallel/PYLAUNCH/wof_launcher/browser.py": "d6f7fa93aaf8d15da6ce77cfa35c4f72c4c3b332",
+        "parallel/PYLAUNCH/wof_launcher/monitor.py": "8e3c5c527fdd5a845bbfc135f55014de22078cf4",
+        "parallel/PYLAUNCH/wof_launcher/discovery_v2.py": "ec9d27bfe26557a11187a23853893b898a3366d1"
+      }
+    },
+    "recorder": {
+      "stageId": "UNIFIED_LIVE_PROOF_RECORDER_INFLIGHT_GENERATION_ATOMICITY_QA_V1",
+      "marker": "PASS — RECORDER IN-FLIGHT GENERATION ATOMICITY FRESH QA — READY FOR CURRENT-HEAD UNIFIED PREFLIGHT",
+      "machineResult": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_INFLIGHT_ATOMICITY/RESULT.json",
+      "claim": "parallel/PM/STAGE_CLAIMS/UNIFIED_LIVE_PROOF_RECORDER_INFLIGHT_GENERATION_ATOMICITY_QA_V1.json",
+      "productionPins": {
+        "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py": "8df637d370d187660592fe8de0f1c73ff3057804"
+      }
+    }
+  },
+  "historicalEvidencePreservedButNotAuthoritative": [
+    "parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/RESULT.md",
+    "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.md",
+    "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.json"
+  ],
+  "focusedRegression": {
+    "command": "python -m unittest -v test_unified_preflight.py",
+    "executionMode": "source-exact isolated reconstruction from committed GitHub blobs",
+    "nativePrivateCheckoutAvailable": false,
+    "sourceBlobVerification": {
+      "unified_preflight.py": "c756b3da7a8a0c092efe20f2587e131d497f5f72",
+      "test_unified_preflight.py": "c59edb55e3d99da219bb78d8dffc427cfd2fbb75",
+      "unified_preflight_entrypoint.py": "1a73d02f8171dbbd50cabff52a83c989541de2f7"
+    },
+    "passed": 22,
+    "failed": 0
+  },
+  "failClosed": {
+    "missingSuccessorBlocks": true,
+    "malformedSuccessorBlocks": true,
+    "blockedSuccessorBlocks": true,
+    "claimCompleteWithoutPassBlocks": true,
+    "staleProductionBlobBlocks": true,
+    "staleSnapshotBlocks": true,
+    "mixedSnapshotBlocks": true,
+    "missingRequiredTestBlocks": true,
+    "regressionFailureBlocks": true,
+    "unsupportedDiscoveryBlocks": true,
+    "safetyMismatchBlocks": true,
+    "blockedPreflightNeverInvokesLiveStage": true
+  },
+  "safety": {
+    "ownerActionRequired": false,
+    "longCaptureAutoStarted": false,
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "windowWorkerReplacement": false,
+    "recorderImplementationModified": false,
+    "pylaunchImplementationModified": false,
+    "alphaImplementationModified": false,
+    "browserWofImplementationModified": false
+  }
+}
