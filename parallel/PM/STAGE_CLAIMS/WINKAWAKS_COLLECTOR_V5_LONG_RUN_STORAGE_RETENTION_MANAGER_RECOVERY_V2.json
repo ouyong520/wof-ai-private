@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "WINKAWAKS_COLLECTOR_V5_LONG_RUN_STORAGE_RETENTION_MANAGER_RECOVERY_V2",
+  "dedupKey": "winkawaks.collector.v5.long-run-storage-retention-manager.recovery-v2",
+  "effectiveDedupKey": "winkawaks.collector.v5.long-run-storage-retention-manager.recovery-v2",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/winkawaks.collector.v5.long-run-storage-retention-manager.recovery-v2.json",
+  "claimToken": "7ad952318995783e09d624bed7ee3828923aa13bac7e03c6",
+  "state": "ACTIVE",
+  "startCommit": "c142522664d7c74cbbe426679af88c225df74b02"
+}
