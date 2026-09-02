@@ -1,0 +1,140 @@
+name: Training Farm R0.4.7 Portable Bundle Publish
+
+on:
+  push:
+    paths:
+      - .github/workflows/training-farm-r0-4-7-portable-bundle.yml
+
+permissions:
+  contents: write
+
+jobs:
+  build-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SOURCE_CANDIDATE: ba1fc43c2ea2a5f04909a1b3dca88b69845d62c8
+      CLAIM_TOKEN: 19417695d39c83c46fb67666355a187043b9091d129a4827
+      ARTIFACT_BASENAME: WOF_Training_Farm_R0_4_7_Portable_Proof_ba1fc43c
+    steps:
+      - name: Checkout current main with source candidate history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify STARTED authority and frozen source candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse "$SOURCE_CANDIDATE^{commit}")" = "$SOURCE_CANDIDATE"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          token = os.environ["CLAIM_TOKEN"]
+          candidate = os.environ["SOURCE_CANDIDATE"]
+          paths = [
+              Path("parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.7.windows-portable-real-wof-proof-bundle-v1.json"),
+              Path("parallel/PM/STAGE_CLAIMS/TRAINING_FARM_R0_4_7_WINDOWS_PORTABLE_REAL_WOF_PROOF_BUNDLE_V1.json"),
+          ]
+          for path in paths:
+              data = json.loads(path.read_text(encoding="utf-8"))
+              assert data["claimToken"] == token, path
+              assert data["state"] == "STARTED", path
+              assert data["sourceCandidate"] == candidate, path
+          PY
+
+      - name: Materialize exact candidate without Git metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/r047-source /tmp/r047-out '/tmp/三国 10训 (portable)'
+          mkdir -p /tmp/r047-source /tmp/r047-out
+          git archive "$SOURCE_CANDIDATE" | tar -x -C /tmp/r047-source
+
+      - name: ROM-free implementation self-check
+        shell: bash
+        env:
+          PYTHONPATH: /tmp/r047-source
+        run: |
+          set -euo pipefail
+          python -m unittest training.farm.test_windows_portable_real_wof_bundle -v
+          python /tmp/r047-source/training/farm/scripts/test_windows_host_dry_run_offline.py
+          python -m py_compile \
+            /tmp/r047-source/training/farm/windows_portable_real_wof_bundle.py \
+            /tmp/r047-source/training/farm/windows_portable_real_wof_bundle_verifier.py
+          python -m training.farm.windows_oneclick_bootstrap \
+            --diagnostics-json \
+            --local-root '/tmp/三国 10训 (bootstrap-local)' \
+            --evidence-root '/tmp/三国 10训 (bootstrap-local)/evidence' \
+            > /tmp/r047-out/r0_4_6_diagnostics.json
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/r047-out/r0_4_6_diagnostics.json',encoding='utf-8'))
+          assert p['romAccessed'] is False
+          assert p['realWofProof'] is False
+          assert p['r0_5Authorized'] is False
+          assert p['realWorkerExecutionStarted'] is False
+          PY
+
+      - name: Build twice and verify deterministic immutable package
+        shell: bash
+        env:
+          PYTHONPATH: /tmp/r047-source
+        run: |
+          set -euo pipefail
+          python -m training.farm.windows_portable_real_wof_bundle build \
+            --source-root /tmp/r047-source \
+            --source-candidate "$SOURCE_CANDIDATE" \
+            --output "/tmp/r047-out/$ARTIFACT_BASENAME.zip" \
+            --sidecar "/tmp/r047-out/$ARTIFACT_BASENAME.manifest.json" \
+            --allow-no-git
+          python -m training.farm.windows_portable_real_wof_bundle build \
+            --source-root /tmp/r047-source \
+            --source-candidate "$SOURCE_CANDIDATE" \
+            --output /tmp/r047-out/rebuild.zip \
+            --sidecar /tmp/r047-out/rebuild.manifest.json \
+            --allow-no-git
+          cmp "/tmp/r047-out/$ARTIFACT_BASENAME.zip" /tmp/r047-out/rebuild.zip
+          python -m training.farm.windows_portable_real_wof_bundle verify-zip \
+            "/tmp/r047-out/$ARTIFACT_BASENAME.zip" \
+            --source-candidate "$SOURCE_CANDIDATE"
+          mkdir -p '/tmp/三国 10训 (portable)'
+          python - <<'PY'
+          import os, zipfile
+          z=f"/tmp/r047-out/{os.environ['ARTIFACT_BASENAME']}.zip"
+          with zipfile.ZipFile(z) as archive:
+              archive.extractall('/tmp/三国 10训 (portable)')
+          PY
+          python -m training.farm.windows_portable_real_wof_bundle verify-extracted \
+            '/tmp/三国 10训 (portable)' \
+            --source-candidate "$SOURCE_CANDIDATE"
+          sha256sum "/tmp/r047-out/$ARTIFACT_BASENAME.zip" "/tmp/r047-out/$ARTIFACT_BASENAME.manifest.json"
+
+      - name: Publish immutable package into repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP="/tmp/r047-out/$ARTIFACT_BASENAME.zip"
+          MANIFEST="/tmp/r047-out/$ARTIFACT_BASENAME.manifest.json"
+          git fetch origin main
+          git checkout -B main origin/main
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          token=os.environ['CLAIM_TOKEN']; candidate=os.environ['SOURCE_CANDIDATE']
+          for p in [Path('parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.7.windows-portable-real-wof-proof-bundle-v1.json'),Path('parallel/PM/STAGE_CLAIMS/TRAINING_FARM_R0_4_7_WINDOWS_PORTABLE_REAL_WOF_PROOF_BUNDLE_V1.json')]:
+              d=json.loads(p.read_text(encoding='utf-8'))
+              assert d['claimToken']==token and d['state']=='STARTED' and d['sourceCandidate']==candidate
+          PY
+          mkdir -p training/farm/dist
+          cp "$ZIP" "training/farm/dist/$ARTIFACT_BASENAME.zip"
+          cp "$MANIFEST" "training/farm/dist/$ARTIFACT_BASENAME.manifest.json"
+          git config user.name 'Training Farm R0.4.7 Builder'
+          git config user.email 'actions@users.noreply.github.com'
+          git add "training/farm/dist/$ARTIFACT_BASENAME.zip" "training/farm/dist/$ARTIFACT_BASENAME.manifest.json"
+          git commit -m 'Training Farm R0.4.7: publish immutable portable proof bundle'
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git pull --rebase origin main
+          done
+          exit 1
