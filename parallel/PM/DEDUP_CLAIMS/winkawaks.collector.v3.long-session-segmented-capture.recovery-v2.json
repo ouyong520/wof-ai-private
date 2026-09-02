@@ -8,9 +8,22 @@
   "promptPath": "parallel/PM/WINKAWAKS_COLLECTOR_V3_LONG_SESSION_SEGMENTED_CAPTURE_START_PROMPT.md",
   "owner": "chatgpt-gpt-5.6-sol-recovery-v2",
   "claimToken": "3e759948bf23c19eb6568669b9b55896019c58f37d3dc675",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "0abad06ae56c837c87037c522899739d3a0997ff",
+  "completedAtUtc": "2026-09-02T10:21:26Z",
+  "resultPath": "parallel/PM/WINKAWAKS_COLLECTOR_V3_LONG_SESSION_SEGMENTED_CAPTURE_RECOVERY_V2_RESULT.md",
+  "resultCommit": "8c3d88d2e3db083168b242315f191c60eabaf6b0",
+  "bridgeRepository": "ouyong520/wof-winkawaks-bridge",
+  "bridgeHead": "c180e303cb1caf10effde49edceec4ea70a26cc2",
+  "bridgeTree": "c6796d602f3c7aeb2046e3150b351cec31b1df30",
+  "implementationSelfCheck": {
+    "workflow": "Collector Python smoke check",
+    "runId": 33618885915,
+    "conclusion": "SUCCESS",
+    "segmentedRegression": "15/15 PASS"
+  },
   "recoveryAuthorization": "PM-authorized implementation recovery V2 from user directive 2026-09-02",
   "supersedesCanonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/winkawaks.collector.v3.long-session-segmented-capture.json",
-  "supersedesStageClaimPath": "parallel/PM/STAGE_CLAIMS/WINKAWAKS_COLLECTOR_V3_LONG_SESSION_SEGMENTED_CAPTURE_V1.json"
+  "supersedesStageClaimPath": "parallel/PM/STAGE_CLAIMS/WINKAWAKS_COLLECTOR_V3_LONG_SESSION_SEGMENTED_CAPTURE_V1.json",
+  "originalClaimDisposition": "Historical original ACTIVE claim is intentionally left unchanged; Recovery V2 is the superseding completed generation and does not fabricate completion by the stopped original worker."
 }
