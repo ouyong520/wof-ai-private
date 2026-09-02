@@ -1,6 +1,18 @@
 from __future__ import annotations
 
+from typing import Any
+
 from .probe import WORLD_DESCRIPTION, WORLD_SHA256
+
+
+def select_unique_exact_candidate(candidate_diagnostics: list[dict[str, Any]], expected_sha256: str = WORLD_SHA256) -> dict[str, Any]:
+    """Mirror the field probe's fail-closed exact-match decision for deterministic self-checks."""
+    exact = [row for row in candidate_diagnostics if isinstance(row, dict) and row.get("sha256") == expected_sha256]
+    if len(exact) == 0:
+        raise ValueError("no ROM locator candidate matched exact World 921031 full CPU-logical SHA-256")
+    if len(exact) > 1:
+        raise ValueError(f"ambiguous exact World 921031 ROM locator matches {len(exact)}")
+    return dict(exact[0])
 
 
 IDENTITY_PROBE = rf"""(async()=>{{
