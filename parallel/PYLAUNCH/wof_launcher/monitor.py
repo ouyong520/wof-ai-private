@@ -158,6 +158,12 @@ class LauncherMonitor:
                 if self.alpha_runtime and accepted:
                     try:
                         alpha_status = self.alpha_runtime.ensure_running(self._client, choice, authority_key)
+                        recovery, restart = self.alpha_runtime.poll_projection_recovery(self._client, choice, authority_key)
+                        if restart:
+                            alpha_status = self.alpha_runtime.ensure_running(self._client, choice, authority_key)
+                            recovery, _ = self.alpha_runtime.poll_projection_recovery(self._client, choice, authority_key)
+                        if isinstance(alpha_status, dict):
+                            alpha_status["projectionRecovery"] = recovery
                         alpha_running = alpha_status.get("running") is True
                     except (AlphaRuntimeError, CdpError, OSError, ValueError) as exc:
                         alpha_error = str(exc); self.alpha_runtime.revoke(self._client)
