@@ -1,0 +1,288 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wof-alpha-v1-anchored-overlays-bounded-live-proof-v1",
+  "title": "Alpha V1 Anchored Overlays Bounded Dynamic Live Proof",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "evidenceClass",
+    "verdict",
+    "session",
+    "repository",
+    "runtime",
+    "commonProjection",
+    "surfaces",
+    "phases",
+    "authorityWindows",
+    "visual",
+    "boundaries"
+  ],
+  "properties": {
+    "schema": {
+      "const": "wof-alpha-v1-anchored-overlays-bounded-live-proof-v1"
+    },
+    "evidenceClass": {
+      "const": "REAL_BROWSER_WOF_BOUNDED_DYNAMIC_LIVE_PROOF"
+    },
+    "verdict": {
+      "type": "string",
+      "pattern": "^(IMPLEMENTATION_READY|FAILED_COMPONENT:[a-z0-9_-]+|INCOMPLETE_OBSERVATION:[a-z0-9_-]+)$"
+    },
+    "generatedAt": {
+      "type": "string"
+    },
+    "session": {
+      "type": "object",
+      "required": ["proofSessionId", "uninterrupted", "startedAt", "endedAt"],
+      "properties": {
+        "proofSessionId": {"type": "string", "minLength": 8},
+        "uninterrupted": {"const": true},
+        "startedAt": {"type": "string"},
+        "endedAt": {"type": "string"}
+      }
+    },
+    "repository": {
+      "type": "object",
+      "required": ["head", "productBlobs", "proofToolBlobs"],
+      "properties": {
+        "head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "productBlobs": {
+          "type": "object",
+          "required": [
+            "playerHelper",
+            "playerProjectionProfile",
+            "enemyHelper",
+            "enemyProjectionProfile",
+            "worker",
+            "hud",
+            "loader"
+          ],
+          "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+        },
+        "proofToolBlobs": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "required": [
+        "romSha256",
+        "runtimeEpoch",
+        "projectionEpoch",
+        "initialLayout",
+        "finalLayout"
+      ],
+      "properties": {
+        "romSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "runtimeEpoch": {"type": "string", "minLength": 1},
+        "projectionEpoch": {"type": "string", "minLength": 1},
+        "browserBuild": {"type": ["string", "null"]},
+        "wofBuild": {"type": ["string", "null"]},
+        "initialLayout": {"$ref": "#/$defs/layout"},
+        "finalLayout": {"$ref": "#/$defs/layout"}
+      }
+    },
+    "commonProjection": {
+      "type": "object",
+      "required": ["verdict", "camera", "native", "drawingBuffer", "objectiveEvidence"],
+      "properties": {
+        "verdict": {"enum": ["IMPLEMENTATION_READY", "FAILED"]},
+        "proofId": {"type": ["string", "null"]},
+        "projectionVersion": {"type": ["string", "null"]},
+        "camera": {
+          "type": "object",
+          "required": ["address", "read", "qualityPassed", "locked"],
+          "properties": {
+            "address": {"type": ["string", "integer"]},
+            "read": {"const": "u16be"},
+            "qualityPassed": {"type": "boolean"},
+            "locked": {"type": "boolean"}
+          }
+        },
+        "native": {
+          "type": "object",
+          "required": ["width", "height", "xFormula", "xBias", "yModel", "yFormula", "yBiasOrAnchorOffset"],
+          "properties": {
+            "width": {"const": 384},
+            "height": {"const": 224},
+            "xFormula": {"const": "worldX-camera+xBias"},
+            "xBias": {"type": "number"},
+            "yModel": {"enum": ["Y-Z", "Y+Z", "Y"]},
+            "yFormula": {"type": "string"},
+            "yBiasOrAnchorOffset": {"type": "number"}
+          }
+        },
+        "drawingBuffer": {
+          "type": "object",
+          "required": ["source", "formula", "layoutChangeCount", "recovered"],
+          "properties": {
+            "source": {"const": "live WebGL VIEWPORT"},
+            "formula": {"type": "string"},
+            "layoutChangeCount": {"type": "integer", "minimum": 1},
+            "recovered": {"type": "boolean"}
+          }
+        },
+        "objectiveEvidence": {
+          "type": "object",
+          "required": ["worldXExcursion", "cameraExcursion", "floorYExcursion", "zExcursion", "webglHookCount", "markerDrawCount"],
+          "properties": {
+            "worldXExcursion": {"type": "number", "minimum": 24},
+            "cameraExcursion": {"type": "number", "minimum": 6},
+            "floorYExcursion": {"type": "number", "minimum": 8},
+            "zExcursion": {"type": "number", "minimum": 8},
+            "webglHookCount": {"type": "integer", "minimum": 30},
+            "markerDrawCount": {"type": "integer", "minimum": 30}
+          }
+        }
+      }
+    },
+    "surfaces": {
+      "type": "object",
+      "required": ["playerHeadWarning", "enemyTargetLabels"],
+      "properties": {
+        "playerHeadWarning": {"$ref": "#/$defs/surface"},
+        "enemyTargetLabels": {"$ref": "#/$defs/surface"}
+      }
+    },
+    "phases": {
+      "type": "object",
+      "required": [
+        "fastHorizontal",
+        "depthMovement",
+        "fullJump",
+        "rapidStageCameraScroll",
+        "simultaneousPlayerCamera",
+        "movingEnemy",
+        "liveRetarget",
+        "multiEnemy",
+        "resizeFullscreenRemap"
+      ],
+      "additionalProperties": {"$ref": "#/$defs/phase"}
+    },
+    "authorityWindows": {
+      "type": "object",
+      "required": ["stale", "identity", "epoch", "confidence", "bounds", "nonFinite"],
+      "additionalProperties": {"$ref": "#/$defs/authorityWindow"}
+    },
+    "visual": {
+      "type": "object",
+      "required": ["playerWarningAttached", "enemyLabelsAttached", "visibleRepeatableDrift", "wrongIdentity", "wrongTarget", "staleCueObserved"],
+      "properties": {
+        "playerWarningAttached": {"type": "boolean"},
+        "enemyLabelsAttached": {"type": "boolean"},
+        "visibleRepeatableDrift": {"type": "boolean"},
+        "wrongIdentity": {"type": "boolean"},
+        "wrongTarget": {"type": "boolean"},
+        "staleCueObserved": {"type": "boolean"},
+        "operatorDecision": {"type": ["string", "null"]},
+        "evidenceRefs": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "boundaries": {
+      "type": "object",
+      "required": ["browserWofActuallyRun", "syntheticEvidenceUsedAsLiveProof", "manualAddressSelection", "manualCoordinateTranscription", "manualArithmetic", "productSemanticsModified"],
+      "properties": {
+        "browserWofActuallyRun": {"const": true},
+        "syntheticEvidenceUsedAsLiveProof": {"const": false},
+        "manualAddressSelection": {"const": false},
+        "manualCoordinateTranscription": {"const": false},
+        "manualArithmetic": {"const": false},
+        "productSemanticsModified": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "layout": {
+      "type": "object",
+      "required": ["drawingBufferWidth", "drawingBufferHeight", "viewport", "dpr", "fullscreen"],
+      "properties": {
+        "drawingBufferWidth": {"type": "number", "exclusiveMinimum": 0},
+        "drawingBufferHeight": {"type": "number", "exclusiveMinimum": 0},
+        "viewport": {
+          "type": "object",
+          "required": ["x", "y", "width", "height"],
+          "properties": {
+            "x": {"type": "number"},
+            "y": {"type": "number"},
+            "width": {"type": "number", "exclusiveMinimum": 0},
+            "height": {"type": "number", "exclusiveMinimum": 0}
+          }
+        },
+        "dpr": {"type": "number", "exclusiveMinimum": 0},
+        "fullscreen": {"type": "boolean"}
+      }
+    },
+    "surface": {
+      "type": "object",
+      "required": ["profileBinding", "liveObserved", "followVerdict", "failClosedVerdict", "events"],
+      "properties": {
+        "profileBinding": {"enum": ["PROVED", "FAILED", "NOT_BOUND"]},
+        "liveObserved": {"type": "boolean"},
+        "followVerdict": {"enum": ["PASS", "FAIL", "NOT_OBSERVED"]},
+        "failClosedVerdict": {"enum": ["PASS", "FAIL", "NOT_OBSERVED"]},
+        "events": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/overlayEvent"}
+        }
+      }
+    },
+    "overlayEvent": {
+      "type": "object",
+      "required": ["at", "surface", "actorIdentity", "sampleAt", "confidence", "epochs", "mappingKey", "decision"],
+      "properties": {
+        "at": {"type": "number"},
+        "surface": {"enum": ["player-head-warning", "enemy-target-label"]},
+        "actorIdentity": {"type": ["string", "number", "null"]},
+        "player": {"type": ["string", "null"]},
+        "target7E": {"type": ["number", "null"]},
+        "target": {"type": ["string", "null"]},
+        "label": {"type": ["string", "null"]},
+        "sampleAt": {"type": "number"},
+        "ageMs": {"type": ["number", "null"]},
+        "confidence": {"type": ["number", "null"]},
+        "epochs": {
+          "type": "object",
+          "properties": {
+            "runtime": {"type": ["string", "null"]},
+            "projection": {"type": ["string", "null"]},
+            "drawingBuffer": {"type": ["string", "null"]}
+          }
+        },
+        "mappingKey": {"type": ["string", "null"]},
+        "anchorDb": {
+          "type": ["object", "null"],
+          "properties": {
+            "x": {"type": "number"},
+            "y": {"type": "number"}
+          }
+        },
+        "decision": {"enum": ["ANCHORED_DRAW", "FIXED_HUD", "SUPPRESSED"]},
+        "reason": {"type": ["string", "null"]},
+        "evidenceRef": {"type": ["string", "null"]}
+      }
+    },
+    "phase": {
+      "type": "object",
+      "required": ["coverage", "playerHeadWarning", "enemyTargetLabels"],
+      "properties": {
+        "coverage": {"enum": ["PASS", "FAIL", "NOT_OBSERVED"]},
+        "playerHeadWarning": {"enum": ["PASS", "FAIL", "NOT_OBSERVED"]},
+        "enemyTargetLabels": {"enum": ["PASS", "FAIL", "NOT_OBSERVED"]},
+        "evidenceRefs": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "authorityWindow": {
+      "type": "object",
+      "required": ["coverage", "anchoredCueDuringInvalidAuthority"],
+      "properties": {
+        "coverage": {"enum": ["PASS", "FAIL", "NOT_OBSERVED"]},
+        "anchoredCueDuringInvalidAuthority": {"type": "boolean"},
+        "events": {"type": "array", "items": {"$ref": "#/$defs/overlayEvent"}}
+      }
+    }
+  }
+}
