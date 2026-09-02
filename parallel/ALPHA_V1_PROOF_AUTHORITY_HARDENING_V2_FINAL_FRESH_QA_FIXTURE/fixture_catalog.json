@@ -1,0 +1,36 @@
+{
+  "schema": "wof-alpha-v1-proof-authority-hardening-v2-final-fresh-qa-fixture-v1",
+  "ownership": "QA-OWNED-INDEPENDENT",
+  "stageId": "ALPHA_V1_PROOF_AUTHORITY_HARDENING_V2_FINAL_FRESH_QA_FIXTURE_PREP",
+  "oracleAuthority": [
+    "PM hardening V2 contract",
+    "Cross-check V2 blocker semantics"
+  ],
+  "implementationRegressionAuthority": false,
+  "currentSutVerdictIssued": false,
+  "browserWofRequiredForPrep": false,
+  "futureExecution": {
+    "requiresHardeningV2Complete": true,
+    "requiresExactFixedBlobPins": true,
+    "mayChangeExpectedOutcomes": false
+  },
+  "cases": [
+    {"id":"QA-PA-001","domain":"untrusted-signer-provenance","expected":"DENY","intent":"attacker-owned P-256 witness/public key must not mint live capability","asserts":["acceptLiveWitness=false","liveCapabilityAbsent","terminalNotImplementationReady"]},
+    {"id":"QA-PA-002","domain":"synthetic-repository-fake-live","expected":"DENY","intent":"repository/synthetic/session-serialized evidence cannot become live evidence","asserts":["browserWofActuallyRunNotForged","terminalNotImplementationReady"]},
+    {"id":"QA-PA-003","domain":"exact-authority-binding","expected":"ALLOW_ONLY_EXACT","intent":"counted proof binds proofSession+workerGeneration+runtimeEpoch+pairGeneration+pairNonce","asserts":["exactTupleRequired"]},
+    {"id":"QA-PA-004","domain":"authority-change-revocation","expected":"DENY_OLD","intent":"old capability invalid after any bound authority component changes","asserts":["oldCapabilityRejected","freshChallengeRequired"]},
+    {"id":"QA-PA-005","domain":"cross-authority-aggregation","expected":"DENY","intent":"events/phases from distinct authority identities cannot aggregate terminal success","asserts":["crossAuthorityPhaseRejected","terminalNotImplementationReady"]},
+    {"id":"QA-PA-006","domain":"player-respawn-calibration","expected":"DENY_OLD","intent":"player lifecycle replacement invalidates old body/head calibration","asserts":["oldPlayerCalibrationRejected"]},
+    {"id":"QA-PA-007","domain":"enemy-same-slot-replacement","expected":"DENY_AS_RETARGET","intent":"same slot/type/near position replacement is not same-occupant retarget without continuity proof","asserts":["retargetNotCounted"]},
+    {"id":"QA-PA-008","domain":"enemy-type-offset-lifecycle","expected":"FAIL_CLOSED","intent":"enemy calibration/type offset cannot carry across unproved replacement lifecycle","asserts":["oldEnemyCalibrationRejected","profileNotActivated"]},
+    {"id":"QA-PA-009","domain":"surface-mapping-authority","expected":"FAIL_CLOSED","intent":"surfaceMappingKey/current drawing-buffer mapping authority mismatch is uncountable","asserts":["anchoredEventNotCounted"]},
+    {"id":"QA-PA-010","domain":"malformed-coercible-epoch","expected":"FAIL_CLOSED","intent":"string-coercible objects/boxed/non-string epochs are rejected","asserts":["authorityTupleInvalid"]},
+    {"id":"QA-PA-011","domain":"warning-sampleat-strict","expected":"FAIL_CLOSED","intent":"missing/null/string/boxed/NaN/Infinity warningSampleAt cannot fall back to fresh time","asserts":["warningEvidenceNotFresh","anchoredEventNotCounted"]},
+    {"id":"QA-PA-012","domain":"target-strict","expected":"FAIL_CLOSED","intent":"string/boxed/valueOf/array/bool/NaN/Infinity/fractional target cannot become 0/4/8 target","asserts":["targetRejected"]},
+    {"id":"QA-PA-013","domain":"public-mutable-terminal","expected":"DENY","intent":"public mutable/serialized state cannot force IMPLEMENTATION_READY","asserts":["terminalReattested","terminalNotImplementationReady"]},
+    {"id":"QA-PA-014","domain":"stale-replayed-transaction","expected":"DENY","intent":"stale/replayed transaction witness or reused transaction id is rejected","asserts":["replayRejected","staleGateNotClosed"]},
+    {"id":"QA-PA-015","domain":"same-authority-positive-flow","expected":"ALLOW","intent":"same authority + same lifecycle retarget/live scoring remains accepted","asserts":["retargetCounted","sameAuthorityPhaseCounted"]},
+    {"id":"QA-PA-016","domain":"safety-boundary-exact","expected":"REQUIRE","intent":"readOnly=true ramWrites=0 inputInjection=false workerReplacement=false","asserts":["readOnlyTrue","ramWritesZero","inputInjectionFalse","workerReplacementFalse"]},
+    {"id":"QA-PA-017","domain":"synthetic-no-production-activation","expected":"DENY","intent":"synthetic evidence cannot activate production projection/calibration profile","asserts":["productionProfileUnchanged","proofOnlyBindingNotPromoted"]}
+  ]
+}
