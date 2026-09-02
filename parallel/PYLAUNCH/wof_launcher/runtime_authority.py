@@ -33,6 +33,7 @@ class RuntimeFingerprint:
 
 
 def _isolate(session: CdpSession) -> str:
+    session.request("Runtime.enable")
     result = session.request("Runtime.getIsolateId")
     isolate_id = result.get("id")
     if not isinstance(isolate_id, str) or not isolate_id:
