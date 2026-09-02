@@ -114,6 +114,7 @@ function failAnchor(player,reason,metadata={}){
 
 function resolveAnchor({player,playerState,projection,drawingBufferState,nowMs,warningEpoch,warningSampleAt}){
   if(!PLAYER_SET.has(player))return failAnchor(player,'INVALID_PLAYER');
+  if(typeof warningSampleAt!=='number'||!finite(warningSampleAt))return failAnchor(player,'INVALID_WARNING_SAMPLE_TIME');
   if(!playerState||playerState.present!==true)return failAnchor(player,'PLAYER_ABSENT');
   if(![playerState.x,playerState.y,playerState.z].every(finite))return failAnchor(player,'INVALID_PLAYER_XYZ');
   const pAge=ageMs(nowMs,playerState.sampleAt);
@@ -142,10 +143,10 @@ function resolveAnchor({player,playerState,projection,drawingBufferState,nowMs,w
   if(!epochs.every(validEpoch))return failAnchor(player,'INVALID_EPOCH');
   if(epochs.some(value=>value!==epochs[0]))return failAnchor(player,'EPOCH_MISMATCH');
 
-  if(finite(warningSampleAt)&&finite(playerState.sampleAt)&&playerState.sampleAt<warningSampleAt){
+  if(playerState.sampleAt<warningSampleAt){
     return failAnchor(player,'SPATIAL_BEFORE_WARNING_SAMPLE');
   }
-  if(finite(warningSampleAt)&&finite(projection.sampleAt)&&projection.sampleAt<warningSampleAt){
+  if(projection.sampleAt<warningSampleAt){
     return failAnchor(player,'PROJECTION_BEFORE_WARNING_SAMPLE');
   }
 
