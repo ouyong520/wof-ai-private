@@ -53,6 +53,22 @@ class ChineseOwnerUxTests(unittest.TestCase):
         self.assertIn('parallel/WOF052L_RECORDER/owner_zh_cn.py', src)
         self.assertNotIn('self.root / "parallel/WOF052L_RECORDER/recorder.py"', src)
 
+    def test_menu_six_activates_package_selected_alpha_without_devtools(self):
+        src = (REPO / "parallel/OPTOOLKIT/owner_zh_cn.py").read_text(encoding="utf-8")
+        self.assertIn('"--activate-alpha"', src)
+        self.assertIn('"--package-root", str(self.root)', src)
+        self.assertIn("不需要 DevTools", src)
+        self.assertIn("runtime generation", src)
+
+    def test_menu_eight_is_local_self_contained_and_uses_core_zip_packager(self):
+        src = (REPO / "parallel/OPTOOLKIT/owner_zh_cn.py").read_text(encoding="utf-8")
+        core = (REPO / "parallel/OPTOOLKIT/toolkit.py").read_text(encoding="utf-8")
+        self.assertIn("return super().package()", src)
+        self.assertNotIn("EVIDENCE_INGESTOR", src)
+        self.assertIn("zipfile.ZipFile", core)
+        self.assertIn("self.results/'packages'", core)
+        self.assertNotIn("latest('packages_')", core)
+
     def test_chinese_path_and_utf8_json_roundtrip(self):
         with tempfile.TemporaryDirectory() as td:
             out = Path(td) / "中文结果目录" / "状态.json"
