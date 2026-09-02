@@ -1,0 +1,15 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.proof-authority-hardening-integration-fix-v4-recovery-v5",
+  "effectiveDedupKey": "alpha.v1.proof-authority-hardening-integration-fix-v4-recovery-v5",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PROOF_AUTHORITY_HARDENING_INTEGRATION_FIX_V4_RECOVERY_V5",
+  "promptPath": "parallel/PM/ALPHA_V1_PROOF_AUTHORITY_HARDENING_INTEGRATION_FIX_V4_RECOVERY_V5_START_PROMPT.md",
+  "owner": "chatgpt-recovery-v5",
+  "claimToken": "028f677098cdfe6030eb49a7f40126a4",
+  "state": "ACTIVE",
+  "startCommit": "040b8a4335a4bfbb3b0b9d43a64aad70e3cd0ef6",
+  "recoveryOfDedupKey": "alpha.v1.proof-authority-hardening-integration-fix-v4",
+  "notes": "PM-authorized stale-worker recovery. Historical V4 canonical/stage claim is preserved untouched."
+}
