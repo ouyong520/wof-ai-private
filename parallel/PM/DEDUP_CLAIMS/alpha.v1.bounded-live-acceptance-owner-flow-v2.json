@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.bounded-live-acceptance-owner-flow-v2",
+  "effectiveDedupKey": "alpha.v1.bounded-live-acceptance-owner-flow-v2",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_BOUNDED_LIVE_ACCEPTANCE_OWNER_FLOW_V2",
+  "promptPath": "parallel/PM/ALPHA_V1_BOUNDED_LIVE_ACCEPTANCE_OWNER_FLOW_V2_START_PROMPT.md",
+  "owner": "Alpha V1 Bounded Live Acceptance Owner Flow V2 worker",
+  "claimToken": "9ea439eabab50e2565ab2339fc991b1ef364fa4c6ac640e5",
+  "state": "ACTIVE",
+  "startCommit": "fa8f48712d3da580ca2b9aec437c1665ed6a8de8"
+}
