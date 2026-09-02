@@ -1,0 +1,32 @@
+{
+  "schema": "wof-training-farm-runtime-policy-v1",
+  "headless": true,
+  "audioOutput": "discard",
+  "hostKeyboardInjection": false,
+  "hostMouseInjection": false,
+  "focusStealing": false,
+  "gameplayInputAuthority": "emulator-core-api-only",
+  "foregroundFriendly": true,
+  "internalFramebufferAllowed": true,
+  "windowPresentationRequired": false,
+  "resourceBudget": {
+    "configuredWorkerCeiling": 10,
+    "foregroundActiveWorkerTarget": 2,
+    "idleWorkerTarget": 8,
+    "pressureHighWorkerTarget": 1,
+    "processPriorityIntent": "background",
+    "cpuBudgetPercent": 65,
+    "memoryBudgetMiB": 8192,
+    "cpuPressureHighPercent": 85,
+    "cpuPressureRecoverPercent": 70,
+    "memoryPressureHighPercent": 88,
+    "memoryPressureRecoverPercent": 75,
+    "transitionCooldownMs": 5000
+  },
+  "stageGuard": {
+    "maxRealEmulatorWorkersThisStage": 1,
+    "realWorkerLaunchEnabled": false,
+    "realWofProofClaimed": false,
+    "r0_5Authorized": false
+  }
+}
