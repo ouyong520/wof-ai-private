@@ -101,6 +101,14 @@ class PackageTests(unittest.TestCase):
         self.assertNotIn("WOF Future Danger/OwnerTools", s)
         self.assertNotIn("git clone", s.lower())
 
+    def test_manifest_refresh_is_cache_safe_and_exact_pin_capable(self) -> None:
+        s = self.bootstrap
+        self.assertIn("$env:WOF_MANIFEST_URL", s)
+        self.assertIn("package_manifest\\.json(?:\\?.*)?$", s)
+        self.assertIn("main/parallel/OWNER_ONECLICK/package_manifest.json?cb=", s)
+        self.assertIn("[Guid]::NewGuid().ToString('N')", s)
+        self.assertNotIn("$ManifestUrl = 'https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/parallel/OWNER_ONECLICK/package_manifest.json'\n", s)
+
     def test_second_launch_is_direct_and_network_free_until_update(self) -> None:
         s = self.entry
         self.assertIn('if /I "%~1"=="--update-only" goto :bootstrap', s)
