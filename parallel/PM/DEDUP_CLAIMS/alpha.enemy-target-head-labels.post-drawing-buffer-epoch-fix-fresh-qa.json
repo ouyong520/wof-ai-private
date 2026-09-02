@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.enemy-target-head-labels.post-drawing-buffer-epoch-fix-fresh-qa",
+  "effectiveDedupKey": "alpha.enemy-target-head-labels.post-drawing-buffer-epoch-fix-fresh-qa",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V3",
+  "promptPath": "parallel/PM/ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V3_START_PROMPT.md",
+  "owner": "chatgpt-alpha-enemy-target-head-labels-fresh-qa-v3",
+  "claimToken": "qPiLTD0qUKCBRu2TVMaO-Y7kurlV2byeaZPKZT5sfKY",
+  "state": "ACTIVE",
+  "startCommit": "7928643462c265bd7d3348ba62333b6d71c706e5"
+}
