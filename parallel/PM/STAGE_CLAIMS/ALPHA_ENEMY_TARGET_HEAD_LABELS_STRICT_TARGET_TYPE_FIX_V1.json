@@ -1,0 +1,15 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "ALPHA_ENEMY_TARGET_HEAD_LABELS_STRICT_TARGET_TYPE_FIX_V1",
+  "promptPath": "parallel/PM/ALPHA_ENEMY_TARGET_HEAD_LABELS_STRICT_TARGET_TYPE_FIX_START_PROMPT.md",
+  "owner": "chatgpt-alpha-enemy-target-head-labels-strict-target-type-fix-v1",
+  "state": "ACTIVE",
+  "startCommit": "072e0429d3c44eb29c7852fd7486284aca8bda57",
+  "startedAtUtc": "2026-09-02T02:24:30Z",
+  "scope": [
+    "product/alpha/wof_alpha_enemy_target_labels.js",
+    "product/alpha/enemy_target_labels_regression.mjs",
+    "parallel/ALPHA_ENEMY_TARGET_HEAD_LABELS_STRICT_TARGET_TYPE_FIX/**",
+    "parallel/PM/STAGE_CLAIMS/ALPHA_ENEMY_TARGET_HEAD_LABELS_STRICT_TARGET_TYPE_FIX_V1.json"
+  ]
+}
