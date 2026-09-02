@@ -19,6 +19,7 @@ from .adapter import (
     CoreAction,
     CoreFrameInput,
     DependencyError,
+    RamBlockSnapshot,
     RuntimeCapabilityError,
 )
 
@@ -226,7 +227,7 @@ class StableRetroFbneoBackend:
         self._em.step()
 
     def step(self, action: CoreAction) -> None:
-        """R0.1 compatibility path; R0.2 determinism uses step_frame."""
+        """R0.1 compatibility path; R0.2/R0.3 deterministic code uses step_frame."""
         self._em.set_button_mask(self._mask_for(action), action.player)
         self._em.step()
 
@@ -242,16 +243,44 @@ class StableRetroFbneoBackend:
                 f"FBNeo frame action failed: {type(exc).__name__}: {exc}"
             ) from exc
 
-    def read_ram(self) -> bytes:
+    def read_ram_blocks(self) -> tuple[RamBlockSnapshot, ...]:
+        """Expose exact Stable-Retro GameData memory-block keys and bytes.
+
+        Stable-Retro's ``GameData.memory.blocks`` keys are the strongest
+        source-native address facts exposed by this backend. R0.3 preserves those
+        integer keys without reinterpreting them as host/Browser/WinKawaks
+        addresses.
+        """
         blocks = self._data.memory.blocks
         if not blocks:
             raise RuntimeCapabilityError("FBNeo exposed no writable RAM blocks")
         try:
-            return b"".join(bytes(blocks[offset]) for offset in sorted(blocks))
+            keys = list(blocks)
+            if any(type(key) is not int or key < 0 for key in keys):
+                raise RuntimeCapabilityError(
+                    "FBNeo memory block keys must be non-negative strict integers"
+                )
+            ordered = sorted(keys)
+            snapshots = tuple(
+                RamBlockSnapshot(base_address=base, data=bytes(blocks[base]))
+                for base in ordered
+            )
+        except RuntimeCapabilityError:
+            raise
         except Exception as exc:
             raise RuntimeCapabilityError(
-                f"failed to snapshot FBNeo RAM blocks: {type(exc).__name__}: {exc}"
+                f"failed to snapshot address-aware FBNeo RAM blocks: {type(exc).__name__}: {exc}"
             ) from exc
+        previous_end: int | None = None
+        for snapshot in snapshots:
+            if previous_end is not None and snapshot.base_address < previous_end:
+                raise RuntimeCapabilityError("FBNeo memory blocks overlap")
+            previous_end = snapshot.base_address + snapshot.length
+        return snapshots
+
+    def read_ram(self) -> bytes:
+        """R0.1/R0.2-compatible flat fingerprint ordering."""
+        return b"".join(block.data for block in self.read_ram_blocks())
 
     def save_state(self) -> bytes:
         try:
