@@ -2,12 +2,21 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_V1",
   "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_START_PROMPT.md",
-  "state": "EXECUTING",
+  "state": "BLOCKED",
   "startCommit": "922fe72ad518a6e2ac1d850f56359a468e02725a",
   "startedAtUtc": "2026-09-02T00:01:30Z",
-  "writeBoundary": [
-    "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_GENERATION/**",
-    "parallel/PM/STAGE_CLAIMS/UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_V1.json"
-  ],
-  "ownerActionRequired": false
+  "testedHead": "b2bb9a234163f50337bd731e389d703e1e92747c",
+  "productionBlob": "0ed41e4afb1a6a740315f356672df019ff3a15d3",
+  "freshFixtureCommit": "67129863755c16a06c60960ee8798da85de5fb98",
+  "freshRunnerCommit": "b2bb9a234163f50337bd731e389d703e1e92747c",
+  "machineResultPath": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_GENERATION/RESULT.json",
+  "machineResultCommit": "c94048a1c0ca33385f8383211d3b6190fdd2803e",
+  "resultPath": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_GENERATION/RESULT.md",
+  "resultCommit": "40bcf11056016d11752b64cd96d89855fa7fad66",
+  "blocker": "P1 generation rollover is not revoked at Recorder child-start boundary; stale prior-generation heartbeat can still renew authority before the new reader binds generation",
+  "currentHeadUnifiedPreflightUnblocked": false,
+  "alphaFormalIntegrationFreshQAUnblocked": false,
+  "ownerActionRequired": false,
+  "completedAtUtc": "2026-09-02T00:06:30Z",
+  "stopCondition": "BLOCKED — UNIFIED LIVE PROOF RECORDER AUTHORITY GENERATION FRESH QA — P1 generation rollover is not revoked at child-start boundary; stale prior-generation heartbeat can still renew authority before the new reader binds generation"
 }
