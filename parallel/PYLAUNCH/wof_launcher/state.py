@@ -30,6 +30,12 @@ class LauncherStatus:
     identity_reason: str | None = None
     discovery_path: str | None = None
     discovery_diagnostics: dict[str, Any] | None = None
+    alpha_requested: bool = False
+    alpha_running: bool = False
+    alpha_runtime_epoch: str | None = None
+    alpha_package_version: str | None = None
+    alpha_status: dict[str, Any] | None = None
+    alpha_error: str | None = None
     read_only: bool = True
     ram_writes: int = 0
     input_injection: bool = False
@@ -79,6 +85,11 @@ class StatusStore:
             identity_reason=None,
             discovery_path=None,
             discovery_diagnostics=None,
+            alpha_running=False,
+            alpha_runtime_epoch=None,
+            alpha_package_version=None,
+            alpha_status=None,
+            alpha_error=error,
             state="ERROR" if error else "DISCONNECTED",
             last_error=error,
             read_only=True,
