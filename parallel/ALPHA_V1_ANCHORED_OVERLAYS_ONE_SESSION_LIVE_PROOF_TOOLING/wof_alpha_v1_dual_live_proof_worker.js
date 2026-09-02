@@ -1,8 +1,9 @@
 (()=>{
 'use strict';
-const VERSION='wof-alpha-v1-dual-live-proof-worker-recovery-v2';
+const VERSION='wof-alpha-v1-dual-live-proof-worker-proof-authority-v1';
 const CHANNEL='wof-alpha-v1-dual-live-proof-recovery-v2';
-const G=globalThis;
+const ROM='5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62';
+const G=globalThis,HEX32=/^[0-9a-f]{32}$/i;
 try{G.WOFAlphaV1DualProofWorker?.stop?.();}catch(_){}
 const mod=G._0x515056,M=mod?.HEAPU8,R=mod?.HEAPU32?.[0x2e39e4>>>2]>>>0;
 if(!M||!R)throw new Error('CPS RAM base unavailable');
@@ -16,84 +17,30 @@ const F16=a=>S32(a)/65536;
 const PLAYER_BASES={P1:0xFFBE1C,P2:0xFFBEFC,P3:0xFFBFDC};
 const ENEMY=0xFFC0BC,STRIDE=0xE0,SLOTS=20;
 let running=true,timer=0,seq=0,lastProfiles=null,rebindBusy=false;
-function players(sampleAt){
-  const out={};
-  for(const [name,a] of Object.entries(PLAYER_BASES)){
-    const present=!!B(a);
-    out[name]=present?{present:true,x:F16(a+4),y:F16(a+8),z:F16(a+12),sampleAt,confidence:1,epoch:binding?.runtimeEpoch||null,projectionEpoch:binding?.runtimeEpoch||null}:{present:false,sampleAt,confidence:1,epoch:binding?.runtimeEpoch||null,projectionEpoch:binding?.runtimeEpoch||null};
-  }
-  return out;
-}
-function enemies(sampleAt){
-  const out=[];
-  for(let i=0;i<SLOTS;i++){
-    const a=ENEMY+i*STRIDE,type=U16(a+0x20);if(type>=47)continue;
-    const frameEnd=U32(a+0x12),next=U32(a+0x2C);if(!frameEnd&&!next)continue;
-    out.push({slot:i,sourceId:'enemy-slot-'+i,type,target7E:U16(a+0x7E),enemyX:F16(a+4),enemyY:F16(a+8),enemyZ:F16(a+12),sampleAt,confidence:1,epoch:binding?.runtimeEpoch||null,projectionEpoch:binding?.runtimeEpoch||null});
-  }
-  return out;
-}
-function commonCamera(){
-  try{
-    const s=G.WOFHUDANCHOR?.result?.();
-    const c=s?.lockedCamera||s?.camera?.selected||null;
-    return c?{address:c.address??null,read:c.read??'u16be',value:Number.isFinite(c.value)?c.value:null}:null;
-  }catch(_){return null;}
-}
-function post(kind,payload={}){try{bc.postMessage({schema:CHANNEL,kind,version:VERSION,at:Date.now(),...payload});}catch(_){} }
-function snapshot(){
-  const at=Date.now(),camera=commonCamera();
-  post('live-snapshot',{seq:++seq,binding:binding?{session:binding.session,runtimeEpoch:binding.runtimeEpoch,pairGeneration:binding.pairGeneration,pairNonce:binding.pairNonce,launcherIdentitySha:binding.launcherIdentitySha,channel:binding.channel}:null,
-    camera,players:players(at),enemies:enemies(at),alphaTransportStatus:G.__WOF_ALPHA_REAL_TRANSPORT?.status?.()||null});
-}
-function validCandidateProfiles(payload){
-  const p=payload?.playerProfile,e=payload?.enemyProfile;
-  if(!p||!e||p.proofOnlyRuntimeBinding!==true||e.proofOnlyRuntimeBinding!==true)return{ok:false,reason:'PROOF_ONLY_PROFILE_TAG_MISSING'};
-  if(p.evidenceClass!=='REAL_BROWSER_WOF_BOUNDED_DYNAMIC_LIVE_PROOF'||e.evidenceClass!=='REAL_BROWSER_WOF_BOUNDED_DYNAMIC_LIVE_PROOF')return{ok:false,reason:'REAL_LIVE_EVIDENCE_GUARD_MISSING'};
-  const pv=G.WOFAlphaPlayerHeadWarning?.validateProofProfile?.(p),ev=G.WOFAlphaEnemyTargetLabels?.validateProofProfile?.(e);
-  if(!pv?.ok)return{ok:false,reason:pv?.reason||'PLAYER_PROFILE_REJECTED'};
-  if(!ev?.ok)return{ok:false,reason:ev?.reason||'ENEMY_PROFILE_REJECTED'};
-  if(!binding||!G.WOFAlphaTransportAuthority?.install)return{ok:false,reason:'ALPHA_TRANSPORT_INSTALL_API_UNAVAILABLE'};
-  return{ok:true};
-}
-async function reinstallWithProfiles(payload){
-  if(rebindBusy)return{ok:false,reason:'REBIND_BUSY'};
-  const valid=validCandidateProfiles(payload);if(!valid.ok)return valid;
-  rebindBusy=true;
-  const originalFetch=G.fetch;
-  if(typeof originalFetch!=='function'){rebindBusy=false;return{ok:false,reason:'FETCH_UNAVAILABLE'};}
-  const playerProfile=JSON.parse(JSON.stringify(payload.playerProfile)),enemyProfile=JSON.parse(JSON.stringify(payload.enemyProfile));
-  const responseFor=value=>({ok:true,status:200,json:async()=>JSON.parse(JSON.stringify(value)),text:async()=>JSON.stringify(value)});
-  G.fetch=async function(input,init){
-    const url=String(input?.url||input||'');
-    if(url.includes('/product/alpha/wof_alpha_player_head_projection.json'))return responseFor(playerProfile);
-    if(url.includes('/product/alpha/wof_alpha_enemy_head_projection.json'))return responseFor(enemyProfile);
-    return originalFetch.call(this,input,init);
-  };
-  try{
-    const status=await G.WOFAlphaTransportAuthority.install(G,binding);
-    lastProfiles={playerProfile,enemyProfile,proofId:payload.proofId||playerProfile.proofId,installedAt:Date.now()};
-    return{ok:true,status,lastProfiles:{proofId:lastProfiles.proofId,installedAt:lastProfiles.installedAt}};
-  }catch(error){return{ok:false,reason:String(error?.message||error)};}
-  finally{G.fetch=originalFetch;rebindBusy=false;}
-}
-async function authorityGap(ms){
-  if(!lastProfiles)return{ok:false,reason:'NO_LIVE_BOUND_PROFILES'};
-  const duration=Math.max(350,Math.min(900,Number(ms)||450));
-  try{G.__WOF_ALPHA_REAL_TRANSPORT?.stop?.('proof-authority-gap');}catch(_){}
-  post('authority-gap-start',{durationMs:duration});
-  await new Promise(resolve=>setTimeout(resolve,duration));
-  const result=await reinstallWithProfiles({...lastProfiles,proofId:lastProfiles.proofId});
-  post('authority-gap-end',{durationMs:duration,result});
-  return result;
-}
-bc.onmessage=e=>{
-  const m=e.data;if(m?.schema!==CHANNEL)return;
-  if(m.kind==='request-snapshot')snapshot();
-  else if(m.kind==='bind-live-profiles')reinstallWithProfiles(m).then(result=>post('bind-live-profiles-result',{requestId:m.requestId||null,result}));
-  else if(m.kind==='exercise-authority-gap')authorityGap(m.durationMs).then(result=>post('exercise-authority-gap-result',{requestId:m.requestId||null,result}));
-};
+const playerLife=new Map(),enemyLife=Array.from({length:SLOTS},()=>({generation:0,present:false,streak:0,lastAt:0,type:null,x:null,y:null,z:null}));
+const witnessSessions=new Map();
+const keyPairPromise=G.crypto?.subtle?.generateKey?G.crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},false,['sign','verify']):Promise.reject(new Error('WebCrypto ECDSA unavailable'));
+const enc=s=>new TextEncoder().encode(s),hex=n=>{const b=new Uint8Array(n);G.crypto.getRandomValues(b);return[...b].map(x=>x.toString(16).padStart(2,'0')).join('')};
+function validBinding(b){return !!b&&HEX32.test(String(b.session||''))&&HEX32.test(String(b.runtimeEpoch||''))&&Number.isInteger(b.pairGeneration)&&b.pairGeneration>0&&HEX32.test(String(b.pairNonce||''))&&b.launcherIdentitySha===ROM&&b.channel==='WOF_ALPHA_'+b.session}
+function authority(){return validBinding(binding)?{session:binding.session,runtimeEpoch:binding.runtimeEpoch,pairGeneration:binding.pairGeneration,pairNonce:binding.pairNonce,launcherIdentitySha:binding.launcherIdentitySha,channel:binding.channel}:null}
+const authorityText=a=>[a.session,a.runtimeEpoch,a.pairGeneration,a.pairNonce,a.launcherIdentitySha,a.channel].join('|');
+const liveText=(sessionId,nonce,a)=>['WOF_ALPHA_DUAL_LIVE_V1',sessionId,nonce,authorityText(a)].join('|');
+const gapText=w=>['WOF_ALPHA_DUAL_GAP_V1',w.proofSessionId,w.requestId,w.transactionId,w.startedAt,w.endedAt,w.durationMs,w.ok===true?'1':'0',authorityText(w.authority)].join('|');
+async function sign(text){const k=await keyPairPromise;return G.crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},k.privateKey,enc(text))}
+function lifeId(prefix,g){return prefix+'@g'+g}
+function playerSnapshot(name,a,sampleAt){let st=playerLife.get(name);if(!st){st={generation:0,present:false,streak:0,lastAt:0,x:null,y:null,z:null};playerLife.set(name,st)}const present=!!B(a),x=present?F16(a+4):null,y=present?F16(a+8):null,z=present?F16(a+12):null;let discontinuity=false;if(present){if(!st.present||sampleAt-st.lastAt>130||(st.x!=null&&(Math.abs(x-st.x)>96||Math.abs(y-st.y)>72||Math.abs(z-st.z)>96))){st.generation++;st.streak=1;discontinuity=st.present}else st.streak++;st.present=true;st.lastAt=sampleAt;st.x=x;st.y=y;st.z=z;return{present:true,x,y,z,sampleAt,confidence:1,epoch:binding?.runtimeEpoch||null,projectionEpoch:binding?.runtimeEpoch||null,proofLifecycleId:lifeId(name,st.generation),lifecycleGeneration:st.generation,lifecycleStable:st.streak>=3&&!discontinuity,lifecycleContinuitySamples:st.streak}}st.present=false;st.streak=0;st.lastAt=sampleAt;return{present:false,sampleAt,confidence:1,epoch:binding?.runtimeEpoch||null,projectionEpoch:binding?.runtimeEpoch||null,proofLifecycleId:null,lifecycleGeneration:st.generation,lifecycleStable:false,lifecycleContinuitySamples:0}}
+function players(sampleAt){const out={};for(const [name,a] of Object.entries(PLAYER_BASES))out[name]=playerSnapshot(name,a,sampleAt);return out}
+function enemies(sampleAt){const out=[];for(let i=0;i<SLOTS;i++){const a=ENEMY+i*STRIDE,type=U16(a+0x20),frameEnd=U32(a+0x12),next=U32(a+0x2C),present=type<47&&!!(frameEnd||next),st=enemyLife[i];if(!present){st.present=false;st.streak=0;st.lastAt=sampleAt;continue}const x=F16(a+4),y=F16(a+8),z=F16(a+12);let discontinuity=false;if(!st.present||st.type!==type||sampleAt-st.lastAt>130||(st.x!=null&&(Math.abs(x-st.x)>128||Math.abs(y-st.y)>96||Math.abs(z-st.z)>96))){st.generation++;st.streak=1;discontinuity=st.present}else st.streak++;st.present=true;st.lastAt=sampleAt;st.type=type;st.x=x;st.y=y;st.z=z;out.push({slot:i,sourceId:'enemy-slot-'+i,proofLifecycleId:lifeId('enemy-slot-'+i,st.generation),lifecycleGeneration:st.generation,lifecycleStable:st.streak>=3&&!discontinuity,lifecycleContinuitySamples:st.streak,type,target7E:U16(a+0x7E),enemyX:x,enemyY:y,enemyZ:z,sampleAt,confidence:1,epoch:binding?.runtimeEpoch||null,projectionEpoch:binding?.runtimeEpoch||null})}return out}
+function commonCamera(){try{const s=G.WOFHUDANCHOR?.result?.(),c=s?.lockedCamera||s?.camera?.selected||null;return c?{address:c.address??null,read:c.read??'u16be',value:Number.isFinite(c.value)?c.value:null}:null}catch(_){return null}}
+function post(kind,payload={}){try{bc.postMessage({schema:CHANNEL,kind,version:VERSION,at:Date.now(),...payload})}catch(_){} }
+function snapshot(){const at=Date.now(),camera=commonCamera();post('live-snapshot',{seq:++seq,binding:binding?{session:binding.session,runtimeEpoch:binding.runtimeEpoch,pairGeneration:binding.pairGeneration,pairNonce:binding.pairNonce,launcherIdentitySha:binding.launcherIdentitySha,channel:binding.channel}:null,camera,players:players(at),enemies:enemies(at),alphaTransportStatus:G.__WOF_ALPHA_REAL_TRANSPORT?.status?.()||null})}
+async function witness(m){const a=authority();if(!a||typeof m?.proofSessionId!=='string'||m.proofSessionId.length<8||typeof m?.nonce!=='string'||m.nonce.length<16)return;try{const k=await keyPairPromise,signature=await sign(liveText(m.proofSessionId,m.nonce,a));witnessSessions.set(m.proofSessionId,{nonce:m.nonce,createdAt:Date.now()});post('live-witness',{proofSessionId:m.proofSessionId,nonce:m.nonce,authority:a,publicKey:k.publicKey,signature})}catch(error){post('live-witness-error',{proofSessionId:m.proofSessionId,reason:String(error?.message||error)})}}
+function liveSessionFor(payload){const x=witnessSessions.get(payload?.proofSessionId);return x&&Date.now()-x.createdAt<15*60*1000&&payload?.witnessNonce===x.nonce?x:null}
+function validCandidateProfiles(payload){const p=payload?.playerProfile,e=payload?.enemyProfile;if(!liveSessionFor(payload))return{ok:false,reason:'LIVE_WORKER_CAPABILITY_REQUIRED'};if(!p||!e||p.proofOnlyRuntimeBinding!==true||e.proofOnlyRuntimeBinding!==true)return{ok:false,reason:'PROOF_ONLY_PROFILE_TAG_MISSING'};if(p.proofSessionId!==payload.proofSessionId||e.proofSessionId!==payload.proofSessionId)return{ok:false,reason:'PROOF_SESSION_MISMATCH'};if(p.evidenceClass!=='REAL_BROWSER_WOF_BOUNDED_DYNAMIC_LIVE_PROOF'||e.evidenceClass!=='REAL_BROWSER_WOF_BOUNDED_DYNAMIC_LIVE_PROOF')return{ok:false,reason:'REAL_LIVE_EVIDENCE_GUARD_MISSING'};const pv=G.WOFAlphaPlayerHeadWarning?.validateProofProfile?.(p),ev=G.WOFAlphaEnemyTargetLabels?.validateProofProfile?.(e);if(!pv?.ok)return{ok:false,reason:pv?.reason||'PLAYER_PROFILE_REJECTED'};if(!ev?.ok)return{ok:false,reason:ev?.reason||'ENEMY_PROFILE_REJECTED'};if(!binding||!G.WOFAlphaTransportAuthority?.install)return{ok:false,reason:'ALPHA_TRANSPORT_INSTALL_API_UNAVAILABLE'};return{ok:true}}
+async function reinstallWithProfiles(payload){if(rebindBusy)return{ok:false,reason:'REBIND_BUSY'};const valid=validCandidateProfiles(payload);if(!valid.ok)return valid;rebindBusy=true;const originalFetch=G.fetch;if(typeof originalFetch!=='function'){rebindBusy=false;return{ok:false,reason:'FETCH_UNAVAILABLE'}}const playerProfile=JSON.parse(JSON.stringify(payload.playerProfile)),enemyProfile=JSON.parse(JSON.stringify(payload.enemyProfile));const responseFor=value=>({ok:true,status:200,json:async()=>JSON.parse(JSON.stringify(value)),text:async()=>JSON.stringify(value)});G.fetch=async function(input,init){const url=String(input?.url||input||'');if(url.includes('/product/alpha/wof_alpha_player_head_projection.json'))return responseFor(playerProfile);if(url.includes('/product/alpha/wof_alpha_enemy_head_projection.json'))return responseFor(enemyProfile);return originalFetch.call(this,input,init)};try{const status=await G.WOFAlphaTransportAuthority.install(G,binding);lastProfiles={playerProfile,enemyProfile,proofId:payload.proofId||playerProfile.proofId,proofSessionId:payload.proofSessionId,witnessNonce:payload.witnessNonce,installedAt:Date.now()};return{ok:true,status,lastProfiles:{proofId:lastProfiles.proofId,proofSessionId:lastProfiles.proofSessionId,installedAt:lastProfiles.installedAt}}}catch(error){return{ok:false,reason:String(error?.message||error)}}finally{G.fetch=originalFetch;rebindBusy=false}}
+async function authorityGap(ms,requestId,proofSessionId,witnessNonce){if(!lastProfiles||lastProfiles.proofSessionId!==proofSessionId||lastProfiles.witnessNonce!==witnessNonce||!liveSessionFor({proofSessionId,witnessNonce}))return{ok:false,reason:'NO_LIVE_BOUND_PROFILES'};const duration=Math.max(350,Math.min(900,Number(ms)||450)),startedAt=Date.now(),transactionId='gap-'+hex(16);try{G.__WOF_ALPHA_REAL_TRANSPORT?.stop?.('proof-authority-gap')}catch(_){}post('authority-gap-start',{durationMs:duration,requestId,transactionId});await new Promise(resolve=>setTimeout(resolve,duration));const result=await reinstallWithProfiles({...lastProfiles,proofSessionId,witnessNonce,proofId:lastProfiles.proofId}),endedAt=Date.now(),a=authority();if(!result.ok||!a)return{...result,transactionWitness:null};const w={proofSessionId,requestId,transactionId,startedAt,endedAt,durationMs:duration,ok:true,authority:a};w.signature=await sign(gapText(w));post('authority-gap-end',{durationMs:duration,requestId,transactionId,result});return{...result,transactionWitness:w}}
+bc.onmessage=e=>{const m=e.data;if(m?.schema!==CHANNEL)return;if(m.kind==='request-snapshot')snapshot();else if(m.kind==='live-witness-challenge')witness(m);else if(m.kind==='bind-live-profiles')reinstallWithProfiles(m).then(result=>post('bind-live-profiles-result',{requestId:m.requestId||null,result}));else if(m.kind==='exercise-authority-gap')authorityGap(m.durationMs,m.requestId||'',m.proofSessionId,m.witnessNonce).then(result=>post('exercise-authority-gap-result',{requestId:m.requestId||null,result}))};
 timer=setInterval(snapshot,50);snapshot();
-G.WOFAlphaV1DualProofWorker={version:VERSION,status(){return{running,seq,rebindBusy,binding:!!binding,lastProfiles:lastProfiles?{proofId:lastProfiles.proofId,installedAt:lastProfiles.installedAt}:null};},stop(){if(!running)return;running=false;if(timer)clearInterval(timer);try{bc.close();}catch(_){}try{delete G.WOFAlphaV1DualProofWorker;}catch(_){}}};
-console.log('✅ Alpha V1 dual live-proof Worker observer ready');
+G.WOFAlphaV1DualProofWorker={version:VERSION,status(){return{running,seq,rebindBusy,binding:!!binding,witnessSessions:witnessSessions.size,lastProfiles:lastProfiles?{proofId:lastProfiles.proofId,proofSessionId:lastProfiles.proofSessionId,installedAt:lastProfiles.installedAt}:null}},stop(){if(!running)return;running=false;if(timer)clearInterval(timer);try{bc.close()}catch(_){}try{delete G.WOFAlphaV1DualProofWorker}catch(_){}}};
+console.log('✅ Alpha V1 dual live-proof Worker observer ready · proof-authority-v1');
 })();
