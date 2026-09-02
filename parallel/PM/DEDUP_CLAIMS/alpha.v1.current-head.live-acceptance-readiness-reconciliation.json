@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.current-head.live-acceptance-readiness-reconciliation",
+  "effectiveDedupKey": "alpha.v1.current-head.live-acceptance-readiness-reconciliation",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_CURRENT_HEAD_LIVE_ACCEPTANCE_READINESS_RECONCILIATION",
+  "promptPath": "parallel/PM/ALPHA_V1_CURRENT_HEAD_LIVE_ACCEPTANCE_READINESS_RECONCILIATION_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol-reconciliation-worker",
+  "claimToken": "fcff6de3bae13ac0db100786abce6b68",
+  "state": "ACTIVE",
+  "startCommit": "22eff8680c6447c7636513d7e1abf72dc4169de6"
+}
