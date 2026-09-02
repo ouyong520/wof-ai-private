@@ -5,6 +5,9 @@
   "effectiveDedupKey": "alpha.v1.named-danger-move-mapping-live-proof-prep",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.named-danger-move-mapping-live-proof-prep.json",
   "claimToken": "9e95de2fa1621b5ed3f9995005dd7ec83ec2eebcd6268289",
-  "state": "ACTIVE",
-  "startCommit": "8880351fe58aeeded404da7c025aaeb87111ce01"
+  "state": "DONE",
+  "startCommit": "8880351fe58aeeded404da7c025aaeb87111ce01",
+  "resultPath": "parallel/PM/ALPHA_V1_NAMED_DANGER_MOVE_MAPPING_LIVE_PROOF_PREP_RESULT.md",
+  "resultCommit": "92294aae9c3d260f5a83816dd3c6cf7f9b6db357",
+  "donePath": "parallel/PM/ALPHA_V1_NAMED_DANGER_MOVE_MAPPING_LIVE_PROOF_PREP_DONE.md"
 }
