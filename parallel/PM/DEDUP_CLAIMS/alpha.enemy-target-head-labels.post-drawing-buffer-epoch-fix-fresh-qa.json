@@ -8,6 +8,24 @@
   "promptPath": "parallel/PM/ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V3_START_PROMPT.md",
   "owner": "chatgpt-alpha-enemy-target-head-labels-fresh-qa-v3",
   "claimToken": "qPiLTD0qUKCBRu2TVMaO-Y7kurlV2byeaZPKZT5sfKY",
-  "state": "ACTIVE",
-  "startCommit": "7928643462c265bd7d3348ba62333b6d71c706e5"
+  "state": "COMPLETE",
+  "startCommit": "7928643462c265bd7d3348ba62333b6d71c706e5",
+  "claimCommit": "a82c7fa45aeb25b875b89f65a483636714ea3098",
+  "result": "PASS — ALPHA V1 ENEMY TARGET HEAD LABELS FRESH QA V3 — EPOCH FIX VERIFIED / BOUNDED LIVE PROOF STILL REQUIRED",
+  "resultPath": "parallel/ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V3/RESULT.md",
+  "resultCommit": "c99d50d24f4d487986b8991447e01d51180e22c5",
+  "evidenceCommits": [
+    "fab20dce1692e19ff16f4ca2a090f0fca88e3ad1",
+    "e58f839389661e884674a444f6bfd548f810ce62",
+    "34c4636d691aceff647eb3f5a31cb1c9f4f88ab2"
+  ],
+  "productBlobs": {
+    "product/alpha/wof_alpha_enemy_target_labels.js": "e6e1260559f735b85ce6f69e87803369f125b2de",
+    "product/alpha/enemy_target_labels_regression.mjs": "410c6dabf317eb08bea07f77800fb4ef3e82ed2b",
+    "product/alpha/wof_alpha_enemy_head_projection.json": "8de57739818503a0e14702d2fa0bb4eba58228d2",
+    "product/alpha/wof_alpha_hud_model.js": "16641129ff651c2733aebc6fae09a280e4bac49b",
+    "product/alpha/wof_alpha_real_worker.js": "924d02eb575d1031b168b3bb7450c34107447c85",
+    "product/alpha/wof_alpha_hud.js": "b6f9cbf23ec1c00fe969aa2a2b59ad5e0d5433f4",
+    "product/alpha/wof_alpha_loader.js": "b1d2bd5cc3f5e4e7a3bed084d6d35ea71489717b"
+  }
 }
