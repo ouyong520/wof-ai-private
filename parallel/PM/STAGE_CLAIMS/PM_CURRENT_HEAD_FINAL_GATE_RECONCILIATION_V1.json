@@ -2,7 +2,15 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "PM_CURRENT_HEAD_FINAL_GATE_RECONCILIATION_V1",
   "promptPath": "parallel/PM/PM_CURRENT_HEAD_FINAL_GATE_RECONCILIATION_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "922fe72ad518a6e2ac1d850f56359a468e02725a",
-  "startedAtUtc": "2026-09-02T00:01:44Z"
+  "startedAtUtc": "2026-09-02T00:01:44Z",
+  "auditHead": "13b58504b14e2be37f362db8448932b48459d711",
+  "resultPath": "parallel/PM/CURRENT_HEAD_FINAL_GATE_RECONCILIATION/RESULT.md",
+  "resultCommit": "fef51194927df95c0374fcc39d9485624b56e674",
+  "blocker": "P1 Recorder authority generation rollover is not revoked at the child-start boundary; stale prior-generation heartbeat can still renew authority before the new reader binds the newer generation",
+  "ownerActionRequired": false,
+  "recommendedImmediateStage": "UNIFIED_LIVE_PROOF_RECORDER_CHILD_START_GENERATION_FIX_V1",
+  "recommendedFreshRetestStage": "UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_V2",
+  "stopCondition": "BLOCKED — CURRENT-HEAD FINAL-GATE RECONCILIATION — P1 Recorder authority generation rollover is not revoked at the child-start boundary; stale prior-generation heartbeat can still renew authority before the new reader binds the newer generation"
 }
