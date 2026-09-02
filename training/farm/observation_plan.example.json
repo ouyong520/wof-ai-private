@@ -1,0 +1,40 @@
+{
+  "schema": "wof-training-farm-observation-plan-v1",
+  "experimentId": "fixture.synthetic-button-diff",
+  "startingSavestateId": "reset-save.fixture.v1",
+  "expectedStartStateSha256": null,
+  "baselineActions": [
+    {
+      "frames": 4,
+      "inputs": [
+        {"player": 0, "pressed": []},
+        {"player": 1, "pressed": []},
+        {"player": 2, "pressed": []},
+        {"player": 3, "pressed": []}
+      ]
+    }
+  ],
+  "interventions": [
+    {
+      "interventionId": "synthetic-p0-button0-held",
+      "actions": [
+        {
+          "frames": 4,
+          "inputs": [
+            {"player": 0, "pressed": [0]},
+            {"player": 1, "pressed": []},
+            {"player": 2, "pressed": []},
+            {"player": 3, "pressed": []}
+          ]
+        }
+      ]
+    }
+  ],
+  "horizonFrames": 4,
+  "repetitions": 2,
+  "captureFrames": [0, 1, 2, 4],
+  "metadata": {
+    "semanticLabel": "fixture-only synthetic input contrast",
+    "hypothesis": "fixture-only: controlled input should expose synthetic changed candidates; no WOF semantic claim"
+  }
+}
