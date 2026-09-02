@@ -217,3 +217,19 @@ Keep Owner updates concise. PM should normally state:
 - exact fresh prompt(s) only when a worker slot should actually be used.
 
 Do not make Owner interpret implementation summaries or choose technical solutions.
+
+## 13. Product version and release cadence are user-value driven
+
+Authoritative roadmap: `parallel/PM/PRODUCT_VERSION_ROADMAP.md`.
+
+All PM work must distinguish **engineering stages** from **user-facing product versions**.
+
+Hard rules:
+
+1. a product version must deliver a gameplay improvement the user can actually perceive;
+2. backend/refactor/QA/tooling completion alone does not earn a new product version number;
+3. target roughly one safe user-visible patch every 2–3 days and one materially stronger minor release roughly every 7 days once a usable baseline exists;
+4. do not ship on cadence if a release safety gate remains open;
+5. V1.0.0 is the first hard foundation; later V1.x patches should reuse it to deliver faster visible improvements;
+6. multi-instance Training Farm work may run early as an isolated R&D accelerator when it directly improves automated enemy/action-state collection, future V1.x warning coverage, or later safe-route learning, but it must not displace legitimate V1 P0/P1 release work or be counted as product-version progress by itself;
+7. before opening a new stage, PM should be able to state which user-visible release it supports, or explicitly classify it as an isolated R&D accelerator.
