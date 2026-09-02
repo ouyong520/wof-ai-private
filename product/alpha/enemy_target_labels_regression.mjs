@@ -28,6 +28,23 @@ test('1 target7E 0/4/8 maps to 1P/2P/3P',()=>{
   assert.match(workerSource,/core\.TARGETS\[s\.target7E\]\|\|null/,'real worker must consume existing core target authority');
 });
 
+test('1b malformed/coercible raw target7E values fail closed before normalized-target consistency',()=>{
+  const coercible={valueOf(){return 0;},toString(){return'0';}};
+  const malformed=[
+    ['0','P1'],['4','P2'],['8','P3'],
+    [new Number(0),'P1'],[new Number(4),'P2'],[new Number(8),'P3'],
+    [NaN,'P1'],[Infinity,'P1'],[-Infinity,'P1'],[0.5,'P1'],[-0,'P1'],
+    [true,'P1'],[false,'P1'],[null,'P1'],[undefined,'P1'],
+    [[],'P1'],[[0],'P1'],[coercible,'P1']
+  ];
+  for(const [raw,normalized] of malformed){
+    assert.equal(L.targetForField(raw),null,'malformed raw target must not normalize');
+    const x=plan([marker(0,{target7E:raw,target:normalized})]);
+    assert.equal(x.labels.length,0,'malformed raw target must not render a label');
+    assert.equal(x.suppressed[0].reason,'INVALID_TARGET');
+  }
+});
+
 test('2 unsupported target fails closed with no confident label',()=>{
   assert.equal(L.targetForField(6),null);
   const x=plan([marker(6,{target:null})]);assert.equal(x.labels.length,0);assert.equal(x.suppressed[0].reason,'INVALID_TARGET');
