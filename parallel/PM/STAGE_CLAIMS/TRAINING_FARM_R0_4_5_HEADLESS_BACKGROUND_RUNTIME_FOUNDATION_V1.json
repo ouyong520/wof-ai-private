@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "TRAINING_FARM_R0_4_5_HEADLESS_BACKGROUND_RUNTIME_FOUNDATION_V1",
+  "dedupKey": "training.farm.r0.4.5.headless-background-runtime-foundation-v1",
+  "effectiveDedupKey": "training.farm.r0.4.5.headless-background-runtime-foundation-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.5.headless-background-runtime-foundation-v1.json",
+  "claimToken": "701a388fe82482ae2dedf70106bd36d0eaa353a0d9e4ee3e",
+  "state": "ACTIVE",
+  "startCommit": "8536d044e3b7c482543b04bb3b3b8c886c0e4177"
+}
