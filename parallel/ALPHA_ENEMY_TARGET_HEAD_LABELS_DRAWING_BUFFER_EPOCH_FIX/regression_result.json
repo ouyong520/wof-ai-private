@@ -1,0 +1,42 @@
+{
+  "schema": "wof-alpha-enemy-target-head-labels-drawing-buffer-epoch-fix-regression-v1",
+  "status": "PASS",
+  "evidenceClass": "SYNTHETIC_IMPLEMENTATION_REGRESSION_ONLY_NOT_INDEPENDENT_QA_NOT_BROWSER_WOF_PROJECTION_PROOF",
+  "focusedEpochMatrix": {
+    "status": "PASS",
+    "covered": [
+      "current marker/projection/drawing-buffer runtime-a remains valid",
+      "current marker/projection runtime-a plus drawing-buffer runtime-old/runtime-old is suppressed",
+      "drawing-buffer runtime-a/runtime-old split is suppressed",
+      "missing/null/empty/boxed/array/coercible drawing-buffer epoch authority is suppressed",
+      "missing/null/empty/boxed/array/coercible projection epoch authority is suppressed",
+      "strict raw target strings/boxed/coercible values remain rejected",
+      "0/4/8 mapping, retarget and simultaneous enemies remain valid"
+    ]
+  },
+  "implementationRegression": {
+    "schema": "wof-alpha-enemy-target-head-labels-implementation-regression-v1",
+    "status": "PASS",
+    "testCount": 14,
+    "passCount": 14,
+    "failCount": 0
+  },
+  "commands": [
+    "git hash-object product/alpha/wof_alpha_enemy_target_labels.js",
+    "git hash-object product/alpha/enemy_target_labels_regression.mjs",
+    "node --check product/alpha/wof_alpha_enemy_target_labels.js",
+    "node --check product/alpha/enemy_target_labels_regression.mjs",
+    "node product/alpha/enemy_target_labels_regression.mjs",
+    "node focused_epoch_regression.mjs"
+  ],
+  "currentProductBlobs": {
+    "product/alpha/wof_alpha_enemy_target_labels.js": "e6e1260559f735b85ce6f69e87803369f125b2de",
+    "product/alpha/enemy_target_labels_regression.mjs": "410c6dabf317eb08bea07f77800fb4ef3e82ed2b",
+    "product/alpha/wof_alpha_hud_model.js": "16641129ff651c2733aebc6fae09a280e4bac49b",
+    "product/alpha/wof_alpha_real_worker.js": "924d02eb575d1031b168b3bb7450c34107447c85",
+    "product/alpha/wof_alpha_hud.js": "b6f9cbf23ec1c00fe969aa2a2b59ad5e0d5433f4",
+    "product/alpha/wof_alpha_loader.js": "b1d2bd5cc3f5e4e7a3bed084d6d35ea71489717b",
+    "product/alpha/wof_alpha_enemy_head_projection.json": "8de57739818503a0e14702d2fa0bb4eba58228d2"
+  },
+  "executionNote": "The changed helper and regression, plus HUD model and projection profile, were reconstructed byte-for-byte and Git blob hashes matched current GitHub. The regression harness only reads worker/HUD/loader as static compatibility text; those unchanged current GitHub blobs and required source assertions were re-read directly, while the local regression execution supplied only the already-verified static dependency facts. No Browser/WOF process was launched."
+}
