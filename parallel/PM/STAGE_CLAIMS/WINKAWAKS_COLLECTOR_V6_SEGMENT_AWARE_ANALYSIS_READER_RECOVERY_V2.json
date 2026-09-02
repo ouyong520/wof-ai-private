@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "WINKAWAKS_COLLECTOR_V6_SEGMENT_AWARE_ANALYSIS_READER_RECOVERY_V2",
+  "dedupKey": "winkawaks.collector.v6.segment-aware-analysis-reader.recovery-v2",
+  "effectiveDedupKey": "winkawaks.collector.v6.segment-aware-analysis-reader.recovery-v2",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/winkawaks.collector.v6.segment-aware-analysis-reader.recovery-v2.json",
+  "claimToken": "46b6ba65b262b792046c08a1557cf8c8216e448006250856",
+  "state": "ACTIVE",
+  "startCommit": "1474541af3f501b6872c3a0524de5a87c5721d09"
+}
