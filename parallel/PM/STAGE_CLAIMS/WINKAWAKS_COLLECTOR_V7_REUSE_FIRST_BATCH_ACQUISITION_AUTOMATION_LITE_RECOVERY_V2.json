@@ -1,0 +1,11 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "WINKAWAKS_COLLECTOR_V7_REUSE_FIRST_BATCH_ACQUISITION_AUTOMATION_LITE_RECOVERY_V2",
+  "dedupKey": "winkawaks.collector.v7.reuse-first-batch-acquisition-automation-lite.recovery-v2",
+  "effectiveDedupKey": "winkawaks.collector.v7.reuse-first-batch-acquisition-automation-lite.recovery-v2",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/winkawaks.collector.v7.reuse-first-batch-acquisition-automation-lite.recovery-v2.json",
+  "claimToken": "c8f114f6638b4a71867f29f5d2a4ee9b",
+  "state": "ACTIVE",
+  "startCommit": "615f63ee3bdd326adb4f4a4b15d59104df4376b0",
+  "bridgeStartCommit": "5a49a42bc8c269be3bcc07b35b1762c6b8e76d1a"
+}
