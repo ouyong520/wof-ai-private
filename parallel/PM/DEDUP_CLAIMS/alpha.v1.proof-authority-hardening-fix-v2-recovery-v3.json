@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.proof-authority-hardening-fix-v2-recovery-v3",
+  "effectiveDedupKey": "alpha.v1.proof-authority-hardening-fix-v2-recovery-v3",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PROOF_AUTHORITY_HARDENING_FIX_V2_RECOVERY_V3",
+  "promptPath": "parallel/PM/ALPHA_V1_PROOF_AUTHORITY_HARDENING_FIX_V2_RECOVERY_V3_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol-recovery-v3",
+  "claimToken": "9a22f4c1e05363ff07a8d105da2c5a37035a18ea4a6f6262",
+  "state": "ACTIVE",
+  "startCommit": "a4f21940df3a2e75f01718d11c58688fdca7c2ae"
+}
