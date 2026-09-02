@@ -1,13 +1,15 @@
-"""Deterministic in-repository backend used only for R0.1 contract smoke."""
+"""Deterministic in-repository backend used only for Farm implementation checks."""
 
 from __future__ import annotations
 
 import struct
 
-from .adapter import CoreAction, RuntimeCapabilityError
+from .adapter import CoreAction, CoreFrameInput, RuntimeCapabilityError
 
 
 class DeterministicFakeBackend:
+    """Small deterministic backend; never real-WOF proof authority."""
+
     _STATE = struct.Struct("<Q4I32s")
 
     def __init__(self):
@@ -21,20 +23,16 @@ class DeterministicFakeBackend:
         if self._closed:
             raise RuntimeCapabilityError("fake backend is closed")
 
-    def reset(self) -> None:
-        self._require_open()
-        self._frame = 0
-        self._masks[:] = [0, 0, 0, 0]
-        self._ram[:] = bytes(32)
-
-    def step(self, action: CoreAction) -> None:
-        self._require_open()
+    @staticmethod
+    def _mask(action: CoreAction) -> int:
         mask = 0
         for index in action.pressed:
             if index >= 32:
                 raise ValueError("fake backend supports button indices 0..31")
             mask |= 1 << index
-        self._masks[action.player] = mask
+        return mask
+
+    def _advance(self) -> None:
         self._frame += 1
         self._ram[0:8] = self._frame.to_bytes(8, "little")
         for player, value in enumerate(self._masks):
@@ -42,6 +40,25 @@ class DeterministicFakeBackend:
             self._ram[start : start + 4] = value.to_bytes(4, "little")
         checksum = (sum(self._ram[:24]) + self._frame) & 0xFF
         self._ram[24] = checksum
+
+    def reset(self) -> None:
+        self._require_open()
+        self._frame = 0
+        self._masks[:] = [0, 0, 0, 0]
+        self._ram[:] = bytes(32)
+
+    def step(self, action: CoreAction) -> None:
+        """R0.1 compatibility: change one player's persistent mask and advance."""
+        self._require_open()
+        self._masks[action.player] = self._mask(action)
+        self._advance()
+
+    def step_frame(self, frame_input: CoreFrameInput) -> None:
+        """Set all four masks explicitly, then advance one frame."""
+        self._require_open()
+        for action in frame_input.inputs:
+            self._masks[action.player] = self._mask(action)
+        self._advance()
 
     def read_ram(self) -> bytes:
         self._require_open()
@@ -59,6 +76,14 @@ class DeterministicFakeBackend:
         self._frame = unpacked[0]
         self._masks[:] = unpacked[1:5]
         self._ram[:] = unpacked[5]
+
+    def runtime_identity_components(self) -> dict[str, object]:
+        self._require_open()
+        return {
+            "backendName": "DeterministicFakeBackend",
+            "coreName": "fixture",
+            "buttonCount": 32,
+        }
 
     def close(self) -> None:
         self._closed = True
