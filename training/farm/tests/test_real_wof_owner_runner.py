@@ -17,6 +17,22 @@ class RealWofOwnerRunnerTests(unittest.TestCase):
         farm.mkdir(parents=True)
         for name in owner._SOURCE_GUARD_FILES:
             (farm / name).write_text("{}\n", encoding="utf-8")
+        (farm / "determinism.schema.json").write_text(
+            json.dumps({
+                "type": "object",
+                "required": [
+                    "schema", "runId", "status", "reasonCode", "message",
+                    "proofScope", "realWofProof", "sourceNamespace", "firstDivergence",
+                ],
+                "properties": {
+                    "schema": {"const": "wof-training-farm-determinism-result-v1"},
+                    "status": {"enum": ["PASS", "FAIL", "SKIP", "ERROR"]},
+                    "sourceNamespace": {"const": "stable-retro-fbneo"},
+                },
+                "additionalProperties": True,
+            }),
+            encoding="utf-8",
+        )
         (farm / "determinism_actions.example.json").write_text(
             json.dumps([
                 {
