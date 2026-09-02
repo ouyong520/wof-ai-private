@@ -1,0 +1,55 @@
+{
+  "schema": "wof-alpha-enemy-target-head-labels-strict-type-independent-crosscheck-v1",
+  "stageId": "ALPHA_ENEMY_TARGET_HEAD_LABELS_STRICT_TYPE_CROSSCHECK_V1",
+  "status": "PASS",
+  "verdict": "PASS — ALPHA ENEMY TARGET HEAD LABEL STRICT-TYPE CROSS-CHECK — INDEPENDENT SECOND OPINION GREEN",
+  "evidenceClass": "SYNTHETIC_REPOSITORY_QA_ONLY_NOT_BROWSER_WOF_PROJECTION_PROOF",
+  "productionSource": {
+    "path": "product/alpha/wof_alpha_enemy_target_labels.js",
+    "blob": "50dfd831b21ea79ed06e34a1a7fb559aee011b6c"
+  },
+  "projectionProfile": {
+    "path": "product/alpha/wof_alpha_enemy_head_projection.json",
+    "blob": "8de57739818503a0e14702d2fa0bb4eba58228d2",
+    "verdict": "UNPROVEN",
+    "expectedRuntimeDisposition": "PROJECTION_UNPROVEN_FAIL_CLOSED"
+  },
+  "independentFixture": {
+    "path": "parallel/ALPHA_ENEMY_TARGET_HEAD_LABELS_STRICT_TYPE_CROSSCHECK/independent_strict_type_crosscheck.mjs",
+    "blob": "0a33883477d7c36b70dec6f75f578c50209bfd35"
+  },
+  "execution": {
+    "syntax": "PASS",
+    "status": "PASS",
+    "checkGroups": 14,
+    "malformedRawVectors": 19,
+    "freshQaV2VerdictUsedAsProof": false,
+    "freshQaV2FixtureUsedAsProof": false,
+    "browserWofLaunched": false
+  },
+  "coverage": {
+    "primitiveExactTargets0_4_8": "PASS",
+    "numericStrings0_4_8Rejected": "PASS",
+    "boxedNumbersRejected": "PASS",
+    "valueOfCoercionRejected": "PASS",
+    "toStringCoercionRejected": "PASS",
+    "arraysRejected": "PASS",
+    "booleansRejected": "PASS",
+    "nullUndefinedRejected": "PASS",
+    "nanInfinityRejected": "PASS",
+    "fractionalRejected": "PASS",
+    "negativeZeroRejected": "PASS",
+    "malformedRawPlusNormalizedP1P2P3Rejected": "PASS",
+    "rawNormalizedMismatchRejected": "PASS",
+    "retargetP1P2P3": "PASS",
+    "simultaneousEnemies": "PASS",
+    "staleMarker": "PASS",
+    "staleProjection": "PASS",
+    "freshnessBoundary300ms": "PASS",
+    "markerProjectionEpochMismatch": "PASS",
+    "staleDrawingBuffer": "PASS",
+    "drawingBufferEpochMismatch": "PASS",
+    "unprovenProjection": "PASS",
+    "strictFixCommitScopeNarrow": "PASS"
+  }
+}
