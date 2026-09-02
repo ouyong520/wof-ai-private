@@ -5,7 +5,9 @@
   "effectiveDedupKey": "training.farm.r0.3.observation-discovery-tooling-prep-closeout-recovery-v2",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.3.observation-discovery-tooling-prep-closeout-recovery-v2.json",
   "claimToken": "f70b0a24a16ead355e66fcf116e91559f8e0e8341f53ad1b",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "1c6e177f8265e8132ac14a829dc1bfb4e14c738a",
-  "supersedesStageId": "TRAINING_FARM_R0_3_OBSERVATION_DISCOVERY_TOOLING_PREP_V1"
+  "supersedesStageId": "TRAINING_FARM_R0_3_OBSERVATION_DISCOVERY_TOOLING_PREP_V1",
+  "resultPath": "parallel/TRAINING_FARM_R0_3_OBSERVATION_DISCOVERY_TOOLING_PREP_CLOSEOUT_RECOVERY_V2/RESULT.md",
+  "resultCommit": "c52033f1b34b7c7b31bc0af7ac7e21523f01f1db"
 }
