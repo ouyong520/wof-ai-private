@@ -38,7 +38,7 @@ EXACT = {
     "\n[Update Project]": "\n[更新项目]",
     "\n[Start Python Launcher]": "\n[启动 Python Launcher]",
     "\n[Start Multi-Room Recorder]": "\n[启动多房间采集器]",
-    "\n[Start Browser Fleet]": "\n[启动多房间浏览器]",
+    "\n[Start Browser Fleet]": "\n[启动多房间浏览器工具]",
     "\n[Run Regression]": "\n[运行回归测试]",
     "\n[Run Live Proof]": "\n[运行真人 Windows 验证]",
     "\n[Collect Diagnostics]": "\n[收集诊断信息]",
@@ -164,8 +164,10 @@ class ChineseToolkit(toolkit.Toolkit):
         toolkit.subprocess.Popen(cmd, cwd=str(supervisor.parent), env=toolkit.os.environ.copy())
         print("真人验证已启动。正常进入 WOF 即可，不需要 DevTools，也不需要粘贴 JS。")
         print("首次需要头顶定位权威时，画面会自动出现一次校准：正常移动、点一次 P1 头顶、走纵深、跳跃、resize/fullscreen，再按画面提示选择唯一稳定模型。")
+        print("如果出现 NEED_MORE_SAMPLES：不要重新执行菜单 6、不要重启验证、不要重新打包；当前有效样本会持续保留。保持 P1 在场并继续左右移动，让背景明显卷屏。")
+        print("如果 P1 暂时不在场，校准会暂停并保留已采样数据；回到可控制 P1 的房间后会从原进度继续。画面会持续显示具体原因、当前 samples、下一步动作和下一条命令。")
         print("离开房间再进入时会自动撤销旧 runtime generation，并重新发现新 Worker/WASM/World 921031 后自动激活 Alpha。")
-        print("本次状态、校准证据和异常会自动收集；关闭 WOF 托盘验证后会自动整理并打包。")
+        print("本次 accepted authority、Alpha 失败、校准进度、最终状态和异常会自动限长保留；关闭 WOF 托盘验证后会自动整理并打包。")
         print("最终 ZIP：" + str(final_zip))
 
     def package(self):
