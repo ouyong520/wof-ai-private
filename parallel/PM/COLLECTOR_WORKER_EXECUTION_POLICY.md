@@ -3,6 +3,8 @@
 Updated: 2026-09-02
 Status: **AUTHORITATIVE — applies to Collector development/recovery tasks unless a later Owner directive explicitly overrides it**
 
+Owner standing preference: the fixed three-part worker-prompt format in this document is the default for all future Collector PM instructions. **Owner does not need to repeat or remind PM of this formatting preference in later turns.** Only a later explicit Owner directive may override it.
+
 ## Purpose
 
 Keep the Collector side lane implementation-heavy, low-chatter, and module-oriented.
