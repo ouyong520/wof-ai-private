@@ -1,0 +1,107 @@
+{
+  "schema": "wof-alpha-formal-real-adapter-current-blob-revalidation-inspection-v1",
+  "stage": "ALPHA_FORMAL_REAL_ADAPTER_CURRENT_BLOB_REVALIDATION_V1",
+  "status": "PASS",
+  "evidenceClass": "FRESH_REPOSITORY_SOURCE_INSPECTION_CURRENT_BLOBS_NOT_BROWSER_WOF_PROOF",
+  "claimStartHead": "25b664fea50a593cd46a8aca1ae7259351b8687c",
+  "claimCommit": "9c8d690624413e06853bf5d11b2d11ff5b530bea",
+  "productionBlobs": {
+    "product/alpha/wof_alpha_real_worker.js": "924d02eb575d1031b168b3bb7450c34107447c85",
+    "product/alpha/wof_alpha_hud.js": "b6f9cbf23ec1c00fe969aa2a2b59ad5e0d5433f4",
+    "product/alpha/wof_alpha_bootstrap.user.js": "5aed15ff14aa39d95eade187cefb63dbd00848e6",
+    "product/alpha/wof_alpha_loader.js": "b1d2bd5cc3f5e4e7a3bed084d6d35ea71489717b",
+    "product/alpha/wof_alpha_core.js": "267a44190744b6848b0685712c3d5572627d3a8a",
+    "product/alpha/wof_alpha_enemy_target_labels.js": "3f6f4410376756e6935a4236e40e76574b289169",
+    "product/alpha/wof_alpha_enemy_head_projection.json": "8de57739818503a0e14702d2fa0bb4eba58228d2",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/real_adapter.py": "1a5c6a255468c096ddd5df79993851e4d41e23cb"
+  },
+  "qaSeamBlobs": {
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/formal_integration_qa_sut.mjs": "46c36dca6e906b8134dda76068ada2b3aaedff5a",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/detector_local_identity_test.mjs": "4140d22114a6e10a8cef345f388b0b479dea1f5b",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/integration_test.mjs": "4b2b2eccb83e16e149a6ddd4f36c438c325c50b9"
+  },
+  "vectors": [
+    {
+      "id": "detector-local-world-921031-identity",
+      "status": "PASS",
+      "finding": "Current worker locates exactly one 1 MiB CPU-logical candidate, computes detector-local Web Crypto SHA-256, requires exact golden digest, validates current RAM window and P1/P2/P3 self indexes; adapter separately requires the returned fresh identity and signature."
+    },
+    {
+      "id": "same-targetid-runtime-replacement",
+      "status": "PASS",
+      "finding": "Adapter calls Discovery V2 with a fresh identity_cache={} on every step; a replaced runtime with the same targetId must still satisfy fresh discovery plus current worker status/runtimeEpoch and is otherwise rebound through fresh worker localIdentity."
+    },
+    {
+      "id": "exact-pair-session-generation-nonce-runtime-epoch",
+      "status": "PASS",
+      "finding": "Worker binding validates session, pairGeneration, pairNonce, runtimeEpoch and discovery SHA; immutable tick authority carries session/generation/nonce/epoch; bootstrap current-pair match rejects mismatches; adapter current-authority check requires exact matching page and worker authority."
+    },
+    {
+      "id": "late-old-inflight-completion",
+      "status": "PASS",
+      "finding": "Tick gate revoke disables the gate and clears inFlight; finish() rejects revoked or mismatched authority. Adapter revokes old page warning authority before establishing a new generation and requires same-worker observer stop when still addressable."
+    },
+    {
+      "id": "disconnect-stale-warning-revocation",
+      "status": "PASS",
+      "finding": "Adapter revoke clears current binding and best-effort resets page/stops worker; bootstrap reset increments generation, clears nonce, and calls HUD transportReset; HUD diag/reset clears warning authority state."
+    },
+    {
+      "id": "one-inflight-no-catchup",
+      "status": "PASS",
+      "finding": "createTickAuthorityGate.start() rejects overlap, records skippedTicks, exposes queueDepth=0, and no catch-up queue is present."
+    },
+    {
+      "id": "warning-heartbeat-freshness",
+      "status": "PASS",
+      "finding": "Current worker warning state remains changed||heartbeat with sampledAt-lastPublishedAt>=250; current HUD warning freshness remains STALE_MS=1500 and warning freshness is tracked only by lastRx from kind=state."
+    },
+    {
+      "id": "marker-is-decorative-not-warning-authority",
+      "status": "PASS",
+      "finding": "Worker publishes markers only as kind=enemy-target-markers in a separate envelope. HUD marker receive updates lastMarkerMsg/lastMarkerRx only; it does not update lastMsg/lastRx or clear diag. Bootstrap ignores marker kind for PAIRED/diagnostic warning authority transitions."
+    },
+    {
+      "id": "marker-payload-does-not-weaken-transport",
+      "status": "PASS",
+      "finding": "Marker envelopes use the same exact session/pairGeneration/pairNonce/runtimeEpoch transport envelope. HUD applies schema/session/TRANSPORT.matches(m) before accepting either warning or marker messages. Marker payload fields are never consulted by adapter authority admission."
+    },
+    {
+      "id": "hud-pair-check-and-warning-revoke",
+      "status": "PASS",
+      "finding": "HUD requires TRANSPORT.matches(m) before message handling; kind=state alone refreshes warning lastRx, diag clears warning state and marker state, transportReset clears both warning and marker state."
+    },
+    {
+      "id": "read-only-safety",
+      "status": "PASS",
+      "finding": "Current worker SAFETY remains readOnly=true, ramWrites=0, inputInjection=false, workerReplacement=false, blobRewrite=false, gamePostMessageControl=false, heapWrites=false, assistMode=false; bootstrap keeps game Worker untouched; adapter contains no gameplay input injection or heap write surface."
+    },
+    {
+      "id": "qa-seam-current-production-sources",
+      "status": "PASS",
+      "finding": "formal_integration_qa_sut.mjs and integration_test.mjs read product/alpha/wof_alpha_real_worker.js, bootstrap userscript, current HUD and real_adapter.py directly from repository paths at runtime; detector_local_identity_test.mjs likewise reads current worker and adapter instead of a copied implementation."
+    },
+    {
+      "id": "current-unproven-projection-is-silent",
+      "status": "PASS",
+      "finding": "Current projection profile is verdict=UNPROVEN/status=FAIL_CLOSED_UNTIL_IMPLEMENTATION_READY_PROOF. Worker loadEnemyHeadProjection therefore yields no usable projection profile and markerSnapshot returns null; normal warning publication remains independent."
+    }
+  ],
+  "deterministicExecution": {
+    "status": "NOT_EXECUTED_ENVIRONMENT_PRECONDITION_UNAVAILABLE",
+    "node": "v22.16.0",
+    "repositoryCheckout": "absent",
+    "networkProbe": "git ls-remote https://github.com/ouyong520/wof-ai-private.git HEAD -> Could not resolve host: github.com",
+    "commandsThatWouldRunOnARepositoryCheckout": [
+      "node parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/integration_test.mjs",
+      "node parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/detector_local_identity_test.mjs"
+    ],
+    "freshnessRule": "Historical Recovery V2 test logs were not reported as a fresh execution result."
+  },
+  "crossGate": {
+    "alphaEnemyTargetHeadLabelsQa": "BLOCKED",
+    "blocker": "Numeric-string target7E coercion can render false decorative labels under a synthetically valid projection.",
+    "formalImpact": "NO FORMAL WARNING-AUTHORITY BREACH FOUND. Current worker produces numeric target7E via U16, current projection profile is UNPROVEN/silent, marker receive state is separate from warning freshness, and marker messages cannot pair/bootstrap warning authority. The Head Labels gate remains independently release-blocking."
+  },
+  "browserWof": "NOT_RUN_BY_DESIGN"
+}
