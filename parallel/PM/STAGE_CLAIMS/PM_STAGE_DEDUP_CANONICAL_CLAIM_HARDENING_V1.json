@@ -4,11 +4,27 @@
   "promptPath": "parallel/PM/PM_STAGE_DEDUP_CANONICAL_CLAIM_HARDENING_START_PROMPT.md",
   "owner": "chatgpt-pm-stage-dedup-canonical-claim-hardening-v1-6f3c1a9e",
   "claimToken": "6f3c1a9e-9d27-4d18-b3b4-50f2b8be7e71",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
+  "result": "PASS",
   "startCommit": "ed469e4b36f5b638c0894928978e5b2dcc313709",
+  "resultPath": "parallel/PM/PM_STAGE_DEDUP_CANONICAL_CLAIM_HARDENING_RESULT.md",
+  "resultCommit": "301e313fda8ca37b52c354fb99480b3cc66f78cc",
+  "verification": {
+    "helperSelfTest": "PASS",
+    "repositoryRegressionCases": 8,
+    "repositoryRegressionVerdict": "OK",
+    "liveCanonicalAtomicCreateWinnerCommit": "aff028b566b6f1d21795a64b375ea284d8bef65d",
+    "duplicateCreateOutcome": "HTTP 422 / sha wasn't supplied",
+    "postRaceOwnerToken": "fixture-owner-4d6e6de8"
+  },
   "scope": [
     "parallel/PM/STAGE_DEDUP_GUARD.md",
-    "parallel/PM/*DEDUP*",
+    "parallel/PM/PM_CORE_OPERATING_CHARTER.md",
+    "parallel/PM/pm_stage_dedup_v2.py",
+    "parallel/PM/test_pm_stage_dedup_v2.py",
+    "parallel/PM/PM_START_PROMPT_DEDUP_V2_TEMPLATE.md",
+    "parallel/PM/DEDUP_CLAIMS/**",
+    "parallel/PM/PM_STAGE_DEDUP_CANONICAL_CLAIM_HARDENING_RESULT.md",
     "parallel/PM/STAGE_CLAIMS/PM_STAGE_DEDUP_CANONICAL_CLAIM_HARDENING_V1.json"
   ]
 }
