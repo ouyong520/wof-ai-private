@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PROOF_AUTHORITY_HARDENING_INTEGRATION_FIX_V4",
+  "dedupKey": "alpha.v1.proof-authority-hardening-integration-fix-v4",
+  "effectiveDedupKey": "alpha.v1.proof-authority-hardening-integration-fix-v4",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.proof-authority-hardening-integration-fix-v4.json",
+  "claimToken": "fu5w5j4ic3ROWSzKIE9HtdrN-Em7Cj6z",
+  "state": "ACTIVE",
+  "startCommit": "a2a5d442b1a88c817966d6d1a2bac0e752379864"
+}
