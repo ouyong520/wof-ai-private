@@ -1,8 +1,11 @@
 {
   "stage": "ALPHA_FORMAL_REAL_ADAPTER_CURRENT_BLOB_REVALIDATION_V1",
   "owner": "chatgpt-alpha-formal-current-blob-revalidation-v1",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
+  "result": "PASS",
   "start_head": "25b664fea50a593cd46a8aca1ae7259351b8687c",
+  "claim_commit": "9c8d690624413e06853bf5d11b2d11ff5b530bea",
+  "result_commit": "2343d2fe7bad07212f8b6abf0c9eb292946bf236",
   "scope": [
     "parallel/ALPHA_FORMAL_REAL_ADAPTER_CURRENT_BLOB_REVALIDATION/**",
     "parallel/PM/STAGE_CLAIMS/ALPHA_FORMAL_REAL_ADAPTER_CURRENT_BLOB_REVALIDATION_V1.json"
@@ -17,5 +20,5 @@
     "product/alpha/wof_alpha_enemy_head_projection.json": "8de57739818503a0e14702d2fa0bb4eba58228d2",
     "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/real_adapter.py": "1a5c6a255468c096ddd5df79993851e4d41e23cb"
   },
-  "notes": "Independent repository-only current-blob Formal revalidation. Historical Formal PASS is not reused as freshness proof. No Alpha/Formal implementation writes and no Browser/WOF launch."
+  "notes": "COMPLETE/PASS independent repository-only current-blob Formal revalidation. Historical Formal PASS was not reused as freshness proof. No Alpha/Formal implementation writes and no Browser/WOF launch. Separate Alpha Enemy Target Head Labels QA remains BLOCKED and release-blocking."
 }
