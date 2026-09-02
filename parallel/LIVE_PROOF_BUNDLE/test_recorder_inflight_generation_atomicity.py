@@ -45,6 +45,16 @@ class RecorderInflightGenerationAtomicityTests(unittest.TestCase):
         self.assertTrue(recorder.current_healthy)
         return recorder, gen1, order1
 
+    def pending_generation1(self) -> tuple[u.RecorderEvidence, str, int]:
+        recorder = u.RecorderEvidence()
+        proc1 = u.start_child(["fake-recorder-generation-1"], Path("."))
+        gen1 = proc1._wof_authority_generation
+        order1 = proc1._wof_authority_generation_order
+        recorder.begin_source_generation(gen1, order=order1)
+        self.assertFalse(recorder.admitted)
+        self.assertFalse(recorder.current_fresh)
+        return recorder, gen1, order1
+
     def rollover_generation2(
         self,
         recorder: u.RecorderEvidence,
@@ -150,7 +160,7 @@ class RecorderInflightGenerationAtomicityTests(unittest.TestCase):
         self.assertFalse(recorder.fatal)
 
     def test_inflight_old_admission_cannot_mark_new_generation_admitted(self) -> None:
-        recorder, gen1, order1 = self.healthy_generation1()
+        recorder, gen1, order1 = self.pending_generation1()
         entered = threading.Event()
         release = threading.Event()
         errors: list[BaseException] = []
@@ -170,34 +180,27 @@ class RecorderInflightGenerationAtomicityTests(unittest.TestCase):
             except BaseException as exc:  # pragma: no cover - propagated below
                 errors.append(exc)
 
-        # Use a fresh same-generation evidence object so the old admission gets
-        # through the initial duplicate-admission gate before it is stalled.
-        recorder.begin_source_generation("generation-1-rebind", order=order1 + 1)
-        gen1_rebind = recorder.source_generation
-        self.assertIsInstance(gen1_rebind, str)
-
-        thread = threading.Thread(
-            target=lambda: recorder.feed(ADMISSION_G1, source_generation=gen1_rebind),
-            name="impl-old-admission",
-        )
+        thread = threading.Thread(target=old_event, name="impl-old-admission")
         thread.start()
         self.assertTrue(entered.wait(timeout=2))
 
-        proc2 = u.start_child(["fake-recorder-generation-2"], Path("."))
-        gen2 = proc2._wof_authority_generation
-        self.assertEqual(recorder.source_generation, gen2)
-        self.assertFalse(recorder.admitted)
+        gen2 = self.rollover_generation2(recorder, gen1, order1)
         release.set()
         thread.join(timeout=2)
         self.assertFalse(thread.is_alive())
         if errors:
             raise errors[0]
 
+        self.assertEqual(recorder.source_generation, gen2)
         self.assertFalse(recorder.admitted)
         self.assertIsNone(recorder.admission_source_generation)
+        self.assertFalse(recorder.current_fresh)
+
         recorder.feed(ADMISSION_G2, source_generation=gen2)
+        recorder.feed(HEARTBEAT, source_generation=gen2)
         self.assertTrue(recorder.admitted)
         self.assertEqual(recorder.admission_source_generation, gen2)
+        self.assertTrue(recorder.current_healthy)
 
 
 if __name__ == "__main__":
