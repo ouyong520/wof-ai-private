@@ -10,32 +10,31 @@ Recovery claim token: `7ad952318995783e09d624bed7ee3828923aa13bac7e03c6`
 
 ## Outcome
 
-Recovery V2 resumed the already-landed V5 storage/retention module from the current bridge HEAD and closed only the remaining authority / consistency / self-check tail. The existing V5 policy/schema, accounting, archive, two-phase prune, health CLI, capture-pressure guard, V3 segment-boundary integration, original implementation regressions and documentation were retained rather than rebuilt.
+Recovery V2 resumed the already-landed V5 storage/retention module from current bridge HEAD and closed only the remaining authority / consistency / self-check tail. Existing V5 policy/schema, accounting, archive, two-phase prune, health CLI, capture-pressure guard, V3 segment-boundary integration, implementation regressions and documentation were retained rather than rebuilt.
 
 Final bridge authority:
 
 ```text
 repo: ouyong520/wof-winkawaks-bridge
-start/current bridge HEAD at recovery inspection: c66d7cd73b33fb084c5d620fd6911dacb977363b
-final main: bfe8b95591f5f803d298f7cbe87a417b65e74326
-compare: ahead 5 / behind 0 from c66d7cd
+recovery start/current HEAD inspected: c66d7cd73b33fb084c5d620fd6911dacb977363b
+final main / exact tested candidate: bfe8b95591f5f803d298f7cbe87a417b65e74326
+final tree: f6aba2502d03c11963cfb570b8a065a14bbcd67c
+compare from c66d7cd: ahead 5 / behind 0
 ```
 
-The stopped original V5 canonical claim remains historical `ACTIVE` exactly as required; Recovery V2 used its own canonical/stage generation and does not rewrite the old claim.
+The stopped original V5 canonical claim remains historical `ACTIVE` exactly as required. Recovery V2 used its own canonical/stage generation and supersedes the stopped implementation generation only through this durable result and its own completed claims.
 
 ## Recovery-tail defects closed
 
-Recovery inspection found a narrow shared authority gap cluster and closed it without changing V4 identity/lifecycle authority or V3 session semantics:
-
-1. **Policy/schema exactness** — the public V5 entrypoint now checks the schema against the runtime parser contract beyond key/enums: exact numeric maxima, nullable numeric forms, booleans, storage-root/archive-root constraints and pin schema are fail-closed.
-2. **Collector budget boundary** — a projected owned-byte total that reaches the configured collector budget is blocked; the guard no longer reports `allowed=true` while the projected pressure state is already `BLOCK_NEW_CAPTURE`.
-3. **Authoritative owned-byte accounting for capture admission** — the default capture guard derives owned bytes from the effective V4 catalog plus V5 accounting instead of the prior narrow quick-pattern scan, so a V4-indexed local artifact with a non-orphan-pattern filename cannot be omitted from the budget decision.
-4. **Receipt ↔ V4 artifact authority** — verified archive receipts must match the exact ordered V4-managed local artifact projection (`sourcePath`, deterministic archive destination, SHA-256 and kind), in addition to the pre-existing dataset/task/capture/session/record identity and archive-byte verification.
+1. **Policy/schema exactness** — public V5 validation now checks the schema against runtime parser semantics beyond keys/enums: exact numeric maxima, nullable numeric forms, booleans, storage-root/archive-root constraints and pin schema are fail-closed.
+2. **Collector budget exact boundary** — projected Collector-owned bytes that reach the configured budget are blocked; the guard no longer reports `allowed=true` while projected pressure is already `BLOCK_NEW_CAPTURE`.
+3. **Authoritative owned-byte admission accounting** — default capture admission derives Collector-owned bytes from effective V4 catalog + V5 inventory instead of the prior narrow quick-pattern scan, so a V4-indexed local artifact with a non-orphan-pattern filename cannot be omitted from the budget decision.
+4. **Receipt ↔ V4 artifact authority** — a valid archive receipt must match the exact ordered V4-managed local artifact projection (`sourcePath`, deterministic archive destination, SHA-256 and kind) in addition to dataset/task/capture/session/record identity and archive-byte verification.
 5. **Filesystem alias fail-close** — a pre-existing archive destination that is a filesystem hardlink alias of the source is rejected; receipt verification also rejects source/archive same-file aliasing while both paths exist.
-6. **Incomplete operation authority** — non-complete journals now surface `kind`, `datasetId`, receipt/policy identity and state. A non-complete `ARCHIVE` operation for a dataset, or an ambiguous non-complete operation, removes that dataset from the prune candidate set even when a COMPLETE-looking receipt and exact archive bytes exist.
-7. **Focused smoke assertion repair** — the final smoke source-wiring assertion was corrected to the already-current V3 import spelling `from .collector_platform import run as run_collector`; no V3 implementation was changed.
+6. **Incomplete operation authority** — non-complete journals expose operation kind, dataset ID, receipt/policy identity and state. A non-complete `ARCHIVE` operation for a dataset, or an ambiguous non-complete storage operation, removes that dataset from the prune candidate set even if a COMPLETE-looking receipt and exact archive bytes exist.
+7. **Focused smoke assertion repair** — the final smoke source-wiring assertion was corrected to current V3 spelling `from .collector_platform import run as run_collector`; V3 implementation semantics were not changed.
 
-Recovery hardening is installed once by the existing `bridge.storage_retention` public entrypoint and binds the already-landed `storage_common`, `storage_inventory` and `storage_actions` runtime globals. `collector_platform` continues to consume `capture_budget_guard` from that same public V5 entrypoint, so snapshot/burst and each V3 segment boundary receive the hardened admission semantics without modifying V3 behavior.
+Recovery hardening is installed once through the existing `bridge.storage_retention` public entrypoint and binds the already-landed `storage_common`, `storage_inventory` and `storage_actions` authority paths. `collector_platform` continues to consume `capture_budget_guard` from that public V5 entrypoint, so snapshot/burst and each V3 segment boundary receive the hardened admission semantics without changing V3 terminal/session behavior.
 
 ## Exact final V5 recovery blobs
 
@@ -53,7 +52,7 @@ tests/test_storage_retention_recovery.py
   7684674a66a31f244089c0512e346f83f8697a0a
 ```
 
-Existing landed core remained in place, including:
+Existing landed core remained in place:
 
 ```text
 bridge/storage_common.py       3c8f372bbdbd5095670f9272670f5fd17148c3a3
@@ -67,9 +66,32 @@ schemas/collector_storage_policy_v1.schema.json
                                61e9d9a5b02bd8b4b14351e188923240ba9cc803
 ```
 
+## Final storage authority contract
+
+Policy/runtime identity:
+
+```text
+policy schemaVersion: wof_collector_storage_policy_v1
+default normalized policy SHA-256: 46017615b37d1ce739d3090eaedd130fcd54cf82122c1cfd0624164cf2a73703
+status schemaVersion: wof_collector_storage_status_v1
+pressure states: HEALTHY / WARNING / BLOCK_NEW_CAPTURE / CRITICAL
+```
+
+Capture pressure/budget remains conservative and pre-capture. It blocks current `BLOCK_NEW_CAPTURE`/`CRITICAL`, projected free space at or below the configured capture floor, and projected Collector-owned bytes at or above an explicit budget. V3 continues to cross the same guarded Collector platform at each segment capture boundary, so already-finalized segments remain durable if a later segment is stopped by pressure and V3's existing PARTIAL/FAILED authority is preserved.
+
+Archive remains copy-first and exact-byte/hash preserving. A COMPLETE receipt binds dataset ID, V4 record identity, source task ID, capture/session identity, policy identity and the exact V4-managed artifact source/destination/hash/kind set. Destination collisions, path escape, symlink/reparse ambiguity, source/destination aliases and different existing bytes fail closed; source data is not deleted by archive.
+
+Prune remains two-phase: deterministic plan/dry-run by default, then explicit destructive apply only. A source can be removed only after the surviving archive copy re-verifies immediately at the destructive boundary and the dataset still satisfies lifecycle/integrity, grace/retention-age, not-active and protection rules. Incomplete/ambiguous archive authority never authorizes prune. Unknown/orphan evidence is detected/reported but is not silently promoted into a delete candidate.
+
+Protection remains V4/V3-authority preserving: immutable-ID pins and configured BASECAP VALID data are protected; PARTIAL/FAILED evidence follows conservative preserve/recent-protection policy; storage actions do not rewrite V4 dataset identity/lifecycle or V3 COMPLETE/PARTIAL/FAILED semantics.
+
+CLI/status surface remains structured JSON through the existing V5 entrypoint and includes `status`, `plan`, `archive`, `prune`, `verify` and `show` repository conventions. Status exposes free space by configured root, Collector-owned/local/archive/metadata/protected/partial/orphan byte accounting, pressure state, archive/prune backlog, storage conflicts, incomplete operations, catalog source and the read-only safety invariants.
+
+Crash/concurrency/path safety remains fail-closed: mutation uses the storage-manager lock, archive/prune operation journals and atomic JSON finalization; non-complete operations remain visible and cannot masquerade as completed archive authority. Collector-owned relative roots are enforced and archive/storage roots cannot overlap; unrelated ROM/BIOS/emulator/game files are outside the managed storage authority.
+
 ## Implementation self-check
 
-Testing followed the implementation cadence: one coherent recovery-tail candidate was completed, then the integrated smoke was run. The first run exposed only a stale smoke literal; implementation regressions and current repository health had already passed. That single assertion was corrected and one focused full smoke rerun was used as the final candidate proof.
+Testing followed the implementation cadence: one coherent recovery-tail candidate was completed, then integrated smoke was run. The first run exposed only a stale smoke source literal; implementation regressions and current-repository health had already passed. That assertion was corrected and one focused full smoke rerun was the final candidate proof.
 
 Final exact-candidate GitHub Actions run:
 
@@ -92,20 +114,11 @@ V5 current-repository policy/schema + storage health       PASS
 Immutable discovery / segmented authority / V5 wiring      PASS
 ```
 
-The V5 28-case total includes the original landed V5 suite plus Recovery V2 regressions for:
+The V5 28-case total includes original landed V5 tests plus Recovery V2 regressions for schema numeric-contract drift, exact collector-budget boundary, V4-cataloged non-pattern owned bytes, changed V4 artifact authority against an old receipt, valid receipt + RUNNING archive-journal prune denial, and pre-existing hardlink source/archive alias.
 
-```text
-schema numeric-contract drift
-exact collector-budget boundary
-V4-cataloged non-pattern owned bytes
-changed V4 artifact authority against an old receipt
-valid receipt + RUNNING archive journal prune denial
-pre-existing hardlink source/archive alias
-```
+The previous integrated run `33634585060` is not the final verdict: V3 15/15, V4 20/20, V5 28/28, catalog/index and V5 health/schema passed there; only the final source-wiring text assertion used obsolete local alias `collector_run` rather than current `run_collector`. The exact successor run above is fully green.
 
-The previous integrated run `33634585060` is intentionally not the final verdict: V3 15/15, V4 20/20, V5 28/28, catalog/index and V5 health/schema all passed there; only the final source-wiring text assertion used the obsolete local alias `collector_run` instead of current `run_collector`. Recovery V2 fixed that self-check defect and the exact successor run above is fully green.
-
-## Safety / authority invariants
+## Safety / isolation and remaining runtime limitation
 
 Still true after Recovery V2:
 
@@ -117,15 +130,13 @@ inputInjection=false
 containsAiDecisionLogic=false
 ```
 
-V5 still does not mutate V4 dataset identity or lifecycle state. Prune remains explicit/destructive-only, requires exact verified archive authority, and does not treat unknown/orphan evidence as an automatic prune candidate. PARTIAL/FAILED protection and BASECAP/pin protection remain policy-driven and fail-closed.
+No Browser/Alpha production code, danger rules, target semantics, Transport, Recorder, PYLAUNCH, OneClick or `product/alpha/**` were modified. No Training Farm / Stable-Retro / FBNeo / 10-worker scheduling or action-injection semantics were modified.
 
-No Browser/Alpha production code, danger rules, target semantics, Transport, Recorder, PYLAUNCH, OneClick or `product/alpha/**` were modified. No Training Farm / Stable-Retro / FBNeo / 10-worker scheduling or action-injection semantics were modified. Collector remains an independent read-only observation/data-retention side lane.
-
-No real WinKawaks gameplay session was started for this repository implementation recovery. Runtime free-space values on an Owner machine remain runtime facts; implementation self-check validates deterministic classification/guard behavior and current repository integration without inventing machine-specific disk state.
+No real WinKawaks gameplay session was started for this repository implementation recovery. Actual free-space totals and filesystem capacity on the Owner machine remain runtime facts; implementation self-check proves deterministic classification/admission behavior and current repository integration but does not invent machine-specific disk state.
 
 ## Closeout
 
-Recovery V2 has a complete V5 local long-run storage/retention module, exact candidate self-check evidence, and a durable RESULT. The Recovery V2 canonical claim and stage claim may now be closed `COMPLETE` while preserving the stopped original V5 historical claim.
+Recovery V2 now has a complete V5 local long-run storage/retention module, exact tested bridge HEAD/tree, exact authority blobs, implementation-owned self-check evidence and this durable RESULT. Recovery V2 canonical/stage claims may be closed `COMPLETE` while preserving the stopped original V5 historical claim.
 
 Final status:
 
