@@ -145,7 +145,7 @@ status. Missing ROM is reported but is **not** an R0.1 repository-smoke failure.
 Only on a machine that already has a legal local WOF ROM:
 
 ```bash
-set WOF_ROM_PATH=C:\\path\\to\\wof.zip
+set WOF_ROM_PATH=C:\path\to\wof.zip
 python -m training.farm.probe --runtime
 ```
 
