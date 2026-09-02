@@ -1,0 +1,15 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.anchored-overlays.one-session-live-proof-tooling-proof-authority-fix-crosscheck-v2",
+  "effectiveDedupKey": "alpha.v1.anchored-overlays.one-session-live-proof-tooling-proof-authority-fix-crosscheck-v2--iv--alpha.v1.dual-overlay.proof-authority-fix-v1--second-opinion-v2",
+  "dedupMode": "independent-validation",
+  "independentValidationGroup": "alpha.v1.dual-overlay.proof-authority-fix-v1",
+  "independentValidationKey": "second-opinion-v2",
+  "stageId": "ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_PROOF_AUTHORITY_FIX_CROSSCHECK_V2",
+  "promptPath": "parallel/PM/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_PROOF_AUTHORITY_FIX_CROSSCHECK_V2_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol-crosscheck-v2",
+  "claimToken": "aa0114a019cb14f8a280bee31d86ca9d",
+  "state": "ACTIVE",
+  "startCommit": "1f7e1c0cfe4dd41dc38a78b4a30ec91b68e9b87c"
+}
