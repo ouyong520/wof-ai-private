@@ -1,7 +1,7 @@
 """Windows-first Owner runner for current-source R0.2 real proof + R0.4 fork smoke.
 
-This is orchestration/evidence capture only. It never upgrades fixture evidence to
-real authority and never contains ROM bytes or savestates in durable output.
+This module only orchestrates existing Training Farm authority. It never upgrades
+fixture evidence to real proof and never writes ROM/savestate/raw-RAM bytes.
 """
 from __future__ import annotations
 
@@ -36,8 +36,10 @@ from .savestate_fork_contract import (
     PROOF_SCOPE_REAL as R04_REAL_SCOPE,
     branch_identity_sha256,
     fork_plan_authority_sha256,
+    fork_source_identity,
     load_fork_plan,
 )
+from .savestate_fork_runner import validate_resume_result
 from .stable_retro_backend import (
     PINNED_STABLE_RETRO,
     SUPPORTED_PYTHON_MAX,
@@ -88,7 +90,7 @@ _SOURCE_GUARD_FILES = (
 
 
 class OwnerRunnerError(RuntimeError):
-    pass
+    """Fail-closed Owner runner contract or evidence error."""
 
 
 @dataclass(frozen=True)
@@ -234,7 +236,6 @@ def preflight(evidence_root: Path | None = None) -> Preflight:
         guard, _ = _source_guard(farm)
     except (OSError, OwnerRunnerError) as exc:
         return fail(f"current-source guard failed: {exc}", rom, rom_sha)
-
     return Preflight(True, "READY", repo, target, rom, rom_sha, guard, dependency, required)
 
 
@@ -246,6 +247,15 @@ def _load_json(path: Path) -> dict[str, object]:
     if type(value) is not dict:
         raise OwnerRunnerError(f"evidence {path} must contain one JSON object")
     return value
+
+
+def _try_load_json(path: Path) -> dict[str, object] | None:
+    if not path.is_file():
+        return None
+    try:
+        return _load_json(path)
+    except OwnerRunnerError:
+        return None
 
 
 def _schema_top_level_check(result: dict[str, object], schema_path: Path) -> None:
@@ -297,10 +307,8 @@ def validate_r02_real_pass(
         raise OwnerRunnerError("R0.2 action sequence differs from Owner runner contract")
     runtime = validate_runtime_identity(validated["runtimeIdentity"], require_real_rom=True)
     current_candidate, current_files = farm_source_identity()
-    if runtime["farmCandidateSha256"] != current_candidate:
+    if runtime["farmCandidateSha256"] != current_candidate or runtime["farmSourceFiles"] != current_files:
         raise OwnerRunnerError("R0.2 proof Farm candidate is stale/current-source mismatch")
-    if runtime["farmSourceFiles"] != current_files:
-        raise OwnerRunnerError("R0.2 proof Farm source-file identity is stale/current-source mismatch")
     if runtime["romSha256"] != expected_rom_sha256:
         raise OwnerRunnerError("R0.2 proof ROM identity differs from preflight ROM")
     if validated["runtimeIdentitySha256"] != runtime_identity_sha256(runtime, require_real_rom=True):
@@ -317,16 +325,7 @@ def validate_r04_real_pass(
 ) -> dict[str, object]:
     _schema_top_level_check(result, farm_dir / "savestate_fork_result.schema.json")
     plan = load_fork_plan(farm_dir / "real_wof_fork_smoke.plan.json")
-    expected_keys = {
-        "schema","runId","status","reasonCode","message","proofScope","realWofProof",
-        "sourceNamespace","forkSetId","forkPlanAuthoritySha256","forkSetAuthoritySha256",
-        "rootAuthority","branchSpecifications","repetitionsRequired","branchesRequired",
-        "branchesAttempted","branchesCompleted","branches","deterministic","firstDivergence",
-        "resume","r0_2ProofGate",
-    }
-    if set(result) != expected_keys:
-        raise OwnerRunnerError("R0.4 result does not exactly match published result envelope")
-    if type(result.get("runId")) is not str or not _RUN.fullmatch(result["runId"]):
+    if type(result.get("runId")) is not str or not _RUN.fullmatch(str(result["runId"])):
         raise OwnerRunnerError("R0.4 runId malformed")
     if result.get("status") != "PASS" or result.get("reasonCode") != "FORK_SET_DETERMINISTIC":
         raise OwnerRunnerError("R0.4 result is not PASS / FORK_SET_DETERMINISTIC")
@@ -338,6 +337,17 @@ def validate_r04_real_pass(
         raise OwnerRunnerError("R0.4 forkSetId mismatch")
     if result.get("forkPlanAuthoritySha256") != fork_plan_authority_sha256(plan):
         raise OwnerRunnerError("R0.4 fork plan authority mismatch")
+
+    root = result.get("rootAuthority")
+    if type(root) is not dict:
+        raise OwnerRunnerError("R0.4 rootAuthority missing")
+    try:
+        validate_resume_result(result, plan, root, proof_scope=R04_REAL_SCOPE)
+    except Exception as exc:
+        raise OwnerRunnerError(
+            f"R0.4 published authority contract rejected: {type(exc).__name__}: {exc}"
+        ) from exc
+
     gate = result.get("r0_2ProofGate")
     if type(gate) is not dict or gate.get("accepted") is not True:
         raise OwnerRunnerError("R0.4 did not accept the R0.2 real proof gate")
@@ -346,9 +356,6 @@ def validate_r04_real_pass(
     if gate.get("proofRuntimeIdentitySha256") != r02.get("runtimeIdentitySha256"):
         raise OwnerRunnerError("R0.4 consumed different R0.2 runtime authority")
 
-    root = result.get("rootAuthority")
-    if type(root) is not dict:
-        raise OwnerRunnerError("R0.4 rootAuthority missing")
     runtime = validate_runtime_identity(root.get("runtimeIdentity"), require_real_rom=True)
     if runtime["romSha256"] != expected_rom_sha256 or root.get("romSha256") != expected_rom_sha256:
         raise OwnerRunnerError("R0.4 ROM authority differs from preflight/R0.2")
@@ -356,6 +363,11 @@ def validate_r04_real_pass(
         raise OwnerRunnerError("R0.4 Farm candidate differs from R0.2 proof")
     if root.get("runtimeIdentitySha256") != runtime_identity_sha256(runtime, require_real_rom=True):
         raise OwnerRunnerError("R0.4 root runtime identity SHA mismatch")
+    current_fork_candidate, current_fork_files = fork_source_identity()
+    if root.get("forkCandidateSha256") != current_fork_candidate:
+        raise OwnerRunnerError("R0.4 fork candidate is stale/current-source mismatch")
+    if root.get("forkSourceFiles") != current_fork_files:
+        raise OwnerRunnerError("R0.4 fork source-file identity is stale/current-source mismatch")
 
     specs = result.get("branchSpecifications")
     rows = result.get("branches")
@@ -385,23 +397,12 @@ def validate_r04_real_pass(
             raise OwnerRunnerError(f"R0.4 branch repetition count mismatch: {bid}")
         if row.get("deterministic") is not True or row.get("reusedFromResume") is not False:
             raise OwnerRunnerError(f"R0.4 branch proof flags invalid: {bid}")
-        outcomes = row.get("outcomes")
-        if type(outcomes) is not list or len(outcomes) != plan.repetitions:
-            raise OwnerRunnerError(f"R0.4 branch outcomes incomplete: {bid}")
-        fingerprints = {o.get("outcomeFingerprintSha256") for o in outcomes if type(o) is dict}
-        if len(fingerprints) != 1 or None in fingerprints:
-            raise OwnerRunnerError(f"R0.4 branch outcomes are not repeated-identical: {bid}")
     return result
 
 
 def _default_command_runner(cmd: Sequence[str], cwd: Path, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        list(cmd),
-        cwd=str(cwd),
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
+        list(cmd), cwd=str(cwd), env=env, text=True, capture_output=True, check=False
     )
 
 
@@ -452,13 +453,15 @@ def _write_summary(
         },
     }
     _write_json(run_dir / "summary.json", summary)
-    lines = [
-        f"{state} — {detail}",
-        f"Evidence: {run_dir}",
-        f"R0.2 JSON: {r02_path if r02_path else 'not produced'}",
-        f"R0.4 JSON: {r04_path if r04_path else 'not produced'}",
-    ]
-    (run_dir / "summary.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (run_dir / "summary.txt").write_text(
+        "\n".join((
+            f"{state} — {detail}",
+            f"Evidence: {run_dir}",
+            f"R0.2 JSON: {r02_path if r02_path else 'not produced'}",
+            f"R0.4 JSON: {r04_path if r04_path else 'not produced'}",
+        )) + "\n",
+        encoding="utf-8",
+    )
     return summary
 
 
@@ -469,7 +472,6 @@ def run_owner_flow(
     preflight_result: Preflight | None = None,
 ) -> tuple[int, dict[str, object]]:
     pre = preflight_result or preflight(evidence_root)
-    # Never write proof artifacts under the repository, including on failed preflight.
     root = pre.evidence_root
     if _is_within(root, pre.repo_root):
         root = _default_evidence_root().resolve(strict=False)
@@ -477,28 +479,24 @@ def run_owner_flow(
         _check_writable_directory(root)
         run_dir = _new_run_dir(root)
     except OSError as exc:
-        summary = {
+        return 2, {
             "schema": RUNNER_SCHEMA,
             "state": "WAITING_PREREQUISITE",
             "detail": f"evidence directory unavailable: {type(exc).__name__}: {exc}",
             "sourceNamespace": EXPECTED_SOURCE_NAMESPACE,
             "evidenceDirectory": None,
         }
-        return 2, summary
 
     if not pre.ok:
-        summary = _write_summary(
+        return 2, _write_summary(
             run_dir, state="WAITING_PREREQUISITE", detail=pre.reason, pre=pre
         )
-        return 2, summary
 
     repo = pre.repo_root
     farm = repo / "training" / "farm"
     assert pre.rom_sha256 and pre.source_guard_sha256
-
     steps = load_action_sequence(
-        actions_path=str(farm / "determinism_actions.example.json"),
-        actions_json=None,
+        actions_path=str(farm / "determinism_actions.example.json"), actions_json=None
     )
     action_sha = action_sequence_sha256(steps)
     r02_path = run_dir / "r0_2_real_determinism.json"
@@ -516,8 +514,7 @@ def run_owner_flow(
         r02_cmd = (
             sys.executable, "-m", "training.farm.determinism",
             "--actions", str(farm / "determinism_actions.example.json"),
-            "--horizon", str(R02_HORIZON),
-            "--repetitions", str(R02_REPETITIONS),
+            "--horizon", str(R02_HORIZON), "--repetitions", str(R02_REPETITIONS),
             "--output", str(r02_path),
         )
         cp02 = command_runner(r02_cmd, repo, env)
@@ -528,27 +525,22 @@ def run_owner_flow(
             )
         raw02 = _load_json(r02_path)
         if raw02.get("status") != "PASS":
-            detail = (
-                f"{raw02.get('status')} / {raw02.get('reasonCode')}: "
-                f"{raw02.get('message')}"
-            )
-            summary = _write_summary(
+            detail = f"{raw02.get('status')} / {raw02.get('reasonCode')}: {raw02.get('message')}"
+            return 3, _write_summary(
                 run_dir, state="BLOCKED_R0_2_REAL_DETERMINISM", detail=detail,
                 pre=pre, r02_path=r02_path, r02=raw02,
             )
-            return 3, summary
         r02 = validate_r02_real_pass(
             raw02, farm_dir=farm, expected_rom_sha256=pre.rom_sha256,
             expected_action_sha256=action_sha,
         )
         guard("after R0.2 validation")
-        phase = "R0.4 REAL FORK SMOKE"
 
+        phase = "R0.4 REAL FORK SMOKE"
         r04_cmd = (
             sys.executable, "-m", "training.farm.savestate_fork",
             "--plan", str(farm / "real_wof_fork_smoke.plan.json"),
-            "--r0-2-proof", str(r02_path),
-            "--output", str(r04_path),
+            "--r0-2-proof", str(r02_path), "--output", str(r04_path),
         )
         cp04 = command_runner(r04_cmd, repo, env)
         if not r04_path.is_file():
@@ -558,40 +550,33 @@ def run_owner_flow(
             )
         raw04 = _load_json(r04_path)
         if raw04.get("status") != "PASS":
-            detail = (
-                f"{raw04.get('status')} / {raw04.get('reasonCode')}: "
-                f"{raw04.get('message')}"
-            )
-            summary = _write_summary(
+            detail = f"{raw04.get('status')} / {raw04.get('reasonCode')}: {raw04.get('message')}"
+            return 4, _write_summary(
                 run_dir, state="BLOCKED_R0_4_REAL_FORK_SMOKE", detail=detail,
                 pre=pre, r02_path=r02_path, r04_path=r04_path, r02=r02, r04=raw04,
             )
-            return 4, summary
         r04 = validate_r04_real_pass(
             raw04, farm_dir=farm, expected_rom_sha256=pre.rom_sha256, r02=r02
         )
         guard("after R0.4 validation")
-        summary = _write_summary(
-            run_dir,
-            state="PASS",
+        return 0, _write_summary(
+            run_dir, state="PASS",
             detail="R0.2 REAL WOF DETERMINISM + R0.4 REAL FORK SMOKE",
             pre=pre, r02_path=r02_path, r04_path=r04_path, r02=r02, r04=r04,
         )
-        return 0, summary
     except (OwnerRunnerError, OSError, ValueError, TypeError) as exc:
         state = (
             "BLOCKED_R0_4_REAL_FORK_SMOKE"
             if phase == "R0.4 REAL FORK SMOKE"
             else "BLOCKED_R0_2_REAL_DETERMINISM"
         )
-        summary = _write_summary(
+        return 5, _write_summary(
             run_dir, state=state, detail=f"{phase}: {type(exc).__name__}: {exc}",
-            pre=pre, r02_path=r02_path if r02_path.is_file() else None,
+            pre=pre,
+            r02_path=r02_path if r02_path.is_file() else None,
             r04_path=r04_path if r04_path.is_file() else None,
-            r02=_load_json(r02_path) if r02_path.is_file() else None,
-            r04=_load_json(r04_path) if r04_path.is_file() else None,
+            r02=_try_load_json(r02_path), r04=_try_load_json(r04_path),
         )
-        return 5, summary
 
 
 def _human_verdict(summary: dict[str, object]) -> str:
@@ -614,7 +599,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     ap.add_argument(
         "--evidence-root",
-        help="external local evidence root; defaults to LocalAppData/XDG state outside the repository",
+        help="external local evidence root; defaults to LocalAppData/XDG state outside repository",
     )
     args = ap.parse_args(argv)
     code, summary = run_owner_flow(
