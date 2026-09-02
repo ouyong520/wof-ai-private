@@ -5,6 +5,11 @@
   "effectiveDedupKey": "winkawaks.collector.v5.long-run-storage-retention-manager.recovery-v2",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/winkawaks.collector.v5.long-run-storage-retention-manager.recovery-v2.json",
   "claimToken": "7ad952318995783e09d624bed7ee3828923aa13bac7e03c6",
-  "state": "ACTIVE",
-  "startCommit": "c142522664d7c74cbbe426679af88c225df74b02"
+  "state": "COMPLETE",
+  "startCommit": "c142522664d7c74cbbe426679af88c225df74b02",
+  "resultPath": "parallel/PM/WINKAWAKS_COLLECTOR_V5_LONG_RUN_STORAGE_RETENTION_MANAGER_RECOVERY_V2_RESULT.md",
+  "resultCommit": "f66add60286e96533fbaf0c236735442aa8fa69e",
+  "implementationRepository": "ouyong520/wof-winkawaks-bridge",
+  "implementationCommit": "bfe8b95591f5f803d298f7cbe87a417b65e74326",
+  "workflowRunId": 33634733195
 }
