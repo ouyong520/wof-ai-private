@@ -1,0 +1,47 @@
+{
+  "schema": "wof-alpha-enemy-target-head-labels-independent-repository-qa-v1",
+  "status": "FAIL",
+  "testCount": 16,
+  "passCount": 15,
+  "failCount": 1,
+  "evidenceClass": "SYNTHETIC_REPOSITORY_QA_ONLY_NOT_BROWSER_WOF_PROJECTION_PROOF",
+  "productionHelperBlob": "3f6f4410376756e6935a4236e40e76574b289169",
+  "projectionProfileBlob": "8de57739818503a0e14702d2fa0bb4eba58228d2",
+  "failure": {
+    "name": "malformed numeric-string raw targets must fail closed",
+    "observed": "target7E string \"0\" renders label 1P; direct probe also confirms strings \"4\" and \"8\" render 2P and 3P",
+    "expected": "malformed/non-numeric raw target fields must produce no confident label",
+    "cause": "TARGETS_BY_FIELD[target7E] uses JavaScript property-key coercion without an exact numeric/integer type guard"
+  },
+  "passedChecks": [
+    "authoritative numeric 0/4/8 mapping",
+    "unsupported numeric / normalized-target mismatch suppression",
+    "same-enemy P1->P2->P3 retarget without stale hold",
+    "simultaneous multi-enemy independent targets",
+    "disappearance and same-slot replacement lifecycle safety",
+    "marker 300ms/301ms freshness boundary",
+    "projection 300ms/301ms freshness boundary",
+    "marker/projection/drawing-buffer epoch fail-closed",
+    "invalid confidence and non-finite marker/projection values",
+    "unsupported enemy type and invalid slot",
+    "near-edge label-rectangle clamp with invalid-anchor suppression",
+    "malformed/stale drawing-buffer suppression",
+    "resize/fullscreen current mapping recomputation",
+    "repository UNPROVEN profile keeps labels silent",
+    "invalid proof/profile facts fail closed"
+  ],
+  "execution": {
+    "nativeCheckout": false,
+    "nativeCheckoutFailure": "container DNS/network isolation: Could not resolve host github.com",
+    "mode": "SOURCE_EXACT_RECONSTRUCTION_ALLOWED_BY_STAGE_PROMPT",
+    "sourceExactBlobVerification": {
+      "product/alpha/wof_alpha_enemy_target_labels.js": "git hash-object = 3f6f4410376756e6935a4236e40e76574b289169",
+      "product/alpha/wof_alpha_enemy_head_projection.json": "git hash-object = 8de57739818503a0e14702d2fa0bb4eba58228d2"
+    },
+    "commands": [
+      "node --check product/alpha/wof_alpha_enemy_target_labels.js",
+      "node --check parallel/ALPHA_ENEMY_TARGET_HEAD_LABELS_QA/independent_enemy_target_labels_qa.mjs",
+      "node parallel/ALPHA_ENEMY_TARGET_HEAD_LABELS_QA/independent_enemy_target_labels_qa.mjs"
+    ]
+  }
+}
