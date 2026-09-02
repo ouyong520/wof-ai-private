@@ -5,10 +5,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import wof_launcher.discovery_v2 as discovery_module
 from wof_launcher.alpha_runtime import AlphaRuntimeError, AlphaRuntimeManager, git_blob_sha
 from wof_launcher.discovery_v2 import TargetChoice
 from wof_launcher.probe import LIGHT_WORKER_PROBE, PAGE_PROBE, WORLD_SHA256
-from wof_launcher.probe_v2 import IDENTITY_PROBE
+from wof_launcher.probe_v2 import IDENTITY_PROBE, select_unique_exact_candidate
 from wof_launcher.runtime_authority import RuntimeAuthorityGuard
 
 
@@ -43,7 +44,26 @@ class FakeClient:
     def attach(self, target_id): return FakeSession(self, target_id)
 
 
+class FakeAlphaRuntime(AlphaRuntimeManager):
+    def __init__(self, root: Path):
+        super().__init__(root); self.calls = []
+    def _load_manifest(self):
+        return {"packageVersion": "field-self-check"}
+    def _page_install(self, client, page_id, pair_nonce):
+        self.calls.append(("page", page_id)); return {"session": "1" * 32, "channel": "WOF_ALPHA_" + "1" * 32, "pairGeneration": 1, "pairNonce": pair_nonce}
+    def _worker_install(self, client, worker_id, pair, identity, runtime_epoch):
+        self.calls.append(("worker", worker_id)); return {"running": True, "identity": dict(identity), "readOnly": True, "ramWrites": 0, "inputInjection": False}
+    def _evaluate(self, client, target_id, expression, *, await_promise=False, timeout=12.0):
+        self.calls.append(("status", target_id)); return {"attachState": "PAIRED", "hudLoaded": True, "hudStatus": {"mode": "field-self-check"}}
+    def revoke(self, client=None):
+        self._authority_key = None; self._page_target_id = None; self._worker_target_id = None
+        self._status = {"requested": True, "running": False, "readOnly": True, "ramWrites": 0, "inputInjection": False}
+
+
 class FieldRecoveryTests(unittest.TestCase):
+    def test_discovery_directly_uses_strict_field_identity_probe(self):
+        self.assertEqual(IDENTITY_PROBE, discovery_module.IDENTITY_PROBE)
+
     def test_identity_probe_hashes_every_structural_candidate_and_is_strict(self):
         self.assertIn("for(const c of found)", IDENTITY_PROBE)
         self.assertIn("candidateDiagnostics.filter(x=>x.exactMatch)", IDENTITY_PROBE)
@@ -51,6 +71,28 @@ class FieldRecoveryTests(unittest.TestCase):
         self.assertIn("if(exact.length>1)", IDENTITY_PROBE)
         self.assertIn("exactMatchCount:1", IDENTITY_PROBE)
         self.assertNotIn("if(found.length!==1)", IDENTITY_PROBE)
+
+    def test_exact_candidate_decision_zero_candidates_rejects(self):
+        with self.assertRaisesRegex(ValueError, "no ROM locator"):
+            select_unique_exact_candidate([])
+
+    def test_exact_candidate_decision_one_exact_accepts(self):
+        row = {"heapBase": 1, "sha256": WORLD_SHA256}
+        self.assertEqual(row, select_unique_exact_candidate([row]))
+
+    def test_two_candidates_unique_exact_match_accepts_only_exact(self):
+        wrong = {"heapBase": 1, "sha256": "0" * 64}; exact = {"heapBase": 2, "sha256": WORLD_SHA256}
+        self.assertEqual(exact, select_unique_exact_candidate([wrong, exact]))
+
+    def test_two_candidates_with_no_exact_match_reject(self):
+        rows = [{"heapBase": 1, "sha256": "0" * 64}, {"heapBase": 2, "sha256": "1" * 64}]
+        with self.assertRaisesRegex(ValueError, "no ROM locator"):
+            select_unique_exact_candidate(rows)
+
+    def test_multiple_exact_matches_remain_ambiguous(self):
+        rows = [{"heapBase": 1, "sha256": WORLD_SHA256}, {"heapBase": 2, "sha256": WORLD_SHA256}]
+        with self.assertRaisesRegex(ValueError, "ambiguous exact"):
+            select_unique_exact_candidate(rows)
 
     def test_stable_runtime_uses_only_cheap_health_not_identity_probe(self):
         client = FakeClient(); guard = RuntimeAuthorityGuard(); guard.accept(client, CHOICE)
@@ -88,6 +130,20 @@ class FieldRecoveryTests(unittest.TestCase):
             manager = AlphaRuntimeManager(root); self.assertEqual(b"safe", manager._verified_bytes(rel))
             p.write_text("mutated", encoding="utf-8")
             with self.assertRaises(AlphaRuntimeError): manager._verified_bytes(rel)
+
+    def test_accepted_authority_reaches_alpha_release_start(self):
+        with tempfile.TemporaryDirectory() as td:
+            manager = FakeAlphaRuntime(Path(td)); status = manager.ensure_running(object(), CHOICE, "authority-generation-a")
+            self.assertTrue(status["running"]); self.assertTrue(status["readOnly"]); self.assertEqual(0, status["ramWrites"]); self.assertFalse(status["inputInjection"])
+            self.assertEqual([("page", "page"), ("worker", "worker"), ("status", "page")], manager.calls)
+
+    def test_invalid_authority_never_starts_alpha_or_false_overlay_path(self):
+        with tempfile.TemporaryDirectory() as td:
+            manager = FakeAlphaRuntime(Path(td)); invalid = TargetChoice({"targetId": "page"}, {"targetId": "worker"}, GOOD_LIGHT, {"ok": False})
+            with self.assertRaisesRegex(AlphaRuntimeError, "没有可激活"):
+                manager.ensure_running(object(), invalid, "invalid")
+            self.assertEqual([], manager.calls)
+            self.assertFalse(manager.status()["running"])
 
 
 if __name__ == "__main__":
