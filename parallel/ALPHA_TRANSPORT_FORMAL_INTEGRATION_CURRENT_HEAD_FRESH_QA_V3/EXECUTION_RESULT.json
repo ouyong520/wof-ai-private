@@ -1,0 +1,34 @@
+{
+  "schema": "alpha-transport-formal-real-adapter-current-head-fresh-qa-v3-execution-v1",
+  "status": "PASS",
+  "evidenceClass": "FRESH_REPOSITORY_ONLY_CURRENT_SOURCE_EXECUTION_NOT_BROWSER_WOF",
+  "sourceBlobPins": {
+    "product/alpha/wof_alpha_real_worker.js": "b7f4506fc90b681ede059df5ad3316e665c6f15e",
+    "product/alpha/wof_alpha_hud.js": "50d944c451ac94b114e4f86441aeae8ad6b25c78",
+    "product/alpha/wof_alpha_player_head_warning.js": "af7f2359514dc6f86f74fac0c47858e8a6acf107",
+    "product/alpha/wof_alpha_bootstrap.user.js": "5aed15ff14aa39d95eade187cefb63dbd00848e6",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/real_adapter.py": "1a5c6a255468c096ddd5df79993851e4d41e23cb",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/adapter_test.py": "824323123cef3d736efb0d8152264303a59d14a9"
+  },
+  "exactBlobReconstruction": {
+    "realWorker": true,
+    "hud": true,
+    "playerHeadWarning": true,
+    "bootstrap": true,
+    "realAdapter": true,
+    "adapterTest": true
+  },
+  "runs": [
+    {"id":"exact-current-worker-adversarial","status":"PASS","caseCount":8,"passCount":8,"failCount":0,"coverage":["exact safety API","one-in-flight/no-catch-up","late completion after revoke","generation/epoch/pair isolation","player-head-spatial only after gate.finish","250ms heartbeat","detector-local exact SHA source","same-targetId nongolden runtime install fail-closed"]},
+    {"id":"exact-current-hud-authority-adversarial","status":"PASS","caseCount":8,"passCount":8,"failCount":0,"coverage":["1500ms stale constant","all inbound kinds exact current-pair filtered","only state refreshes warning lastRx","spatial cannot create warning state","render requires fresh state","anchored warning binds semantic state epoch/sample","diag/reset revoke state and spatial","status warningCount uses state freshness only"]},
+    {"id":"exact-current-player-head-transport-adversarial","status":"PASS","caseCount":20,"passCount":20,"failCount":0,"coverage":["strict warningSampleAt malformed values","spatial-before-warning rejection","player/projection/drawing-buffer epoch mismatch","80/81ms player freshness","one-in-flight","late completion","generation rebind","pair envelope mismatch","launcher SHA rejection","249/250ms","1500/1501ms","exact safety"]},
+    {"id":"exact-current-formal-adapter-regression","status":"PASS","caseCount":10,"passCount":10,"failCount":0,"coverage":["exact World identity admission","wrong SHA rejection","input injection rejection","same-page revoke","same-worker stop","replacement revoke ordering","runtime-epoch replacement invalidation","fresh detector-local SHA required","revoke-before-bind-install","unsupported discovery fail-closed/gameplay playable"]},
+    {"id":"exact-current-bootstrap-adversarial","status":"PASS","caseCount":3,"passCount":3,"failCount":0,"coverage":["RNG/transport failure game unaffected","reset increments generation and clears authority","foreign pair cannot pair"]}
+  ],
+  "totals": {"caseCount":49,"passCount":49,"failCount":0},
+  "notes": [
+    "Each current-source mirror listed above was Git-blob hashed before execution and matched its current GitHub blob exactly.",
+    "Historical Recovery V2 executions are supportive only and are excluded from fresh totals.",
+    "No Browser/WOF process was launched."
+  ]
+}
