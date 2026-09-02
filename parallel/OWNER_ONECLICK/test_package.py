@@ -44,24 +44,33 @@ class PackageTests(unittest.TestCase):
         paths = [row["path"] for row in m["files"]]
         self.assertEqual(paths, sorted(paths)); self.assertEqual(len(paths), len(set(paths)))
 
-    def test_field_recovery_runtime_is_selected_from_one_snapshot(self) -> None:
+    def test_overlay_reentry_runtime_is_selected_from_one_snapshot(self) -> None:
         source = self.manifest["sourceCommit"]
-        for name in ("ownerOneclick", "alpha", "pylaunch", "recorder", "browserFleet", "liveProof"):
+        for name in ("ownerOneclick", "alpha", "pylaunch", "operatorToolkit", "projectionProof", "recorder", "browserFleet", "liveProof"):
             self.assertEqual(self.manifest["components"][name]["sourceCommit"], source, name)
         required = {
             "WOF_一键工具.cmd",
             "parallel/OWNER_ONECLICK/bootstrap_v2.ps1",
+            "parallel/OPTOOLKIT/owner_zh_cn.py",
+            "parallel/OPTOOLKIT/live_session.py",
             "parallel/PYLAUNCH/launcher.py",
             "parallel/PYLAUNCH/wof_launcher/alpha_runtime.py",
             "parallel/PYLAUNCH/wof_launcher/runtime_authority.py",
             "parallel/PYLAUNCH/wof_launcher/probe_v2.py",
             "parallel/PYLAUNCH/wof_launcher/monitor.py",
+            "parallel/PYLAUNCH/wof_launcher/projection_recovery.py",
+            "parallel/PYLAUNCH/wof_launcher/reentry_discovery.py",
+            "parallel/HUDANCHOR_PROOF/wof_hudanchor_gl.js",
+            "parallel/HUDANCHOR_PROOF/wof_owner_projection_worker.js",
+            "parallel/HUDANCHOR_PROOF/wof_owner_projection_top.js",
             "product/alpha/wof_alpha_field_adapter.js",
             "product/alpha/wof_alpha_enemy_head_projection.json",
             "product/alpha/wof_alpha_player_head_projection.json",
         }
         self.assertTrue(required.issubset(self.blobs), required - self.blobs.keys())
         self.assertEqual(self.manifest["components"]["alpha"]["fieldAdapter"], "product/alpha/wof_alpha_field_adapter.js")
+        self.assertEqual(self.manifest["components"]["pylaunch"]["revision"], "overlay-reentry-runtime-generation-v1")
+        self.assertEqual(self.manifest["components"]["projectionProof"]["mode"], "package-selected-bounded-live")
 
     @unittest.skipUnless(shutil.which("git"), "git not available")
     def test_every_manifest_blob_matches_pinned_commit(self) -> None:
