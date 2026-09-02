@@ -1,0 +1,18 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.anchored-overlays.one-session-live-proof-tooling-recovery-v2",
+  "effectiveDedupKey": "alpha.v1.anchored-overlays.one-session-live-proof-tooling-recovery-v2",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_RECOVERY_V2",
+  "promptPath": "parallel/PM/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_RECOVERY_V2_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol-live-proof-tooling-recovery-v2",
+  "claimToken": "9dc2b3ca-39f2-484d-9b5e-6d696f2192b7-d5595989907522d76a58b75a5c3eea2e",
+  "state": "ACTIVE",
+  "startCommit": "f4f6a7f161804d50e43fbf04713a2047dfb768f7",
+  "recoveryOf": {
+    "stageId": "ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_V1",
+    "dedupKey": "alpha.v1.anchored-overlays.one-session-live-proof-tooling",
+    "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.anchored-overlays.one-session-live-proof-tooling.json"
+  }
+}
