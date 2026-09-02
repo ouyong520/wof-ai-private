@@ -2,7 +2,16 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "UNIFIED_LIVE_PROOF_CURRENT_HEAD_PREFLIGHT_QA_V1",
   "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_CURRENT_HEAD_PREFLIGHT_QA_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "fbbd2e0535edce2dd5173d63be2db9eb12e86eed",
-  "startedAtUtc": "2026-09-02T01:30:05Z"
+  "startedAtUtc": "2026-09-02T01:30:05Z",
+  "finishedAtUtc": "2026-09-02T01:36:08Z",
+  "auditedPreResultHead": "25f0632d6eb6e0c054c8c66dc6b1b86e07435417",
+  "resultPath": "parallel/LIVE_PROOF_BUNDLE_QA_CURRENT_HEAD_PREFLIGHT/RESULT.md",
+  "machineResultPath": "parallel/LIVE_PROOF_BUNDLE_QA_CURRENT_HEAD_PREFLIGHT/RESULT.json",
+  "resultCommit": "a8682c7807f51e6bb0c65a29522301b9689a13df",
+  "machineResultCommit": "8d94f00e57b4f7580a4b47e4f99a4f8dc96e6cc4",
+  "verdict": "BLOCKED — UNIFIED LIVE PROOF CURRENT-HEAD PREFLIGHT — P1 stale superseded gate selectors block current successor PASS evidence",
+  "blockerId": "P1-STALE-SUPERSEDED-PREFLIGHT-GATE-SELECTORS",
+  "ownerAction": "NO"
 }
