@@ -5,9 +5,21 @@
   "effectiveDedupKey": "alpha.enemy-target-head-labels.drawing-buffer-projection-epoch-fix",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.enemy-target-head-labels.drawing-buffer-projection-epoch-fix.json",
   "claimToken": "NU-e0qMZH2wmTlrhKVrd6r10npGKoMZPG1zC0nKTkPo",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "9331307842cf5871e57d501b8e4ab9286f8dea1c",
   "claimCommit": "7fcf476a4c1d34ba713ee532d7d514e6963498e6",
   "promptPath": "parallel/PM/ALPHA_ENEMY_TARGET_HEAD_LABELS_DRAWING_BUFFER_EPOCH_FIX_START_PROMPT.md",
-  "owner": "chatgpt-alpha-enemy-target-head-labels-drawing-buffer-epoch-fix"
+  "owner": "chatgpt-alpha-enemy-target-head-labels-drawing-buffer-epoch-fix",
+  "result": "COMPLETE — ALPHA ENEMY TARGET HEAD LABEL DRAWING-BUFFER EPOCH FIX — READY FOR FRESH QA V3",
+  "resultPath": "parallel/ALPHA_ENEMY_TARGET_HEAD_LABELS_DRAWING_BUFFER_EPOCH_FIX/RESULT.md",
+  "resultCommit": "7118b6b47f35cb74128910b9dca87cd83ab7082b",
+  "evidenceCommit": "11a026c730e50fe8efacc48a9c1c3fa5f2d8d38d",
+  "implementationCommits": [
+    "5a218102acbcb56607deb4d626c6fa4c4cd6e711",
+    "a9b59edd24a9e13561bccb4727ccb8989c587abd"
+  ],
+  "productBlobs": {
+    "product/alpha/wof_alpha_enemy_target_labels.js": "e6e1260559f735b85ce6f69e87803369f125b2de",
+    "product/alpha/enemy_target_labels_regression.mjs": "410c6dabf317eb08bea07f77800fb4ef3e82ed2b"
+  }
 }
