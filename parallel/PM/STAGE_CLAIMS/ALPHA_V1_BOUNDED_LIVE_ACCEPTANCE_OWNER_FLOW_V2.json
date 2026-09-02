@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_BOUNDED_LIVE_ACCEPTANCE_OWNER_FLOW_V2",
+  "dedupKey": "alpha.v1.bounded-live-acceptance-owner-flow-v2",
+  "effectiveDedupKey": "alpha.v1.bounded-live-acceptance-owner-flow-v2",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.bounded-live-acceptance-owner-flow-v2.json",
+  "claimToken": "9ea439eabab50e2565ab2339fc991b1ef364fa4c6ac640e5",
+  "state": "ACTIVE",
+  "startCommit": "fa8f48712d3da580ca2b9aec437c1665ed6a8de8"
+}
