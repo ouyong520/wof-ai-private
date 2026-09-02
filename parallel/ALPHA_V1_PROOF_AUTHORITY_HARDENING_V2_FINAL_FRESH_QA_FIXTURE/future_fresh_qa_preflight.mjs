@@ -6,7 +6,7 @@ const die=m=>{console.error('FAIL-CLOSED — '+m);process.exit(2)};
 if(!result||!manifestPath||!/^[0-9a-f]{40}$/i.test(fixed||''))die('required --hardening-result/--manifest/--fixed-commit');
 if(!fs.existsSync(result)||!fs.existsSync(manifestPath))die('required fixed files missing');
 const rt=fs.readFileSync(result,'utf8');
-if(!/COMPLETE\s+—\s+ALPHA V1 DUAL-OVERLAY PROOF-AUTHORITY HARDENING FIX V2/i.test(rt))die('Hardening V2 COMPLETE marker absent');
+if(!/COMPLETE\s+—\s+ALPHA V1 PROOF-AUTHORITY HARDENING INTEGRATION FIX V4 RECOVERY V5\s+—\s+AUTHORITY-V2 RUNNABLE PATH \/ TRUST ROOT \/ LIFECYCLE \/ MANIFEST COHERENT\s+—\s+READY FOR THE ONE FINAL FRESH QA/i.test(rt))die('Recovery V5 authoritative COMPLETE marker absent');
 const cat=JSON.parse(fs.readFileSync(new URL('./fixture_catalog.json',import.meta.url),'utf8'));
 if(cat.currentSutVerdictIssued!==false||cat.futureExecution.requiresExactFixedBlobPins!==true)die('fixture contract mutated');
 const m=JSON.parse(fs.readFileSync(manifestPath,'utf8'));
