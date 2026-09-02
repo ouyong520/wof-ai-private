@@ -41,6 +41,33 @@ Unless a stage genuinely requires different stop semantics, append this instruct
 
 For QA-only stages, replace `优先实现` / implementation-specific wording only as necessary to preserve the actual role, but retain the same intent: **少汇报、持续执行、不要中途停、到完整阶段停止条件才结束。**
 
+## Duplicate-forward protection — mandatory before execution
+
+The Owner may accidentally forward the same worker post more than once, or forward a different-looking prompt that represents the same logical task. Every worker must verify dedup state before substantive execution.
+
+Mandatory behavior:
+
+1. re-read current `main`, the authoritative start prompt, `parallel/PM/STAGE_DEDUP_GUARD.md`, the canonical dedup claim, relevant stage claim, and any durable RESULT for the same logical work;
+2. compare by canonical `dedupKey` / effective logical work item, not merely by chat wording or `stageId`;
+3. if the equivalent task is already `COMPLETE`, or a valid successor recovery/closeout authority has already completed it, stop immediately and do not execute implementation/QA again;
+4. if the equivalent task is already validly `ACTIVE` under another worker/token, stop immediately and do not contend, steal, overwrite, or duplicate work;
+5. only execute when the canonical dedup protocol proves that this worker owns the still-needed logical task;
+6. a duplicate-forward stop is a successful safety outcome, not a blocker and not a reason to open another QA/recovery stage.
+
+Preferred duplicate stop wording:
+
+```text
+ALREADY COMPLETE — SAFE TO CLOSE
+```
+
+or, when currently owned elsewhere:
+
+```text
+ALREADY CLAIMED — SAFE TO CLOSE
+```
+
+PM must design new start prompts so this duplicate verification is explicit or inherited unambiguously from canonical dedup v2. The Owner should be able to forward the same post twice without causing duplicate repository work.
+
 ## Testing cadence
 
 Worker handoff wording must remain consistent with `parallel/PM/TESTING_CADENCE_POLICY.md`:
