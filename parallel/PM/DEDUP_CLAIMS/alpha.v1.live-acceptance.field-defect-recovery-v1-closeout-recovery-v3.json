@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.live-acceptance.field-defect-recovery-v1-closeout-recovery-v3",
+  "effectiveDedupKey": "alpha.v1.live-acceptance.field-defect-recovery-v1-closeout-recovery-v3",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_LIVE_ACCEPTANCE_FIELD_DEFECT_RECOVERY_V1_CLOSEOUT_RECOVERY_V3",
+  "promptPath": "parallel/PM/ALPHA_V1_LIVE_ACCEPTANCE_FIELD_DEFECT_RECOVERY_V1_CLOSEOUT_RECOVERY_V3_START_PROMPT.md",
+  "owner": "gpt-5.6-sol-closeout-recovery",
+  "claimToken": "WSlcBr-fNckbwAnXUN7YYIsmJci4FWPo",
+  "state": "ACTIVE",
+  "startCommit": "c6508222f721266e557973f6576b77d6df09930c"
+}
