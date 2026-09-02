@@ -4,6 +4,7 @@ import queue
 import subprocess
 import threading
 import time
+import weakref
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -76,6 +77,7 @@ class RecorderEvidence(_BaseRecorderEvidence):
         if order is not None and (isinstance(order, bool) or not isinstance(order, int) or order <= 0):
             raise ValueError("Recorder source generation order must be a positive integer")
         if self.source_generation == source_generation:
+            _register_active_recorder_evidence(self)
             return False
 
         self.source_generation = source_generation
@@ -85,6 +87,7 @@ class RecorderEvidence(_BaseRecorderEvidence):
         self.source_revoked = False
         self._source_admission_seen = False
         self._revoke_current_authority(clear_fatal=True)
+        _register_active_recorder_evidence(self)
         return True
 
     def _reject_authority(
@@ -205,16 +208,65 @@ class RecorderEvidence(_BaseRecorderEvidence):
 
 _child_generation_lock = threading.Lock()
 _child_generation_counter = 0
+_recorder_authority_binding_lock = threading.RLock()
+_active_recorder_evidence_ref: weakref.ReferenceType[RecorderEvidence] | None = None
 
 
-def start_child(cmd: list[str], cwd: Any) -> subprocess.Popen[str]:
+def _register_active_recorder_evidence(evidence: RecorderEvidence) -> None:
+    global _active_recorder_evidence_ref
+    with _recorder_authority_binding_lock:
+        _active_recorder_evidence_ref = weakref.ref(evidence)
+
+
+def _active_recorder_evidence() -> RecorderEvidence | None:
+    global _active_recorder_evidence_ref
+    with _recorder_authority_binding_lock:
+        if _active_recorder_evidence_ref is None:
+            return None
+        evidence = _active_recorder_evidence_ref()
+        if evidence is None:
+            _active_recorder_evidence_ref = None
+        return evidence
+
+
+def _is_recorder_child_command(cmd: list[str]) -> bool:
+    """Recognize the Unified Recorder child without treating PYLAUNCH as Recorder."""
+    parts = [str(part).replace("\\", "/").lower() for part in cmd]
+    return any(
+        "recorder" in part
+        or part.endswith("/owner_v2_zh_cn.py")
+        or part == "owner_v2_zh_cn.py"
+        for part in parts
+    )
+
+
+def _allocate_child_generation() -> tuple[str, int]:
     global _child_generation_counter
-    proc = _BaseStartChild(cmd, cwd)
     with _child_generation_lock:
         _child_generation_counter += 1
         order = _child_generation_counter
-    pid = getattr(proc, "pid", None)
-    token = f"recorder-child:{order}:pid:{pid if isinstance(pid, int) else 'unknown'}"
+    # Keep the token independent of PID so an authoritative Recorder generation
+    # can be allocated/revoked before process creation. A failed spawn therefore
+    # remains fail-closed instead of restoring the older generation.
+    return f"recorder-child:{order}", order
+
+
+def start_child(cmd: list[str], cwd: Any) -> subprocess.Popen[str]:
+    token, order = _allocate_child_generation()
+
+    # Once a Recorder generation has been bound by its reader, the next Recorder
+    # child launch attempt is the authoritative rollover boundary. Advance the
+    # source generation before spawning so old heartbeat/admission/stdout cannot
+    # renew authority while the new reader has not started, and a failed restart
+    # cannot silently resurrect the old generation.
+    if _is_recorder_child_command(cmd):
+        evidence = _active_recorder_evidence()
+        if evidence is not None and evidence.source_generation is not None:
+            current_order = evidence.source_generation_order
+            if current_order is None or order > current_order:
+                evidence.begin_source_generation(token, order=order)
+
+    proc = _BaseStartChild(cmd, cwd)
     setattr(proc, "_wof_authority_generation", token)
     setattr(proc, "_wof_authority_generation_order", order)
     return proc
@@ -259,6 +311,10 @@ def reader(
                     evidence.begin_source_generation(token, order=order)
                 # If order is older/unknown, do not roll authority backward;
                 # feed below will reject its authority-like events by token.
+            else:
+                # Keep the current evidence discoverable by the child-start
+                # rollover path even when reader entry is idempotent.
+                _register_active_recorder_evidence(evidence)
 
     buf: list[str] = []
 
