@@ -1,0 +1,2 @@
+# R0.1 runtime pin. ROM/BIOS/core binaries are never vendored here.
+stable-retro==0.9.8
