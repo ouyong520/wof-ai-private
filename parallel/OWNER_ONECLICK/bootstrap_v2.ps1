@@ -22,7 +22,14 @@ if (-not $InstallRoot) {
     $InstallRoot = Join-Path $base 'WOF_Portable'
 }
 $InstallRoot = [IO.Path]::GetFullPath($InstallRoot)
-$ManifestUrl = 'https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/parallel/OWNER_ONECLICK/package_manifest.json'
+if ($env:WOF_MANIFEST_URL) {
+    $ManifestUrl = [string]$env:WOF_MANIFEST_URL
+    if ($ManifestUrl -notmatch '^https://raw\.githubusercontent\.com/ouyong520/wof-ai-private/[0-9a-f]{40}/parallel/OWNER_ONECLICK/package_manifest\.json(?:\?.*)?$') {
+        throw 'WOF_MANIFEST_URL 必须固定到官方项目的完整 commit SHA'
+    }
+} else {
+    $ManifestUrl = 'https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/parallel/OWNER_ONECLICK/package_manifest.json?cb=' + [Guid]::NewGuid().ToString('N')
+}
 $ReleaseRoot = Join-Path $InstallRoot 'releases'
 $LogDir = Join-Path $InstallRoot 'logs'
 $LogFile = Join-Path $LogDir 'bootstrap.log'
