@@ -15,13 +15,14 @@ DEFAULT_MANIFEST = Path(__file__).resolve().parent / "package_manifest.json"
 
 SCHEMA = "wof-owner-oneclick-package-v1"
 GENERATOR = "parallel/OWNER_ONECLICK/refresh_manifest.py"
-SELECTION_POLICY = "owner-oneclick-runtime-v2"
+SELECTION_POLICY = "owner-oneclick-runtime-v3-field-recovery"
 RUNTIME_SUFFIXES = {".py", ".js", ".mjs", ".cmd", ".bat", ".ps1"}
 EXCLUDED_PARTS = {"tests", "__pycache__"}
 
 FIXED_PATHS = {
     "WOF_一键工具.cmd",
     "WOF_TOOLKIT.cmd",
+    "parallel/OWNER_ONECLICK/bootstrap_v2.ps1",
     "parallel/OPTOOLKIT/toolkit.py",
     "parallel/OPTOOLKIT/owner_zh_cn.py",
     "product/alpha/regression.mjs",
@@ -30,9 +31,12 @@ FIXED_PATHS = {
     "product/alpha/wof_alpha_bootstrap.user.js",
     "product/alpha/wof_alpha_loader.js",
     "product/alpha/wof_alpha_real_worker.js",
+    "product/alpha/wof_alpha_field_adapter.js",
     "product/alpha/wof_alpha_enemy_target_labels.js",
     "product/alpha/wof_alpha_player_head_warning.js",
     "product/alpha/wof_alpha_hud.js",
+    "product/alpha/wof_alpha_enemy_head_projection.json",
+    "product/alpha/wof_alpha_player_head_projection.json",
     "product/alpha/regression_result.json",
     "parallel/ALPHAQA_RC5/independent_bootstrap_retest.mjs",
 }
@@ -64,14 +68,8 @@ class ManifestError(RuntimeError):
 
 def run_git(root: Path, *args: str) -> str:
     cp = subprocess.run(
-        ["git", *args],
-        cwd=root,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
+        ["git", *args], cwd=root, text=True, encoding="utf-8", errors="replace",
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
     )
     if cp.returncode:
         raise ManifestError(cp.stderr.strip() or cp.stdout.strip() or "git command failed")
@@ -120,9 +118,8 @@ def is_runtime_path(path: str) -> bool:
 
 def selected_paths_from_commit(root: Path, commit: str) -> dict[str, str]:
     out = run_git(root, "-c", "core.quotepath=false", "ls-tree", "-r", commit, "--", "WOF_一键工具.cmd", "WOF_TOOLKIT.cmd",
-                  "parallel/OPTOOLKIT", "parallel/PYLAUNCH", "parallel/WOF052L_RECORDER",
-                  "parallel/BROWSER_FLEET", "parallel/LIVE_PROOF_BUNDLE",
-                  "product/alpha", "parallel/ALPHAQA_RC5")
+                  "parallel/OWNER_ONECLICK", "parallel/OPTOOLKIT", "parallel/PYLAUNCH", "parallel/WOF052L_RECORDER",
+                  "parallel/BROWSER_FLEET", "parallel/LIVE_PROOF_BUNDLE", "product/alpha", "parallel/ALPHAQA_RC5")
     selected: dict[str, str] = {}
     for line in out.splitlines():
         if not line.strip():
@@ -140,12 +137,10 @@ def selected_paths_from_commit(root: Path, commit: str) -> dict[str, str]:
 
 def selected_worktree_paths(root: Path) -> list[str]:
     candidates: set[str] = set(FIXED_PATHS | PYLAUNCH_TOP | LIVE_PROOF_TOP)
-
     py_pkg = root / "parallel" / "PYLAUNCH" / "wof_launcher"
     if py_pkg.is_dir():
         for p in py_pkg.glob("*.py"):
             candidates.add(p.relative_to(root).as_posix())
-
     for rel_root in ("parallel/WOF052L_RECORDER", "parallel/BROWSER_FLEET"):
         base = root / rel_root
         if not base.is_dir():
@@ -156,7 +151,6 @@ def selected_worktree_paths(root: Path) -> list[str]:
             rel = p.relative_to(root).as_posix()
             if is_runtime_path(rel):
                 candidates.add(rel)
-
     return sorted(path for path in candidates if (root / path).is_file() and is_runtime_path(path))
 
 
@@ -169,7 +163,6 @@ def generate_manifest(root: Path, source: str) -> dict:
     generated_at = commit_generated_at_utc(root, commit)
     selected = selected_paths_from_commit(root, commit)
     paths = list(selected)
-
     return {
         "schema": SCHEMA,
         "packageVersion": package_version(commit, generated_at),
@@ -179,34 +172,14 @@ def generate_manifest(root: Path, source: str) -> dict:
         "selectionPolicy": SELECTION_POLICY,
         "baseUrl": f"https://raw.githubusercontent.com/ouyong520/wof-ai-private/{commit}/",
         "components": {
-            "pylaunch": {
-                "revision": "discovery-v2-current-snapshot",
-                "sourceCommit": commit,
-                "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd",
-                "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd",
-                "files": component_paths(paths, "parallel/PYLAUNCH/"),
-            },
-            "recorder": {
-                "sourceCommit": commit,
-                "ownerEntry": "parallel/WOF052L_RECORDER/owner_zh_cn.py",
-                "files": component_paths(paths, "parallel/WOF052L_RECORDER/"),
-            },
-            "browserFleet": {
-                "sourceCommit": commit,
-                "ownerEntry": "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py",
-                "files": component_paths(paths, "parallel/BROWSER_FLEET/"),
-            },
-            "liveProof": {
-                "sourceCommit": commit,
-                "entry": "parallel/LIVE_PROOF_BUNDLE/RUN_WOF_UNIFIED_LIVE_PROOF.cmd",
-                "files": component_paths(paths, "parallel/LIVE_PROOF_BUNDLE/"),
-            },
+            "ownerOneclick": {"sourceCommit": commit, "bootstrap": "parallel/OWNER_ONECLICK/bootstrap_v2.ps1", "files": [p for p in paths if p.startswith("parallel/OWNER_ONECLICK/") or p in {"WOF_一键工具.cmd", "WOF_TOOLKIT.cmd"}]},
+            "alpha": {"sourceCommit": commit, "fieldAdapter": "product/alpha/wof_alpha_field_adapter.js", "files": component_paths(paths, "product/alpha/")},
+            "pylaunch": {"revision": "field-recovery-runtime-generation-v1", "sourceCommit": commit, "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd", "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd", "files": component_paths(paths, "parallel/PYLAUNCH/")},
+            "recorder": {"sourceCommit": commit, "ownerEntry": "parallel/WOF052L_RECORDER/owner_zh_cn.py", "files": component_paths(paths, "parallel/WOF052L_RECORDER/")},
+            "browserFleet": {"sourceCommit": commit, "ownerEntry": "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py", "files": component_paths(paths, "parallel/BROWSER_FLEET/")},
+            "liveProof": {"sourceCommit": commit, "entry": "parallel/LIVE_PROOF_BUNDLE/RUN_WOF_UNIFIED_LIVE_PROOF.cmd", "files": component_paths(paths, "parallel/LIVE_PROOF_BUNDLE/")},
         },
-        "safety": {
-            "readOnly": True,
-            "ramWrites": 0,
-            "inputInjection": False,
-        },
+        "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False},
         "files": [{"path": path, "gitBlobSha": selected[path]} for path in paths],
     }
 
@@ -216,23 +189,16 @@ def verify_worktree_payload(root: Path, manifest: dict) -> None:
     current_paths = selected_worktree_paths(root)
     current_set = set(current_paths)
     expected_runtime_set = {p for p in expected if is_runtime_path(p)}
-
     missing = sorted(current_set - expected_runtime_set)
     if missing:
         raise ManifestError("当前运行时文件未进入 package manifest：" + ", ".join(missing))
-
     stale_removed = sorted(expected_runtime_set - current_set)
     if stale_removed:
         raise ManifestError("package manifest 仍包含已移除运行时文件：" + ", ".join(stale_removed))
-
     for path in current_paths:
-        data = (root / path).read_bytes()
-        actual = git_blob_sha(data)
-        wanted = expected[path]
+        data = (root / path).read_bytes(); actual = git_blob_sha(data); wanted = expected[path]
         if actual != wanted:
-            raise ManifestError(
-                f"文件完整性校验失败：{path} expected={wanted} actual={actual}"
-            )
+            raise ManifestError(f"文件完整性校验失败：{path} expected={wanted} actual={actual}")
 
 
 def render_manifest(manifest: dict) -> str:
@@ -240,14 +206,11 @@ def render_manifest(manifest: dict) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="从一个明确 immutable git commit 确定性生成 Owner One-Click package manifest"
-    )
+    parser = argparse.ArgumentParser(description="从一个明确 immutable git commit 确定性生成 Owner One-Click package manifest")
     parser.add_argument("--source", default="HEAD", help="固定 package source commit/ref；默认 HEAD")
     parser.add_argument("--output", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--check", action="store_true", help="只校验现有 manifest 与 source/worktree 一致")
     args = parser.parse_args(argv)
-
     try:
         generated = generate_manifest(ROOT, args.source)
         if args.check:
@@ -256,22 +219,13 @@ def main(argv: list[str] | None = None) -> int:
             except Exception as exc:
                 raise ManifestError(f"无法读取 package manifest：{args.output}") from exc
             if existing != generated:
-                raise ManifestError(
-                    "package manifest 不是当前所选 immutable snapshot 的确定性产物；请重新生成"
-                )
+                raise ManifestError("package manifest 不是当前所选 immutable snapshot 的确定性产物；请重新生成")
             verify_worktree_payload(ROOT, existing)
-            print(
-                "PACKAGE MANIFEST PASS："
-                f"{existing['packageVersion']} source={existing['sourceCommit']} files={len(existing['files'])}"
-            )
+            print("PACKAGE MANIFEST PASS：" f"{existing['packageVersion']} source={existing['sourceCommit']} files={len(existing['files'])}")
             return 0
-
         args.output.write_text(render_manifest(generated), encoding="utf-8")
         verify_worktree_payload(ROOT, generated)
-        print(
-            "PACKAGE MANIFEST REFRESHED："
-            f"{generated['packageVersion']} source={generated['sourceCommit']} files={len(generated['files'])}"
-        )
+        print("PACKAGE MANIFEST REFRESHED：" f"{generated['packageVersion']} source={generated['sourceCommit']} files={len(generated['files'])}")
         return 0
     except ManifestError as exc:
         print(f"PACKAGE MANIFEST BLOCKED：{exc}", file=sys.stderr)
