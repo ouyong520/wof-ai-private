@@ -164,14 +164,15 @@ def validate_resume_result(v: object, plan: ForkPlan, root: dict[str, object], *
         raise ForkContractError("resume branches must be an array")
     if v["branchesAttempted"] != len(rows):
         raise ForkContractError("resume attempted-branch count mismatch")
-    reusable: dict[str, dict[str, object]] = {}; branches = {b.branch_id: b for b in plan.branches}
+    reusable: dict[str, dict[str, object]] = {}; branches = {b.branch_id: b for b in plan.branches}; seen_rows: set[str] = set()
     pass_count = 0
     for row in rows:
         if type(row) is not dict or set(row) != _BRANCH_KEYS:
             raise ForkContractError("resume branch result must exactly match the published branch envelope")
         bid = row["branchId"]
-        if bid not in branches or bid in reusable:
+        if bid not in branches or bid in seen_rows:
             raise ForkContractError("resume branch id is unknown or duplicated")
+        seen_rows.add(bid)
         b = branches[bid]
         if row["branchIdentitySha256"] != branch_identity_sha256(b) or row["actionSequenceSha256"] != action_sequence_sha256(b.steps) or row["horizonFrames"] != b.horizon_frames:
             raise ForkContractError("resume branch authority mismatch")
