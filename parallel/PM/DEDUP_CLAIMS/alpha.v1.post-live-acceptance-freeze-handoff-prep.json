@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.post-live-acceptance-freeze-handoff-prep",
+  "effectiveDedupKey": "alpha.v1.post-live-acceptance-freeze-handoff-prep",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_POST_LIVE_ACCEPTANCE_FREEZE_HANDOFF_PREP",
+  "promptPath": "parallel/PM/ALPHA_V1_POST_LIVE_ACCEPTANCE_FREEZE_HANDOFF_PREP_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol",
+  "claimToken": "792637bd-89ae-43b3-abc5-36890ebe0ccf",
+  "state": "ACTIVE",
+  "startCommit": "82966d95513fbcbb8f79cc065ad4d2769ed2a1d1"
+}
