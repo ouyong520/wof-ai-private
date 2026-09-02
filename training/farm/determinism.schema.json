@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wof-training-farm-determinism-result-v1",
+  "title": "WOF Training Farm R0.2 Determinism Result",
+  "type": "object",
+  "required": [
+    "schema",
+    "runId",
+    "status",
+    "reasonCode",
+    "message",
+    "proofScope",
+    "realWofProof",
+    "sourceNamespace",
+    "firstDivergence"
+  ],
+  "properties": {
+    "schema": {"const": "wof-training-farm-determinism-result-v1"},
+    "status": {"enum": ["PASS", "FAIL", "SKIP", "ERROR"]},
+    "reasonCode": {"type": "string", "minLength": 1},
+    "message": {"type": "string"},
+    "proofScope": {"type": ["string", "null"]},
+    "realWofProof": {"type": "boolean"},
+    "sourceNamespace": {"const": "stable-retro-fbneo"},
+    "repetitionsRequired": {"type": "integer", "minimum": 2},
+    "repetitionsCompleted": {"type": "integer", "minimum": 0},
+    "horizonFrames": {"type": "integer", "minimum": 1},
+    "actionSequenceSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "runtimeIdentitySha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "startStateSha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "startRamSha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "firstDivergence": {"type": ["object", "null"]},
+    "runId": {"type": "string", "pattern": "^[0-9a-f]{32}$"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "PASS"}}},
+      "then": {
+        "required": [
+          "repetitionsRequired",
+          "repetitionsCompleted",
+          "horizonFrames",
+          "actionSequence",
+          "actionSequenceSha256",
+          "runtimeIdentity",
+          "runtimeIdentitySha256",
+          "startStateSha256",
+          "startRamSha256",
+          "repetitions"
+        ]
+      }
+    }
+  ],
+  "additionalProperties": true
+}
