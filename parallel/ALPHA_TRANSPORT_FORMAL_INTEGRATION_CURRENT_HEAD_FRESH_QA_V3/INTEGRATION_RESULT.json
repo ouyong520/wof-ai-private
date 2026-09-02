@@ -1,0 +1,40 @@
+{
+  "schema": "wof-alpha-formal-integration-test-v1",
+  "status": "PASS",
+  "testCount": 20,
+  "passCount": 20,
+  "failCount": 0,
+  "coverage": {
+    "normalAttachProduceClear": true,
+    "noTransportUnsupported": true,
+    "staleGenerationAfterRebind": true,
+    "runtimeEpochReplacement": true,
+    "workerReplacementRevocation": true,
+    "sessionPairNonceMismatch": true,
+    "disconnectReconnect": true,
+    "unsupportedIdentityDiscoveryFailClosed": true,
+    "gameUnaffectedOnIntegrationFailure": true
+  },
+  "results": [
+    {"name":"tick authority accepts exact binding","ok":true},
+    {"name":"tick authority freezes generation/nonce/runtime epoch","ok":true},
+    {"name":"one detector tick in flight; queueDepth zero","ok":true},
+    {"name":"valid completion publishes once only","ok":true},
+    {"name":"revocation rejects stale in-flight completion","ok":true},
+    {"name":"pair/session mismatch rejected","ok":true},
+    {"name":"runtime-epoch replacement is a different authority","ok":true},
+    {"name":"bootstrap never replaces game Worker","ok":true},
+    {"name":"no transport leaves Alpha waiting and gameplay unaffected","ok":true},
+    {"name":"exact pair state attaches","ok":true},
+    {"name":"session/pair nonce mismatch cannot attach","ok":true},
+    {"name":"rebind makes old generation stale","ok":true},
+    {"name":"disconnect/reset clears warning authority and increments generation","ok":true},
+    {"name":"transport construction failure is fail-open for gameplay","ok":true},
+    {"name":"HUD enforces current transport pair authority","ok":true},
+    {"name":"real worker avoids Worker/Blob replacement APIs","ok":true},
+    {"name":"bootstrap avoids Worker/Blob replacement APIs","ok":true},
+    {"name":"real adapter uses narrow Discovery V2 admission","ok":true},
+    {"name":"real adapter does not contain gameplay input injection surface","ok":true},
+    {"name":"warning clear/change and heartbeat remain explicit","ok":true}
+  ]
+}
