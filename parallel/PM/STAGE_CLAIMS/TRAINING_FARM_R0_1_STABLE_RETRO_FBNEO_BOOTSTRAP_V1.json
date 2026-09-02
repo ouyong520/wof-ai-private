@@ -5,6 +5,8 @@
   "effectiveDedupKey": "training.farm.r0.1.stable-retro-fbneo-bootstrap",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.1.stable-retro-fbneo-bootstrap.json",
   "claimToken": "58128414b100831ac6692fef07e629b2",
-  "state": "ACTIVE",
-  "startCommit": "29f9e431c269baf7876e8d036ea6677616fb6a1a"
+  "state": "COMPLETE",
+  "startCommit": "29f9e431c269baf7876e8d036ea6677616fb6a1a",
+  "resultPath": "parallel/TRAINING_FARM_R0_1/RESULT.md",
+  "resultCommit": "6098c061ee29e2055d1c9985cc7c2ceb7b3ecb76"
 }
