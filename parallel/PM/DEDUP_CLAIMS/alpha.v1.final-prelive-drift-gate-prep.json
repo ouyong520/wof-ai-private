@@ -8,6 +8,12 @@
   "promptPath": "parallel/PM/ALPHA_V1_FINAL_PRELIVE_DRIFT_GATE_PREP_START_PROMPT.md",
   "owner": "gpt-5.6-sol-prelive-gate-prep",
   "claimToken": "aa4d12f3fd83f1955d4250ef54b1c91e",
-  "state": "ACTIVE",
-  "startCommit": "d079280ffa35b9683665b2b3223ff21f2559d02e"
+  "state": "COMPLETE",
+  "startCommit": "d079280ffa35b9683665b2b3223ff21f2559d02e",
+  "resultPath": "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/FINAL_PRELIVE_DRIFT_GATE_PREP_RESULT.md",
+  "resultCommit": "068eab21192a4ed4c7a8bd77a9ed4d70cf4e65ca",
+  "checkerPath": "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/final_prelive_drift_gate.py",
+  "checkerCommit": "82966d95513fbcbb8f79cc065ad4d2769ed2a1d1",
+  "procedurePath": "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/FINAL_PRELIVE_DRIFT_GATE.md",
+  "procedureCommit": "b5b1c194e63733178959864369967bec0df73e05"
 }
