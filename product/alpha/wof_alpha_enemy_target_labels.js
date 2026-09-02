@@ -61,11 +61,13 @@ function validateProjection(projection,nowMs,maxAgeMs=DEFAULT_PROJECTION_MAX_AGE
   if(!finite(expected)||Math.abs(expected-projection.cameraX)>1e-9)return fail('CAMERA_SAMPLE_MISMATCH');
   return{ok:true,ageMs:age};
 }
-function validateDrawingBuffer(state,nowMs,maxAgeMs=DEFAULT_DRAWING_BUFFER_MAX_AGE_MS){
+function validateDrawingBuffer(state,nowMs,projectionEpoch,maxAgeMs=DEFAULT_DRAWING_BUFFER_MAX_AGE_MS){
   const rect=contentRectOf(state);if(!rect)return fail('INVALID_DRAWING_BUFFER');
   const age=ageMs(nowMs,state.sampleAt);if(age>maxAgeMs)return fail('STALE_DRAWING_BUFFER',{ageMs:age});
   if(confidence(state.confidence)===null)return fail('INVALID_DRAWING_BUFFER_CONFIDENCE');
-  if(typeof state.epoch==='string'&&state.epoch&&typeof state.projectionEpoch==='string'&&state.projectionEpoch&&state.epoch!==state.projectionEpoch)return fail('DRAWING_BUFFER_EPOCH_MISMATCH');
+  if(typeof state.epoch!=='string'||!state.epoch||typeof state.projectionEpoch!=='string'||!state.projectionEpoch)return fail('DRAWING_BUFFER_EPOCH_MISSING');
+  if(typeof projectionEpoch!=='string'||!projectionEpoch)return fail('PROJECTION_EPOCH_MISSING');
+  if(state.epoch!==state.projectionEpoch||state.epoch!==projectionEpoch)return fail('DRAWING_BUFFER_EPOCH_MISMATCH');
   return{ok:true,rect,ageMs:age};
 }
 function projectMarkerNative(marker,projection){
@@ -90,7 +92,7 @@ function projectMarkerNative(marker,projection){
 function buildPlan({markers=[],projection,drawingBufferState,nowMs,markerMaxAgeMs=DEFAULT_MARKER_MAX_AGE_MS,projectionMaxAgeMs=DEFAULT_PROJECTION_MAX_AGE_MS,drawingBufferMaxAgeMs=DEFAULT_DRAWING_BUFFER_MAX_AGE_MS,labelWidth=30,labelHeight=18}={}){
   const now=finite(nowMs)?nowMs:Date.now();
   const p=validateProjection(projection,now,projectionMaxAgeMs);
-  const d=validateDrawingBuffer(drawingBufferState,now,drawingBufferMaxAgeMs);
+  const d=validateDrawingBuffer(drawingBufferState,now,projection?.epoch,drawingBufferMaxAgeMs);
   const labels=[],suppressed=[];
   if(!p.ok||!d.ok){
     const reason=!p.ok?p.reason:d.reason;
