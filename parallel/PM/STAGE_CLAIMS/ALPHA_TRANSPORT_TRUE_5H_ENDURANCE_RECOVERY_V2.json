@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2",
+  "promptPath": "parallel/PM/ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "0e24aa5f4e7dc7d64719f9a702dd166cbc24f99c",
+  "startedAtUtc": "2026-09-02T00:51:00Z"
+}
