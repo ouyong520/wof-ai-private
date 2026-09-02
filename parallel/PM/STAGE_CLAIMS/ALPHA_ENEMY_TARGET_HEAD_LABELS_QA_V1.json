@@ -1,8 +1,10 @@
 {
   "stage": "ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V1",
   "owner": "chatgpt-alpha-enemy-target-head-labels-qa-v1",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
+  "result": "BLOCKED",
   "start_head": "26fe29f442193246bf3d131a8c57d5a4cde39dea",
+  "result_commit": "ac02de5d01c414c7cc95d84f3f6a183e079504f0",
   "scope": [
     "parallel/ALPHA_ENEMY_TARGET_HEAD_LABELS_QA/**",
     "parallel/PM/STAGE_CLAIMS/ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V1.json"
@@ -15,5 +17,6 @@
     "product/alpha/wof_alpha_loader.js": "b1d2bd5cc3f5e4e7a3bed084d6d35ea71489717b",
     "product/alpha/enemy_target_labels_regression.mjs": "55b5b1ad08768f78fd536be8995867c9a939e599"
   },
-  "notes": "Fresh independent repository QA only. No product/alpha edits. Synthetic fixture evidence is explicitly not Browser/WOF projection proof."
+  "blocker": "Malformed numeric-string target7E values \"0\"/\"4\"/\"8\" are coerced through TARGETS_BY_FIELD[target7E] and can render false 1P/2P/3P labels instead of failing closed.",
+  "notes": "Independent repository QA stopped on a real implementation defect. No product/alpha edits. Synthetic fixture evidence is explicitly not Browser/WOF projection proof."
 }
