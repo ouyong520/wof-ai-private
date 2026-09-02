@@ -28,6 +28,9 @@ jobs:
         run: python -m pip install --disable-pip-version-check -q -r parallel/PYLAUNCH/requirements.txt
       - name: Exact identity, generation cache and Alpha activation self-check
         run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_field_recovery.py' -v
+      - name: Discovery late-readiness and association self-check
+        working-directory: parallel/PYLAUNCH
+        run: python -m unittest discover -s tests -p 'test_discovery_v2.py' -v
       - name: Live proof Alpha gate self-check
         run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_windows_proof.py' -v
       - name: Owner menu integration self-check
@@ -73,6 +76,7 @@ jobs:
     runs-on: windows-latest
     env:
       WOF_BOOTSTRAP_URL: https://raw.githubusercontent.com/ouyong520/wof-ai-private/${{ github.sha }}/parallel/OWNER_ONECLICK/bootstrap_v2.ps1
+      WOF_MANIFEST_URL: https://raw.githubusercontent.com/ouyong520/wof-ai-private/${{ github.sha }}/parallel/OWNER_ONECLICK/package_manifest.json
       PYTHONUTF8: '1'
       PYTHONIOENCODING: utf-8
     steps:
