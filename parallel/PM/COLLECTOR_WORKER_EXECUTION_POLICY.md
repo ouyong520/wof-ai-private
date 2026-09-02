@@ -15,29 +15,42 @@ Do not optimize for task count, QA count, report count, or worker occupancy.
 
 ## 1. Worker prompts should stay short
 
-The chat prompt sent to a worker should normally contain only:
+The chat prompt sent to a worker must normally use this three-part layout:
 
-- a concise roughly 100-Chinese-character description before the requirements path, explaining the current state, the concrete module goal, and the expected stop condition;
-- task name when useful;
-- repository name(s) when useful;
-- one authoritative START_PROMPT / requirements MD path;
-- instruction to obey canonical dedup v2;
-- instruction to continue until the module is actually complete or precisely blocked.
+### A. Front summary — about 100 Chinese characters
 
-Preferred chat-prompt shape:
+Before the GitHub path, give a compact plain-language description of roughly 100 Chinese characters that tells the worker:
 
-```text
-<about 100 Chinese characters: what is already done, what this worker must finish, what must not be disturbed, and that it must continue until the module is complete>
+- current state / why this task exists;
+- the single main functional objective;
+- the most important boundary or non-regression requirement.
 
-读取并严格执行：
-`parallel/PM/<AUTHORITATIVE_REQUIREMENTS>.md`
+This paragraph should be understandable without opening the MD, but should not duplicate detailed acceptance criteria.
 
-严格 canonical dedup v2。少汇报，不要中途停止，持续完成整个模块直到 COMPLETE / 精确 BLOCKED。
-```
+### B. Middle — authoritative GitHub MD path
 
-Do not send only a naked Markdown path with no context. The short description should be sufficient for the worker to understand why the task exists before opening the detailed requirements.
+Place the detailed requirements path on its own line, for example:
 
-Detailed requirements, boundaries, acceptance criteria, recovery context and file lists belong in GitHub Markdown, not in a long chat prompt.
+`parallel/PM/<TASK>_START_PROMPT.md`
+
+Detailed requirements, scope, current commits, acceptance criteria, exact invariants, test matrix, recovery context and file lists belong in that GitHub Markdown file.
+
+### C. Tail — execution discipline / stop condition
+
+After the path, add a short closing instruction stating that the worker must:
+
+- read and strictly execute the MD;
+- obey canonical dedup v2;
+- keep reporting sparse;
+- finish the complete functional/module objective before stopping;
+- run implementation-owned self-checks only as needed during development;
+- stop only at COMPLETE or a precise unavoidable BLOCKED condition.
+
+The chat prompt should therefore read conceptually as:
+
+`~100-character task summary -> GitHub MD path -> short execution/stop instruction`
+
+Do not put the detailed specification back into the chat prompt.
 
 ## 2. Finish the module before stopping
 
@@ -139,7 +152,7 @@ When Owner says `继续` or `1` after a Collector worker stops/completes, PM sho
 6. prefer finishing the current module before starting a new module;
 7. if the current module is complete, select the next roadmap module;
 8. only schedule independent QA at a meaningful completed module boundary;
-9. keep the worker prompt short and point it to GitHub MD for details.
+9. issue the worker instruction in the fixed three-part format: about 100 Chinese characters of context, then the GitHub MD path, then a short execution/stop tail.
 
 PM should not make Owner redesign the roadmap every time a worker stops.
 
