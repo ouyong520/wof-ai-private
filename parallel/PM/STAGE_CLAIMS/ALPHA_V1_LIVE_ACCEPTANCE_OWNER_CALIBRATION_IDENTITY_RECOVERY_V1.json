@@ -5,6 +5,12 @@
   "effectiveDedupKey": "alpha.v1.live-acceptance.owner-calibration-identity-recovery-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.live-acceptance.owner-calibration-identity-recovery-v1.json",
   "claimToken": "e27aa886b714309dc65443eda6d999b7fcec7e4f07070768",
-  "state": "ACTIVE",
-  "startCommit": "4d097ced0037729b34df3eeb2db4dc53ca12d8d1"
+  "state": "COMPLETE",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_LIVE_ACCEPTANCE_OWNER_CALIBRATION_IDENTITY_RECOVERY_V1_RESULT.md",
+  "resultCommit": "848a00e86408fff34c2745e4c27b0a8c96d78039",
+  "implementationRepository": "ouyong520/wof-ai-private",
+  "implementationCommit": "ffa2cb162df0cda65e6fa09b6b0e4fa8f6025399",
+  "packageVersion": "2026.09.02.ffa2cb162df0",
+  "manifestPublicationCommit": "58971200c57ea28398ba695a872885ea812da3ed",
+  "workflowRunId": 33650273815
 }
