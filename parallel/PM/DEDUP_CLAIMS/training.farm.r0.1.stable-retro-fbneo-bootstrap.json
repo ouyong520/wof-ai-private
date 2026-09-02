@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "training.farm.r0.1.stable-retro-fbneo-bootstrap",
+  "effectiveDedupKey": "training.farm.r0.1.stable-retro-fbneo-bootstrap",
+  "dedupMode": "exclusive",
+  "stageId": "TRAINING_FARM_R0_1_STABLE_RETRO_FBNEO_BOOTSTRAP_V1",
+  "promptPath": "parallel/PM/TRAINING_FARM_R0_1_STABLE_RETRO_FBNEO_BOOTSTRAP_START_PROMPT.md",
+  "owner": "gpt-5.6-sol-training-farm-r0.1-bootstrap",
+  "claimToken": "58128414b100831ac6692fef07e629b2",
+  "state": "ACTIVE",
+  "startCommit": "29f9e431c269baf7876e8d036ea6677616fb6a1a"
+}
