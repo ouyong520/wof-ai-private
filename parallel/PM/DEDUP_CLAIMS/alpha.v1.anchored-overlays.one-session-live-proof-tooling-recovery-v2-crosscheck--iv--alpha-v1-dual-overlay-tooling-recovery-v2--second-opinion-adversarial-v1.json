@@ -10,6 +10,9 @@
   "promptPath": "parallel/PM/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_CROSSCHECK_V1_START_PROMPT.md",
   "owner": "chatgpt-gpt-5.6-sol-dual-overlay-tooling-crosscheck-v1",
   "claimToken": "9b0e5be2-9a39-4415-9019-25e08a518c8b-df5d7dda5f0385407fb84d31ec6b38af",
-  "state": "ACTIVE",
-  "startCommit": "4e045e50483e8d897f3060a608536279e96349d2"
+  "state": "COMPLETE",
+  "startCommit": "4e045e50483e8d897f3060a608536279e96349d2",
+  "resultPath": "parallel/PM/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_CROSSCHECK_V1_RESULT.md",
+  "resultCommit": "9ca3a989c15aa29a423c5962c9d663df248171a6",
+  "verdict": "BLOCKED"
 }
