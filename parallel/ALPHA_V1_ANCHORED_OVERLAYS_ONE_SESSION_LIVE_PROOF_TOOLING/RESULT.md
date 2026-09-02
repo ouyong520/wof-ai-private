@@ -1,85 +1,89 @@
-# Alpha V1 Anchored Overlays One-Session Live-Proof Tooling Recovery V2 — RESULT
+# Alpha V1 Anchored Overlays One-Session Live-Proof Tooling Proof-Authority Fix V1 — RESULT
 
-Status: **COMPLETE — READY FOR FRESH QA / BOUNDED LIVE RUN**
+Status: **COMPLETE — FALSE-PROOF PATHS CLOSED / READY FOR FRESH QA**
 
-Stage: `ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_RECOVERY_V2`
+Stage: `ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_PROOF_AUTHORITY_FIX_V1`
 
-Canonical recovery key: `alpha.v1.anchored-overlays.one-session-live-proof-tooling-recovery-v2`
+Canonical key: `alpha.v1.anchored-overlays.one-session-live-proof-tooling-proof-authority-fix-v1`
 
-Claim token: `9dc2b3ca-39f2-484d-9b5e-6d696f2192b7-d5595989907522d76a58b75a5c3eea2e`
+Claim token: `9e5f505b-9526-49ba-ad2e-976d12fc2249-f42263e71b13dab610c02dba64a25bed`
 
-## What was implemented
+## Trigger closed
 
-A proof-only lane now exists under `parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/**` for a future single uninterrupted Browser/WOF session.
+The independent cross-check blocker was proof-local and has been fixed without changing `product/alpha/**`, danger rules, raw target semantics, Transport authority, gameplay input/AI, or RAM-write policy.
 
-It reuses the existing `parallel/HUDANCHOR_PROOF/**` common camera/X/Y/WebGL/remap proof and adds:
+The proof tooling no longer permits declarative/public live fields to self-authorize `IMPLEMENTATION_READY` or proof-only profile binding. Live authority is rooted in a one-session Top/Worker challenge-response: the Worker signs the proof-session challenge with a non-extractable ECDSA P-256 key and binds the witness to the current formal adapter authority tuple. The Core converts a verified witness into an internal branded capability that serialized/replayed repository evidence cannot mint.
 
-- read-only Worker snapshots for P1/P2/P3 and current live enemy slot/type/raw `target7E`/world X/Y/Z;
-- Top-side wrapping of the existing Alpha player-warning and enemy-label helper objects, delegating the original `buildPlan` unchanged and recording the actual returned anchored/fixed/suppressed decisions that the HUD consumes;
-- recording of `warningSampleAt`, sample age/confidence, runtime/projection/drawing-buffer epochs, mapping keys, actor/slot/type/target identity and projected draw anchors;
-- automatic required-phase gates for fast horizontal movement, depth movement, complete jump, rapid camera/stage scroll, simultaneous player+camera motion, moving enemy, live retarget, resize/fullscreen remap, and optional multi-enemy observation;
-- a bounded real stale-authority exercise that stops the official Alpha observer for 450ms, requires both player fixed-HUD fallback and enemy no-draw/suppression, then reinstalls the same live candidates through the official transport install API;
-- terminal JSON generation using the existing bounded-live-proof evidence root/event structure, with `IMPLEMENTATION_READY`, `FAILED_COMPONENT:*`, or `INCOMPLETE_OBSERVATION:*` only.
+## False-proof paths closed
 
-## Live-only head facts — no guessed constants
+1. **Synthetic masquerade / false `IMPLEMENTATION_READY`** — Session terminal readiness requires the verified live Worker witness. Candidate binders require the internal branded live capability, not caller-provided strings/booleans.
+2. **Cross-surface epoch scoring** — both-surface phase closure requires one compatible normalized authority tuple: proof session, runtime/projection/drawing-buffer epochs, drawing-buffer projection epoch, and normalized live mapping authority. Player epoch A + enemy epoch B cannot jointly close a phase.
+3. **Enemy lifecycle / same-slot replacement** — proof-local occupant generations are emitted from observable slot presence/type/time/spatial continuity. `liveRetarget` requires one stable occupant generation and continuity; replacement/reappearance cannot score as retarget.
+4. **Player lifecycle / respawn calibration** — P1/P2/P3 samples carry proof-local lifecycle generations. P1 body/reference calibration is accepted only when the common head-click timestamp resolves to the same stable P1 lifecycle generation; respawn/replacement requires recapture.
+5. **Enemy head-offset ambiguity** — a type offset requires repeated stable captures from one current lifecycle-safe occupant; overlap/replacement or multiple lifecycle identities for the same candidate type fail closed.
+6. **Stale-authority exercise** — stale closure is transaction-rooted. The real stop/reinstall path creates a random transaction id and Worker-signed bounded transaction witness. `STALE_*` text/events/timestamps alone cannot satisfy the gate.
 
-The current production player and enemy projection profiles remain unproved/disabled. This stage did not activate or edit them.
+## Safety preserved / strengthened
 
-The common HUDANCHOR head click alone cannot mathematically separate the player's body `yBias` from `headClearanceNative`. The recovery tooling therefore adds one same-session P1 body/reference click. It combines that live native click with the frozen common head click and the current P1 world Y/Z sample. No numeric coordinate is manually copied or typed.
+- primitive finite `warningSampleAt` boundary preserved;
+- strict raw target `0/4/8` boundary preserved;
+- player/marker/projection/drawing-buffer freshness remains fail-closed;
+- runtime/projection/drawing-buffer cross-epoch fail-closed is stronger;
+- invalid confidence/non-finite/bounds remain fail-closed;
+- player fixed-HUD fallback and enemy suppression/no-draw remain required;
+- resize/fullscreen/DPR mapping authority remains part of scoring;
+- proof Worker remains read-only: `ramWrites=0`;
+- `inputInjection=false`;
+- no Worker replacement / Blob rewrite;
+- repository/synthetic evidence cannot activate production projection profiles.
 
-Enemy `enemyHeadOffsetsByType` is also live-observation-only. A type becomes available to the runtime candidate only after an operator clicks the head of a current, non-overlapping live enemy. The tool binds the click to the nearest current live enemy X/slot/type, derives its offset from the selected common Y model, rejects ambiguous overlaps, rejects repeated captures with spread greater than 4 native pixels, and omits all unobserved types. Omitted types remain fail-closed.
+## Exact implementation and manifest pins
 
-Both generated candidates are tagged `PROOF_ONLY_RUNTIME_BINDING`, `REAL_BROWSER_WOF_BOUNDED_DYNAMIC_LIVE_PROOF_CANDIDATE_RUNTIME_ONLY`, and `guessedConstants:false`.
+Implementation commit: `e6042741486ed6aae215e282c2f700fd84167811`
 
-## Runtime binding boundary
+Manifest commit: `f2855ed2c554e41b0b8ef6cf2c03a60233c44b64`
 
-The Worker validates the two runtime candidates using the current Alpha helper validators. It then calls the existing `WOFAlphaTransportAuthority.install(globalThis, binding)` with the current official session binding while temporarily intercepting only the two projection-profile fetch URLs. The fetch function is restored in `finally`.
+Repository regression evidence commit: `b943c58504509e4bc06a45014e7e27e4e75e5309`
 
-No transport semantics, danger rules, target semantics, detector behavior, input path, AI path, HUD rendering semantics, or product profile file is changed by this stage.
+Current proof runtime blobs pinned by `RUN_MANIFEST.json`:
 
-## Drift pinning
+- `proof_core.js` — `6fa5b5178dd0dedcad2afe7e53c6cdda98c8a701`
+- `wof_alpha_v1_dual_live_proof_top.js` — `e0e686cafc3463ce6041d83c5e0fe1030f7eb444`
+- `wof_alpha_v1_dual_live_proof_worker.js` — `2b75092fee63cecafb51e108aa2af8b3d83cc696`
+- `wof_alpha_v1_dual_live_proof.js` — `e71a802c8d150cf727345c51c4786512a82abb97`
+- `proof_authority_regression.mjs` — `e3697ab88cb36922e717b7a85044e0bfca72a444`
+- `tooling_regression.mjs` — `cfd3d15a9adc6d7a532d36026494a76e2c41c4d0`
 
-`RUN_MANIFEST.json` pins the exact current product, HUDANCHOR, evidence-schema, and recovery tooling Git blob SHAs. A future live session recomputes each Git blob SHA before evidence collection; a mismatch makes the proof preflight fail closed.
+The selected Alpha product and HUDANCHOR/evidence-schema blobs remain exact-pinned. Production player/enemy projection profiles remain the current unproved/disabled blobs; this stage did not activate or edit either profile.
 
-Pinned product blobs at completion:
+## Deterministic repository QA
 
-- player warning helper `af7f2359514dc6f86f74fac0c47858e8a6acf107`
-- player projection profile `bbed0618b348961580ca805bb93e4d17525f0142`
-- enemy target-label helper `e6e1260559f735b85ce6f69e87803369f125b2de`
-- enemy projection profile `8de57739818503a0e14702d2fa0bb4eba58228d2`
-- real worker `b7f4506fc90b681ede059df5ad3316e665c6f15e`
-- Alpha HUD `50d944c451ac94b114e4f86441aeae8ad6b25c78`
-- Alpha loader `66aee09fc2dd009c2f295d2092f3129548605efb`
+Primary independent adversarial regression:
 
-Pinned recovery runtime blobs:
+`node parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/proof_authority_regression.mjs`
 
-- proof core `fbfa665daa624b7a81b6b75d488af504194bd378`
-- Top observer `3f2ffdfc2947387518e593445306f8803132345c`
-- Worker observer `5cc30f3a3b32ee0ef3dfe1b9ac2937dbabc774f3`
-- one-session loader `30c965bb8b16466810781e2741f2d2eb86a0533d`
+Result: **PASS — 10 / 10**.
 
-## Deterministic repository test
+It independently attacks forged public live provenance, forged terminal state, cross-epoch joint scoring, same-slot replacement, valid same-occupant retarget, player respawn between head/body calibration, ambiguous enemy replacement/head offsets, synthetic stale events, strict target/epoch failures, and repository capability forgery.
 
-Command:
+Supportive Recovery regression:
 
 `node parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/tooling_regression.mjs`
 
-Result: **PASS — 19 / 19** on Node `v22.16.0`, plus syntax checks for the core, Top observer, Worker observer, loader, and regression file.
+Result: **PASS — 19 / 19**.
 
-The regression covers real-live-only profile binding, player Y split fail-closed, enemy unproved-type omission, `warningSampleAt`/epoch/mapping correlation, raw enemy target/identity/label correlation, fixed/suppress invalid-authority behavior, anchored-during-invalid-authority failure, required phase and retarget gating, both-surface stale authority gating, final visual confirmation, terminal structure, original helper delegation, read-only Worker behavior, official transport install usage, fetch restoration, and HUDANCHOR-first loader ordering.
+Core/Top/Worker/loader syntax checks also PASS. `REPOSITORY_TEST_RESULT.json` is explicitly `SYNTHETIC_REPOSITORY_QA_ONLY_NOT_BROWSER_WOF_LIVE_PROOF`; it is repository evidence only and cannot satisfy the real live proof gate.
 
-`REPOSITORY_TEST_RESULT.json` is explicitly `SYNTHETIC_REPOSITORY_QA_ONLY_NOT_BROWSER_WOF_LIVE_PROOF`. It cannot activate a production profile or satisfy the live-proof gate.
+## Scope / live boundary
 
-## Browser/WOF status
+Browser/WOF: **NOT RUN by this stage**.
 
-**NOT RUN by this stage.** No Browser/WOF session was started. No live projection constant was guessed. No production profile was activated from synthetic evidence.
+`product/alpha/**`: **NOT MODIFIED by the implementation fix**.
 
-The next stage is fresh independent repository QA and then the bounded single-session Browser/WOF live run using the committed loader.
+Production profiles: **NOT ACTIVATED; remain UNPROVED**.
 
-## Dedup recovery status
-
-The historical ACTIVE canonical/stage claim for `ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_V1` was preserved and was not overwritten, deleted, or reused. Recovery V2 used its own PM-authorized canonical key and claim token.
+This COMPLETE verdict means the repository-level false-proof implementation paths identified by the cross-check are closed and the tooling is ready for a fresh independent QA. It does **not** claim the future Browser/WOF dual-overlay live proof has already run or passed.
 
 Terminal stage text:
 
-`COMPLETE — ALPHA V1 ANCHORED OVERLAYS ONE-SESSION LIVE PROOF TOOLING RECOVERY V2 — READY FOR FRESH QA / BOUNDED LIVE RUN`
+`COMPLETE — ALPHA V1 ANCHORED OVERLAYS ONE-SESSION LIVE PROOF TOOLING PROOF-AUTHORITY FIX V1 — FALSE-PROOF PATHS CLOSED / READY FOR FRESH QA`
