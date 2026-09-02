@@ -55,10 +55,14 @@ class ChineseOwnerUxTests(unittest.TestCase):
 
     def test_menu_six_activates_package_selected_alpha_without_devtools(self):
         src = (REPO / "parallel/OPTOOLKIT/owner_zh_cn.py").read_text(encoding="utf-8")
-        self.assertIn('"--activate-alpha"', src)
-        self.assertIn('"--package-root", str(self.root)', src)
+        session = (REPO / "parallel/OPTOOLKIT/live_session.py").read_text(encoding="utf-8")
+        self.assertIn('parallel/OPTOOLKIT/live_session.py', src)
         self.assertIn("不需要 DevTools", src)
         self.assertIn("runtime generation", src)
+        self.assertIn("最终 ZIP", src)
+        self.assertIn('"--activate-alpha"', session)
+        self.assertIn('"--package-root"', session)
+        self.assertIn("WOF_LIVE_ACCEPTANCE_", session)
 
     def test_menu_eight_is_local_self_contained_and_uses_core_zip_packager(self):
         src = (REPO / "parallel/OPTOOLKIT/owner_zh_cn.py").read_text(encoding="utf-8")
