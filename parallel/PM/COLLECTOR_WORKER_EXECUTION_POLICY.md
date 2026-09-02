@@ -17,11 +17,25 @@ Do not optimize for task count, QA count, report count, or worker occupancy.
 
 The chat prompt sent to a worker should normally contain only:
 
-- task name;
-- repository name(s);
+- a concise roughly 100-Chinese-character description before the requirements path, explaining the current state, the concrete module goal, and the expected stop condition;
+- task name when useful;
+- repository name(s) when useful;
 - one authoritative START_PROMPT / requirements MD path;
 - instruction to obey canonical dedup v2;
 - instruction to continue until the module is actually complete or precisely blocked.
+
+Preferred chat-prompt shape:
+
+```text
+<about 100 Chinese characters: what is already done, what this worker must finish, what must not be disturbed, and that it must continue until the module is complete>
+
+读取并严格执行：
+`parallel/PM/<AUTHORITATIVE_REQUIREMENTS>.md`
+
+严格 canonical dedup v2。少汇报，不要中途停止，持续完成整个模块直到 COMPLETE / 精确 BLOCKED。
+```
+
+Do not send only a naked Markdown path with no context. The short description should be sufficient for the worker to understand why the task exists before opening the detailed requirements.
 
 Detailed requirements, boundaries, acceptance criteria, recovery context and file lists belong in GitHub Markdown, not in a long chat prompt.
 
