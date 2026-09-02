@@ -54,11 +54,14 @@ class LauncherStatus:
 
 class StatusStore:
     EVENT_LIMIT = 96
+    CAMERA_EVENT_SEEN_LIMIT = 256
 
     def __init__(self) -> None:
         self._lock = RLock()
         self._status = LauncherStatus()
         self._last_event_signature: str | None = None
+        self._seen_camera_event_ids: list[str] = []
+        self._seen_camera_event_set: set[str] = set()
 
     def get(self) -> LauncherStatus:
         with self._lock:
@@ -77,6 +80,26 @@ class StatusStore:
         self._last_event_signature = sig
         self._status.significant_events = [*self._status.significant_events, event][-self.EVENT_LIMIT :]
 
+    def _append_camera_events_locked(self, timeline: Any) -> None:
+        if not isinstance(timeline, list):
+            return
+        for raw in timeline[-64:]:
+            if not isinstance(raw, dict):
+                continue
+            event_id = raw.get("eventId")
+            kind = raw.get("kind")
+            if not isinstance(event_id, str) or not event_id or not isinstance(kind, str) or not kind:
+                continue
+            if event_id in self._seen_camera_event_set:
+                continue
+            self._seen_camera_event_set.add(event_id)
+            self._seen_camera_event_ids.append(event_id)
+            if len(self._seen_camera_event_ids) > self.CAMERA_EVENT_SEEN_LIMIT:
+                stale = self._seen_camera_event_ids.pop(0)
+                self._seen_camera_event_set.discard(stale)
+            payload = {k: v for k, v in raw.items() if k not in {"eventId", "kind"}}
+            self._append_event_locked("camera-authority-" + kind.lower().replace("_", "-"), {"cameraEventId": event_id, **payload})
+
     @staticmethod
     def _calibration_progress(alpha_status: dict[str, Any] | None) -> dict[str, Any] | None:
         if not isinstance(alpha_status, dict): return None
@@ -84,21 +107,32 @@ class StatusStore:
         if not isinstance(recovery, dict): return None
         ui = recovery.get("ui") if isinstance(recovery.get("ui"), dict) else {}
         quality = ui.get("cameraQuality") if isinstance(ui.get("cameraQuality"), dict) else {}
+        raw_quality = ui.get("cameraRawQuality") if isinstance(ui.get("cameraRawQuality"), dict) else {}
         sampling = ui.get("sampling") if isinstance(ui.get("sampling"), dict) else {}
         guidance = ui.get("guidance") if isinstance(ui.get("guidance"), dict) else {}
         checklist = ui.get("checklist") if isinstance(ui.get("checklist"), dict) else {}
+        authority = ui.get("cameraAuthority") if isinstance(ui.get("cameraAuthority"), dict) else None
+        candidate = ui.get("candidateStability") if isinstance(ui.get("candidateStability"), dict) else None
+        timeline = ui.get("authorityTimeline") if isinstance(ui.get("authorityTimeline"), list) else []
         samples = ui.get("samples")
         if not isinstance(samples, int): samples = quality.get("samples") if isinstance(quality.get("samples"), int) else None
+        sequence = ui.get("lastSequence") if isinstance(ui.get("lastSequence"), int) else ui.get("sequence") if isinstance(ui.get("sequence"), int) else None
         progress = {
             "recoveryState": recovery.get("state"), "error": recovery.get("error"), "samples": samples,
             "targetSamples": quality.get("targetSamples"), "remainingSamples": quality.get("remainingSamples"),
-            "cameraReady": quality.get("ok") is True, "reason": quality.get("reason"), "conditioning": quality.get("conditioning"),
+            "cameraReady": quality.get("ready") is True or quality.get("ok") is True, "clickReady": quality.get("clickReady") is True,
+            "reason": quality.get("reason"), "conditioning": quality.get("conditioning"),
+            "stableSamples": quality.get("stableSamples"), "requiredStableSamples": quality.get("requiredStableSamples"),
             "pausedReason": sampling.get("pausedReason"), "retainedSamples": sampling.get("retainedSamples"),
             "continuable": quality.get("continuable") if "continuable" in quality else sampling.get("continuable"),
             "actionZh": guidance.get("actionZh"), "nextCommandZh": guidance.get("nextCommandZh"),
-            "calibrated": ui.get("calibrated") is True, "terminal": ui.get("terminal") is True, "verdict": ui.get("verdict"), "checklist": checklist,
+            "workerSessionId": ui.get("workerSessionId"), "snapshotSequence": sequence, "snapshotId": ui.get("snapshotId"),
+            "cameraAuthority": authority, "candidateStability": candidate, "cameraRawQuality": raw_quality or None,
+            "authorityTimeline": timeline[-64:], "lockRejectReason": ui.get("lockRejectReason"),
+            "calibrated": ui.get("calibrated") is True, "pendingCalibration": ui.get("pendingCalibration") is True,
+            "terminal": ui.get("terminal") is True, "verdict": ui.get("verdict"), "checklist": checklist,
         }
-        return progress if any(v is not None and v != {} and v is not False for v in progress.values()) else None
+        return progress if any(v is not None and v != {} and v != [] and v is not False for v in progress.values()) else None
 
     def _capture_significant_locked(self) -> None:
         s = self._status
@@ -113,8 +147,6 @@ class StatusStore:
             s.last_accepted_authority = {"atUtc": _utc_now(), **authority}
             if {k: v for k, v in old.items() if k != "atUtc"} != authority: self._append_event_locked("accepted-authority", authority)
 
-        # Alpha failure evidence is authoritative only while exact World authority is
-        # still live. A later generic CDP disconnect must not overwrite that cause.
         if s.alpha_error and s.world_921031:
             failure = {
                 "error": s.alpha_error, "worldSha256": s.identity_sha256,
@@ -129,9 +161,11 @@ class StatusStore:
         progress = self._calibration_progress(s.alpha_status)
         if progress is not None:
             s.last_calibration_progress = {"atUtc": _utc_now(), **progress}
+            self._append_camera_events_locked(progress.get("authorityTimeline"))
             event_progress = dict(progress); sample = event_progress.get("samples")
             event_progress["sampleBucket"] = sample if isinstance(sample, int) and sample < 10 else (sample // 10 * 10 if isinstance(sample, int) else None)
-            event_progress.pop("samples", None); self._append_event_locked("calibration-progress", event_progress)
+            event_progress.pop("samples", None); event_progress.pop("authorityTimeline", None); event_progress.pop("cameraRawQuality", None)
+            self._append_event_locked("calibration-progress", event_progress)
 
         if s.state in {"ERROR", "DISCONNECTED"} and s.last_accepted_authority is not None:
             self._append_event_locked("runtime-ended-or-disconnected", {"launcherState": s.state, "error": s.last_error})
