@@ -5,7 +5,27 @@
   "effectiveDedupKey": "alpha.v1.anchored-overlays.bounded-dynamic-live-proof-prep",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.anchored-overlays.bounded-dynamic-live-proof-prep.json",
   "claimToken": "c6cbe077-4615-4056-8f44-ea6b3357b8b3-1742f2675eea934bc92b083f7b91df11",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "fd850d27d32b90efa5a96b1456c6244a1ecdf7da",
-  "canonicalClaimCommit": "138f99b35b4b0f98397ba5ad892e2c0a888b0814"
+  "claimCommit": "138f99b35b4b0f98397ba5ad892e2c0a888b0814",
+  "canonicalClaimCommit": "138f99b35b4b0f98397ba5ad892e2c0a888b0814",
+  "promptPath": "parallel/PM/ALPHA_V1_ANCHORED_OVERLAYS_BOUNDED_LIVE_PROOF_PREP_START_PROMPT.md",
+  "owner": "chatgpt-alpha-v1-anchored-overlays-bounded-live-proof-prep",
+  "result": "PASS — ALPHA V1 ANCHORED OVERLAYS BOUNDED LIVE PROOF PREP — ONE-SESSION DYNAMIC PROOF CONTRACT READY",
+  "resultPath": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_LIVE_PROOF_PREP/RESULT.md",
+  "resultCommit": "52dd94b8218c185de90aa1c850784dff57e20e93",
+  "evidenceCommits": [
+    "27a516445fdc536edd9451c1ffeba7e700384a4e",
+    "0f4a8205537ea7549ac19a5c5aa0e8fdac89a829",
+    "52dd94b8218c185de90aa1c850784dff57e20e93"
+  ],
+  "productBlobs": {
+    "product/alpha/wof_alpha_player_head_warning.js": "43b54e361f9bffcc4be278549692d0fb229aae7e",
+    "product/alpha/wof_alpha_player_head_projection.json": "bbed0618b348961580ca805bb93e4d17525f0142",
+    "product/alpha/wof_alpha_enemy_target_labels.js": "e6e1260559f735b85ce6f69e87803369f125b2de",
+    "product/alpha/wof_alpha_enemy_head_projection.json": "8de57739818503a0e14702d2fa0bb4eba58228d2",
+    "product/alpha/wof_alpha_real_worker.js": "b7f4506fc90b681ede059df5ad3316e665c6f15e",
+    "product/alpha/wof_alpha_hud.js": "50d944c451ac94b114e4f86441aeae8ad6b25c78",
+    "product/alpha/wof_alpha_loader.js": "66aee09fc2dd009c2f295d2092f3129548605efb"
+  }
 }
