@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "winkawaks.collector.v6.segment-aware-analysis-reader.recovery-v2",
+  "effectiveDedupKey": "winkawaks.collector.v6.segment-aware-analysis-reader.recovery-v2",
+  "dedupMode": "exclusive",
+  "stageId": "WINKAWAKS_COLLECTOR_V6_SEGMENT_AWARE_ANALYSIS_READER_RECOVERY_V2",
+  "promptPath": "parallel/PM/WINKAWAKS_COLLECTOR_V6_SEGMENT_AWARE_ANALYSIS_READER_RECOVERY_V2_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol-v6-recovery-v2",
+  "claimToken": "46b6ba65b262b792046c08a1557cf8c8216e448006250856",
+  "state": "ACTIVE",
+  "startCommit": "1474541af3f501b6872c3a0524de5a87c5721d09"
+}
