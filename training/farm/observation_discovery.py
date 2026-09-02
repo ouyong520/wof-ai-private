@@ -175,6 +175,13 @@ def _validate_branch_horizon(branch: ObservationBranch, horizon: int) -> None:
         )
 
 
+def _parse_actions(value: object, field: str) -> tuple[ReplayStep, ...]:
+    try:
+        return parse_action_sequence(value)
+    except (TrainingFarmError, TypeError, ValueError) as exc:
+        raise ObservationContractError(f"{field}: {exc}") from exc
+
+
 def parse_observation_plan(value: object) -> ObservationPlan:
     required = {
         "schema",
@@ -219,7 +226,7 @@ def parse_observation_plan(value: object) -> ObservationPlan:
     if horizon not in capture_frames:
         raise ObservationContractError("captureFrames must include the final horizon frame")
 
-    baseline_steps = parse_action_sequence(value["baselineActions"])
+    baseline_steps = _parse_actions(value["baselineActions"], "baselineActions")
     baseline = ObservationBranch("baseline", baseline_steps)
     _validate_branch_horizon(baseline, horizon)
 
@@ -239,7 +246,10 @@ def parse_observation_plan(value: object) -> ObservationPlan:
         if branch_id == "baseline" or branch_id in seen_ids:
             raise ObservationContractError("intervention ids must be unique and not baseline")
         seen_ids.add(branch_id)
-        branch = ObservationBranch(branch_id, parse_action_sequence(item["actions"]))
+        branch = ObservationBranch(
+            branch_id,
+            _parse_actions(item["actions"], f"interventions[{index}].actions"),
+        )
         _validate_branch_horizon(branch, horizon)
         interventions.append(branch)
 
@@ -438,7 +448,7 @@ def _validate_r02_pass_shape(proof: object) -> dict[str, object]:
         proof["horizonFrames"], "R0.2 horizonFrames", 1, MAX_HORIZON_FRAMES
     )
 
-    steps = parse_action_sequence(proof["actionSequence"])
+    steps = _parse_actions(proof["actionSequence"], "R0.2 actionSequence")
     if sum(step.frames for step in steps) != horizon:
         raise ObservationContractError("R0.2 proof action sequence does not cover horizon")
     action_sha = _strict_sha(proof["actionSequenceSha256"], "R0.2 actionSequenceSha256")
