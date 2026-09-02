@@ -7,7 +7,6 @@ import unittest
 from pathlib import Path
 
 HERE = Path(__file__).resolve()
-# This file is copied under parallel/PYLAUNCH/tests in-repo.
 ROOT = HERE.parents[3] if "parallel" in HERE.parts else Path("/mnt/data")
 PYLAUNCH = ROOT / "parallel/PYLAUNCH"
 if PYLAUNCH.exists() and str(PYLAUNCH) not in sys.path:
@@ -36,34 +35,24 @@ const P=0xFFBE1C,A=0xFF1000,B=0xFF2000;setB(P,1);setF(P+4,100);setF(P+8,80);setF
 (0,eval)(src);assert(typeof tick==='function','worker tick missing');
 function step(i,{b=false,freezeA=false}={}){setF(P+4,100+i);setU16(A,freezeA?99:i);if(b)setU16(B,i);tick();return globalThis.WOFOWNERPROJECTION.status();}
 let firstQualified=null;
-for(let i=1;i<140;i++){
-  const s=step(i);
-  if(s.cameraQuality.reason==='READY_STABILITY_WINDOW'){firstQualified=s;break;}
-}
+for(let i=1;i<140;i++){const s=step(i);if(s.cameraQuality.reason==='READY_STABILITY_WINDOW'){firstQualified=s;break;}}
 assert(firstQualified,'must reach instant qualified state');
 assert(firstQualified.cameraQuality.ready===false,'one instant qualified candidate must not READY');
 assert(firstQualified.cameraQuality.stableSamples<firstQualified.cameraQuality.requiredStableSamples,'stable window must be incomplete');
-let ready=null;
-for(let i=firstQualified.samples;i<firstQualified.samples+40;i++){
-  const s=step(i+1);if(s.cameraQuality.ready){ready=s;break;}
-}
+let ready=null;for(let i=firstQualified.samples;i<firstQualified.samples+40;i++){const s=step(i+1);if(s.cameraQuality.ready){ready=s;break;}}
 assert(ready,'same candidate must become READY after bounded stable window');
 assert(ready.cameraAuthority&&ready.cameraAuthority.state==='READY','READY authority missing');
 assert(ready.cameraAuthority.stableSamples>=20,'READY stability window too short');
 assert(ready.cameraAuthority.sampleEnd>=ready.cameraAuthority.sampleStart,'proof sample window missing');
 assert(ready.cameraAuthority.authorityId&&ready.cameraAuthority.authorityGeneration>=1,'authority identity/generation missing');
 const id=ready.cameraAuthority.authorityId,gen=ready.cameraAuthority.authorityGeneration,address=ready.cameraAuthority.address;
-// After READY, deliberately degrade A and promote a competing B. Owner-facing state must remain the exact latched verified authority.
 const driftStart=ready.samples;for(let i=driftStart+1;i<driftStart+70;i++)ready=step(i,{b:true,freezeA:true});
 assert(ready.cameraAuthority.authorityId===id&&ready.cameraAuthority.authorityGeneration===gen&&ready.cameraAuthority.address===address,'latched authority drifted after ranking change');
 assert(ready.cameraQuality.ready===true&&ready.cameraQuality.authorityId===id,'owner-facing READY must remain authority-bound');
-// Wrong candidate/address cannot be consumed even if it looks current.
 globalThis.__bc.onmessage({data:{schema:'wof-owner-projection-proof-v1',kind:'lock-camera',address:'0xFF2000',authorityId:id,authorityGeneration:gen}});
 let s=globalThis.WOFOWNERPROJECTION.status();assert(!s.locked&&s.lockRejectReason&&s.lockRejectReason.reason==='AUTHORITY_ADDRESS_MISMATCH','wrong address must fail closed');
-// Wrong generation cannot be consumed.
 globalThis.__bc.onmessage({data:{schema:'wof-owner-projection-proof-v1',kind:'lock-camera',address,authorityId:id,authorityGeneration:gen+1}});
 s=globalThis.WOFOWNERPROJECTION.status();assert(!s.locked&&s.lockRejectReason&&s.lockRejectReason.reason==='AUTHORITY_GENERATION_MISMATCH','wrong generation must fail closed');
-// Exact READY authority is the only accepted lock.
 globalThis.__bc.onmessage({data:{schema:'wof-owner-projection-proof-v1',kind:'lock-camera',address,authorityId:id,authorityGeneration:gen}});
 s=globalThis.WOFOWNERPROJECTION.status();assert(s.locked&&s.locked.authorityId===id&&s.locked.authorityGeneration===gen&&s.locked.address===address,'exact READY authority lock failed');
 assert(s.authorityTimeline.some(e=>e.kind==='CANDIDATE_GENERATION'),'candidate generation event missing');
@@ -129,7 +118,7 @@ const final=globalThis.__bc.messages.at(-1);assert(final.sequence>seq,'stop must
         self.assertIn("camera-authority-camera-locked", kinds)
         before = len(snap["significant_events"])
         store.update(alpha_status={"projectionRecovery": {"state": "CALIBRATING", "ui": ui}})
-        self.assertEqual(before, len(store.get().significant_events()), "re-poll must not duplicate authority timeline events")
+        self.assertEqual(before, len(store.get().significant_events), "re-poll must not duplicate authority timeline events")
 
 
 if __name__ == "__main__":
