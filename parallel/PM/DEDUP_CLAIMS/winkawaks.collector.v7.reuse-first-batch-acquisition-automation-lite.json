@@ -1,0 +1,14 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "winkawaks.collector.v7.reuse-first-batch-acquisition-automation-lite",
+  "effectiveDedupKey": "winkawaks.collector.v7.reuse-first-batch-acquisition-automation-lite",
+  "dedupMode": "exclusive",
+  "stageId": "WINKAWAKS_COLLECTOR_V7_REUSE_FIRST_BATCH_ACQUISITION_AUTOMATION_LITE_V1",
+  "promptPath": "parallel/PM/WINKAWAKS_COLLECTOR_V7_REUSE_FIRST_BATCH_ACQUISITION_AUTOMATION_LITE_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol-v7-lite",
+  "claimToken": "8538713361260a26e82e284ade2859ac",
+  "state": "ACTIVE",
+  "startCommit": "954791387bae0b0ea25a7ada00526b47e206612a",
+  "bridgeStartCommit": "c20c9dbe0684c645b4bb8760ab5110b00d12b09c"
+}
