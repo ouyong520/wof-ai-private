@@ -105,11 +105,14 @@ class PackageTests(unittest.TestCase):
         s = self.entry
         self.assertIn('if /I "%~1"=="--update-only" goto :bootstrap', s)
         self.assertIn('set "PORTABLE_ROOT=%LAUNCH_DIR%\\WOF_Portable"', s)
-        self.assertIn(':direct', s); self.assertIn(':bootstrap', s)
-        self.assertLess(s.index(':direct'), s.index(':bootstrap'))
-        direct = s[s.index(':direct'):s.index(':bootstrap')]
+        direct_label = s.index("\n:direct\n")
+        bootstrap_label = s.index("\n:bootstrap\n")
+        self.assertLess(direct_label, bootstrap_label)
+        direct = s[direct_label:bootstrap_label]
         self.assertNotIn("Invoke-WebRequest", direct); self.assertNotIn("pip install", direct); self.assertNotIn("raw.githubusercontent.com", direct)
         self.assertNotIn("LOCALAPPDATA", s)
+        self.assertIn("EnableDelayedExpansion", s)
+        self.assertIn("!CURRENT_VERSION!", s)
         self.assertRegex(s, r"raw\.githubusercontent\.com/ouyong520/wof-ai-private/[0-9a-f]{40}/parallel/OWNER_ONECLICK/bootstrap_v2\.ps1")
 
     def test_utf8_and_chinese_owner_surface(self) -> None:
