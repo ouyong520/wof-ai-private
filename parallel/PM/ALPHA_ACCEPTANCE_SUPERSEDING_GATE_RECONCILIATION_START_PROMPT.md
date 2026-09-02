@@ -62,7 +62,7 @@ At minimum:
 3. keep durable Formal Integration result/seam requirements;
 4. keep current local Safe Transport/Formal Integration/PYLAUNCH offline command gates;
 5. consume current PYLAUNCH startup-attestation PASS only while its tested production blobs remain current;
-6. consume current Unified Recorder generation fresh-QA PASS if current Release Freeze policy requires it before real acceptance;
+6. consume current `UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_V1` fresh-QA PASS if current Release Freeze policy requires it before real acceptance;
 7. consume Owner OneClick current-snapshot package PASS if current Release Freeze policy requires current package delivery before real acceptance;
 8. consume true 5h endurance PASS only if the current authoritative Release Freeze policy still treats it as mandatory; do not silently drop an existing mandatory gate, and do not add unrelated gates merely for completeness;
 9. emit precise Chinese-first blocker text naming the current missing/superseded gate;
