@@ -8,6 +8,14 @@
   "promptPath": "parallel/PM/WINKAWAKS_COLLECTOR_V4_DATASET_CATALOG_CAPTURE_IDENTITY_INDEX_RECOVERY_V3_START_PROMPT.md",
   "owner": "gpt-5.6-sol-recovery-v3",
   "claimToken": "2d7f0e7b0b7e4df8922b0e24c1b9f18d",
-  "state": "ACTIVE",
-  "startCommit": "1c6e177f8265e8132ac14a829dc1bfb4e14c738a"
+  "state": "COMPLETE",
+  "startCommit": "1c6e177f8265e8132ac14a829dc1bfb4e14c738a",
+  "resultPath": "parallel/PM/WINKAWAKS_COLLECTOR_V4_DATASET_CATALOG_CAPTURE_IDENTITY_INDEX_RECOVERY_V3_RESULT.md",
+  "resultCommit": "f710ca572e0434cf3cd021524e65729dd5c9cb3c",
+  "implementationRepository": "ouyong520/wof-winkawaks-bridge",
+  "implementationCommit": "c48cdd03b0136247d794078d879a868d10e1f49c",
+  "implementationTree": "6fac3df12311f92a2ca2aa8e51522e62faa0ed06",
+  "workflowRunId": 33626256840,
+  "supersedesDedupKey": "winkawaks.collector.v4.dataset-catalog-capture-identity-index",
+  "supersedesRecoveryV2DedupKey": "winkawaks.collector.v4.dataset-catalog-capture-identity-index.recovery-v2"
 }
