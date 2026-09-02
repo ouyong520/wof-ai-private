@@ -4,6 +4,60 @@ Project-wide authority boundary:
 
 `RUNTIME_DATA_SOURCE_BOUNDARIES.md`
 
+## Collector project status — independent non-blocking side lane
+
+WinKawaks Collector / Data Acquisition Infrastructure is an **independent R&D side-lane project**.
+
+It may continue development, recovery, self-check, module-level QA, dataset tooling and acquisition automation in parallel with the rest of the WOF program, but it is **not part of the Alpha V1 release-critical path unless Owner explicitly changes that policy in a later PM authority document**.
+
+Hard project-management rule:
+
+```text
+Collector incomplete / ACTIVE / BLOCKED / awaiting QA
+!= Alpha V1 release blocker
+!= reason to stop bounded real Browser/WOF acceptance
+!= reason to stop or delay Training Farm work
+!= reason to stop or delay the current 10-worker training lane
+```
+
+Collector work must not modify or destabilize the Alpha V1 release/runtime surface merely to make Collector development easier. In particular, Collector tasks must not modify:
+
+```text
+product/alpha/**
+Alpha danger rules or target semantics
+Browser/WOF production projection authority
+Transport
+Recorder
+PYLAUNCH
+OneClick packaging
+Alpha acceptance / release proof tooling
+```
+
+Collector work must also remain operationally and architecturally separate from Training Farm / automated training. It must not modify or take ownership of:
+
+```text
+training/farm/** runtime semantics
+Stable-Retro / FBNeo training adapters
+PPO / RL / policy code
+10-worker scheduling
+training action injection
+savestate-search control logic
+```
+
+The current Training Farm / 10-worker lane may continue while Collector development is incomplete. Repository-only Collector development and self-checks should proceed independently when they do not materially contend for the same local machine resources.
+
+The only operational caveat is physical-resource contention on the same machine: a critical/canonical long-duration WinKawaks capture may require temporarily pausing or capping a heavy Training Farm fleet to protect capture cadence and data quality. That is a **runtime scheduling concern only**, not a project dependency and not a release gate.
+
+Collector remains a read-only observation system:
+
+```text
+readOnly=true
+writesGameMemory=false
+inputInjection=false
+```
+
+Any future feature that would require Collector itself to play the game, inject gameplay input, become an AI policy runtime, or act as Training Farm is out of scope unless Owner creates a separate explicit project lane.
+
 ## Three authoritative roles
 
 The WOF project uses three complementary runtime/data sources. They must not be silently merged, and numeric offsets/runtime authority do not automatically transfer between them.
@@ -280,6 +334,8 @@ critical/canonical Collector capture
 -> capture completes
 -> resume Training Farm
 ```
+
+This is only a same-machine resource scheduling precaution. It does **not** make Collector a dependency of Training Farm or Training Farm a dependency of Collector, and it does not make either lane a blocker for Alpha V1.
 
 Repository-only development/self-checks may proceed in parallel when they do not materially load the local runtime.
 
