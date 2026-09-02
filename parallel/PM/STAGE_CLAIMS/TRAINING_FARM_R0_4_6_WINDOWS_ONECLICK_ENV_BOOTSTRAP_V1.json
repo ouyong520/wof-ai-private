@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "TRAINING_FARM_R0_4_6_WINDOWS_ONECLICK_ENV_BOOTSTRAP_V1",
+  "dedupKey": "training.farm.r0.4.6.windows-oneclick-env-bootstrap-v1",
+  "effectiveDedupKey": "training.farm.r0.4.6.windows-oneclick-env-bootstrap-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.6.windows-oneclick-env-bootstrap-v1.json",
+  "claimToken": "28343a9306bce8e7fcf8933934cf470f813aaccea8cde9e5",
+  "state": "ACTIVE",
+  "startCommit": "62c461b1ce7034812a96bd6f4966206311784bd9"
+}
