@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.live-acceptance.overlay-reentry-recovery-v1",
+  "effectiveDedupKey": "alpha.v1.live-acceptance.overlay-reentry-recovery-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_LIVE_ACCEPTANCE_OVERLAY_REENTRY_RECOVERY_V1",
+  "promptPath": "parallel/PM/ALPHA_V1_LIVE_ACCEPTANCE_OVERLAY_REENTRY_RECOVERY_V1_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol",
+  "claimToken": "a71d6f2c-3f54-4cb0-9ff9-2bdb4a92885e",
+  "state": "ACTIVE",
+  "startCommit": "5c3eda3bd862b7d39d6adce434a0f3470a8ef2e5"
+}
