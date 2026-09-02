@@ -2,7 +2,11 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "ALPHA_ENEMY_TARGET_HEAD_LABELS_V1",
   "promptPath": "parallel/PM/ALPHA_ENEMY_TARGET_HEAD_LABELS_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "3fb7862a59f9203d3f5d8f7f45756d366ec7b148",
-  "startedAtUtc": "2026-09-02T01:29:51Z"
+  "implementationCommit": "51a2637356033894794ace44055462cad52c923e",
+  "resultPath": "parallel/ALPHA_ENEMY_TARGET_HEAD_LABELS/RESULT.md",
+  "resultCommit": "88a23385466ef01b071b6a79b256bc19d3ece912",
+  "startedAtUtc": "2026-09-02T01:29:51Z",
+  "completedAtUtc": "2026-09-02T01:50:30Z"
 }
