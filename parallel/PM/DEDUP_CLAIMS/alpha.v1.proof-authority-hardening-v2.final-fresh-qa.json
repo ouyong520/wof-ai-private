@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.proof-authority-hardening-v2.final-fresh-qa",
+  "effectiveDedupKey": "alpha.v1.proof-authority-hardening-v2.final-fresh-qa",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PROOF_AUTHORITY_HARDENING_V2_FINAL_FRESH_QA",
+  "promptPath": "parallel/PM/ALPHA_V1_PROOF_AUTHORITY_HARDENING_V2_FINAL_FRESH_QA_START_PROMPT.md",
+  "owner": "gpt-5.6-sol-final-fresh-qa",
+  "claimToken": "facc6ee5efbe2754d2ec8590a826a36084aac57ac90ee788",
+  "state": "ACTIVE",
+  "startCommit": "239f2514dabb1a17ac12bcc1ecb566282cf15e6d"
+}
