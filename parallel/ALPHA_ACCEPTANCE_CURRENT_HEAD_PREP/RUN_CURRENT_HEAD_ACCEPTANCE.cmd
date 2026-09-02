@@ -5,7 +5,7 @@ cd /d "%~dp0\..\.."
 
 echo WOF Alpha Current-HEAD 有界验收
 echo.
-python "parallel\ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP\acceptance_orchestrator.py" --output "parallel\ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP\acceptance_result.json"
+python "parallel\ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP\acceptance_entrypoint.py" --output "parallel\ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP\acceptance_result.json"
 set "RC=%ERRORLEVEL%"
 echo.
 if "%RC%"=="0" (
