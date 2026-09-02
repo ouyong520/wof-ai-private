@@ -5,6 +5,10 @@
   "effectiveDedupKey": "training.farm.r0.4.5.headless-background-runtime-foundation-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.5.headless-background-runtime-foundation-v1.json",
   "claimToken": "701a388fe82482ae2dedf70106bd36d0eaa353a0d9e4ee3e",
-  "state": "ACTIVE",
-  "startCommit": "8536d044e3b7c482543b04bb3b3b8c886c0e4177"
+  "state": "COMPLETE",
+  "startCommit": "8536d044e3b7c482543b04bb3b3b8c886c0e4177",
+  "sourceCandidateCommit": "e80ca16f1a72cb8845788a295e6ffc3ac4514948",
+  "resultPath": "parallel/TRAINING_FARM_R0_4_5_HEADLESS_BACKGROUND_RUNTIME_FOUNDATION_V1/RESULT.md",
+  "resultCommit": "5ac4b560cd96726fceb3b34068068f984432d46c",
+  "completedAt": "2026-09-02"
 }
