@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PROOF_AUTHORITY_HARDENING_INTEGRATION_FIX_V4_RECOVERY_V5",
+  "dedupKey": "alpha.v1.proof-authority-hardening-integration-fix-v4-recovery-v5",
+  "effectiveDedupKey": "alpha.v1.proof-authority-hardening-integration-fix-v4-recovery-v5",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.proof-authority-hardening-integration-fix-v4-recovery-v5.json",
+  "claimToken": "028f677098cdfe6030eb49a7f40126a4",
+  "state": "ACTIVE",
+  "startCommit": "040b8a4335a4bfbb3b0b9d43a64aad70e3cd0ef6",
+  "canonicalAcquiredCommit": "7f296702ea8d40bff71faf848dfb8e1cbb0b010f",
+  "recoveryOfDedupKey": "alpha.v1.proof-authority-hardening-integration-fix-v4",
+  "notes": "PM-authorized stale-worker recovery; historical V4 claim remains untouched."
+}
