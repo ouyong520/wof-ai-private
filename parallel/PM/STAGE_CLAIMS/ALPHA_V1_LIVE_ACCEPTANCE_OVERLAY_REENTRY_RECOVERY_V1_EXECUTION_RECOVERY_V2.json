@@ -5,5 +5,12 @@
   "effectiveDedupKey": "alpha.v1.live-acceptance.overlay-reentry-recovery-v1.execution-recovery-v2",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.live-acceptance.overlay-reentry-recovery-v1.execution-recovery-v2.json",
   "claimToken": "c1f5a776-c916-4d89-9729-02325f2dedd7",
-  "state": "ACTIVE"
+  "state": "COMPLETE",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_LIVE_ACCEPTANCE_OVERLAY_REENTRY_RECOVERY_V1_EXECUTION_RECOVERY_V2_RESULT.md",
+  "resultCommit": "4ccb46ebb597580d6782770c89655714a6e4b212",
+  "implementationRepository": "ouyong520/wof-ai-private",
+  "implementationCommit": "3aad0e9d316701e30cda65dc4a45ab00f0e3d1c3",
+  "packageVersion": "2026.09.02.3aad0e9d3167",
+  "manifestPublicationCommit": "940a4d2778b7224679f1b620dd86ae716f901f07",
+  "workflowRunId": 33645002099
 }
