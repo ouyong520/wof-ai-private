@@ -123,7 +123,7 @@ for(const id of ACTIVE){
   assert.equal(model.count,2);assert.equal(model.groupCount,2);
 }
 
-// RC4 fail-closed HUD transport regression. This mirrors the page HUD's exact accepted-message precedence.
+// RC5 fail-closed HUD transport regression. This mirrors the page HUD's exact accepted-message precedence.
 {
   const STALE_MS=1500;
   const warningRows=C.createEngine().step([stateFor(ACTIVE[0])],1000).warnings;
@@ -219,7 +219,7 @@ function executeBootstrap({bcThrows=false,cryptoThrows=false}={}){
   assert.equal(x.nativeCalls.length,0);assert.equal(x.fetchCalls,0);assert.equal(x.blobCalls,0);
 }
 
-// Static release guards for the authoritative hash path, RC5 fail-open bootstrap, RC4 fail-closed HUD patch, and preserved RC2/RC3 safety.
+// Static release guards for the authoritative hash path, RC5 fail-open bootstrap, RC5 fail-closed HUD patch, and preserved RC2/RC3 safety.
 const loader=files('wof_alpha_loader.js'),core=files('wof_alpha_core.js'),hud=files('wof_alpha_hud.js'),boot=rc5Boot,readme=files('README.md');
 const manifest=JSON.parse(files('rules_manifest.json'));
 assert(loader.includes("const RELEASE='wof-alpha-rc3'"));
@@ -237,7 +237,7 @@ assert(!/window\.Worker\s*=/.test(boot),'RC5 bootstrap must never replace window
 assert(!/(?:new\s+Blob\s*\(|createObjectURL\s*\(|importScripts\s*\()/.test(boot),'RC5 bootstrap must not synthesize a replacement Worker wrapper');
 assert(/legacy\.dispose/.test(hud),'legacy research HUD must still be disposed');
 assert(/m\.session===SESSION/.test(hud),'HUD must still enforce session nonce');
-assert(hud.includes("const VERSION='wof-alpha-hud-rc4'"),'RC4 HUD patch version must be identifiable');
+assert(hud.includes("const VERSION='wof-alpha-hud-rc5'"),'RC5 HUD patch version must be identifiable');
 assert(hud.includes("else if(m.kind==='diag'){lastMsg=null;lastRx=0;lastDiag={at:Date.now(),reason:m.reason||m.status||'diagnostic'};lastKey='';}"),'paired diag must clear lastMsg and lastRx before any later draw');
 assert(hud.includes('const STARTUP_MS=15000,STALE_MS=1500'),'ordinary RC3 stale timeout must remain unchanged');
 assert(!/warnings\?\.\[0\]|warnings\s*\[\s*0\s*\]/.test(hud),'HUD must not special-case only warning[0]');
