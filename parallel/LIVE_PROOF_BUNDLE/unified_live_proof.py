@@ -51,6 +51,13 @@ class RecorderEvidence(_BaseRecorderEvidence):
     _source_admission_seen: bool = field(default=False, repr=False)
     _legacy_admission_count: int = field(default=0, repr=False)
     _legacy_seen_admission_lines: set[str] = field(default_factory=set, repr=False)
+    # Generation rollover and the final authority mutation commit share this
+    # lock. feed() deliberately does not hold it while parsing/dispatching so a
+    # stalled old reader cannot block a newer child-start rollover indefinitely.
+    _authority_state_lock: Any = field(default_factory=threading.RLock, repr=False, compare=False)
+    # Preserve the event generation across monkey-patched/stalled mutation
+    # helpers without changing their public/internal call signatures.
+    _authority_event_local: Any = field(default_factory=threading.local, repr=False, compare=False)
 
     def _revoke_current_authority(self, *, clear_fatal: bool) -> None:
         self.admitted = False
@@ -65,6 +72,54 @@ class RecorderEvidence(_BaseRecorderEvidence):
             self.fatal = False
             self.fatal_line = None
 
+    def _push_authority_event_generation(
+        self,
+        source_generation: str | int | None,
+    ) -> tuple[bool, str | int | None]:
+        local = self._authority_event_local
+        previous = (
+            bool(getattr(local, "active", False)),
+            getattr(local, "source_generation", None),
+        )
+        local.active = True
+        local.source_generation = source_generation
+        return previous
+
+    def _restore_authority_event_generation(
+        self,
+        previous: tuple[bool, str | int | None],
+    ) -> None:
+        active, source_generation = previous
+        local = self._authority_event_local
+        if active:
+            local.active = True
+            local.source_generation = source_generation
+        else:
+            local.active = False
+            local.source_generation = None
+
+    def _authority_commit_context_locked(
+        self,
+    ) -> tuple[str | None, str | int | None]:
+        """Revalidate one in-flight authority event at its mutation boundary."""
+        local = self._authority_event_local
+        if not bool(getattr(local, "active", False)):
+            return None, None
+
+        expected = getattr(local, "source_generation", None)
+        current = self.source_generation
+        if current is None:
+            if expected is None:
+                return None, expected
+            return "stale-or-wrong-source-generation-at-commit", expected
+        if not _valid_source_generation(expected):
+            return "missing-source-generation-at-commit", expected
+        if expected != current:
+            return "stale-or-wrong-source-generation-at-commit", expected
+        if self.source_revoked:
+            return "source-generation-revoked-at-commit", expected
+        return None, expected
+
     def begin_source_generation(
         self,
         source_generation: str | int,
@@ -76,19 +131,22 @@ class RecorderEvidence(_BaseRecorderEvidence):
             raise ValueError("Recorder source generation must be a non-empty string or positive integer")
         if order is not None and (isinstance(order, bool) or not isinstance(order, int) or order <= 0):
             raise ValueError("Recorder source generation order must be a positive integer")
-        if self.source_generation == source_generation:
-            _register_active_recorder_evidence(self)
-            return False
 
-        self.source_generation = source_generation
-        self.source_generation_epoch += 1
-        self.source_generation_order = order
-        self.source_generation_started_utc = _base.utc_now()
-        self.source_revoked = False
-        self._source_admission_seen = False
-        self._revoke_current_authority(clear_fatal=True)
+        with self._authority_state_lock:
+            if self.source_generation == source_generation:
+                changed = False
+            else:
+                self.source_generation = source_generation
+                self.source_generation_epoch += 1
+                self.source_generation_order = order
+                self.source_generation_started_utc = _base.utc_now()
+                self.source_revoked = False
+                self._source_admission_seen = False
+                self._revoke_current_authority(clear_fatal=True)
+                changed = True
+
         _register_active_recorder_evidence(self)
-        return True
+        return changed
 
     def _reject_authority(
         self,
@@ -102,31 +160,70 @@ class RecorderEvidence(_BaseRecorderEvidence):
         self.last_rejected_authority_line = text
 
     def _accept_fatal(self, text: str) -> None:
-        self.generation += 1
-        self.fatal = True
-        self.fatal_line = text
-        self.fatal_generation = self.generation
-        self._revoke_current_authority(clear_fatal=False)
-        self.ever_fatal = True
-        self.last_fatal_line = text
+        with self._authority_state_lock:
+            reason, expected = self._authority_commit_context_locked()
+            if reason is not None:
+                self._reject_authority(reason, text, expected)
+                return
+
+            self.generation += 1
+            self.fatal = True
+            self.fatal_line = text
+            self.fatal_generation = self.generation
+            self._revoke_current_authority(clear_fatal=False)
+            if self.source_generation is not None:
+                self.source_revoked = True
+            self.ever_fatal = True
+            self.last_fatal_line = text
 
     def _accept_admission(
         self,
         text: str,
         source_generation: str | int | None,
     ) -> None:
-        self.generation += 1
-        self.admitted = True
-        self.admission_line = text
-        self.admission_generation = self.generation
-        self.admission_output_generation = self.output_generation
-        self.admission_source_generation = source_generation
-        self.fatal = False
-        self.fatal_line = None
-        self.ever_admitted = True
-        self.last_admission_line = text
-        self._advance_authority("admission", text)
-        self.admission_authority_generation = self.authority_generation
+        with self._authority_state_lock:
+            reason, expected = self._authority_commit_context_locked()
+            if reason is not None:
+                self._reject_authority(reason, text, expected)
+                return
+            if self.source_generation is not None:
+                if self._source_admission_seen:
+                    self._reject_authority(
+                        "duplicate-admission-same-source-generation",
+                        text,
+                        expected,
+                    )
+                    return
+                self._source_admission_seen = True
+
+            self.generation += 1
+            self.admitted = True
+            self.admission_line = text
+            self.admission_generation = self.generation
+            self.admission_output_generation = self.output_generation
+            self.admission_source_generation = source_generation
+            self.fatal = False
+            self.fatal_line = None
+            self.ever_admitted = True
+            self.last_admission_line = text
+            self._advance_authority("admission", text)
+            self.admission_authority_generation = self.authority_generation
+
+    def _advance_authority(self, kind: str, line: str) -> None:
+        with self._authority_state_lock:
+            reason, expected = self._authority_commit_context_locked()
+            if reason is not None:
+                self._reject_authority(reason, line, expected)
+                return
+            if kind == "supervisor-heartbeat":
+                if not self.admitted or self.fatal:
+                    return
+                if (
+                    self.source_generation is not None
+                    and self.admission_source_generation != self.source_generation
+                ):
+                    return
+            super()._advance_authority(kind, line)
 
     def feed(
         self,
@@ -152,7 +249,9 @@ class RecorderEvidence(_BaseRecorderEvidence):
             return
 
         # Strict runtime path: once a source generation has been activated,
-        # authority-like input without that exact token fails closed.
+        # authority-like input without that exact token fails closed. The first
+        # check is an early reject only; mutation helpers perform the decisive
+        # generation recheck while holding _authority_state_lock.
         if self.source_generation is not None:
             if not _valid_source_generation(source_generation):
                 self._reject_authority("missing-source-generation", text, source_generation)
@@ -164,46 +263,44 @@ class RecorderEvidence(_BaseRecorderEvidence):
                 self._reject_authority("source-generation-revoked", text, source_generation)
                 return
 
-            if is_fatal:
-                self._accept_fatal(text)
-                self.source_revoked = True
-                return
-            if is_admission:
-                if self._source_admission_seen:
-                    self._reject_authority("duplicate-admission-same-source-generation", text, source_generation)
+            previous = self._push_authority_event_generation(source_generation)
+            try:
+                if is_fatal:
+                    self._accept_fatal(text)
                     return
-                self._source_admission_seen = True
-                self._accept_admission(text, source_generation)
+                if is_admission:
+                    self._accept_admission(text, source_generation)
+                    return
+                if is_heartbeat:
+                    self._advance_authority("supervisor-heartbeat", text)
                 return
-            if (
-                is_heartbeat
-                and self.admitted
-                and not self.fatal
-                and self.admission_source_generation == self.source_generation
-            ):
-                self._advance_authority("supervisor-heartbeat", text)
-            return
+            finally:
+                self._restore_authority_event_generation(previous)
 
         # Legacy single-generation compatibility is intentionally narrow so the
-        # pre-fix independent QA fixture can be replayed unchanged. After any
-        # unbound authority rollover, heartbeat provenance is missing and fails
-        # closed; a byte-identical admission replay is also rejected.
-        if is_fatal:
-            self._accept_fatal(text)
-            return
-        if is_admission:
-            if text in self._legacy_seen_admission_lines:
-                self._reject_authority("replayed-unbound-admission", text, None)
+        # pre-fix independent QA fixture can be replayed unchanged. The mutation
+        # helpers still carry an explicit unbound context so a concurrent first
+        # generation bind cannot be crossed by an already-in-flight legacy event.
+        previous = self._push_authority_event_generation(None)
+        try:
+            if is_fatal:
+                self._accept_fatal(text)
                 return
-            self._legacy_seen_admission_lines.add(text)
-            self._legacy_admission_count += 1
-            self._accept_admission(text, None)
-            return
-        if is_heartbeat and self.admitted and not self.fatal:
-            if self._legacy_admission_count == 1:
-                self._advance_authority("supervisor-heartbeat", text)
-            else:
-                self._reject_authority("missing-source-generation-after-rollover", text, None)
+            if is_admission:
+                if text in self._legacy_seen_admission_lines:
+                    self._reject_authority("replayed-unbound-admission", text, None)
+                    return
+                self._legacy_seen_admission_lines.add(text)
+                self._legacy_admission_count += 1
+                self._accept_admission(text, None)
+                return
+            if is_heartbeat and self.admitted and not self.fatal:
+                if self._legacy_admission_count == 1:
+                    self._advance_authority("supervisor-heartbeat", text)
+                else:
+                    self._reject_authority("missing-source-generation-after-rollover", text, None)
+        finally:
+            self._restore_authority_event_generation(previous)
 
 
 _child_generation_lock = threading.Lock()
