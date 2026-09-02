@@ -1,0 +1,17 @@
+{
+  "schema": "wof-alpha-enemy-head-projection-v1",
+  "verdict": "UNPROVEN",
+  "proofId": null,
+  "romSha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
+  "nativeWidth": 384,
+  "nativeHeight": 224,
+  "cameraAddress": null,
+  "cameraRead": null,
+  "cameraSign": null,
+  "cameraScale": null,
+  "xBias": null,
+  "yModel": null,
+  "evidence": "parallel/HUDANCHOR_REVERSE/MINIMAL_LIVE_PROOF.md + bounded enemy-head clearance proof for each supported enemy type",
+  "status": "FAIL_CLOSED_UNTIL_IMPLEMENTATION_READY_PROOF",
+  "enemyHeadOffsetsByType": {}
+}
