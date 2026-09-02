@@ -1,0 +1,118 @@
+{
+  "schema": "wof-alpha-acceptance-superseding-gate-reconciliation-v2-result",
+  "stageId": "ALPHA_ACCEPTANCE_SUPERSEDING_GATE_RECONCILIATION_V2",
+  "status": "PASS",
+  "decision": "PASS — ALPHA ACCEPTANCE SUPERSEDING-GATE RECONCILIATION V2 — REPO PREFLIGHT POLICY CURRENT / RELEASE ADMISSION STILL FAIL-CLOSED ON OPEN GATES",
+  "ownerAction": "NO",
+  "repositoryOnly": true,
+  "browserWofLaunched": false,
+  "claimToken": "hEzQI_6fentWaBMu3jCk8xlBZPup1NdfzM_J5U5FsCA",
+  "claimStartCommit": "50ed1718092b795f9789264a50b5c781cd7ab49a",
+  "finalAuditHeadBeforeResult": "e021fc8b0b4256a045bdc404a1a2c9f11a9c0556",
+  "policyBlobs": {
+    "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/repository_preflight.py": "c9f45446797189465c3965ec4ae186ad2defa1c4",
+    "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/repository_preflight_current.py": "45baf4c4045a2aa851a08d9d1131167fcebe6030",
+    "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/acceptance_entrypoint.py": "fab77495f1d736e0687c103e14262ef1a35ae63d",
+    "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/RUN_CURRENT_HEAD_ACCEPTANCE.cmd": "12b5f13d75a2961a71c90e656d839f498f34ca0a",
+    "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/test_repository_preflight.py": "f67cbd93f496da81e12a0f41bc21427e8ebad872",
+    "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/test_repository_preflight_current.py": "3f2750b80639ccb10604cc1baae8962557a2830a",
+    "parallel/ALPHA_ACCEPTANCE_CURRENT_HEAD_PREP/test_repository_preflight_successor_schema.py": "a3ec68cd63f84b0664316d50a3bb921f543f6008"
+  },
+  "deterministicPolicyQa": {
+    "status": "PASS",
+    "passed": 14,
+    "failed": 0,
+    "evidence": "source-exact deterministic fixture execution on the exact final policy/test blobs; final current-main re-read confirms those blobs are unchanged",
+    "covered": [
+      "historical Formal BLOCKED does not override a current pinned Formal successor PASS",
+      "future current Formal successor can supersede an older blocked current-blob revalidation",
+      "PYLAUNCH missing/BLOCKED/blob drift fails closed",
+      "Recorder missing/BLOCKED/blob drift fails closed",
+      "Owner OneClick missing/stale fails closed",
+      "true 5h missing/BLOCKED/stale snapshot fails closed",
+      "Head Labels historical V2 BLOCKED can be superseded by a current-product V3 PASS",
+      "Head Labels missing/BLOCKED/stale current successor fails closed",
+      "actual Head Labels evidence helperBlob/projectionBlob schema is consumed",
+      "player-head mandatory requirement forces current production integration and blob currentness",
+      "old snapshots without that later mandatory requirement are not backfilled",
+      "all repository gates green remains preflight-only and does not fabricate Browser/WOF visual proof"
+    ]
+  },
+  "currentGateSnapshot": {
+    "formalCurrentBlob": {
+      "status": "PASS_CURRENT",
+      "claim": "ALPHA_FORMAL_REAL_ADAPTER_CURRENT_BLOB_REVALIDATION_V1",
+      "freshnessSensitiveBlobsCurrent": true
+    },
+    "pylaunchStartupAttestation": {
+      "status": "PASS_CURRENT",
+      "claim": "PYLAUNCH_STARTUP_ATTESTATION_QA_V1",
+      "freshnessSensitiveBlobsCurrent": true
+    },
+    "recorderInflightAtomicity": {
+      "status": "PASS_CURRENT",
+      "claim": "UNIFIED_LIVE_PROOF_RECORDER_INFLIGHT_GENERATION_ATOMICITY_QA_V1",
+      "runtimeBlobCurrent": true
+    },
+    "unifiedCurrentHeadPreflight": {
+      "status": "PASS_CURRENT",
+      "claim": "UNIFIED_LIVE_PROOF_CURRENT_HEAD_PREFLIGHT_QA_V2",
+      "preflightBlobsCurrent": true
+    },
+    "enemyTargetHeadLabels": {
+      "status": "PASS_CURRENT_REPOSITORY_QA",
+      "claim": "ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V3",
+      "decision": "PASS — ALPHA V1 ENEMY TARGET HEAD LABELS FRESH QA V3 — EPOCH FIX VERIFIED / BOUNDED LIVE PROOF STILL REQUIRED",
+      "helperBlob": "e6e1260559f735b85ce6f69e87803369f125b2de",
+      "projectionBlob": "8de57739818503a0e14702d2fa0bb4eba58228d2",
+      "boundedLiveVisualProofStillRequired": true
+    },
+    "playerHeadDangerWarning": {
+      "status": "OPEN_BLOCKING_RELEASE_ADMISSION",
+      "claim": "ALPHA_V1_PLAYER_HEAD_WARNING_PRODUCTION_INTEGRATION_V1",
+      "state": "ACTIVE"
+    },
+    "true5hEnduranceV2": {
+      "status": "OPEN_BLOCKING_RELEASE_ADMISSION",
+      "claim": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2",
+      "state": "ACTIVE",
+      "latestObservedCheckpoint": 4,
+      "latestObservedCheckpointStatus": "PASS",
+      "latestObservedCheckpointActualElapsedMs": 1500054,
+      "final5hPassNotYetPresent": true
+    },
+    "ownerOneClickV3": {
+      "status": "OPEN_BLOCKING_RELEASE_ADMISSION",
+      "claimPresent": false
+    }
+  },
+  "supersedingSemantics": {
+    "historicalBlockedEvidenceRewritten": false,
+    "formalSuccessorSelectedByCurrentPins": true,
+    "headLabelsSuccessorSelectedByCurrentProductPins": true,
+    "completeWithoutPassAccepted": false,
+    "openRequiredGateAllowsBrowser": false,
+    "openRequiredGateAllowsReleaseAdmission": false
+  },
+  "liveAcceptanceBoundary": {
+    "repositoryPreflightPassIsBrowserEvidence": false,
+    "enemyHeadLabelsRequireBoundedLiveProof": true,
+    "playerHeadWarningRequiresBoundedDynamicNonDriftProof": true,
+    "requiredScenarios": [
+      "correct 1P/2P/3P",
+      "enemy/player movement and camera/whole-screen scrolling follow",
+      "jump/depth/rapid movement non-drift",
+      "real retarget with immediate stale-label/warning revocation",
+      "resize/fullscreen/drawing-buffer remap",
+      "uncertainty/stale/epoch mismatch fail-closed"
+    ]
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "workerReplacement": false,
+    "blobRewrite": false,
+    "productImplementationModifiedByThisStage": false
+  }
+}
