@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_CURRENT_HEAD_LIVE_ACCEPTANCE_READINESS_RECONCILIATION",
+  "dedupKey": "alpha.v1.current-head.live-acceptance-readiness-reconciliation",
+  "effectiveDedupKey": "alpha.v1.current-head.live-acceptance-readiness-reconciliation",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.current-head.live-acceptance-readiness-reconciliation.json",
+  "claimToken": "fcff6de3bae13ac0db100786abce6b68",
+  "state": "ACTIVE",
+  "startCommit": "22eff8680c6447c7636513d7e1abf72dc4169de6"
+}
