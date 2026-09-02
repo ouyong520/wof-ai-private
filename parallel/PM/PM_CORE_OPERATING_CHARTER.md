@@ -300,3 +300,74 @@ prove real online product behavior -> Browser / Alpha V1
 ```
 
 This boundary is project architecture, not a temporary scheduling preference.
+
+## 16. Owner shorthand `1` means continue from durable Git state
+
+Owner may use a single message:
+
+`1`
+
+as a shorthand for:
+
+`当前 worker 已经结束或 Owner 要求 PM 继续；重新读取当前 GitHub durable state，判断真实 terminal RESULT / claim / HEAD，然后继续最短正确下一步。`
+
+Hard rules:
+
+1. `1` must be treated the same as `继续` for PM orchestration;
+2. PM must re-read current GitHub truth before acting;
+3. `1` does **not** mean automatically trust that the worker PASSed;
+4. if durable RESULT is PASS/COMPLETE, accept/review it and move to the legitimate next gate;
+5. if durable RESULT is BLOCKED, route only the concrete blocker to the proper focused repair;
+6. if the worker stopped without durable RESULT, classify from Git evidence and use recovery only when genuinely necessary;
+7. never respond to `1` by merely repeating the previous status without checking current Git state;
+8. never use `1` as a reason to create redundant QA or duplicate work.
+
+This shorthand exists to minimize Owner typing while preserving GitHub as the sole execution authority.
+
+## 17. Worker handoff prompts must be concise, clear and completion-driven
+
+When PM gives Owner a prompt to paste into a worker chat, use this default presentation format unless a task genuinely requires a different structure.
+
+### Before the Git path
+
+Start with roughly **100 Chinese characters** of clear natural-language task description. It should quickly explain:
+
+- what the worker is responsible for;
+- the concrete module / outcome to finish;
+- the most important scope boundary;
+- whether this is implementation, QA, recovery, audit or acceptance.
+
+Do not lead with a wall of process text, repository mechanics or Git connection instructions. The worker should understand the job before seeing file paths.
+
+Then provide the authoritative repository prompt/path, normally in a short form such as:
+
+```text
+仓库：ouyong520/wof-ai-private
+读取：parallel/PM/<START_PROMPT>.md
+```
+
+The Git start prompt remains the detailed authority; the chat handoff should not duplicate the entire file unless the Owner explicitly asks for the full prompt.
+
+### Tail instruction — work continuously to terminal state
+
+End worker handoffs with an explicit execution-behavior instruction equivalent to:
+
+```text
+少汇报，优先持续执行。不要做一点就停，不要因为中间步骤完成而中断，也不要反复向 Owner 汇报过程。
+完整完成本阶段要求的实现 / 集成 / 自测 / RESULT / claim 收口后再停止。
+只有到 COMPLETE / PASS、精确 BLOCKED、或 duplicate stop 时再向 Owner 汇报。
+除非遇到真正无法继续的外部 blocker，否则不要提前停下来等指示。
+```
+
+Hard rules:
+
+1. workers should spend their time executing, not narrating routine progress;
+2. ordinary intermediate discoveries should be handled inside the owned stage rather than causing a stop-and-report cycle;
+3. implementation workers should finish the coherent module, including integration, self-check, manifest/result/claim work required by the start prompt, before stopping;
+4. QA workers should execute the full authorized gate before stopping unless a fail-closed blocker makes further execution invalid;
+5. do not encourage workers to ask the Owner for routine confirmation between steps;
+6. do not tell workers to wait, pause, or return later for work they can complete in the current stage;
+7. workers should report to the Owner primarily at terminal state: COMPLETE/PASS, precise BLOCKED, or duplicate stop;
+8. PM-facing Git durable evidence remains more important than verbose chat summaries.
+
+The intent is: **clear handoff -> sustained execution -> terminal report**, with minimal interruption and minimal process chatter.
