@@ -132,6 +132,14 @@ def _extract_blob_map(obj: Any) -> dict[str, str]:
     source_integrity = obj.get("sourceIntegrity")
     if isinstance(source_integrity, dict):
         merged.update(_extract_blob_map(source_integrity))
+    evidence = obj.get("evidence")
+    if isinstance(evidence, dict):
+        helper_blob = evidence.get("helperBlob")
+        if isinstance(helper_blob, str):
+            merged[HEAD_LABEL_PRODUCT] = helper_blob
+        projection_blob = evidence.get("projectionBlob")
+        if isinstance(projection_blob, str):
+            merged["product/alpha/wof_alpha_enemy_head_projection.json"] = projection_blob
     for key in ("releaseConsumed", "provenance", "runtimeProvenance", "snapshot"):
         value = obj.get(key)
         if isinstance(value, dict):
@@ -216,7 +224,6 @@ def _check_formal(root: Path, blob_resolver: BlobResolver) -> tuple[bool, str]:
     if claim:
         pins = _extract_blob_map(claim)
         blockers.extend(_check_current_pins("Formal current-blob successor", pins, FORMAL_FRESH_PATHS, blob_resolver))
-    # Historical adversarial BLOCKED evidence is intentionally not a gate after the current successor PASS.
     historical, _ = _read_json(root, HISTORICAL_FORMAL_BLOCKED)
     historical_state = historical.get("state") if historical else "MISSING"
     if blockers:
