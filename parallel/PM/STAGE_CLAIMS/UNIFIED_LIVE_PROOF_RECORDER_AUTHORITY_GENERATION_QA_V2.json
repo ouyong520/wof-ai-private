@@ -2,7 +2,11 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_V2",
   "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_V2_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "6d11cc173498c469b371d89f6f1e6e5fb08561da",
-  "startedAtUtc": "2026-09-02T00:27:00Z"
+  "startedAtUtc": "2026-09-02T00:27:00Z",
+  "finishedAtUtc": "2026-09-02T00:32:34Z",
+  "resultPath": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_GENERATION_V2/RESULT.md",
+  "resultCommit": "8a0183649c7cb925c6b3e1fe6434fe1ae2c4ba8f",
+  "blocker": "P1 generation rollover is non-atomic against already-in-flight old-reader fatal/heartbeat mutation"
 }
