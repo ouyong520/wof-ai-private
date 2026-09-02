@@ -1,0 +1,14 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "winkawaks.collector.v4.dataset-catalog-capture-identity-index.recovery-v2",
+  "effectiveDedupKey": "winkawaks.collector.v4.dataset-catalog-capture-identity-index.recovery-v2",
+  "dedupMode": "exclusive",
+  "stageId": "WINKAWAKS_COLLECTOR_V4_DATASET_CATALOG_CAPTURE_IDENTITY_INDEX_RECOVERY_V2",
+  "promptPath": "parallel/PM/WINKAWAKS_COLLECTOR_V4_DATASET_CATALOG_CAPTURE_IDENTITY_INDEX_RECOVERY_V2_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol-collector-v4-recovery-v2",
+  "claimToken": "45492bd733bda63fe05adf7cefd1ec3e29109c7e460e2c10",
+  "state": "ACTIVE",
+  "startCommit": "1363d64aef360b528c444b528a87524113a0d672",
+  "supersedesDedupKey": "winkawaks.collector.v4.dataset-catalog-capture-identity-index"
+}
