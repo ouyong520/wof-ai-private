@@ -1,0 +1,12 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "WINKAWAKS_COLLECTOR_V3_LONG_SESSION_SEGMENTED_CAPTURE_RECOVERY_V2",
+  "dedupKey": "winkawaks.collector.v3.long-session-segmented-capture.recovery-v2",
+  "effectiveDedupKey": "winkawaks.collector.v3.long-session-segmented-capture.recovery-v2",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/winkawaks.collector.v3.long-session-segmented-capture.recovery-v2.json",
+  "claimToken": "3e759948bf23c19eb6568669b9b55896019c58f37d3dc675",
+  "state": "ACTIVE",
+  "startCommit": "0abad06ae56c837c87037c522899739d3a0997ff",
+  "recoveryOfStageId": "WINKAWAKS_COLLECTOR_V3_LONG_SESSION_SEGMENTED_CAPTURE_V1",
+  "supersedesCanonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/winkawaks.collector.v3.long-session-segmented-capture.json"
+}
