@@ -73,6 +73,30 @@ test('6 stale marker/projection or epoch mismatch suppresses label',()=>{
   const epochMismatch=plan([marker(0,{epoch:'old',projectionEpoch:'old'})]);assert.equal(epochMismatch.labels.length,0);assert.equal(epochMismatch.suppressed[0].reason,'EPOCH_MISMATCH');
 });
 
+test('6b drawing-buffer/projection/marker epoch authority must be exact-current and primitive',()=>{
+  const currentProjection=projection({epoch:'runtime-a'}),currentMarker=marker(0,{epoch:'runtime-a',projectionEpoch:'runtime-a'}),currentDb=db({epoch:'runtime-a',projectionEpoch:'runtime-a'});
+  const valid=plan([currentMarker],currentProjection,currentDb);assert.equal(valid.labels.length,1);assert.equal(valid.labels[0].label,'1P');
+
+  const stalePair=plan([currentMarker],currentProjection,db({epoch:'runtime-old',projectionEpoch:'runtime-old'}));
+  assert.equal(stalePair.labels.length,0);assert.equal(stalePair.reason,'DRAWING_BUFFER_EPOCH_MISMATCH');
+
+  const splitPair=plan([currentMarker],currentProjection,db({epoch:'runtime-a',projectionEpoch:'runtime-old'}));
+  assert.equal(splitPair.labels.length,0);assert.equal(splitPair.reason,'DRAWING_BUFFER_EPOCH_MISMATCH');
+
+  const coercibleEpoch={valueOf(){return'runtime-a';},toString(){return'runtime-a';}};
+  for(const bad of [undefined,null,'',new String('runtime-a'),['runtime-a'],coercibleEpoch]){
+    const badEpoch=plan([currentMarker],currentProjection,db({epoch:bad,projectionEpoch:'runtime-a'}));
+    assert.equal(badEpoch.labels.length,0);assert.equal(badEpoch.reason,'DRAWING_BUFFER_EPOCH_MISSING');
+    const badProjectionEpoch=plan([currentMarker],currentProjection,db({epoch:'runtime-a',projectionEpoch:bad}));
+    assert.equal(badProjectionEpoch.labels.length,0);assert.equal(badProjectionEpoch.reason,'DRAWING_BUFFER_EPOCH_MISSING');
+  }
+
+  for(const bad of [undefined,null,'',new String('runtime-a'),['runtime-a'],coercibleEpoch]){
+    const badProjection=plan([currentMarker],projection({epoch:bad}),currentDb);
+    assert.equal(badProjection.labels.length,0);assert.equal(badProjection.reason,'PROJECTION_EPOCH_MISSING');
+  }
+});
+
 test('7 invalid confidence NaN Infinity and nonfinite XYZ fail closed',()=>{
   for(const bad of [NaN,Infinity,-Infinity]){
     const a=plan([marker(0,{confidence:bad})]);assert.equal(a.labels.length,0);
