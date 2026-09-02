@@ -1,0 +1,19 @@
+{
+  "schema": "wof-alpha-formal-adapter-test-v2",
+  "status": "PASS",
+  "testCount": 10,
+  "passCount": 10,
+  "failCount": 0,
+  "results": [
+    {"name":"exact World identity accepted","ok":true,"error":null},
+    {"name":"wrong World SHA rejected","ok":true,"error":null},
+    {"name":"input-injecting discovery rejected","ok":true,"error":null},
+    {"name":"same page old warning authority must revoke","ok":true,"error":null},
+    {"name":"same native Worker old observer must stop","ok":true,"error":null},
+    {"name":"Worker replacement revokes page authority before best-effort old stop","ok":true,"error":null},
+    {"name":"runtime epoch replacement invalidates current authority","ok":true,"error":null},
+    {"name":"current authority requires fresh detector-local exact SHA","ok":true,"error":null},
+    {"name":"normal rebind revokes before fresh generation install and carries measured Discovery SHA","ok":true,"error":null},
+    {"name":"unsupported discovery disables warnings but keeps gameplay playable","ok":true,"error":null}
+  ]
+}
