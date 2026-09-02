@@ -1,0 +1,28 @@
+{
+  "schema": "wof-alpha-player-head-warning-qa-v2-supportive-regression-replay-v1",
+  "status": "PASS",
+  "passed": 22,
+  "total": 22,
+  "command": "node product/alpha/player_head_warning_regression.mjs",
+  "syntaxCommand": "node --check product/alpha/player_head_warning_regression.mjs",
+  "fixture": "SYNTHETIC_PLAYER_HEAD_WARNING_ONLY_NOT_BROWSER_PROOF",
+  "currentBlobs": {
+    "product/alpha/wof_alpha_player_head_warning.js": "af7f2359514dc6f86f74fac0c47858e8a6acf107",
+    "product/alpha/player_head_warning_regression.mjs": "5cdda2c738d02e91f5b77a8c3a2b016abed14102",
+    "product/alpha/wof_alpha_player_head_projection.json": "bbed0618b348961580ca805bb93e4d17525f0142",
+    "product/alpha/wof_alpha_real_worker.js": "b7f4506fc90b681ede059df5ad3316e665c6f15e",
+    "product/alpha/wof_alpha_hud.js": "50d944c451ac94b114e4f86441aeae8ad6b25c78",
+    "product/alpha/wof_alpha_loader.js": "66aee09fc2dd009c2f295d2092f3129548605efb",
+    "product/alpha/wof_alpha_core.js": "267a44190744b6848b0685712c3d5572627d3a8a"
+  },
+  "executionBoundary": {
+    "helperByteExactToCurrentGitBlob": true,
+    "regressionByteExactToCurrentGitBlob": true,
+    "projectionByteExactToCurrentGitBlob": true,
+    "nativePrivateCheckoutAvailable": false,
+    "workerHudLoaderLocalFilesWereMinimalCurrentSourceMirrorsForCommittedRegexIntegrationChecks": true,
+    "workerHudLoaderRegexFactsSeparatelyVerifiedAgainstCurrentGitHubSource": true,
+    "browserWofLaunched": false,
+    "browserWofProofClaimed": false
+  }
+}
