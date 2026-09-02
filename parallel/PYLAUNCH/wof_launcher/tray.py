@@ -87,10 +87,13 @@ class TkUiDispatcher:
                 self._executed += 1
             except Exception as exc:
                 self._last_error = f"{type(exc).__name__}: {exc}"
-        if not self._closing:
-            try: root.after(25, self._drain)
-            except Exception as exc:
-                self._last_error = f"{type(exc).__name__}: {exc}"
+        # close() is deliberately cross-thread: it may only enqueue _STOP, never call
+        # Tk. Keep the owner-thread drain scheduled until that sentinel is consumed.
+        # Conditioning this on _closing creates a race where close() sets _closing
+        # just after an empty queue check, stranding _STOP and leaving mainloop alive.
+        try: root.after(25, self._drain)
+        except Exception as exc:
+            self._last_error = f"{type(exc).__name__}: {exc}"
 
     def close(self) -> None:
         with self._lock:
