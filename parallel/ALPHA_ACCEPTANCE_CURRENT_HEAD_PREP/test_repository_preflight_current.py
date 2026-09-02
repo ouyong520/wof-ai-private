@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 import repository_preflight_current as current
+import test_repository_preflight as fixtures
 
 
 class AcceptanceCurrentMandatoryGateTests(unittest.TestCase):
@@ -41,6 +42,67 @@ class AcceptanceCurrentMandatoryGateTests(unittest.TestCase):
             ok, detail = current._check_player_head_warning(root, resolve)
             self.assertFalse(ok)
             self.assertIn("blob 已漂移", detail)
+
+    def test_head_labels_blocked_v2_is_superseded_by_current_v3_pass(self):
+        fixture = fixtures.AcceptanceSupersedingGatePolicyTests(
+            methodName="test_historical_formal_blocked_is_superseded_by_current_pass"
+        )
+        fixture.setUp()
+        try:
+            qa_v2 = fixture._read(current.base.HEAD_LABEL_QA_CLAIM)
+            qa_v2.update({
+                "state": "BLOCKED",
+                "result": "BLOCKED — ALPHA V1 ENEMY TARGET HEAD LABELS FRESH QA V2 — historical blocker",
+            })
+            fixture._write(current.base.HEAD_LABEL_QA_CLAIM, qa_v2)
+            fixture._write(
+                "parallel/PM/STAGE_CLAIMS/ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V3.json",
+                {
+                    "state": "COMPLETE",
+                    "result": "PASS — ALPHA V1 ENEMY TARGET HEAD LABELS FRESH QA V3 — DRAWING-BUFFER EPOCH FIX VERIFIED / BOUNDED LIVE PROOF STILL REQUIRED",
+                    "evidence": {"helperBlob": "labels-current"},
+                },
+            )
+            ok, blockers, gates = current.release_gate(
+                fixture.root, fixture._blob, run_offline=False
+            )
+            self.assertTrue(ok, blockers)
+            head = next(g for g in gates if g["name"] == "enemyTargetHeadLabels")
+            self.assertTrue(head["pass"])
+            self.assertIn("V3", head["tail"])
+        finally:
+            fixture.tearDown()
+
+    def test_formal_blocked_v1_is_superseded_by_current_v2_pass(self):
+        fixture = fixtures.AcceptanceSupersedingGatePolicyTests(
+            methodName="test_historical_formal_blocked_is_superseded_by_current_pass"
+        )
+        fixture.setUp()
+        try:
+            fixture.blobs["product/alpha/wof_alpha_enemy_head_projection.json"] = "projection-current"
+            formal_v1 = fixture._read(current.base.FORMAL_CLAIM)
+            formal_v1.update({"state": "BLOCKED", "result": "BLOCKED"})
+            fixture._write(current.base.FORMAL_CLAIM, formal_v1)
+            fixture._write(
+                "parallel/PM/STAGE_CLAIMS/ALPHA_FORMAL_REAL_ADAPTER_CURRENT_BLOB_REVALIDATION_V2.json",
+                {
+                    "state": "COMPLETE",
+                    "result": "PASS",
+                    "audited_blobs": {
+                        path: fixture.blobs[path]
+                        for path in current.base.FORMAL_FRESH_PATHS
+                    },
+                },
+            )
+            ok, blockers, gates = current.release_gate(
+                fixture.root, fixture._blob, run_offline=False
+            )
+            self.assertTrue(ok, blockers)
+            formal = next(g for g in gates if g["name"] == "formalCurrentBlob")
+            self.assertTrue(formal["pass"])
+            self.assertIn("V2", formal["tail"])
+        finally:
+            fixture.tearDown()
 
     def test_old_snapshot_without_requirement_is_not_backfilled(self):
         with tempfile.TemporaryDirectory() as td:
