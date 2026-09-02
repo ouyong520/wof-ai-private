@@ -5,10 +5,12 @@
   "effectiveDedupKey": "training.farm.r0.4.deterministic-savestate-fork-primitive-recovery-v2",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.deterministic-savestate-fork-primitive-recovery-v2.json",
   "claimToken": "fd407f1104aa298a253e8d88c63686f6571d985a308384c2",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "0b43dde4abcc550ec7181932a3ce3bd3df2b2f91",
   "supersedes": {
     "historicalCanonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.deterministic-savestate-fork-primitive.json",
     "historicalStageClaimPath": "parallel/PM/STAGE_CLAIMS/TRAINING_FARM_R0_4_DETERMINISTIC_SAVESTATE_FORK_PRIMITIVE_V1.json"
-  }
+  },
+  "resultPath": "parallel/TRAINING_FARM_R0_4/RESULT.md",
+  "resultCommit": "d8dcddfd09f44ccda000b9b30690193f5d319201"
 }
