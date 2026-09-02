@@ -1,0 +1,52 @@
+{
+  "schema": "wof-training-farm-savestate-fork-plan-v1",
+  "forkSetId": "owner-real-wof-r0.4-smoke-v1",
+  "root": {
+    "rootId": "owner-reset-root",
+    "expectedSavestateSha256": null
+  },
+  "repetitions": 2,
+  "branches": [
+    {
+      "branchId": "neutral-8f",
+      "horizonFrames": 8,
+      "actions": [
+        {
+          "frames": 8,
+          "inputs": [
+            {"player": 0, "pressed": []},
+            {"player": 1, "pressed": []},
+            {"player": 2, "pressed": []},
+            {"player": 3, "pressed": []}
+          ]
+        }
+      ],
+      "metadata": {"label": "bounded neutral branch; no gameplay semantics asserted"}
+    },
+    {
+      "branchId": "button0-4f-neutral-4f",
+      "horizonFrames": 8,
+      "actions": [
+        {
+          "frames": 4,
+          "inputs": [
+            {"player": 0, "pressed": [0]},
+            {"player": 1, "pressed": []},
+            {"player": 2, "pressed": []},
+            {"player": 3, "pressed": []}
+          ]
+        },
+        {
+          "frames": 4,
+          "inputs": [
+            {"player": 0, "pressed": []},
+            {"player": 1, "pressed": []},
+            {"player": 2, "pressed": []},
+            {"player": 3, "pressed": []}
+          ]
+        }
+      ],
+      "metadata": {"label": "bounded explicit branch using existing button-index authority only"}
+    }
+  ]
+}
