@@ -53,7 +53,7 @@ The expected engineering difficulty is not flat:
 3. **Assist Beta is the next hard transition** because the product begins recommending what the player should do, not merely what is dangerous.
 4. **Near-Zero RC is another hard outcome gate** because success is measured by actual machine/human damage reduction across broad continuous gameplay.
 
-So the expected pattern is:
+Expected pattern:
 
 `hard foundation -> faster visible iterations -> new hard capability jump -> faster iterations -> hard outcome proof`.
 
@@ -99,7 +99,7 @@ User-visible improvement:
 - warning timing gives more practical reaction opportunity where evidence supports it;
 - supported coverage is measured and explicit.
 
-Memory attack/action-state work is valuable here only insofar as it increases trustworthy live warning coverage or timing.
+Memory attack/action-state work and automated emulator collection are valuable here when they increase trustworthy live warning coverage or timing.
 
 ### V1.2 — Multi-enemy danger priority — next ~1-week release
 
@@ -207,30 +207,66 @@ It is useful for:
 - failure diagnosis;
 - faster learning.
 
-However, future progress does not require manually converting every enemy attack into a hand-authored `T18`-style production rule before safe-route training can begin.
+Future progress does not require manually converting every enemy attack into a hand-authored `T18`-style production rule before safe-route training can begin.
 
-The intended future combination is:
+The intended combination is:
 
 `live RAM state + target + action/attack state + player/enemy geometry + outcome search/training -> safe movement policy`.
 
-## 9. Training Farm is an R&D lane, not a user product version
+## 9. Training Farm is an early parallel R&D accelerator, not a user product version
 
-The planned local headless multi-instance emulator/training farm exists to improve future Assist quality. It is not itself a user-facing release.
+The local headless multi-instance emulator/training farm may begin **before V1.0.0 release** when it is kept orthogonal to the V1 release path and has a direct R&D payoff.
 
-Expected internal milestones after V1.0.0 release:
+It has two jobs:
+
+### A. Data / reverse-discovery acceleration
+
+Use automated emulator play/capture to generate much more useful research data than manual collection alone:
+
+- enemy appearances and combinations;
+- enemy/player positions;
+- `target` changes;
+- raw/stable action or attack-state memory values;
+- health/damage outcomes;
+- lifecycle/replacement transitions;
+- repeated occurrences of rare states;
+- savestate snapshots for exact replay;
+- state transition corpora suitable for later warning-rule discovery and validation.
+
+This means the Farm can accelerate V1.1/V1.2 warning coverage even before it becomes a safe-route trainer.
+
+### B. Safe-route training foundation
+
+Later, the same environment supports:
+
+- same-state fork search;
+- action-sequence trials;
+- automatic damage/death/bad-state scoring;
+- `state -> action -> result` datasets;
+- trajectory search / teacher policy;
+- distilled real-time Assist policy.
+
+Expected internal milestones:
 
 - **Farm R0.1:** deterministic one-instance headless host with frame-step, independent input, RAM observation and save/load state;
-- **Farm R0.2:** 2 -> 4 -> 8 -> 10 isolated workers benchmarked on the target local PC class;
-- **Farm R0.3:** same-state savestate fork + automatic outcome scoring;
-- **Farm R0.4:** automatic scene/corpus generation and `state -> action -> result` dataset;
-- **Farm R0.5:** safe trajectory search / teacher policy;
-- **Farm R0.6:** distilled real-time policy suitable for Assist Beta.
+- **Farm R0.2:** automated WOF observation/capture, including target and raw/stable action-state fields where available;
+- **Farm R0.3:** 2 -> 4 -> 8 -> 10 isolated workers benchmarked on the target local PC class;
+- **Farm R0.4:** same-state savestate fork + automatic outcome scoring;
+- **Farm R0.5:** automatic scene/corpus generation and `state -> action -> result` dataset;
+- **Farm R0.6:** safe trajectory search / teacher policy;
+- **Farm R0.7:** distilled real-time policy suitable for Assist Beta.
 
-Hard sequencing rule:
+### Parallelism rule before V1.0.0
 
-**Do not start Training Farm implementation merely because an AI worker slot is empty while V1.0.0 release gates remain open.**
+Early Farm work is allowed only if all are true:
 
-Before V1.0.0 ships, Training Farm work should remain parked unless it is explicitly required to unblock V1, which is not the normal case.
+1. it does **not** modify or destabilize current `product/alpha/**` release work;
+2. it does **not** consume an Owner Browser/WOF action needed by V1 release proof;
+3. it does **not** replace a legitimate open V1 P0/P1 worker task merely to keep concurrency full;
+4. its output is reusable data/tooling for V1.x coverage or later Assist;
+5. it remains an internal R&D milestone and cannot be presented as V1 release progress by itself.
+
+Thus an otherwise idle third AI worker may work on the Farm when the current V1 release has only two legitimate independent tasks, provided the Farm lane stays isolated.
 
 ## 10. PM release-planning rule
 
@@ -241,5 +277,6 @@ Before assigning work, PM should ask:
 3. Is the task necessary for that user-visible delta or a release safety gate?
 4. Can the work fit into the next 2–3 day patch or ~7 day minor release without weakening safety?
 5. If it is infrastructure-only, should it remain an internal stage rather than become a product-version milestone?
+6. If an R&D lane runs early, does it directly accelerate future user-visible coverage/Assist without slowing the current release?
 
-The default is to finish the current product version before starting implementation for the next major family.
+The default is to finish the current user-facing product version before starting implementation for the next **user-facing major family**, while orthogonal R&D accelerators such as the Training Farm may run in parallel under the conditions above.
