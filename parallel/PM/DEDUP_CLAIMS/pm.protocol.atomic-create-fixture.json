@@ -1,0 +1,15 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "pm.protocol.atomic-create-fixture",
+  "effectiveDedupKey": "pm.protocol.atomic-create-fixture",
+  "dedupMode": "exclusive",
+  "stageId": "PM_STAGE_DEDUP_CANONICAL_CLAIM_HARDENING_ATOMIC_FIXTURE_V1",
+  "promptPath": "parallel/PM/PM_STAGE_DEDUP_CANONICAL_CLAIM_HARDENING_START_PROMPT.md",
+  "owner": "protocol-fixture-owner",
+  "claimToken": "fixture-owner-4d6e6de8",
+  "state": "COMPLETE",
+  "startCommit": "6762ed53a9b084d78e2bdb5f3b496984b3deee12",
+  "fixture": true,
+  "note": "Protocol fixture: first create-only writer owns this canonical path; a second create attempt must fail closed."
+}
