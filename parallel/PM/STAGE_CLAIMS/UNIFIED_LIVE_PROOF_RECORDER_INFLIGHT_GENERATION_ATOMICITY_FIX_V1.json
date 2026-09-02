@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_RECORDER_INFLIGHT_GENERATION_ATOMICITY_FIX_V1",
+  "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_RECORDER_INFLIGHT_GENERATION_ATOMICITY_FIX_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "ea7c776eeda93cbe9afef7f035569ec4e48f289a",
+  "startedAtUtc": "2026-09-02T00:47:13Z"
+}
