@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import argparse, json, os, re, subprocess, sys
+import argparse, hashlib, json, os, re, subprocess, sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -8,10 +8,28 @@ from typing import Any, Callable
 
 SCHEMA = "wof-unified-live-proof-preflight-v1"
 DISCOVERY_CONTRACT_VERSION = "wof-discovery-v2-hardened-capabilities-v1"
+GATE_SELECTOR_VERSION = "wof-unified-current-successor-gates-v1"
 STOP_CONDITION = "UNIFIED LIVE PROOF PREFLIGHT HARDENING READY — OWNER NOT NEEDED FOR REPOSITORY CHECKS"
 SNAPSHOT_MAX_AGE_SECONDS = 15 * 60
 SNAPSHOT_FUTURE_TOLERANCE_SECONDS = 120
 PASS, BLOCKED = "PASS", "BLOCKED"
+
+PYLAUNCH_SUCCESSOR_MARKER = "PASS — PYLAUNCH STARTUP ATTESTATION FRESH QA — RELEASE GATE CLOSED"
+PYLAUNCH_SUCCESSOR_STAGE = "PYLAUNCH_STARTUP_ATTESTATION_QA_V1"
+PYLAUNCH_SUCCESSOR_MD = "parallel/PYLAUNCH_QA_STARTUP_ATTESTATION/RESULT.md"
+PYLAUNCH_SUCCESSOR_JSON = "parallel/PYLAUNCH_QA_STARTUP_ATTESTATION/RESULT.json"
+PYLAUNCH_SUCCESSOR_CLAIM = "parallel/PM/STAGE_CLAIMS/PYLAUNCH_STARTUP_ATTESTATION_QA_V1.json"
+PYLAUNCH_PINNED_PRODUCTION = (
+    "parallel/PYLAUNCH/wof_launcher/browser.py",
+    "parallel/PYLAUNCH/wof_launcher/monitor.py",
+    "parallel/PYLAUNCH/wof_launcher/discovery_v2.py",
+)
+RECORDER_SUCCESSOR_MARKER = "PASS — RECORDER IN-FLIGHT GENERATION ATOMICITY FRESH QA — READY FOR CURRENT-HEAD UNIFIED PREFLIGHT"
+RECORDER_SUCCESSOR_STAGE = "UNIFIED_LIVE_PROOF_RECORDER_INFLIGHT_GENERATION_ATOMICITY_QA_V1"
+RECORDER_SUCCESSOR_MD = "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_INFLIGHT_ATOMICITY/RESULT.md"
+RECORDER_SUCCESSOR_JSON = "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_INFLIGHT_ATOMICITY/RESULT.json"
+RECORDER_SUCCESSOR_CLAIM = "parallel/PM/STAGE_CLAIMS/UNIFIED_LIVE_PROOF_RECORDER_INFLIGHT_GENERATION_ATOMICITY_QA_V1.json"
+RECORDER_PINNED_PRODUCTION = "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py"
 
 @dataclass(frozen=True)
 class RegressionSpec:
@@ -38,9 +56,11 @@ REQUIRED_FILES = {
     "pylaunch": (
         "parallel/PYLAUNCH/launcher.py", "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd",
         "parallel/PYLAUNCH/wof_launcher/discovery_v2.py", "parallel/PYLAUNCH/wof_launcher/cdp.py",
-        "parallel/PYLAUNCH/wof_launcher/monitor.py", "parallel/PYLAUNCH/DISCOVERY_V2_HARDENING_RESULT.md",
-        "parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/RESULT.md", "parallel/PYLAUNCH/tests/test_discovery_v2.py",
-        "parallel/PYLAUNCH/tests/test_endpoint_hardening.py", "parallel/PYLAUNCH/tests/test_parentframe_authority.py",
+        "parallel/PYLAUNCH/wof_launcher/browser.py", "parallel/PYLAUNCH/wof_launcher/monitor.py",
+        "parallel/PYLAUNCH/DISCOVERY_V2_HARDENING_RESULT.md",
+        "parallel/PYLAUNCH/tests/test_discovery_v2.py", "parallel/PYLAUNCH/tests/test_endpoint_hardening.py",
+        "parallel/PYLAUNCH/tests/test_parentframe_authority.py",
+        PYLAUNCH_SUCCESSOR_MD, PYLAUNCH_SUCCESSOR_JSON, PYLAUNCH_SUCCESSOR_CLAIM,
     ),
     "recorder": (
         "parallel/WOF052L_RECORDER/owner_v2_zh_cn.py", "parallel/WOF052L_RECORDER/owner_zh_cn.py",
@@ -48,9 +68,7 @@ REQUIRED_FILES = {
         "parallel/WOF052L_RECORDER/DISCOVERY_V2_HARDENING_RESULT.md",
         "parallel/WOF052L_RECORDER/test_discovery_v2_sync.py", "parallel/WOF052L_RECORDER/test_fleet_recorder.py",
     ),
-    "freshIndependentQa": (
-        "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.md", "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.json",
-    ),
+    "successorQa": (RECORDER_SUCCESSOR_MD, RECORDER_SUCCESSOR_JSON, RECORDER_SUCCESSOR_CLAIM),
 }
 REGRESSIONS = (
     RegressionSpec("liveProof", "parallel/LIVE_PROOF_BUNDLE", "test_unified_live_proof.py"),
@@ -66,9 +84,7 @@ REGRESSIONS = (
 STATUS_GATES = (
     ("browserFleet", "parallel/BROWSER_FLEET/RESULT.md", "BROWSER FLEET DISCOVERY V2 READY"),
     ("pylaunch", "parallel/PYLAUNCH/DISCOVERY_V2_HARDENING_RESULT.md", "PYLAUNCH DISCOVERY V2 HARDENING READY"),
-    ("pylaunch", "parallel/PYLAUNCH_QA_PARENTFRAME_AUTHORITY/RESULT.md", "PASS — PYLAUNCH PARENTFRAME AUTHORITY FRESH QA"),
     ("recorder", "parallel/WOF052L_RECORDER/DISCOVERY_V2_HARDENING_RESULT.md", "WOF052L RECORDER DISCOVERY V2 HARDENING READY"),
-    ("liveProof", "parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.md", "PASS — UNIFIED LIVE PROOF FRESHNESS FRESH INDEPENDENT QA"),
 )
 
 def _now() -> str:
@@ -90,6 +106,12 @@ def _json(path: Path):
     except OSError as e: return None, f"读取失败：{e}"
     except ValueError as e: return None, f"JSON 格式错误：{e}"
     return (v, None) if isinstance(v, dict) else (None, "JSON 顶层必须是 object")
+
+def _blob_sha(path: Path):
+    try: data = path.read_bytes()
+    except OSError as e: return None, f"读取 production blob 失败：{e}"
+    header = f"blob {len(data)}\0".encode("ascii")
+    return hashlib.sha1(header + data).hexdigest(), None
 
 def _row(checks, component, name, ok, severity, detail, *, path=None, command=None, commit=None, tests=None):
     r = {"component": component, "check": name, "result": PASS if ok else BLOCKED,
@@ -138,6 +160,66 @@ def _required(root, checks, commit):
         missing=[p for p in paths if not (root/p).is_file()]
         _row(checks,c,"required-files-and-entrypoints",not missing,"P0","required files present" if not missing else "缺少："+", ".join(missing),commit=commit)
 
+def _successor_pylaunch(root, checks, commit):
+    text = _text(root / PYLAUNCH_SUCCESSOR_MD)
+    blocked = _current_block(text) if text is not None else None
+    md_ok = text is not None and blocked is None and PYLAUNCH_SUCCESSOR_MARKER in text
+    _row(checks, "pylaunch", "startup-attestation-successor-result-md", md_ok, "P1",
+         blocked or ("current Startup Attestation successor PASS" if md_ok else "当前 Startup Attestation successor RESULT.md 缺失/PASS marker 不匹配"),
+         path=PYLAUNCH_SUCCESSOR_MD, commit=commit)
+
+    machine, err = _json(root / PYLAUNCH_SUCCESSOR_JSON)
+    pins = machine.get("validatedProductBlobs") if isinstance(machine, dict) and isinstance(machine.get("validatedProductBlobs"), dict) else {}
+    machine_ok = err is None and isinstance(machine, dict) and machine.get("schema") == "wof-pylqa-result-v1" and machine.get("stageId") == PYLAUNCH_SUCCESSOR_STAGE and machine.get("status") == PASS and machine.get("decision") == PYLAUNCH_SUCCESSOR_MARKER
+    _row(checks, "pylaunch", "startup-attestation-successor-machine-result", machine_ok, "P1",
+         "Startup Attestation machine PASS semantics valid" if machine_ok else (err or "Startup Attestation machine result schema/stage/PASS decision 不匹配"),
+         path=PYLAUNCH_SUCCESSOR_JSON, commit=commit)
+
+    claim, claim_err = _json(root / PYLAUNCH_SUCCESSOR_CLAIM)
+    claim_ok = claim_err is None and isinstance(claim, dict) and claim.get("stageId") == PYLAUNCH_SUCCESSOR_STAGE and claim.get("state") == "COMPLETE" and claim.get("result") == PYLAUNCH_SUCCESSOR_MARKER
+    _row(checks, "pylaunch", "startup-attestation-successor-claim", claim_ok, "P1",
+         "successor claim COMPLETE + PASS semantics valid" if claim_ok else (claim_err or "Startup Attestation claim 不是 COMPLETE+PASS；不能仅凭 COMPLETE 放行"),
+         path=PYLAUNCH_SUCCESSOR_CLAIM, commit=commit)
+
+    mismatches=[]
+    for rel in PYLAUNCH_PINNED_PRODUCTION:
+        expected = pins.get(rel)
+        actual, blob_err = _blob_sha(root / rel)
+        if blob_err or not isinstance(expected, str) or not re.fullmatch(r"[0-9a-f]{40}", expected) or actual != expected:
+            mismatches.append(f"{rel}: expected={expected!r}, current={actual!r}, error={blob_err!r}")
+    _row(checks, "pylaunch", "startup-attestation-current-production-blobs", machine_ok and not mismatches, "P1",
+         "Startup Attestation successor pins match current browser/monitor/discovery blobs" if machine_ok and not mismatches else "Startup Attestation successor production pin stale/missing："+"; ".join(mismatches or ["machine result invalid"]),
+         path=PYLAUNCH_SUCCESSOR_JSON, commit=commit)
+
+def _successor_recorder(root, checks, commit):
+    text = _text(root / RECORDER_SUCCESSOR_MD)
+    blocked = _current_block(text) if text is not None else None
+    md_ok = text is not None and blocked is None and RECORDER_SUCCESSOR_MARKER in text
+    _row(checks, "liveProof", "recorder-inflight-successor-result-md", md_ok, "P1",
+         blocked or ("current Recorder in-flight atomicity successor PASS" if md_ok else "当前 Recorder in-flight successor RESULT.md 缺失/PASS marker 不匹配"),
+         path=RECORDER_SUCCESSOR_MD, commit=commit)
+
+    machine, err = _json(root / RECORDER_SUCCESSOR_JSON)
+    prod = machine.get("production") if isinstance(machine, dict) and isinstance(machine.get("production"), dict) else {}
+    safety = machine.get("safety") if isinstance(machine, dict) and isinstance(machine.get("safety"), dict) else {}
+    machine_ok = err is None and isinstance(machine, dict) and machine.get("schema") == "wof-unified-live-proof-recorder-inflight-atomicity-fresh-qa-v1" and machine.get("stageId") == RECORDER_SUCCESSOR_STAGE and machine.get("result") == PASS and machine.get("stopCondition") == RECORDER_SUCCESSOR_MARKER and prod.get("path") == RECORDER_PINNED_PRODUCTION and safety.get("readOnly") is True and safety.get("ramWrites") == 0 and safety.get("inputInjection") is False and safety.get("longCaptureAutoStarted") is False and safety.get("ownerAction") == "NO"
+    _row(checks, "liveProof", "recorder-inflight-successor-machine-result", machine_ok, "P1",
+         "Recorder successor machine PASS + safety semantics valid" if machine_ok else (err or "Recorder successor machine result/safety semantics 不匹配"),
+         path=RECORDER_SUCCESSOR_JSON, commit=commit)
+
+    claim, claim_err = _json(root / RECORDER_SUCCESSOR_CLAIM)
+    claim_ok = claim_err is None and isinstance(claim, dict) and claim.get("stageId") == RECORDER_SUCCESSOR_STAGE and claim.get("state") == "COMPLETE" and claim.get("stopCondition") == RECORDER_SUCCESSOR_MARKER
+    _row(checks, "liveProof", "recorder-inflight-successor-claim", claim_ok, "P1",
+         "successor claim COMPLETE + PASS semantics valid" if claim_ok else (claim_err or "Recorder successor claim 不是 COMPLETE+PASS；不能仅凭 COMPLETE 放行"),
+         path=RECORDER_SUCCESSOR_CLAIM, commit=commit)
+
+    expected = prod.get("blob")
+    actual, blob_err = _blob_sha(root / RECORDER_PINNED_PRODUCTION)
+    blob_ok = machine_ok and isinstance(expected, str) and bool(re.fullmatch(r"[0-9a-f]{40}", expected)) and actual == expected
+    _row(checks, "liveProof", "recorder-inflight-current-production-blob", blob_ok, "P1",
+         "Recorder successor pin matches current unified_live_proof.py" if blob_ok else f"Recorder successor production pin stale/missing：expected={expected!r}, current={actual!r}, error={blob_err!r}",
+         path=RECORDER_PINNED_PRODUCTION, commit=commit)
+
 def _statuses(root, checks, commit):
     for c, rel, marker in STATUS_GATES:
         t=_text(root/rel)
@@ -151,12 +233,8 @@ def _statuses(root, checks, commit):
         ok=fix.get("state")=="COMPLETE" and comb.get("result")=="PASS" and f.get("readOnly") is True and f.get("ramWrites")==0 and f.get("inputInjection") is False and f.get("windowWorkerReplacement") is False and f.get("longCaptureAutoStarted") is False
         detail="freshness fix status + safety valid" if ok else "freshness fix status/safety 字段不匹配"
     _row(checks,"liveProof","freshness-fix-status-json",ok,"P1",detail,path=fixrel,commit=commit)
-    qrel="parallel/LIVE_PROOF_BUNDLE_QA_FRESHNESS/RESULT.json"; q,e=_json(root/qrel)
-    if e: ok=False; detail=e
-    else:
-        state=str(q.get("result") or q.get("state") or "").upper(); b=q.get("blocker") if isinstance(q.get("blocker"),dict) else {}
-        ok=state=="PASS"; detail="fresh independent QA PASS" if ok else str(b.get("summary") or q.get("stopCondition") or f"fresh QA result={state or 'UNKNOWN'}")
-    _row(checks,"liveProof","fresh-independent-qa-json",ok,"P1",detail[:1000],path=qrel,commit=commit)
+    _successor_pylaunch(root, checks, commit)
+    _successor_recorder(root, checks, commit)
 
 def _has(text, *markers): return text is not None and all(m in text for m in markers)
 
@@ -208,7 +286,7 @@ def run_preflight(root: Path, *, snapshot_manifest: Path|None=None, status_out: 
     root=root.expanduser().resolve(); checks=[]; commit,manifest=_snapshot(root,snapshot_manifest,checks); _required(root,checks,commit); _statuses(root,checks,commit); _contracts(root,checks,commit); _ux_safety(root,checks,commit); tests,passed=_regressions(root,checks,commit,regression_runner)
     blockers=[{"severity":r.get("severity") or "P1","component":r.get("component"),"check":r.get("check"),"commit":r.get("commit"),"path":r.get("path"),"command":r.get("command"),"detailZh":r.get("detail")} for r in checks if r.get("result")==BLOCKED]
     result=PASS if not blockers else BLOCKED; out=status_out or default_status_path(); summary="仓库侧预检全部通过；允许进入真人短验证。不会自动开始 10 房间长采集。" if result==PASS else "仓库侧预检已阻断；未启动 Browser，也不需要 Owner 进入 WOF。请先关闭 repository-side P0/P1 blocker。"
-    status={"schema":SCHEMA,"updatedAtUtc":_now(),"result":result,"stopCondition":STOP_CONDITION,"discoveryContractVersion":DISCOVERY_CONTRACT_VERSION,
+    status={"schema":SCHEMA,"gateSelectorVersion":GATE_SELECTOR_VERSION,"updatedAtUtc":_now(),"result":result,"stopCondition":STOP_CONDITION,"discoveryContractVersion":DISCOVERY_CONTRACT_VERSION,
             "snapshot":{"commit":commit,"source":manifest.get("source") if isinstance(manifest,dict) else None,"resolvedAtUtc":manifest.get("resolvedAtUtc") if isinstance(manifest,dict) else None,"sameCommitRequired":True},
             "checks":checks,"blockers":blockers,"regression":{"commands":len(REGRESSIONS),"commandsPassed":passed,"testsObserved":tests},
             "gates":{"repositoryChecksPassed":result==PASS,"browserLaunchAllowed":result==PASS,"ownerWofEntryAllowed":result==PASS,"liveStageAllowed":result==PASS,"longCaptureAutoStarted":False},
