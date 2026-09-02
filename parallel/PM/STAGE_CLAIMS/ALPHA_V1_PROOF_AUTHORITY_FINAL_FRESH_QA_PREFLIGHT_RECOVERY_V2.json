@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PROOF_AUTHORITY_FINAL_FRESH_QA_PREFLIGHT_RECOVERY_V2",
+  "dedupKey": "alpha.v1.proof-authority-final-fresh-qa.preflight-recovery-v2",
+  "effectiveDedupKey": "alpha.v1.proof-authority-final-fresh-qa.preflight-recovery-v2",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.proof-authority-final-fresh-qa.preflight-recovery-v2.json",
+  "claimToken": "900d625669f83c0bee5186314b99931e1a1ffe22bdfdb303",
+  "state": "ACTIVE",
+  "startCommit": "bab620fd43924d1383e7c25674f012acf4704063"
+}
