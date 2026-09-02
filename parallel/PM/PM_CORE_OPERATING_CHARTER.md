@@ -254,3 +254,49 @@ Hard rules:
 10. testing exists to protect product correctness and user value, not to maximize QA stage count.
 
 This section overrides any older PM habit that mechanically opened a fresh QA/cross-check/closeout stage after every small implementation step.
+
+## 15. V1 / Collector / Training Farm runtime and data boundaries are mandatory
+
+Authoritative project-wide architecture rule:
+
+`RUNTIME_DATA_SOURCE_BOUNDARIES.md`
+
+All PMs and new start prompts that touch Browser/Alpha, WinKawaks Collector, Training Farm, datasets, RAM semantics, trajectories, capture analysis or cross-source evidence must follow that file.
+
+The governing model is:
+
+```text
+Browser / Alpha V1
+= real product / real online acceptance authority
+
+WinKawaks Collector
+= real local observation / high-frequency read-only evidence acquisition
+
+Training Farm / Stable-Retro + FBNeo
+= isolated automated experimentation / savestate branching / action search / training data
+```
+
+Hard rules:
+
+1. `browser-wasm`, `winkawaks`, and `stable-retro-fbneo` are separate source namespaces;
+2. numeric offsets, runtime/session identity, lifecycle authority and source-specific timing MUST NOT silently transfer across those namespaces;
+3. V1 is the user-facing product lane; Collector is the real local observation/evidence lane; Training Farm is the automated experiment/training lane;
+4. Collector remains read-only by default and must not inherit Training Farm's automated-action permissions;
+5. Training Farm automation remains isolated and must not leak into Browser V1 or live Collector input behavior;
+6. shared generic tooling is encouraged only when `sourceNamespace` and provenance remain explicit;
+7. do not build duplicate generic dataset/index/analysis stacks in Collector and Training Farm when a source-aware common abstraction can safely be reused;
+8. do not replace source-specific adapters/authority with a generic abstraction that hides provenance;
+9. cross-source semantic mapping requires explicit calibration/proof; same game does not imply same offset;
+10. until measured isolation proves otherwise, important long-duration WinKawaks capture and heavy 8/10-worker Training Farm execution should not run concurrently on the Owner machine;
+11. V1 PM, Collector PM and Training Farm PM may work in parallel when write/runtime domains are independent, but shared files require current-main reread and explicit coordination;
+12. when a conclusion is intended for Browser production, local Collector or Training Farm evidence may support the hypothesis but Browser/product authority still closes the production claim.
+
+Routing default:
+
+```text
+observe/collect real WinKawaks state -> Collector
+automatically try actions/fork states -> Training Farm
+prove real online product behavior -> Browser / Alpha V1
+```
+
+This boundary is project architecture, not a temporary scheduling preference.
