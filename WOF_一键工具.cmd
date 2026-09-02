@@ -19,7 +19,7 @@ if exist "%CURRENT_FILE%" (
   if defined CURRENT_VERSION (
     set "CURRENT_RELEASE=%PORTABLE_ROOT%\releases\!CURRENT_VERSION!"
     set "CURRENT_PY=%PORTABLE_ROOT%\venv\Scripts\python.exe"
-    if exist "%PORTABLE_ROOT%\releases\!CURRENT_VERSION!\installed.ok" if exist "%PORTABLE_ROOT%\releases\!CURRENT_VERSION!\PACKAGE_MANIFEST.json" if exist "%PORTABLE_ROOT%\releases\!CURRENT_VERSION!\parallel\OPTOOLKIT\owner_zh_cn.py" if exist "%PORTABLE_ROOT%\venv\Scripts\python.exe" goto :direct
+    if exist "!CURRENT_RELEASE!\installed.ok" if exist "!CURRENT_RELEASE!\PACKAGE_MANIFEST.json" if exist "!CURRENT_RELEASE!\parallel\OPTOOLKIT\owner_zh_cn.py" if exist "!CURRENT_PY!" goto :direct
   )
 )
 
@@ -27,17 +27,17 @@ goto :bootstrap
 
 :direct
 set "WOF_PACKAGED_MODE=1"
-set "WOF_PACKAGE_VERSION=%CURRENT_VERSION%"
-set "WOF_TOOLKIT_PYTHON=%CURRENT_PY%"
+set "WOF_PACKAGE_VERSION=!CURRENT_VERSION!"
+set "WOF_TOOLKIT_PYTHON=!CURRENT_PY!"
 set "WOF_BOOTSTRAP_PATH=%~f0"
 echo.
 echo ================================================
 echo              WOF 一键工具
 echo ================================================
-echo 已找到本地 portable 工具 %CURRENT_VERSION%，直接打开中文工具箱。
-"%CURRENT_PY%" "%CURRENT_RELEASE%\parallel\OPTOOLKIT\owner_zh_cn.py" --root "%CURRENT_RELEASE%"
-set "RC=%ERRORLEVEL%"
-if not "%RC%"=="0" goto :run_fail
+echo 已找到本地 portable 工具 !CURRENT_VERSION!，直接打开中文工具箱。
+"!CURRENT_PY!" "!CURRENT_RELEASE!\parallel\OPTOOLKIT\owner_zh_cn.py" --root "!CURRENT_RELEASE!"
+set "RC=!ERRORLEVEL!"
+if not "!RC!"=="0" goto :run_fail
 exit /b 0
 
 :bootstrap
@@ -46,7 +46,7 @@ rem official package manifest only on first install or explicit menu-1 repair/up
 if defined WOF_BOOTSTRAP_URL (
   set "BOOT_URL=%WOF_BOOTSTRAP_URL%"
 ) else (
-  set "BOOT_URL=https://raw.githubusercontent.com/ouyong520/wof-ai-private/e2aea5058a60c2229175c98c35623ebc66a0ad23/parallel/OWNER_ONECLICK/bootstrap_v2.ps1"
+  set "BOOT_URL=https://raw.githubusercontent.com/ouyong520/wof-ai-private/887f8dcc50cd09ecce1133f9255375f6008a2d4d/parallel/OWNER_ONECLICK/bootstrap_v2.ps1"
 )
 set "BOOT_PS1=%TEMP%\WOF_owner_bootstrap_%RANDOM%_%RANDOM%.ps1"
 echo.
