@@ -17,7 +17,13 @@ const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
 const ageMs=(nowMs,sampleAtMs)=>finite(nowMs)&&finite(sampleAtMs)?Math.max(0,nowMs-sampleAtMs):Infinity;
 const confidence=value=>finite(value)&&value>=0&&value<=1?value:null;
 
-function targetForField(target7E){return TARGETS_BY_FIELD[target7E]||null;}
+function targetForField(target7E){
+  if(typeof target7E!=='number'||!Number.isFinite(target7E)||!Number.isInteger(target7E)||Object.is(target7E,-0))return null;
+  if(target7E===0)return'P1';
+  if(target7E===4)return'P2';
+  if(target7E===8)return'P3';
+  return null;
+}
 function labelForTarget(target){return TARGET_LABELS[target]||null;}
 function contentRectOf(state){
   if(!state||!finite(state.width)||state.width<=0||!finite(state.height)||state.height<=0)return null;
