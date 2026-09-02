@@ -1,0 +1,19 @@
+{
+  "stage": "ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V1",
+  "owner": "chatgpt-alpha-enemy-target-head-labels-qa-v1",
+  "state": "ACTIVE",
+  "start_head": "26fe29f442193246bf3d131a8c57d5a4cde39dea",
+  "scope": [
+    "parallel/ALPHA_ENEMY_TARGET_HEAD_LABELS_QA/**",
+    "parallel/PM/STAGE_CLAIMS/ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V1.json"
+  ],
+  "audited_product_blobs": {
+    "product/alpha/wof_alpha_enemy_target_labels.js": "3f6f4410376756e6935a4236e40e76574b289169",
+    "product/alpha/wof_alpha_enemy_head_projection.json": "8de57739818503a0e14702d2fa0bb4eba58228d2",
+    "product/alpha/wof_alpha_real_worker.js": "924d02eb575d1031b168b3bb7450c34107447c85",
+    "product/alpha/wof_alpha_hud.js": "b6f9cbf23ec1c00fe969aa2a2b59ad5e0d5433f4",
+    "product/alpha/wof_alpha_loader.js": "b1d2bd5cc3f5e4e7a3bed084d6d35ea71489717b",
+    "product/alpha/enemy_target_labels_regression.mjs": "55b5b1ad08768f78fd536be8995867c9a939e599"
+  },
+  "notes": "Fresh independent repository QA only. No product/alpha edits. Synthetic fixture evidence is explicitly not Browser/WOF projection proof."
+}
