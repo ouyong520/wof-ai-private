@@ -1,0 +1,33 @@
+{
+  "schema": "wof-alpha-enemy-target-head-labels-qa-v3-supportive-regression-replay-v1",
+  "status": "PASS",
+  "evidenceClass": "SUPPORTIVE_ONLY_NOT_INDEPENDENT_ACCEPTANCE_BASIS_NOT_BROWSER_WOF_PROJECTION_PROOF",
+  "implementationRegression": {
+    "schema": "wof-alpha-enemy-target-head-labels-implementation-regression-v1",
+    "sourceBlob": "410c6dabf317eb08bea07f77800fb4ef3e82ed2b",
+    "sourceBlobReconstruction": "BYTE_FOR_BYTE_MATCH",
+    "testCount": 14,
+    "passCount": 14,
+    "failCount": 0
+  },
+  "hudModel": {
+    "blob": "16641129ff651c2733aebc6fae09a280e4bac49b",
+    "reconstruction": "BYTE_FOR_BYTE_MATCH"
+  },
+  "helper": {
+    "currentBlob": "e6e1260559f735b85ce6f69e87803369f125b2de",
+    "executionMode": "CURRENT_GITHUB_LOGIC_RECONSTRUCTED_FOR_NODE_REPLAY; EXACT CURRENT SOURCE WAS ALSO RE-READ DIRECTLY",
+    "note": "The local no-network execution reconstruction was semantically equivalent for the helper logic under test but was not used as a byte-identity claim. Exact current helper blob identity comes from GitHub contents metadata and direct current-source inspection."
+  },
+  "staticDependencyFacts": {
+    "workerBlob": "924d02eb575d1031b168b3bb7450c34107447c85",
+    "hudBlob": "b6f9cbf23ec1c00fe969aa2a2b59ad5e0d5433f4",
+    "loaderBlob": "b1d2bd5cc3f5e4e7a3bed084d6d35ea71489717b",
+    "method": "CURRENT_GITHUB_SOURCE_ASSERTIONS_RE_READ_DIRECTLY; LOCAL REPLAY SUPPLIED ONLY THOSE VERIFIED STATIC FACTS"
+  },
+  "commands": [
+    "node --check product/alpha/enemy_target_labels_regression.mjs",
+    "node product/alpha/enemy_target_labels_regression.mjs"
+  ],
+  "networkBoundary": "git clone/ls-remote unavailable in execution container due DNS; no Browser/WOF launch"
+}
