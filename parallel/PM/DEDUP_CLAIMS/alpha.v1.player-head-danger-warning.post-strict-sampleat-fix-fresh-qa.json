@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.player-head-danger-warning.post-strict-sampleat-fix-fresh-qa",
+  "effectiveDedupKey": "alpha.v1.player-head-danger-warning.post-strict-sampleat-fix-fresh-qa",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PLAYER_HEAD_WARNING_QA_V2",
+  "promptPath": "parallel/PM/ALPHA_V1_PLAYER_HEAD_WARNING_QA_V2_START_PROMPT.md",
+  "owner": "chatgpt-fresh-independent-qa-v2",
+  "claimToken": "a9c0f7c8-4d6a-4f91-8ee4-7c93b20b5a13-6f22e8c91fd54f5f",
+  "state": "ACTIVE",
+  "startCommit": "a974621875150031e3c1dbc16f49aa502d2bd87b"
+}
