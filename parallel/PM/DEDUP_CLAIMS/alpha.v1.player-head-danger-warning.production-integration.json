@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.player-head-danger-warning.production-integration",
+  "effectiveDedupKey": "alpha.v1.player-head-danger-warning.production-integration",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PLAYER_HEAD_WARNING_PRODUCTION_INTEGRATION_V1",
+  "promptPath": "parallel/PM/ALPHA_V1_PLAYER_HEAD_WARNING_PRODUCTION_INTEGRATION_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol-production-integration",
+  "claimToken": "2aee7edc-d3c5-493f-a199-0e61497f22fa-1ac52937ab676e7d9ee822746236e736",
+  "state": "ACTIVE",
+  "startCommit": "72bcd5a7dd2245175b361d48ab89e10baaf1d276"
+}
