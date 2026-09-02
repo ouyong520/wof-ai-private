@@ -8,6 +8,8 @@ const SESSION=cfg.session,CHANNEL=cfg.channel;
 const TRANSPORT=window.__WOF_ALPHA_TRANSPORT_V1;
 if(!TRANSPORT||TRANSPORT.version!=='wof-alpha-safe-transport-v1'||typeof TRANSPORT.matches!=='function')throw new Error('WOF Alpha Safe Transport 配对接口缺失');
 if(!window.WOFAlphaHudModel?.summarizeWarnings)throw new Error('WOF Alpha HUD model missing');
+if(!window.WOFAlphaEnemyTargetLabels?.buildPlan)throw new Error('WOF Alpha enemy target-label model missing');
+const TARGET_LABELS=window.WOFAlphaEnemyTargetLabels;
 
 // Product takeover is allowed only after legacy research resources are actually released.
 try{
@@ -53,11 +55,14 @@ const shader=(type,src)=>{const s=gl.createShader(type);gl.shaderSource(s,src);g
 const vs=shader(gl.VERTEX_SHADER,V),fs=shader(gl.FRAGMENT_SHADER,F),prog=gl.createProgram();
 gl.attachShader(prog,vs);gl.attachShader(prog,fs);gl.bindAttribLocation(prog,0,'a');gl.linkProgram(prog);gl.deleteShader(vs);gl.deleteShader(fs);
 if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){const m=gl.getProgramInfoLog(prog)||'link';gl.deleteProgram(prog);throw new Error(m);}
-const uTex=gl.getUniformLocation(prog,'t'),buf=gl.createBuffer(),tex=gl.createTexture(),hud=document.createElement('canvas');
+const uTex=gl.getUniformLocation(prog,'t'),buf=gl.createBuffer(),tex=gl.createTexture(),labelTex=gl.createTexture(),hud=document.createElement('canvas');
 hud.width=520;hud.height=248;const c=hud.getContext('2d');
+const labelHud=document.createElement('canvas');labelHud.width=96;labelHud.height=24;const lc=labelHud.getContext('2d');
+const LABEL_ORDER=['1P','2P','3P'],LABEL_TILE_W=32,LABEL_TILE_H=24,MAX_LABELS=20,labelVertices=new Float32Array(MAX_LABELS*6*4);
 
-const STARTUP_MS=15000,STALE_MS=1500,loadedAt=Date.now();
+const STARTUP_MS=15000,STALE_MS=1500,MARKER_STALE_MS=300,loadedAt=Date.now();
 let disposed=false,visible=true,lastMsg=null,lastRx=0,lastDiag=null,lastKey='',drawCount=0,callbackCount=0;
+let lastMarkerMsg=null,lastMarkerRx=0,lastLabelPlan=null,labelDrawCount=0;
 
 function snapGL(){
   const active=gl.getParameter(gl.ACTIVE_TEXTURE),activeTex=gl.getParameter(gl.TEXTURE_BINDING_2D);
@@ -84,15 +89,16 @@ function restoreGL(s){
   if(s.active!==gl.TEXTURE0)gl.bindTexture(gl.TEXTURE_2D,s.activeTex);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,s.flip);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,s.premul);gl.bindBuffer(gl.ARRAY_BUFFER,s.array);
 }
-function upload(){
+function uploadCanvas(source,target){
   const s=snapGL();try{
-    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);
+    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,target);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,hud);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);
   }finally{restoreGL(s);}
 }
+function upload(){uploadCanvas(hud,tex);}
 function drawTexture(x,y,w,h){
   const W=gl.drawingBufferWidth||canvas.width,H=gl.drawingBufferHeight||canvas.height;if(!(W>0&&H>0))return;
   const l=x/W*2-1,r=(x+w)/W*2-1,t=1-y/H*2,b=1-(y+h)/H*2;
@@ -104,6 +110,54 @@ function drawTexture(x,y,w,h){
     gl.vertexAttribPointer(0,4,gl.FLOAT,false,0,0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);gl.uniform1i(uTex,0);
     bridge.nativeDraw.call(gl,gl.TRIANGLES,0,6);drawCount++;
   }finally{restoreGL(s);}
+}
+function paintLabelAtlas(){
+  lc.clearRect(0,0,labelHud.width,labelHud.height);lc.textBaseline='middle';lc.textAlign='center';lc.font='bold 15px sans-serif';
+  for(let i=0;i<LABEL_ORDER.length;i++){
+    const x=i*LABEL_TILE_W;lc.fillStyle='rgba(0,0,0,.82)';lc.fillRect(x+1,1,LABEL_TILE_W-2,LABEL_TILE_H-2);
+    lc.strokeStyle='rgba(255,255,255,.99)';lc.lineWidth=2;lc.strokeRect(x+2,2,LABEL_TILE_W-4,LABEL_TILE_H-4);
+    lc.fillStyle='#fff';lc.fillText(LABEL_ORDER[i],x+LABEL_TILE_W/2,LABEL_TILE_H/2+.5);
+  }
+  uploadCanvas(labelHud,labelTex);
+}
+function drawLabelPlan(plan){
+  const labels=Array.isArray(plan?.labels)?plan.labels:[];if(!labels.length)return;
+  const W=gl.drawingBufferWidth||canvas.width,H=gl.drawingBufferHeight||canvas.height;if(!(W>0&&H>0))return;
+  let count=0,p=0;
+  for(const item of labels){
+    if(count>=MAX_LABELS)break;
+    const idx=LABEL_ORDER.indexOf(item.label);if(idx<0)continue;
+    const r=item.drawRectDb;if(!r)continue;
+    const l=r.x/W*2-1,rr=(r.x+r.width)/W*2-1,t=1-r.y/H*2,b=1-(r.y+r.height)/H*2,u0=idx/LABEL_ORDER.length,u1=(idx+1)/LABEL_ORDER.length;
+    const vals=[l,t,u0,1,l,b,u0,0,rr,b,u1,0,l,t,u0,1,rr,b,u1,0,rr,t,u1,1];
+    for(let i=0;i<vals.length;i++)labelVertices[p++]=vals[i];
+    count++;
+  }
+  if(!count)return;
+  const s=snapGL();try{
+    gl.viewport(0,0,W,H);gl.disable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.disable(gl.SCISSOR_TEST);gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.colorMask(true,true,true,true);gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,labelVertices,gl.STREAM_DRAW);gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0,4,gl.FLOAT,false,0,0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,labelTex);gl.uniform1i(uTex,0);
+    bridge.nativeDraw.call(gl,gl.TRIANGLES,0,count*6);labelDrawCount+=count;drawCount++;
+  }finally{restoreGL(s);}
+}
+function drawingBufferState(now,projectionEpoch){
+  const W=gl.drawingBufferWidth||canvas.width,H=gl.drawingBufferHeight||canvas.height;if(!(W>0&&H>0))return null;
+  let vp;try{vp=Array.from(gl.getParameter(gl.VIEWPORT));}catch(_){return null;}
+  if(!Array.isArray(vp)||vp.length!==4||!vp.every(Number.isFinite)||vp[2]<=0||vp[3]<=0)return null;
+  const x=vp[0],y=H-(vp[1]+vp[3]),width=vp[2],height=vp[3];
+  if(x<0||y<0||x+width>W||y+height>H)return null;
+  return{width:W,height:H,contentRect:{x,y,width,height},sampleAt:now,confidence:1,epoch:projectionEpoch||null,projectionEpoch:projectionEpoch||null,
+    mappingVersion:[W,H,...vp].join(':'),fullscreen:!!document.fullscreenElement};
+}
+function drawEnemyTargetLabels(now){
+  if(!lastMarkerRx||now-lastMarkerRx>MARKER_STALE_MS){lastLabelPlan=null;return;}
+  const projection=lastMarkerMsg?.projection||null;
+  const db=drawingBufferState(now,projection?.epoch||null);
+  const plan=TARGET_LABELS.buildPlan({markers:Array.isArray(lastMarkerMsg?.markers)?lastMarkerMsg.markers:[],projection,drawingBufferState:db,nowMs:now});
+  lastLabelPlan=plan;
+  if(plan.labels.length)drawLabelPlan(plan);
 }
 function paintBox(title,lines){
   const h=Math.min(hud.height,48+Math.max(1,lines.length)*20);
@@ -117,7 +171,8 @@ function paintBox(title,lines){
 }
 function drawHud(){
   callbackCount++;if(disposed||!visible)return;
-  const now=Date.now(),fresh=!!lastRx&&now-lastRx<=STALE_MS;
+  const now=Date.now();drawEnemyTargetLabels(now);
+  const fresh=!!lastRx&&now-lastRx<=STALE_MS;
   if(fresh){
     const model=window.WOFAlphaHudModel.summarizeWarnings(Array.isArray(lastMsg?.warnings)?lastMsg.warnings:[]);
     if(model.count){
@@ -135,6 +190,7 @@ function drawHud(){
     const W=gl.drawingBufferWidth||canvas.width,w=Math.min(520,W-8);drawTexture(Math.max(4,(W-w)/2),8,w,h);
   }
 }
+paintLabelAtlas();
 bridge.callback=drawHud;
 
 const bc=new BroadcastChannel(CHANNEL);
@@ -142,24 +198,28 @@ bc.onmessage=e=>{
   const m=e.data;
   if(!(m&&m.schema===SCHEMA&&m.session===SESSION&&TRANSPORT.matches(m)))return;
   if(m.kind==='state'){lastMsg=m;lastRx=Date.now();lastDiag=null;lastKey='';}
+  else if(m.kind==='enemy-target-markers'){lastMarkerMsg=m;lastMarkerRx=Date.now();}
   else if(m.kind==='diag'){lastMsg=null;lastRx=0;lastDiag={at:Date.now(),reason:m.reason||m.status||'diagnostic'};lastKey='';}
+  if(m.kind==='diag'){lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;}
 };
 
-function transportReset(){lastMsg=null;lastRx=0;lastDiag=null;lastKey='';}
+function transportReset(){lastMsg=null;lastRx=0;lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;lastDiag=null;lastKey='';}
 function dispose(){
   if(disposed)return;disposed=true;
   if(bridge.callback===drawHud)bridge.callback=null;
   try{bc.close();}catch(_){}
-  try{gl.deleteTexture(tex);gl.deleteBuffer(buf);gl.deleteProgram(prog);}catch(_){}
+  try{gl.deleteTexture(tex);gl.deleteTexture(labelTex);gl.deleteBuffer(buf);gl.deleteProgram(prog);}catch(_){}
 }
 window.WOFALPHAHUD={
   version:VERSION,session:SESSION,show(){visible=true;lastKey='';},hide(){visible=false;lastKey='';},transportReset,dispose,
   status(){
     const fresh=!!lastRx&&Date.now()-lastRx<=STALE_MS;
+    const markerFresh=!!lastMarkerRx&&Date.now()-lastMarkerRx<=MARKER_STALE_MS;
     const summary=window.WOFAlphaHudModel.summarizeWarnings(fresh&&Array.isArray(lastMsg?.warnings)?lastMsg.warnings:[]);
     return{version:VERSION,release:'wof-alpha-rc3',session:SESSION,connected:fresh,ageMs:lastRx?Date.now()-lastRx:null,warningCount:summary.count,
-      groups:summary.groups,drawHooked:gl.drawArrays===bridge.wrapper,drawCount,callbackCount,lastError:bridge.lastError||null,
-      researchHudDisposed:true};
+      groups:summary.groups,drawHooked:gl.drawArrays===bridge.wrapper,drawCount,callbackCount,lastError:bridge.lastError||null,researchHudDisposed:true,
+      enemyTargetLabels:{connected:markerFresh,ageMs:lastMarkerRx?Date.now()-lastMarkerRx:null,count:markerFresh?(lastLabelPlan?.labels?.length||0):0,suppressed:markerFresh?(lastLabelPlan?.suppressed?.length||0):0,
+        reason:markerFresh?(lastLabelPlan?.reason||null):'STALE_OR_MISSING_MARKERS',drawCount:labelDrawCount,holdMs:0,smoothing:false}};
   }
 };
 console.log('✅ WOF Alpha RC4 HUD installed · session',SESSION.slice(0,8));
