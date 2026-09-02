@@ -1,0 +1,14 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "PM_STAGE_DEDUP_CANONICAL_CLAIM_HARDENING_V1",
+  "promptPath": "parallel/PM/PM_STAGE_DEDUP_CANONICAL_CLAIM_HARDENING_START_PROMPT.md",
+  "owner": "chatgpt-pm-stage-dedup-canonical-claim-hardening-v1-6f3c1a9e",
+  "claimToken": "6f3c1a9e-9d27-4d18-b3b4-50f2b8be7e71",
+  "state": "ACTIVE",
+  "startCommit": "ed469e4b36f5b638c0894928978e5b2dcc313709",
+  "scope": [
+    "parallel/PM/STAGE_DEDUP_GUARD.md",
+    "parallel/PM/*DEDUP*",
+    "parallel/PM/STAGE_CLAIMS/PM_STAGE_DEDUP_CANONICAL_CLAIM_HARDENING_V1.json"
+  ]
+}
