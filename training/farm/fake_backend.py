@@ -4,13 +4,19 @@ from __future__ import annotations
 
 import struct
 
-from .adapter import CoreAction, CoreFrameInput, RuntimeCapabilityError
+from .adapter import (
+    CoreAction,
+    CoreFrameInput,
+    RamBlockSnapshot,
+    RuntimeCapabilityError,
+)
 
 
 class DeterministicFakeBackend:
     """Small deterministic backend; never real-WOF proof authority."""
 
     _STATE = struct.Struct("<Q4I32s")
+    _BLOCK_BASES = (0x1000, 0x2000)
 
     def __init__(self):
         self._closed = False
@@ -64,13 +70,21 @@ class DeterministicFakeBackend:
         self._require_open()
         return bytes(self._ram)
 
+    def read_ram_blocks(self) -> tuple[RamBlockSnapshot, ...]:
+        """Expose two synthetic address-aware blocks for R0.3 fixture coverage."""
+        self._require_open()
+        return (
+            RamBlockSnapshot(self._BLOCK_BASES[0], bytes(self._ram[:16])),
+            RamBlockSnapshot(self._BLOCK_BASES[1], bytes(self._ram[16:])),
+        )
+
     def save_state(self) -> bytes:
         self._require_open()
         return self._STATE.pack(self._frame, *self._masks, bytes(self._ram))
 
     def load_state(self, state: bytes) -> None:
         self._require_open()
-        if not isinstance(state, bytes) or len(state) != self._STATE.size:
+        if type(state) is not bytes or len(state) != self._STATE.size:
             raise RuntimeCapabilityError("invalid deterministic fake savestate")
         unpacked = self._STATE.unpack(state)
         self._frame = unpacked[0]
