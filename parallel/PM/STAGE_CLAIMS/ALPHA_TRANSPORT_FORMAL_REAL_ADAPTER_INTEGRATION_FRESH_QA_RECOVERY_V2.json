@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "ALPHA_TRANSPORT_FORMAL_REAL_ADAPTER_INTEGRATION_FRESH_QA_RECOVERY_V2",
+  "promptPath": "parallel/PM/ALPHA_TRANSPORT_FORMAL_REAL_ADAPTER_INTEGRATION_FRESH_QA_RECOVERY_V2_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "b9058081f283d109eac73777d3c9d39dda234427",
+  "startedAtUtc": "2026-09-02T00:44:09Z"
+}
