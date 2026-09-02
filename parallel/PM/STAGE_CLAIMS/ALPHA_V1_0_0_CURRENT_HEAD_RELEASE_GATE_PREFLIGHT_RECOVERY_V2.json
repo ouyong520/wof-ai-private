@@ -5,6 +5,12 @@
   "effectiveDedupKey": "alpha.v1.0.0.current-head-release-gate-preflight-recovery-v2",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.0.0.current-head-release-gate-preflight-recovery-v2.json",
   "claimToken": "f67fc3916f47733c03c179706bc043310272c8d0c2d98a3f",
-  "state": "ACTIVE",
-  "startCommit": "8a6833995c21adb07be64541a2f6de8b65c341f1"
+  "state": "COMPLETE",
+  "startCommit": "8a6833995c21adb07be64541a2f6de8b65c341f1",
+  "auditedHead": "0a98a4d468ab0924168d5d57a594b61273dbc52b",
+  "resultPath": "parallel/ALPHA_V1_0_0_CURRENT_HEAD_RELEASE_GATE_PREFLIGHT_RECOVERY_V2/RESULT.md",
+  "resultCommit": "06f70a90a2c0c16985f90d2a9738d0e3143dc756",
+  "verdict": "PASS — ALPHA V1.0.0 CURRENT-HEAD RELEASE PREFLIGHT RECOVERY V2 — REPOSITORY GATES RECONCILED / RELEASE REMAINS FAIL-CLOSED ON LISTED OPEN GATES",
+  "releaseState": "NOT RELEASED",
+  "ownerActionNow": "NO"
 }
