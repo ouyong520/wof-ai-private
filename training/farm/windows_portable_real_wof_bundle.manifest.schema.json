@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wof-training-farm-windows-portable-real-wof-proof-bundle-manifest-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema","version","stageId","packageId","sourceCandidate","authorityBaseCommit","deterministicMetadata","proofAuthority","dependencyAuthority","entrypoints","flags","files","payloadAggregateSha256","builder"],
+  "properties": {
+    "schema": {"const": "wof-training-farm-windows-portable-real-wof-proof-bundle-manifest-v1"},
+    "version": {"const": 1},
+    "stageId": {"const": "TRAINING_FARM_R0_4_7_WINDOWS_PORTABLE_REAL_WOF_PROOF_BUNDLE_V1"},
+    "packageId": {"const": "WOF_Training_Farm_R0_4_7_Windows_Portable_Real_WOF_Proof_Bundle_V1"},
+    "sourceCandidate": {"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "authorityBaseCommit": {"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "deterministicMetadata": {"type":"object"},
+    "proofAuthority": {"type":"object"},
+    "dependencyAuthority": {"type":"object"},
+    "entrypoints": {"type":"object"},
+    "flags": {"type":"object"},
+    "files": {"type":"array","minItems":1},
+    "payloadAggregateSha256": {"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "builder": {"type":"object"}
+  }
+}
