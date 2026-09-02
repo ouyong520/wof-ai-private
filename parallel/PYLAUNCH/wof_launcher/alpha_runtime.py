@@ -9,6 +9,7 @@ from typing import Any
 from .cdp import CdpClient, CdpError
 from .discovery_v2 import TargetChoice
 from .probe import WORLD_SHA256
+from .projection_recovery import ProjectionRecovery, ProjectionRecoveryError
 
 
 RELEASE = "wof-alpha-rc3"
@@ -44,7 +45,13 @@ def git_blob_sha(data: bytes) -> str:
 
 
 class AlphaRuntimeManager:
-    """Installs only package-selected Alpha assets after current exact World authority is accepted."""
+    """Installs package-selected Alpha after exact World authority is accepted.
+
+    Static unproved projection profiles remain fail-closed. When they are unproved,
+    a package-selected bounded live proof is automatically attached to the same
+    accepted page/Worker pair. A successful proof yields in-memory profiles only for
+    this launcher process; arbitrary serialized JSON cannot activate overlays.
+    """
 
     def __init__(self, root: Path) -> None:
         self.root = Path(root).resolve()
@@ -54,6 +61,7 @@ class AlphaRuntimeManager:
         self._page_target_id: str | None = None
         self._worker_target_id: str | None = None
         self._status: dict[str, Any] = {"requested": True, "running": False, **SAFETY}
+        self._projection = ProjectionRecovery(self._verified_text)
 
     def _load_manifest(self) -> dict[str, Any]:
         if self._manifest is not None:
@@ -131,13 +139,19 @@ class AlphaRuntimeManager:
             raise AlphaRuntimeError("package-selected Alpha HUD 未挂接")
         return {"session": session, "channel": channel, "pairGeneration": pair["pairGeneration"], "pairNonce": pair_nonce}
 
+    def _profiles_for_worker(self) -> dict[str, dict[str, Any]]:
+        live = self._projection.profiles()
+        if live is not None:
+            return live
+        return {name: json.loads(self._verified_text(rel)) for name, rel in PROFILE_PATHS.items()}
+
     def _worker_install(self, client: CdpClient, worker_id: str, pair: dict[str, Any], identity: dict[str, Any], runtime_epoch: str) -> dict[str, Any]:
         locator = identity.get("locator")
         if not isinstance(locator, dict) or not isinstance(locator.get("heapBase"), int) or not isinstance(locator.get("swap16"), bool):
             raise AlphaRuntimeError("accepted World identity 缺少唯一 launcher locator")
         if identity.get("sha256") != WORLD_SHA256 or identity.get("ok") is not True:
             raise AlphaRuntimeError("accepted World identity SHA authority 无效")
-        profiles = {name: json.loads(self._verified_text(rel)) for name, rel in PROFILE_PATHS.items()}
+        profiles = self._profiles_for_worker()
         core, labels, player_warning, adapter = (self._verified_text(p) for p in WORKER_SOURCES)
         self._evaluate(client, worker_id, "try{self.__WOF_ALPHA_REAL_TRANSPORT?.stop?.('field-rebind')}catch(_){}; true")
         for source in (core, labels, player_warning):
@@ -179,6 +193,9 @@ class AlphaRuntimeManager:
             pair = self._page_install(client, page_id, pair_nonce)
             worker_status = self._worker_install(client, worker_id, pair, choice.identity, runtime_epoch)
             page_status = self._evaluate(client, page_id, "(()=>({attachState:window.__WOF_ALPHA_BOOTSTRAP_RC5?.attachState||null,hudLoaded:!!window.WOFALPHAHUD,hudStatus:window.WOFALPHAHUD?.status?.()||null}))()")
+            projection_status = self._projection.status()
+            if self._projection.profiles() is None:
+                projection_status = self._projection.ensure_started(client, choice, authority_key)
         except Exception:
             self._page_target_id, self._worker_target_id = page_id, worker_id
             self.revoke(client)
@@ -193,11 +210,33 @@ class AlphaRuntimeManager:
             "packageVersion": self._load_manifest().get("packageVersion"),
             "page": page_status,
             "worker": worker_status,
+            "projectionRecovery": projection_status,
+            "projectionProfilesLive": self._projection.profiles() is not None,
             **SAFETY,
         }
         return dict(self._status)
 
+    def poll_projection_recovery(self, client: CdpClient, choice: TargetChoice, authority_key: str) -> tuple[dict[str, Any], bool]:
+        try:
+            recovery = self._projection.poll(client, authority_key)
+        except (ProjectionRecoveryError, CdpError, OSError, ValueError) as exc:
+            recovery = {"state": "ERROR", "error": str(exc), **SAFETY}
+        activated = recovery.get("newProfiles") is True
+        if activated:
+            # Rebind through the normal exact-authority path. No profile mutation is
+            # injected into the already-running transport in place.
+            self.revoke(client)
+            return recovery, True
+        if self._status.get("running") is True:
+            self._status["projectionRecovery"] = recovery
+            self._status["projectionProfilesLive"] = self._projection.profiles() is not None
+        return recovery, False
+
+    def projection_proof_result(self) -> dict[str, Any] | None:
+        return self._projection.proof_result()
+
     def revoke(self, client: CdpClient | None = None) -> None:
+        self._projection.stop_runtime(client, preserve_state=True)
         if client and self._worker_target_id:
             try:
                 self._evaluate(client, self._worker_target_id, "(()=>{try{return self.__WOF_ALPHA_REAL_TRANSPORT?.stop?.('authority-revoked')!==false}catch(_){return false}})()")
@@ -211,7 +250,7 @@ class AlphaRuntimeManager:
         self._authority_key = None
         self._page_target_id = None
         self._worker_target_id = None
-        self._status = {"requested": True, "running": False, **SAFETY}
+        self._status = {"requested": True, "running": False, "projectionRecovery": self._projection.status(), "projectionProfilesLive": self._projection.profiles() is not None, **SAFETY}
 
     def status(self) -> dict[str, Any]:
         return dict(self._status)
