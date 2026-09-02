@@ -1,7 +1,8 @@
 """Backend-neutral WOF Training Farm adapter contract.
 
-R0.2 keeps the R0.1 single-instance boundary and adds an explicit full-frame
-input primitive so deterministic replay never depends on host input persistence.
+R0.3 keeps the R0.1/R0.2 single-instance boundary and adds an address-aware RAM
+block read primitive for observation-discovery tooling. Existing flat read_ram()
+and deterministic frame-input behavior remain compatible.
 """
 
 from __future__ import annotations
@@ -76,9 +77,31 @@ class CoreFrameInput:
         return cls(tuple(CoreAction(player=p, pressed=()) for p in range(4)))  # type: ignore[arg-type]
 
 
+@dataclass(frozen=True)
+class RamBlockSnapshot:
+    """One address-aware emulator RAM block at one frame.
+
+    ``base_address`` is the exact integer key exposed by the source backend. R0.3
+    does not reinterpret it as a Browser/WinKawaks/host address.
+    """
+
+    base_address: int
+    data: bytes
+
+    def __post_init__(self) -> None:
+        if type(self.base_address) is not int or self.base_address < 0:
+            raise TypeError("RAM block base_address must be a non-negative strict integer")
+        if type(self.data) is not bytes or not self.data:
+            raise TypeError("RAM block data must be non-empty bytes")
+
+    @property
+    def length(self) -> int:
+        return len(self.data)
+
+
 @runtime_checkable
 class FarmBackend(Protocol):
-    """Single-instance backend surface required by R0.2."""
+    """Single-instance backend surface required by R0.3."""
 
     def reset(self) -> None: ...
 
@@ -87,6 +110,8 @@ class FarmBackend(Protocol):
     def step_frame(self, frame_input: CoreFrameInput) -> None: ...
 
     def read_ram(self) -> bytes: ...
+
+    def read_ram_blocks(self) -> tuple[RamBlockSnapshot, ...]: ...
 
     def save_state(self) -> bytes: ...
 
@@ -118,8 +143,8 @@ class TrainingFarmAdapter:
     def step(self, action: CoreAction) -> bytes:
         """R0.1-compatible one-player step.
 
-        R0.2 determinism code uses ``step_frame`` instead so all player masks are
-        explicit before the frame advances.
+        R0.2/R0.3 deterministic code uses ``step_frame`` instead so all player
+        masks are explicit before the frame advances.
         """
         self._require_open()
         if not isinstance(action, CoreAction):
@@ -137,27 +162,54 @@ class TrainingFarmAdapter:
     def read_ram(self) -> bytes:
         self._require_open()
         ram = self._backend.read_ram()
-        if not isinstance(ram, bytes):
+        if type(ram) is not bytes:
             raise RuntimeCapabilityError("backend read_ram() must return bytes")
         return ram
+
+    def read_ram_blocks(self) -> tuple[RamBlockSnapshot, ...]:
+        """Return stable ordered, non-overlapping address-aware RAM blocks."""
+        self._require_open()
+        blocks = self._backend.read_ram_blocks()
+        if type(blocks) is not tuple or not blocks:
+            raise RuntimeCapabilityError(
+                "backend read_ram_blocks() must return a non-empty tuple"
+            )
+        previous_base: int | None = None
+        previous_end: int | None = None
+        for index, block in enumerate(blocks):
+            if type(block) is not RamBlockSnapshot:
+                raise RuntimeCapabilityError(
+                    f"RAM block {index} must be RamBlockSnapshot"
+                )
+            base = block.base_address
+            end = base + block.length
+            if previous_base is not None and base <= previous_base:
+                raise RuntimeCapabilityError(
+                    "RAM blocks must be strictly ordered by unique base address"
+                )
+            if previous_end is not None and base < previous_end:
+                raise RuntimeCapabilityError("RAM blocks overlap")
+            previous_base = base
+            previous_end = end
+        return blocks
 
     def save_state(self) -> bytes:
         self._require_open()
         state = self._backend.save_state()
-        if not isinstance(state, bytes) or not state:
+        if type(state) is not bytes or not state:
             raise RuntimeCapabilityError("backend save_state() must return non-empty bytes")
         return state
 
     def load_state(self, state: bytes) -> None:
         self._require_open()
-        if not isinstance(state, bytes) or not state:
+        if type(state) is not bytes or not state:
             raise TypeError("state must be non-empty bytes")
         self._backend.load_state(state)
 
     def runtime_identity_components(self) -> dict[str, object]:
         self._require_open()
         value = self._backend.runtime_identity_components()
-        if not isinstance(value, dict):
+        if type(value) is not dict:
             raise RuntimeCapabilityError(
                 "backend runtime_identity_components() must return a dict"
             )
