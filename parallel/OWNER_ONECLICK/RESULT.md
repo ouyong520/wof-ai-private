@@ -1,157 +1,158 @@
-# Owner One-Click Dynamic Refresh V2 — Result
+# Owner OneClick Current-HEAD Release Refresh V3 — Result
 
-Date: 2026-09-01  
-Stage: `OWNER_ONECLICK_DYNAMIC_REFRESH_V2`
+Date: 2026-09-02  
+Stage: `OWNER_ONECLICK_CURRENT_HEAD_RELEASE_REFRESH_V3_CANONICAL_V2`
 
 ## Verdict
 
-**OWNER ONECLICK DYNAMIC REFRESH V2 READY — CURRENT SNAPSHOT + UTF-8 PACKAGE VERIFIED**
+**WAITING_GATE — OWNER ONECLICK V3 REFRESH MUST WAIT FOR FRESH RELEASE QA**
 
-Owner action: `NO`
+Owner action: **NO**.
 
-The Owner One-Click package has been refreshed from one explicit immutable repository snapshot, its complete consumed runtime set is hash-pinned from that same snapshot, stale/mutated payloads fail closed with Chinese-first diagnostics, and the existing manifest-driven Linux + Windows package workflow passed without any workflow edit.
+The V3 package refresh was deliberately **not** generated. The current hard-gate audit found that the latest successful Alpha Formal Real-Adapter fresh QA is no longer current for the production real-worker/HUD generation now on `main`. Refreshing `package_manifest.json` merely to update hashes would therefore violate the V3 fail-closed rule.
 
-## Immutable package snapshot
+No upstream Alpha, Transport, PYLAUNCH, Recorder, Live Proof, HUD, danger-rule, target-semantic, input/AI, or RAM behavior was modified. No Browser/WOF process was launched.
+
+## Canonical ownership
+
+- dedup protocol: `v2`
+- dedup key: `owner.oneclick.current-head.release-refresh-v3`
+- canonical claim: `parallel/PM/DEDUP_CLAIMS/owner.oneclick.current-head.release-refresh-v3.json`
+- stage claim: `parallel/PM/STAGE_CLAIMS/OWNER_ONECLICK_CURRENT_HEAD_RELEASE_REFRESH_V3_CANONICAL_V2.json`
+- claim token: `6eeee728744422ab2ca92e0e40f9f13b783ab5eb94e6d7c0`
+- claim start commit: `d6e3a347567f4db5ae7d0d5a4e03561bd91c46c8`
+
+The canonical claim was created with create-only semantics and re-read from `main`; the exact token matched before task execution.
+
+## Hard-gate audit
+
+### 1. Transport formal real-adapter fresh QA — **NOT CURRENT / WAITING**
+
+The PM-authorized fresh-QA recovery is durably PASS:
+
+- result: `parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION_QA_RECOVERY_V2/RESULT.md`
+- result commit: `1844f99c0e55a36e7c266d2217f90927d0456023`
+- verdict: `PASS — ALPHA FORMAL REAL-ADAPTER FRESH QA RECOVERY V2 — READY FOR NEXT RELEASE GATES`
+
+However, that QA explicitly audited these production blobs among its current authority set:
+
+- `product/alpha/wof_alpha_real_worker.js` = `9c63a2c6a185ead8406487edd10038c035d41623`
+- `product/alpha/wof_alpha_hud.js` = `f41838c760ee9f7c40f3c91c71687e72ba740803`
+- `product/alpha/wof_alpha_bootstrap.user.js` = `5aed15ff14aa39d95eade187cefb63dbd00848e6`
+
+Current `main` now has:
+
+- `product/alpha/wof_alpha_real_worker.js` = `b7f4506fc90b681ede059df5ad3316e665c6f15e`
+- `product/alpha/wof_alpha_hud.js` = `50d944c451ac94b114e4f86441aeae8ad6b25c78`
+- `product/alpha/wof_alpha_bootstrap.user.js` = `5aed15ff14aa39d95eade187cefb63dbd00848e6`
+
+The real-worker and HUD generations therefore moved after the fresh formal-integration QA. No later formal real-adapter fresh-QA successor was found that re-audits the current `b7f450...` / `50d944...` production pair. Under the V3 instruction to require current fresh release-runtime evidence, this gate is not green.
+
+The historical original `ALPHA_TRANSPORT_FORMAL_REAL_ADAPTER_INTEGRATION_FRESH_QA_V1` claim remains `ACTIVE`; it is not mechanically reused as a blocker because Recovery V2 is the PM-authorized successor. The blocker here is **post-QA production drift**, not the historical claim state.
+
+### 2. Recorder authority generation — **GREEN VIA CURRENT SUCCESSOR**
+
+The historical generation QA blockers are superseded by the current in-flight generation-atomicity successor:
+
+- result: `parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_INFLIGHT_ATOMICITY/RESULT.md`
+- result commit: `c1d9a43193dcbc1cfea1db8012532416fb439361`
+- verdict: `PASS — RECORDER IN-FLIGHT GENERATION ATOMICITY FRESH QA — READY FOR CURRENT-HEAD UNIFIED PREFLIGHT`
+- tested `parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py` blob: `8df637d370d187660592fe8de0f1c73ff3057804`
+- current `main` blob: `8df637d370d187660592fe8de0f1c73ff3057804`
+
+The successor explicitly closes the prior in-flight generation mutation blocker and preserves fail-closed generation admission/heartbeat/fatal handling.
+
+### 3. PYLAUNCH startup attestation/current blobs — **GREEN**
+
+`PYLAUNCH_STARTUP_ATTESTATION_QA_V1` is durably COMPLETE/PASS. Its tested current production blobs remain current for the checked authority files:
+
+- `browser.py` tested/current = `d6f7fa93aaf8d15da6ce77cfa35c4f72c4c3b332`
+- `monitor.py` tested/current = `8e3c5c527fdd5a845bbfc135f55014de22078cf4`
+- `discovery_v2.py` tested/current = `ec9d27bfe26557a11187a23853893b898a3366d1`
+
+The startup-attestation release gate therefore remains closed on current blobs.
+
+### 4. Active P0/P1 fix owning package-selected runtime — **NO SUCH OWNER FOUND**
+
+The recent package-relevant Alpha fixes are durably closed by their successor QA:
+
+- player-head strict `warningSampleAt` fix -> COMPLETE, then Fresh QA V2 PASS;
+- enemy strict raw target type / drawing-buffer epoch fixes -> COMPLETE, then enemy-label Fresh QA V3 PASS.
+
+The currently active dual-overlay tooling Fresh QA / independent cross-check work is validation work under the proof-tooling lane, not a P0/P1 implementation owner of a package-selected runtime file. The active true-5h Transport endurance workflow is also evidence collection, not a selected-runtime fix owner.
+
+## Package selection / dual-overlay Recovery V2 audit
+
+Current manifest selection policy remains `owner-oneclick-runtime-v2` as implemented by `parallel/OWNER_ONECLICK/refresh_manifest.py`.
+
+The selector explicitly includes fixed Alpha package assets such as:
+
+- `product/alpha/wof_alpha_bootstrap.user.js`
+- `product/alpha/wof_alpha_core.js`
+- `product/alpha/wof_alpha_hud.js`
+- `product/alpha/wof_alpha_hud_model.js`
+- Alpha regression/result assets
+
+The One-Session Live-Proof Tooling Recovery V2 is durably COMPLETE and lives under:
+
+`parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/**`
+
+That directory is **not part of the current selected payload**. This is not a silent omission: the generator's selection roots cover root Owner CMDs, OPTOOLKIT, PYLAUNCH, WOF052L Recorder, Browser Fleet, Unified Live Proof, fixed `product/alpha` files, and the fixed ALPHAQA RC5 asset; it does not scan/select the new dual-overlay proof-tooling directory. Recovery V2 itself marks that lane as proof-only and not production-profile activation.
+
+Therefore V3 records explicitly:
+
+> `parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/**` is not selected payload under `owner-oneclick-runtime-v2`.
+
+No package-selection expansion was performed while a hard upstream gate is red.
+
+## Manifest / package disposition
+
+`parallel/OWNER_ONECLICK/package_manifest.json` remains intentionally unchanged:
 
 - package version: `2026.09.01.947c3c5433a1`
 - source commit: `947c3c5433a1fe5bf88845c6d1f529e40b82510f`
-- deterministic generated-at: `2026-09-01T15:26:37Z` (derived from source commit time)
-- selection policy: `owner-oneclick-runtime-v2`
-- generator: `parallel/OWNER_ONECLICK/refresh_manifest.py`
-- manifest payload count: `46`
-- immutable raw base URL is pinned to the same 40-character source commit
-- PYLAUNCH, WOF052L Recorder, Browser Fleet, Unified Live Proof, OPTOOLKIT, fixed Alpha assets, and owner entry files are all represented by exact Git blob SHA-1 values from that snapshot
-- component provenance uses the same `sourceCommit` for PYLAUNCH, Recorder, Browser Fleet, and Unified Live Proof; no mixed-generation component pin remains
+- manifest blob before this stage: `eae53758603d0a16117f677910b31775a277cba8`
 
-The refreshed PYLAUNCH set includes the current snapshot blobs for:
+It is known to be stale relative to current selected runtime (for example current PYLAUNCH `browser.py`, current Unified Live Proof, and current Alpha HUD). That stale state is expected fail-closed behavior until all V3 hard gates are green.
 
-- `browser.py` -> `e883030fe8a90333b8ed58aae5699118b2c876fe`
-- `cdp.py` -> `def308bed2a5609be1da26505a15d621395b66aa`
-- `discovery_v2.py` -> `ec9d27bfe26557a11187a23853893b898a3366d1`
-- `monitor.py` -> `4430f7e927265cd3366fd70ce560c375aa878993`
-- `probe.py` -> `789a6849b826b35542b22d56a4d2ca3628d285a1`
+This stage did **not** run `refresh_manifest.py`, did **not** edit individual hashes, and did **not** choose a fake/current-looking package source commit.
 
-The V2 selector also closes the V1 omission class by packaging all selected non-test runtime files under Recorder and Browser Fleet, including Recorder discovery/hardening/identity/worker modules and `parallel/BROWSER_FLEET/fleet_discovery_v2.py`. Unified Live Proof is pinned in the same snapshot, including current `unified_live_proof.py` blob `0d9010007910f58b77c64fde98264697191bb679`.
+## Windows / UTF-8 / integrity workflow
 
-## Deterministic refresh / anti-stale behavior
+No V3 package workflow run was started because the hard-gate failure occurs before package generation. The prior Dynamic Refresh V2 workflow evidence is preserved as historical support for the updater design but is **not** promoted to V3 PASS.
 
-Added `parallel/OWNER_ONECLICK/refresh_manifest.py`.
+Existing package contracts remain unchanged:
 
-It:
+- Windows OneClick entry path;
+- Chinese install path and spaces-in-path handling;
+- redirected/non-interactive UTF-8 output;
+- stale/mutated payload rejection with Chinese-first diagnostics;
+- atomic staging/current-pointer switch;
+- last-known-good preservation;
+- safety `{readOnly:true, ramWrites:0, inputInjection:false}`.
 
-1. resolves an explicit git ref to a full immutable commit;
-2. enumerates the package runtime selection from that commit instead of copying prior manifest hashes;
-3. preserves UTF-8 git paths with `git -c core.quotepath=false ls-tree ...`;
-4. derives package version and generated-at metadata from the immutable source commit;
-5. records exact Git blob SHA-1 for every selected file;
-6. detects a newly added selected runtime file that the manifest does not express;
-7. detects removed selected runtime files still present in the manifest;
-8. rejects worktree payload drift against the pinned hashes;
-9. provides `--check` for deterministic manifest/provenance validation.
+Those contracts must be rerun on the eventual V3 immutable candidate after the formal real-adapter current-generation fresh QA closes.
 
-A stale or deliberately mutated blob is rejected with a Chinese-first diagnostic of the form:
+## Precise unblock condition
 
-`文件完整性校验失败：<path> expected=<pinned-hash> actual=<actual-hash>`
+Before retrying Owner OneClick V3, obtain a durable fresh formal real-adapter QA successor that explicitly tests/audits the **current** production generation, including current:
 
-The bootstrap propagates this as the first owner-visible failure and uses a dedicated non-zero integrity exit path instead of replacing the known-good release.
+- `product/alpha/wof_alpha_real_worker.js` = `b7f4506fc90b681ede059df5ad3316e665c6f15e`
+- `product/alpha/wof_alpha_hud.js` = `50d944c451ac94b114e4f86441aeae8ad6b25c78`
 
-## Windows UTF-8 / owner-path hardening
+or their later exact release-candidate successors if they legitimately change again.
 
-`parallel/OWNER_ONECLICK/bootstrap_v2.ps1` now explicitly establishes UTF-8 for redirected/non-interactive Windows execution:
+After that gate is green, V3 may select one immutable current release candidate, deterministically refresh all selected exact blob pins, then run the full Linux/integrity + real Windows OneClick/Chinese-space-path/UTF-8/atomic-LKG workflow on that exact snapshot.
 
-- `[Console]::OutputEncoding`
-- `[Console]::InputEncoding`
-- `$OutputEncoding`
-- `PYTHONUTF8=1`
-- `PYTHONIOENCODING=utf-8`
+## Safety / scope
 
-The existing atomic release staging/current-pointer/last-known-good contract remains intact. Chinese install paths and paths containing spaces remain supported.
-
-## Regression evidence
-
-The existing `.github/workflows/owner-oneclick-package.yml` was not modified by this stage.
-
-Push workflow run `33526502448` (`Owner One-Click Package`, run 71) completed successfully:
-
-### `integrity` — PASS
-
-- deterministic manifest / immutable source validation
-- complete current runtime set cannot outgrow the package
-- every manifest blob matches the pinned source commit
-- current runtime bytes match the package snapshot
-- mutated stale blob fails closed with Chinese path/hash diagnostic
-- Discovery V2 / Chinese proof content checks
-- atomic update / rollback / LKG contracts
-- explicit redirected UTF-8 contract
-- workflow metadata remains manifest-driven
-
-### `windows-oneclick` — PASS
-
-- real Chinese CMD install path
-- manifest-selected package verification
-- Chinese + space path handling
-- installed Chinese Windows proof execution-path smoke
-- update from a synthetic previous package while retaining last-known-good
-- repeated updater run without changing the immutable current release
-
-An earlier run correctly exposed a generator defect where default git path quoting escaped `WOF_一键工具.cmd`; V2 was not declared ready. The generator was corrected to disable git quote-path escaping, and the full workflow then passed.
-
-## Final HEAD freshness reassessment
-
-Immediately before result finalization, default branch was re-read at:
-
-`d59b438edee3142cf373709db1ea4f1e8aa437c7`
-
-Although default branch had advanced beyond the package source through parallel QA/PM work, the package-consumed runtime blobs were re-read and still matched the `947c3c...` manifest snapshot across:
-
-- PYLAUNCH selected runtime files;
-- WOF052L Recorder selected runtime files;
-- Browser Fleet selected runtime files;
-- Unified Live Proof selected runtime files;
-- root Owner CMD entries;
-- OPTOOLKIT owner/toolkit entries;
-- fixed Alpha regression/runtime assets;
-- ALPHAQA bootstrap retest asset.
-
-Therefore no package-consumed upstream drift existed at this gate, and refreshing merely to a metadata-only HEAD would create a new version without changing package payload. The immutable `947c3c...` package remains the correct current payload snapshot.
-
-## Delivery reassessment
-
-### Stale-pin risk
-
-The prior hand-maintained stale-pin failure mode is closed for this package generation: the manifest is a deterministic derivation of an explicit immutable snapshot and the regression fails closed when current selected runtime content outgrows or differs from the package.
-
-Normal future upstream changes to a package-consumed runtime file are expected to make the package regression fail until a new manifest is generated. The current workflow validates but does not commit a refreshed manifest automatically. Therefore a refresh action is still expected after normal consumed upstream changes, but it is now:
-
-`python parallel/OWNER_ONECLICK/refresh_manifest.py --source <explicit-immutable-commit>`
-
-followed by committing the generated manifest — **not** manual hash editing.
-
-### Remaining upstream gates before Owner testing
-
-This package stage does **not** unlock a real Browser/WOF run by itself.
-
-1. Fresh `PYLAUNCH_IDENTITY_CACHE_GENERATION_QA_V1` is currently `BLOCKED`: startup `/json/version` metadata attestation is not fully fail-closed; QA reproduced acceptance of missing Browser metadata / non-browser websocket endpoint shape. That is an upstream `parallel/PYLAUNCH/**` ownership issue and is outside this stage's allowed writes.
-2. Unified Live Proof Recorder authority-heartbeat implementation is READY and its fixed `unified_live_proof.py` blob is already the one pinned by this package, but its implementation result explicitly requires a fresh independent Unified Live Proof freshness QA before preflight may permit a bounded real Browser/WOF run.
-
-Accordingly Owner action remains `NO`.
-
-## Safety / ownership
-
-No workflow file, upstream runtime file, Browser/WOF state, gameplay input path, Worker replacement path, or RAM write path was modified by this stage. Stage writes were limited to `parallel/OWNER_ONECLICK/**` plus the mandatory PM claim file.
-
-Safety remains:
-
-```json
-{
-  "readOnly": true,
-  "ramWrites": 0,
-  "inputInjection": false
-}
-```
+- package manifest modified: **NO**
+- upstream runtime modified: **NO**
+- Browser/WOF launched: **NO**
+- RAM writes: **0**
+- input injection: **false**
+- Owner action: **NO**
 
 ## Stop condition
 
-> **OWNER ONECLICK DYNAMIC REFRESH V2 READY — CURRENT SNAPSHOT + UTF-8 PACKAGE VERIFIED**
-
-`你现在需要操作：NO`
+**WAITING_GATE — OWNER ONECLICK V3 REFRESH MUST WAIT FOR FRESH RELEASE QA**
