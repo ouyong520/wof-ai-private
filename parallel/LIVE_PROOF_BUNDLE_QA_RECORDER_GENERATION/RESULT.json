@@ -1,0 +1,42 @@
+{
+  "schema": "wof-recorder-authority-generation-fresh-qa-result-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_V1",
+  "result": "BLOCKED",
+  "ownerActionRequired": false,
+  "testedHead": "b2bb9a234163f50337bd731e389d703e1e92747c",
+  "production": {
+    "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py": "0ed41e4afb1a6a740315f356672df019ff3a15d3",
+    "parallel/LIVE_PROOF_BUNDLE/unified_live_proof_base.py": "0d9010007910f58b77c64fde98264697191bb679"
+  },
+  "freshFixtureCommit": "67129863755c16a06c60960ee8798da85de5fb98",
+  "freshRunnerCommit": "b2bb9a234163f50337bd731e389d703e1e92747c",
+  "blocker": "P1 generation rollover is not revoked at Recorder child-start boundary; authority changes only when the new reader enters begin_source_generation, leaving a window where the prior-generation reader can still renew authority",
+  "firstDeterministicRepro": {
+    "sequence": [
+      "generation-1 child token allocated and bound",
+      "generation-1 admission + trusted heartbeat => current_healthy=true, authorityGeneration=1",
+      "generation-2 child returned by start_child with newer token/order",
+      "before generation-2 reader entry, RecorderEvidence still sourceGeneration=generation-1 and current_healthy=true",
+      "delayed generation-1 trusted heartbeat is accepted and advances authorityGeneration 1 -> 2"
+    ],
+    "observed": {
+      "afterGeneration2Start.sourceGenerationStillGeneration1": true,
+      "afterGeneration2Start.currentHealthy": true,
+      "oldHeartbeatAdvancedAuthorityGeneration": true
+    }
+  },
+  "regressions": {
+    "existingRecorderHeartbeatIndependentQA": "NOT_RUN_STOP_ON_BLOCKER",
+    "implementationGenerationRegression": "NOT_RUN_STOP_ON_BLOCKER",
+    "unifiedLiveProofRegression": "NOT_RUN_STOP_ON_BLOCKER",
+    "unifiedPreflightRegression": "NOT_RUN_STOP_ON_BLOCKER",
+    "previousFreshnessQA": "NOT_RUN_STOP_ON_BLOCKER",
+    "previousFailClosedQA": "NOT_RUN_STOP_ON_BLOCKER"
+  },
+  "delivery": {
+    "currentHeadUnifiedPreflightUnblocked": false,
+    "alphaFormalIntegrationFreshQAUnblocked": false,
+    "ownerAction": "NO"
+  },
+  "stopCondition": "BLOCKED — UNIFIED LIVE PROOF RECORDER AUTHORITY GENERATION FRESH QA — P1 generation rollover is not revoked at child-start boundary; stale prior-generation heartbeat can still renew authority before the new reader binds generation"
+}
