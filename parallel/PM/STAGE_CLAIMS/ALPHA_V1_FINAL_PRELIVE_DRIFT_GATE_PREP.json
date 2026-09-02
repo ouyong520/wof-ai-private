@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_FINAL_PRELIVE_DRIFT_GATE_PREP",
+  "dedupKey": "alpha.v1.final-prelive-drift-gate-prep",
+  "effectiveDedupKey": "alpha.v1.final-prelive-drift-gate-prep",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.final-prelive-drift-gate-prep.json",
+  "claimToken": "aa4d12f3fd83f1955d4250ef54b1c91e",
+  "state": "ACTIVE",
+  "startCommit": "d079280ffa35b9683665b2b3223ff21f2559d02e"
+}
