@@ -233,3 +233,24 @@ Hard rules:
 5. V1.0.0 is the first hard foundation; later V1.x patches should reuse it to deliver faster visible improvements;
 6. multi-instance Training Farm work may run early as an isolated R&D accelerator when it directly improves automated enemy/action-state collection, future V1.x warning coverage, or later safe-route learning, but it must not displace legitimate V1 P0/P1 release work or be counted as product-version progress by itself;
 7. before opening a new stage, PM should be able to state which user-visible release it supports, or explicitly classify it as an isolated R&D accelerator.
+
+## 14. Testing cadence is module-boundary driven, not change-by-change
+
+Authoritative policy: `parallel/PM/TESTING_CADENCE_POLICY.md`.
+
+Owner directive: implementation should normally finish a coherent **feature / functional module** before independent QA is scheduled. Writing one code file, one integration sub-step, one manifest update, or one narrow fix is not by itself a reason to launch another Fresh QA.
+
+Hard rules:
+
+1. implementation stages should own code + required integration + implementation regressions + manifest/blob repin + durable RESULT for the same functional/module candidate;
+2. implementation-time syntax/unit/regression/hash checks are self-checks, not separate QA stages;
+3. default cadence is **one coherent module candidate -> one independent QA gate**;
+4. batch related known defects in the same module before retesting;
+5. after a QA failure, fix the concrete failures and run one focused successor retest; do not create a QA generation per individual bug;
+6. second-opinion, cross-check, broad audit, extra Fresh QA or reconciliation requires a specific reason such as invalid/stale QA, materially changed SUT, an escaped high-risk defect, an independent authority requirement, or explicit Owner request;
+7. free worker capacity is never a reason to manufacture QA;
+8. PM should prefer `finish implementation -> freeze candidate -> one QA -> bounded live acceptance` over `write a little -> test -> write a little -> test`;
+9. if QA passes and the SUT has not materially changed, move forward rather than adding confidence-only test loops;
+10. testing exists to protect product correctness and user value, not to maximize QA stage count.
+
+This section overrides any older PM habit that mechanically opened a fresh QA/cross-check/closeout stage after every small implementation step.
