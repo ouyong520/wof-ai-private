@@ -1,117 +1,201 @@
-# WOF PM Stage Dedup / Claim Guard
+# WOF PM Stage Dedup / Canonical Claim Guard
 
-Updated: 2026-09-01
+Updated: 2026-09-02
 
-Status: **MANDATORY FOR ALL NEW PM START PROMPTS**
+Status: **AUTHORITATIVE — MANDATORY FOR ALL NEW PM START PROMPTS**
 
-目的：Owner 可以放心重复复制某个 start prompt。重复启动不应重复做项目工作。
+Purpose: Owner may accidentally paste the same or an equivalent task into multiple chats. Ordinary implementation/fix/QA work must still have at most one executor. Explicit PM-scheduled second-opinion/cross-check QA remains possible, but only through the independent-validation mode below.
 
-## 1. 启动前必须先做 DONE 检查
+## 1. Preflight remains mandatory, but task work may not start before ownership
 
-任何新执行帖在修改代码、生成大文件、启动测试前，必须先重新读取 GitHub 默认分支最新状态，并检查：
+Before any task work, re-read latest `main`, relevant RESULT/STATUS files, recent equivalent commits, `parallel/PM/STAGE_CLAIMS/**`, and relevant canonical claims under `parallel/PM/DEDUP_CLAIMS/**`.
 
-- 目标 lane 的 `RESULT.md` / `STATUS.md` / `*_RESULT.md` / `*_STATUS.md`；
-- 与本 stage stop condition 等价的最新 commit；
-- 是否已有后继阶段明确消费了本阶段结果；
-- 是否已有同语义实现，只是文件名或旧 prompt 不同。
-
-如果 stop condition 已经满足，必须立即停止，不重复实现，也不为了“有活干”扩 scope。
-
-Owner-facing 最终只输出：
+If an equivalent stop condition is already satisfied, stop immediately:
 
 `ALREADY COMPLETE — SAFE TO CLOSE`
 
-并指出现有 result/commit。
+Preflight reads needed to decide DONE/duplicate status are allowed before claim acquisition. The following are **not** allowed before canonical ownership is acquired and verified:
 
-## 2. 未完成时必须做原子 Stage Claim
+- implementation/document/protocol changes for the task;
+- durable task result writes;
+- expensive or broad tests;
+- Browser/WOF launch or capture;
+- generation of large artifacts;
+- any other meaningful task execution that another duplicate worker could also perform.
 
-每个新 PM start prompt 必须声明稳定且唯一的：
+The claim attempt itself is the first allowed mutation.
 
-`stageId: <UPPER_SNAKE_CASE_STAGE_ID>`
+## 2. New-prompt metadata: stageId is not the duplicate key
 
-真正开始工作前，线程必须尝试在：
+Every PM start prompt created after this hardening must declare, near the top:
 
-`parallel/PM/STAGE_CLAIMS/<stageId>.json`
+```text
+stageId: `UPPER_SNAKE_CASE_STAGE_ID`
+dedupProtocol: `v2`
+dedupKey: `stable.logical-work-item`
+dedupMode: `exclusive`
+```
 
-创建 claim 文件。
+Rules:
 
-建议内容：
+- `stageId` identifies one chat/stage record. It is **not** sufficient for duplicate exclusion.
+- `dedupKey` identifies the real logical work item: objective + material write/read domain + stop condition. Equivalent prompts must receive the **same** `dedupKey` even when filenames or `stageId` values differ.
+- Do not mechanically derive `dedupKey` from `stageId` or prompt filename.
+- `dedupKey` must match `[a-z0-9][a-z0-9.-]{2,95}`.
+- Ordinary implementation/fix and ordinary QA default to `dedupMode: exclusive`.
+- Missing/malformed v2 metadata fails closed. A worker must not invent or repair the key after starting task work; PM must correct the prompt.
+
+A useful key is semantic and stable, for example:
+
+`alpha.enemy-target-head-labels.strict-target-type-fix`
+
+not:
+
+`alpha_enemy_target_head_labels_fix_v17_chat_3`
+
+## 3. Canonical atomic claim path
+
+For `dedupMode: exclusive`, the canonical resource is:
+
+`parallel/PM/DEDUP_CLAIMS/<dedupKey>.json`
+
+The worker generates a fresh unpredictable `claimToken` and attempts a **GitHub create-file operation on that exact non-existing path, without an update SHA**.
+
+Required minimum payload:
 
 ```json
 {
-  "schema": "wof-pm-stage-claim-v1",
-  "stageId": "...",
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "stable.logical-work-item",
+  "effectiveDedupKey": "stable.logical-work-item",
+  "dedupMode": "exclusive",
+  "stageId": "UPPER_SNAKE_CASE_STAGE_ID",
   "promptPath": "parallel/PM/..._START_PROMPT.md",
+  "owner": "worker-readable-id",
+  "claimToken": "fresh-random-token",
   "state": "ACTIVE",
-  "startCommit": "<main HEAD at claim time>",
-  "startedAtUtc": "<ISO-8601>"
+  "startCommit": "<latest main HEAD observed immediately before claim>"
 }
 ```
 
-GitHub create-file 是原子门：
+The GitHub Contents create-file operation is the repository atomic gate actually available to this workflow: a new path can be created; if another claimant has already created that same path (or the create otherwise fails), the caller does **not** have ownership. Do not describe this as a stronger distributed lock, lease, or transaction across multiple paths.
 
-- 创建成功：本线程获得该 stage；继续执行。
-- 文件已存在 / create 失败：必须重新读取该 claim 和 GitHub 最新结果；不得直接继续实现。
+Any create failure is fail-closed. Re-read latest `main`, the canonical claim path, stage claims and relevant results. If equivalent work is complete, return `ALREADY COMPLETE — SAFE TO CLOSE`; otherwise return `ALREADY CLAIMED — SAFE TO CLOSE`. Do not proceed on the theory that the failure was probably harmless.
 
-若已存在 claim 且 stage 尚未完成，Owner-facing 输出：
+## 4. Mandatory post-create ownership verification
 
-`ALREADY CLAIMED — SAFE TO CLOSE`
+A successful create response is not enough. Before task work, the worker must re-read the canonical claim from current `main` and verify all of:
 
-然后停止。
+- `schema == wof-pm-dedup-claim-v2`;
+- `dedupKey`, `effectiveDedupKey`, `dedupMode`, `stageId` and `promptPath` equal the prompt/attempt;
+- `claimToken` exactly equals the fresh token generated by this worker;
+- `state == ACTIVE`.
 
-这意味着 Owner 即使在多个窗口里误复制同一个 prompt，最多只有一个线程进入真正执行阶段。
+If any field differs, ownership verification fails closed. Re-read current results/claims and stop as `ALREADY COMPLETE` or `ALREADY CLAIMED` as appropriate.
 
-## 3. Stage 完成 / 阻断时更新 claim
+The `owner` display string is descriptive only. **`claimToken` is the unambiguous ownership proof.**
 
-达到 stop condition 后，将自己的 claim 更新为：
+## 5. Stage claim remains as durable stage history, after canonical ownership
 
-- `COMPLETE`：stage 已完成；附 result path / result commit；或
-- `BLOCKED`：精确 blocker 已记录；附 blocker result path / commit。
+After canonical ownership is verified, create:
 
-不得删除历史 claim。一个 stage 一次性使用；修复、retest、下一阶段必须使用新的 stageId 和新的 fresh chat。
+`parallel/PM/STAGE_CLAIMS/<stageId>.json`
 
-## 4. Stale claim
+using create-only semantics. New v2 stage claims should reference the canonical resource and token, for example:
 
-如果 claim 是 `ACTIVE`，但对应线程明显已经丢失/停止且没有结果：
+```json
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "...",
+  "dedupKey": "...",
+  "effectiveDedupKey": "...",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/....json",
+  "claimToken": "...",
+  "state": "ACTIVE",
+  "startCommit": "..."
+}
+```
 
-- 普通执行线程不得自行抢占；
-- 由 PM 审计后创建新的 recovery stageId，或由 PM 明确标记旧 claim 为 superseded。
+If this stage-claim create fails, re-read it and fail closed. Do not start task work merely because the canonical claim was acquired. PM recovery handles inconsistent/stale claim records.
 
-这样避免两个线程同时认为自己拥有同一任务。
+Historical v1 stage claims are preserved; do not rewrite old evidence just to add v2 fields.
 
-## 5. 等价任务去重优先于文件名
+## 6. Intentional independent second-opinion / cross-check QA
 
-不能只比较 prompt 文件名。以下情况也视为重复：
+Equivalent validation may run more than once **only** when the PM/start prompt explicitly schedules it. Such prompts must use:
 
-- 新 prompt 的 stop condition 已被另一条 lane 的结果完全满足；
-- 同一核心实现已经 merged，只是文档/入口名称不同；
-- 某后继 QA 已经证明前置 stage 完成；
-- 同一真人 proof 已被更高层 unified proof 完整覆盖。
+```text
+dedupMode: `independent-validation`
+independentValidationGroup: `stable-group`
+independentValidationKey: `pm-assigned-slot`
+```
 
-遇到等价覆盖，应退出并报告 existing result，不重新做一遍。
+Additional rules:
 
-## 6. 不允许“为了不空闲而重复做”
+- this mode is for independent QA/audit/review only, never implementation/fix work;
+- both independent fields must be declared by PM in the prompt before execution;
+- copied instances of the same independent-validation prompt must still contend on one lock;
+- PM assigns a different `independentValidationKey` only when a genuinely separate opinion/cross-check is intended.
 
-如果任务已完成/已 claim：立即退出。并发槽位由 PM 补新 stage，而不是当前线程自行找相似工作扩 scope。
+For this mode:
 
-## 7. Owner UX
+`effectiveDedupKey = <dedupKey>--iv--<independentValidationGroup>--<independentValidationKey>`
 
-正常情况下 Owner 不需要查看 claim 文件，也不需要记住哪个 prompt 已经复制。
+and the canonical atomic resource is:
 
-Owner 可以重复粘贴一个**带本 guard 的新 prompt**；结果应自动落在三种之一：
+`parallel/PM/DEDUP_CLAIMS/<effectiveDedupKey>.json`
+
+Thus two explicitly scheduled validation slots can both proceed, while accidental duplicates of either slot still fail closed. A worker may not self-authorize a new validation key merely because the canonical claim is occupied.
+
+`independentValidationGroup` and `independentValidationKey` must each match `[a-z0-9][a-z0-9.-]{2,47}`.
+
+## 7. Completion, blocking and ownership-safe updates
+
+Only the worker whose `claimToken` still matches the canonical claim may close/update it.
+
+Before closing, re-read the canonical claim and use its current blob SHA for the GitHub update. If token verification fails or the SHA update races, fail closed and do not overwrite another state.
+
+On completion, set canonical and stage claims to `COMPLETE` and attach the durable result path/commit. On a real blocker, set them to `BLOCKED` and attach the precise blocker/result.
+
+If a claimant encounters an already-existing canonical claim:
+
+- existing/equivalent `COMPLETE` + supporting result => `ALREADY COMPLETE — SAFE TO CLOSE`;
+- `ACTIVE`, stale-looking `ACTIVE`, `BLOCKED`, malformed/ambiguous ownership, or any non-complete occupied canonical path => ordinary worker does not steal/reuse it; stop `ALREADY CLAIMED — SAFE TO CLOSE` unless the start prompt defines a PM-authorized recovery stage.
+
+## 8. Stale claim recovery / supersession is PM-only
+
+Ordinary workers may never overwrite, delete, rename, or reuse an occupied canonical claim to obtain ownership.
+
+If PM determines an `ACTIVE`/`BLOCKED` claim is stale or must be superseded, PM must leave the historical claim intact and explicitly create/authorize a fresh recovery prompt. The recovery prompt must name the superseded canonical key/claim and use a new PM-assigned recovery `dedupKey`. This is an explicit new logical generation, not an ordinary worker choosing a new key to bypass contention.
+
+Completed canonical work is never reopened by recovery merely to repeat it.
+
+## 9. Exact race behavior and limits
+
+The protocol guarantees only what the repository workflow can enforce:
+
+1. Equivalent v2 prompts resolve to one canonical path.
+2. Claimants use create-only GitHub contents semantics for that path.
+3. At most the claimant whose file content is actually present with its exact `claimToken` after re-read may proceed.
+4. Losers stop before task work.
+
+This is not a lease. There is no automatic expiry. There is no multi-file transaction covering canonical + stage claim + result. Network/API errors are not ownership and therefore fail closed.
+
+## 10. Migration
+
+- Existing pre-v2 prompts and historical `STAGE_CLAIMS` remain readable and are not retroactively rewritten.
+- Threads already running under v1 continue under their original prompt/claim contract plus current DONE checks.
+- **Every PM start prompt created after this hardening must use `dedupProtocol: v2`, `dedupKey`, and `dedupMode`.**
+- Newly scheduled independent validation must also declare its group/key explicitly.
+- PM prompt authors should run `python parallel/PM/pm_stage_dedup_v2.py validate-prompt <prompt>` before publishing a new v2 prompt.
+
+## 11. Owner UX
+
+A correctly guarded new task converges to one of:
 
 - `ALREADY COMPLETE — SAFE TO CLOSE`
 - `ALREADY CLAIMED — SAFE TO CLOSE`
 - `CLAIM ACQUIRED — WORK STARTED`
 
-之后继续执行原 prompt。
-
-## 8. 兼容当前正在运行的旧 wave
-
-在本协议提交之前已经启动的线程可能没有 claim，无法被 retroactive 原子锁完全保护。
-
-因此：
-
-- 当前 wave 仍以 GitHub result/commit 的 DONE 检查为主；
-- 从本协议之后 PM 新建的所有 start prompt 必须引用本文件并声明 `stageId`；
-- 当前 wave 结束后，新的滚动并发槽全部进入 claim 保护。
+Owner does not need to remember which window received a prompt. Different `stageId` values do not bypass canonical dedup when PM assigned the same logical `dedupKey`.
