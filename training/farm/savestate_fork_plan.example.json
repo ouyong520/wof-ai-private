@@ -1,0 +1,77 @@
+{
+  "schema": "wof-training-farm-savestate-fork-plan-v1",
+  "forkSetId": "fixture-r0.4-demo",
+  "root": {
+    "rootId": "root-reset-demo",
+    "expectedSavestateSha256": null
+  },
+  "repetitions": 3,
+  "branches": [
+    {
+      "branchId": "button0-then-neutral",
+      "horizonFrames": 8,
+      "actions": [
+        {
+          "frames": 4,
+          "inputs": [
+            {"player": 0, "pressed": [0]},
+            {"player": 1, "pressed": []},
+            {"player": 2, "pressed": []},
+            {"player": 3, "pressed": []}
+          ]
+        },
+        {
+          "frames": 4,
+          "inputs": [
+            {"player": 0, "pressed": []},
+            {"player": 1, "pressed": []},
+            {"player": 2, "pressed": []},
+            {"player": 3, "pressed": []}
+          ]
+        }
+      ],
+      "metadata": {"label": "fixture button-0 branch"}
+    },
+    {
+      "branchId": "button1-then-neutral",
+      "horizonFrames": 8,
+      "actions": [
+        {
+          "frames": 4,
+          "inputs": [
+            {"player": 0, "pressed": [1]},
+            {"player": 1, "pressed": []},
+            {"player": 2, "pressed": []},
+            {"player": 3, "pressed": []}
+          ]
+        },
+        {
+          "frames": 4,
+          "inputs": [
+            {"player": 0, "pressed": []},
+            {"player": 1, "pressed": []},
+            {"player": 2, "pressed": []},
+            {"player": 3, "pressed": []}
+          ]
+        }
+      ],
+      "metadata": {"label": "fixture button-1 branch"}
+    },
+    {
+      "branchId": "neutral",
+      "horizonFrames": 8,
+      "actions": [
+        {
+          "frames": 8,
+          "inputs": [
+            {"player": 0, "pressed": []},
+            {"player": 1, "pressed": []},
+            {"player": 2, "pressed": []},
+            {"player": 3, "pressed": []}
+          ]
+        }
+      ],
+      "metadata": {"label": "fixture neutral branch"}
+    }
+  ]
+}
