@@ -1,7 +1,7 @@
 """Backend-neutral WOF Training Farm adapter contract.
 
-R0.1 intentionally stops at lifecycle, one-frame input, RAM observation, and
-savestate boundaries.  It contains no policy/training/search logic.
+R0.2 keeps the R0.1 single-instance boundary and adds an explicit full-frame
+input primitive so deterministic replay never depends on host input persistence.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from typing import Protocol, runtime_checkable
 
 
 class TrainingFarmError(RuntimeError):
-    """Base error for the isolated Training Farm bootstrap."""
+    """Base error for the isolated Training Farm."""
 
 
 class ConfigurationError(TrainingFarmError):
@@ -28,11 +28,10 @@ class RuntimeCapabilityError(TrainingFarmError):
 
 @dataclass(frozen=True)
 class CoreAction:
-    """One frame of input for one emulator player.
+    """Input for one emulator player.
 
-    ``pressed`` contains zero-based Stable-Retro/FBNeo button indices.
-    Input is applied through RetroEmulator.set_button_mask; no OS/global
-    keyboard injection exists in this adapter.
+    ``pressed`` contains zero-based Stable-Retro/FBNeo button indices. Input is
+    applied only through emulator/core APIs.
     """
 
     player: int = 0
@@ -43,6 +42,8 @@ class CoreAction:
             raise TypeError("player must be an integer")
         if not 0 <= self.player < 4:
             raise ValueError("player must be in range 0..3")
+        if not isinstance(self.pressed, tuple):
+            raise TypeError("pressed must be a tuple of integer button indices")
         normalized: list[int] = []
         for index in self.pressed:
             if isinstance(index, bool) or not isinstance(index, int):
@@ -54,13 +55,36 @@ class CoreAction:
             raise ValueError("pressed button indices must be unique")
 
 
+@dataclass(frozen=True)
+class CoreFrameInput:
+    """Explicit input state for every player for exactly one emulated frame."""
+
+    inputs: tuple[CoreAction, CoreAction, CoreAction, CoreAction]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.inputs, tuple) or len(self.inputs) != 4:
+            raise TypeError("inputs must be a tuple containing exactly four CoreAction values")
+        for action in self.inputs:
+            if not isinstance(action, CoreAction):
+                raise TypeError("inputs must contain only CoreAction values")
+        players = tuple(action.player for action in self.inputs)
+        if players != (0, 1, 2, 3):
+            raise ValueError("full-frame inputs must list players exactly in order 0,1,2,3")
+
+    @classmethod
+    def neutral(cls) -> "CoreFrameInput":
+        return cls(tuple(CoreAction(player=p, pressed=()) for p in range(4)))  # type: ignore[arg-type]
+
+
 @runtime_checkable
 class FarmBackend(Protocol):
-    """Minimal backend surface required by R0.1."""
+    """Single-instance backend surface required by R0.2."""
 
     def reset(self) -> None: ...
 
     def step(self, action: CoreAction) -> None: ...
+
+    def step_frame(self, frame_input: CoreFrameInput) -> None: ...
 
     def read_ram(self) -> bytes: ...
 
@@ -68,11 +92,13 @@ class FarmBackend(Protocol):
 
     def load_state(self, state: bytes) -> None: ...
 
+    def runtime_identity_components(self) -> dict[str, object]: ...
+
     def close(self) -> None: ...
 
 
 class TrainingFarmAdapter:
-    """Thin fail-closed wrapper around a single emulator backend instance."""
+    """Thin fail-closed wrapper around one emulator backend instance."""
 
     def __init__(self, backend: FarmBackend):
         if not isinstance(backend, FarmBackend):
@@ -90,10 +116,22 @@ class TrainingFarmAdapter:
         return self.read_ram()
 
     def step(self, action: CoreAction) -> bytes:
+        """R0.1-compatible one-player step.
+
+        R0.2 determinism code uses ``step_frame`` instead so all player masks are
+        explicit before the frame advances.
+        """
         self._require_open()
         if not isinstance(action, CoreAction):
             raise TypeError("action must be CoreAction")
         self._backend.step(action)
+        return self.read_ram()
+
+    def step_frame(self, frame_input: CoreFrameInput) -> bytes:
+        self._require_open()
+        if not isinstance(frame_input, CoreFrameInput):
+            raise TypeError("frame_input must be CoreFrameInput")
+        self._backend.step_frame(frame_input)
         return self.read_ram()
 
     def read_ram(self) -> bytes:
@@ -115,6 +153,15 @@ class TrainingFarmAdapter:
         if not isinstance(state, bytes) or not state:
             raise TypeError("state must be non-empty bytes")
         self._backend.load_state(state)
+
+    def runtime_identity_components(self) -> dict[str, object]:
+        self._require_open()
+        value = self._backend.runtime_identity_components()
+        if not isinstance(value, dict):
+            raise RuntimeCapabilityError(
+                "backend runtime_identity_components() must return a dict"
+            )
+        return dict(value)
 
     def close(self) -> None:
         if not self._closed:
