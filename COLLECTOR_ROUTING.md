@@ -1,8 +1,12 @@
 # WOF research data-source routing
 
-## Two authoritative roles
+Project-wide authority boundary:
 
-The original WOF project may use two complementary capture sources. They must not be silently merged.
+`RUNTIME_DATA_SOURCE_BOUNDARIES.md`
+
+## Three authoritative roles
+
+The WOF project uses three complementary runtime/data sources. They must not be silently merged, and numeric offsets/runtime authority do not automatically transfer between them.
 
 ### Browser/Web capture
 
@@ -25,7 +29,8 @@ Use `ouyong520/wof-winkawaks-bridge` for fast, repeatable, high-frequency local 
 
 ```text
 raw RAM snapshots
-~60 Hz bounded raw streams
+~60 Hz or higher bounded raw streams
+long-session segmented raw capture
 field-change discovery
 transition/diff analysis
 large local sample acquisition
@@ -33,19 +38,44 @@ repeated scene experiments
 quick checks of whether a candidate field really changes
 ```
 
-The collector is a research accelerator, not an AI/rule implementation.
+The Collector answers primarily: **what is actually happening in this real local WinKawaks runtime?**
+
+The Collector is a research accelerator and observation system, not an AI/rule implementation or automated gameplay engine. Its default safety boundary remains read-only, no game-memory writes and no input injection.
+
+### Training Farm / Stable-Retro + FBNeo
+
+Use `training/farm/**` for isolated automated experiments where the research question requires trying actions rather than only observing them:
+
+```text
+reset / step / read_ram
+save_state / load_state
+savestate fork search
+one state -> many independent action branches
+automated action-result experiments
+trajectory generation
+branch scoring
+search-teacher data
+future 1 -> 2 -> 4 -> 8 -> 10 worker scaling
+```
+
+Training Farm answers primarily: **from this state, what happens if many different actions are tried automatically?**
+
+Training Farm automation belongs only to the isolated emulator/training environment. It does not authorize automated input in Browser V1 or the live WinKawaks Collector.
 
 ## Default routing rule
 
 ```text
-Need to discover / inspect / diff / collect lots of raw RAM quickly?
+Need to discover / inspect / diff / collect lots of real WinKawaks raw RAM quickly?
 -> WinKawaks Collector first.
+
+Need to automatically try actions / fork savestates / generate action-result trajectories?
+-> Training Farm.
 
 Need to prove a finding in the real online/browser environment or promote it into a production rule?
 -> Browser/Web validation.
 ```
 
-Standard flow:
+Typical flows:
 
 ```text
 Browser observation/question
@@ -54,6 +84,18 @@ Browser observation/question
 -> Browser/Web prospective validation
 -> only then promote to production conclusion/rule
 ```
+
+and, for future movement/policy research:
+
+```text
+real gameplay/research question
+-> Collector for controlled observation / semantic calibration
+-> Training Farm for automated counterfactual action exploration
+-> candidate policy / route / model
+-> bounded Browser/product validation when the conclusion is intended for production
+```
+
+No step implies automatic cross-source offset equivalence.
 
 ## Reuse before recapture
 
@@ -92,13 +134,14 @@ Collector artifacts are task-specific. A new unique `taskId` produces a new task
 Every reusable capture must be labeled with enough acquisition metadata to make later reuse safe. At minimum record:
 
 ```text
+source namespace
 captureId / taskId
 raw path
 capture time
 ROM/game/session identity when known
 player occupancy/configuration
 scene before capture / before READY
-operator action during the burst
+operator action during the burst/session
 duration + Hz
 object layout / bytes per frame
 intentional changed variable
@@ -110,7 +153,9 @@ VALID / SUPERSEDED / INVALID
 
 Do not infer a missing scene label from raw bytes alone. A capture with uncertain acquisition conditions may still be useful for exploratory analysis, but it is not a canonical reusable baseline.
 
-## Frozen Collector v1 consumer contract
+## Collector consumer contract
+
+Current stable v1 consumer contract remains:
 
 ```text
 repo: ouyong520/wof-winkawaks-bridge
@@ -128,6 +173,8 @@ Supported v1 actions:
 capture_raw_snapshot
 capture_raw_burst
 ```
+
+Collector V3 long-session segmented capture is a forward development lane. Until its contract is completed and adopted, consumers must not pretend the v1 frozen contract already includes V3 actions.
 
 Multiple AI/research threads may submit tasks concurrently. The local Collector owns one WinKawaks runtime and executes tasks strictly serially; producers must not assume concurrent emulator ownership.
 
@@ -159,16 +206,82 @@ For reusable BASECAP datasets, prefer `uploadRawStream=true` so future AI chats 
 
 ## Source namespace rule
 
-Never assume Browser/WASM offsets equal WinKawaks normalized offsets.
+Hard rule:
 
-Current examples:
+```text
+browser-wasm
+winkawaks
+stable-retro-fbneo
+```
+
+are different source namespaces.
+
+Never assume Browser/WASM offsets equal WinKawaks normalized offsets or Stable-Retro/FBNeo-visible CPS offsets.
+
+Current example:
 
 ```text
 Browser enemy target selector: +0x7E
 WinKawaks normalized canonical selected-player reference: +0x6D
 ```
 
-A local WinKawaks discovery may motivate a Browser test, but does not by itself prove the same numeric field or semantic contract exists in Browser/WASM.
+Therefore:
+
+```text
+Browser offset
+!= automatically WinKawaks offset
+!= automatically Stable-Retro/FBNeo offset
+```
+
+A local WinKawaks discovery may motivate a Browser test or Training Farm calibration, but does not by itself prove the same numeric field or semantic contract exists in those runtimes.
+
+Cross-source semantic mappings require explicit evidence/calibration and must retain provenance.
+
+## Collector vs Training Farm overlap
+
+Some generic infrastructure may be reusable across both lanes:
+
+- SHA/integrity helpers;
+- dataset catalog concepts;
+- structured metadata vocabulary;
+- generic transition/diff/statistical analysis;
+- experiment/trial grouping;
+- source-agnostic trajectory envelopes.
+
+Do not build two incompatible generic stacks when one explicit source-aware abstraction can be reused.
+
+But source adapters, runtime/session authority, offsets, lifecycle identity and action permissions remain separate.
+
+Preferred pattern:
+
+```text
+common analyzer
+  <- winkawaks adapter
+  <- stable-retro-fbneo adapter
+```
+
+Forbidden pattern:
+
+```text
+one generic WOF RAM reader that assumes all offsets are identical
+```
+
+## Same-machine runtime resource rule
+
+Until measurements prove isolation is safe, do not run a heavy 8/10-worker Training Farm workload at the same time as an important long-duration WinKawaks Collector capture.
+
+Reason: Training Farm can materially consume CPU, RAM, disk I/O, scheduler and thermal budget, while canonical Collector sessions depend on stable sampling cadence and low read error/jitter.
+
+Default operating sequence:
+
+```text
+critical/canonical Collector capture
+-> pause or cap heavy Training Farm fleet
+-> capture completes
+-> resume Training Farm
+```
+
+Repository-only development/self-checks may proceed in parallel when they do not materially load the local runtime.
 
 ## Runtime operation
 
@@ -183,3 +296,7 @@ STOP_WOF_COLLECTOR.bat
 The old development-time Codex/Luna watcher is not part of the delivered runtime.
 
 AI/research logic decides what evidence to request and how to interpret it; the local collector performs only mechanical read-only capture and handoff.
+
+For complete project-wide runtime/data boundaries, always defer to:
+
+`RUNTIME_DATA_SOURCE_BOUNDARIES.md`
