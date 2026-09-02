@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wof-training-farm-observation-discovery-result-v1",
+  "title": "WOF Training Farm R0.3 Observation Discovery Result",
+  "type": "object",
+  "required": [
+    "schema",
+    "runId",
+    "status",
+    "reasonCode",
+    "message",
+    "sourceNamespace",
+    "experimentId",
+    "authorityClassification",
+    "semanticMappingUnlocked",
+    "rankedCandidateChanges",
+    "proofGate",
+    "firstFailure"
+  ],
+  "properties": {
+    "schema": {"const": "wof-training-farm-observation-discovery-result-v1"},
+    "runId": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "status": {"enum": ["PASS", "SKIP", "ERROR"]},
+    "reasonCode": {"type": "string", "minLength": 1},
+    "message": {"type": "string"},
+    "sourceNamespace": {"const": "stable-retro-fbneo"},
+    "experimentId": {"type": ["string", "null"]},
+    "planSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "authorityClassification": {
+      "enum": [
+        "IMPLEMENTATION_FIXTURE",
+        "REAL_RUNTIME_OBSERVATION_UNVERIFIED",
+        "REAL_RUNTIME_OBSERVATION_ELIGIBLE",
+        null
+      ]
+    },
+    "semanticMappingUnlocked": {"type": "boolean"},
+    "runtimeIdentitySha256": {
+      "anyOf": [
+        {"type": "null"},
+        {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      ]
+    },
+    "horizonFrames": {"type": "integer", "minimum": 1, "maximum": 100000},
+    "repetitions": {"type": "integer", "minimum": 2, "maximum": 100},
+    "captureFrames": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "integer", "minimum": 0, "maximum": 100000}
+    },
+    "candidateCountTotal": {"type": "integer", "minimum": 0},
+    "candidateCountReturned": {"type": "integer", "minimum": 0, "maximum": 128},
+    "analysisTruncated": {"type": "boolean"},
+    "rankedCandidateChanges": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "required": [
+          "interventionId",
+          "blockIndex",
+          "blockBaseAddress",
+          "blockLength",
+          "offsetWithinBlock",
+          "sourceNativeAddress",
+          "addressProvenance",
+          "widthBytes",
+          "baselineValues",
+          "interventionValues",
+          "changedComparisonCount",
+          "stableComparisonCount",
+          "changedInBaselineControl",
+          "downgradedBecauseBaselineChanged",
+          "consistencyScore",
+          "firstObservedChangedFrame",
+          "lastObservedChangedFrame"
+        ],
+        "properties": {
+          "interventionId": {"type": "string"},
+          "blockIndex": {"type": "integer", "minimum": 0},
+          "blockBaseAddress": {"type": "integer", "minimum": 0},
+          "blockLength": {"type": "integer", "minimum": 1},
+          "offsetWithinBlock": {"type": "integer", "minimum": 0},
+          "sourceNativeAddress": {"type": "integer", "minimum": 0},
+          "addressProvenance": {"type": "string"},
+          "widthBytes": {"enum": [1, 2]},
+          "changedComparisonCount": {"type": "integer", "minimum": 1},
+          "stableComparisonCount": {"type": "integer", "minimum": 0},
+          "changedInBaselineControl": {"type": "boolean"},
+          "downgradedBecauseBaselineChanged": {"type": "boolean"},
+          "consistencyScore": {"type": "number", "minimum": 0, "maximum": 1},
+          "firstObservedChangedFrame": {"type": ["integer", "null"]},
+          "lastObservedChangedFrame": {"type": ["integer", "null"]}
+        },
+        "additionalProperties": true
+      }
+    },
+    "proofGate": {"type": ["object", "null"]},
+    "firstFailure": {"type": ["object", "null"]}
+  },
+  "additionalProperties": true
+}
