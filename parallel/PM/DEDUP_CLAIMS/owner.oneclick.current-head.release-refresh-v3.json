@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "owner.oneclick.current-head.release-refresh-v3",
+  "effectiveDedupKey": "owner.oneclick.current-head.release-refresh-v3",
+  "dedupMode": "exclusive",
+  "stageId": "OWNER_ONECLICK_CURRENT_HEAD_RELEASE_REFRESH_V3_CANONICAL_V2",
+  "promptPath": "parallel/PM/OWNER_ONECLICK_CURRENT_HEAD_RELEASE_REFRESH_V3_CANONICAL_V2_START_PROMPT.md",
+  "owner": "chatgpt-owner-oneclick-refresh-v3",
+  "claimToken": "6eeee728744422ab2ca92e0e40f9f13b783ab5eb94e6d7c0",
+  "state": "ACTIVE",
+  "startCommit": "d6e3a347567f4db5ae7d0d5a4e03561bd91c46c8"
+}
