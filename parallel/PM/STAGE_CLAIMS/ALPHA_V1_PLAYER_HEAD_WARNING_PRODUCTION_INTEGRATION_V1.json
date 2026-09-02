@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PLAYER_HEAD_WARNING_PRODUCTION_INTEGRATION_V1",
+  "dedupKey": "alpha.v1.player-head-danger-warning.production-integration",
+  "effectiveDedupKey": "alpha.v1.player-head-danger-warning.production-integration",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.player-head-danger-warning.production-integration.json",
+  "claimToken": "2aee7edc-d3c5-493f-a199-0e61497f22fa-1ac52937ab676e7d9ee822746236e736",
+  "state": "ACTIVE",
+  "startCommit": "72bcd5a7dd2245175b361d48ab89e10baaf1d276"
+}
