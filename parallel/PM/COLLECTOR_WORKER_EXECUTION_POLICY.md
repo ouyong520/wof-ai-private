@@ -3,7 +3,13 @@
 Updated: 2026-09-02
 Status: **AUTHORITATIVE — applies to Collector development/recovery tasks unless a later Owner directive explicitly overrides it**
 
-Owner standing preference: the fixed three-part worker-prompt format in this document is the default for all future Collector PM instructions. **Owner does not need to repeat or remind PM of this formatting preference in later turns.** Only a later explicit Owner directive may override it.
+Owner standing preferences in this document are persistent defaults. **Owner does not need to repeat or remind PM of them in later turns.** Only a later explicit Owner directive may override them.
+
+They include:
+
+- the fixed three-part worker-prompt format;
+- current-state verification before continuation/recovery;
+- duplicate-forward verification: if the same/equivalent worker post is forwarded more than once, verify dedup/current authority first and do not execute duplicate work.
 
 ## Purpose
 
@@ -158,7 +164,36 @@ When Owner says `继续` or `1` after a Collector worker stops/completes, PM sho
 
 PM should not make Owner redesign the roadmap every time a worker stops.
 
-## 7. Priority order
+## 7. Duplicate forwarded-post guard
+
+A worker must treat a forwarded task/post as potentially duplicated until current repository and canonical dedup authority have been checked.
+
+Before substantive implementation, the worker must verify at minimum:
+
+- current `main` relevant to the task;
+- the exact START_PROMPT / recovery generation named in the post;
+- canonical dedup v2 claim and stage claim for that exact task/generation;
+- any durable RESULT already published for the same/equivalent objective;
+- whether a newer successor/recovery authority already supersedes the forwarded post.
+
+If the forwarded post is the same or materially equivalent to work that is already legitimately claimed by another current generation, already COMPLETE, or superseded by a newer completed/active successor, **do not execute the duplicate implementation**.
+
+Required duplicate behavior:
+
+- do not create a second equivalent claim;
+- do not edit implementation merely to create visible activity;
+- do not rerun completed QA/self-check chains without a concrete current reason;
+- do not invent a new Recovery generation merely to bypass dedup;
+- do not overwrite or rewrite historical claims/results to make the duplicate look current;
+- stop with a concise `DUPLICATE / ALREADY COMPLETE / SUPERSEDED — NO EXECUTION` disposition, citing the current claim/result/successor authority.
+
+An `ACTIVE` historical residue from a stopped worker is not permission to bypass dedup with the same prompt. Continuation after a stopped worker must use the PM-authorized recovery/continue authority selected from current repository facts.
+
+If the post is not actually duplicate and current authority permits execution, proceed normally under canonical dedup v2.
+
+Owner does not need to remind PM or workers of this duplicate-forward guard each time a post is copied, forwarded, reopened, or accidentally sent twice.
+
+## 8. Priority order
 
 Unless a concrete current defect changes priority:
 
@@ -171,7 +206,7 @@ Unless a concrete current defect changes priority:
 
 Finish the currently active coherent module before moving down the list.
 
-## 8. Side-lane isolation
+## 9. Side-lane isolation
 
 Always obey `COLLECTOR_ROUTING.md` and `RUNTIME_DATA_SOURCE_BOUNDARIES.md`.
 
@@ -194,7 +229,7 @@ Collector remains read-only:
 
 Browser, WinKawaks and Training Farm provenance remain distinct.
 
-## 9. Stop rule
+## 10. Stop rule
 
 At the tail of every Collector implementation/recovery START_PROMPT, include an explicit instruction equivalent to:
 
