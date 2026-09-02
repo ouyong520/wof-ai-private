@@ -7,6 +7,7 @@ import threading
 import time
 from pathlib import Path
 
+from wof_launcher.alpha_runtime import AlphaRuntimeManager
 from wof_launcher.fleet import select_fleet_instance
 from wof_launcher.monitor import LauncherMonitor
 from wof_launcher.proof import write_proof_json
@@ -22,6 +23,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--no-tray", action="store_true", help="命令行诊断模式，不显示托盘图标")
     p.add_argument("--once", action="store_true", help="与 --no-tray 一起使用：输出一次状态后退出")
     p.add_argument("--proof-json", help="持续写入只读 Windows 真人验证 JSON")
+    p.add_argument("--activate-alpha", action="store_true", help="accepted exact authority 后启动 package-selected Alpha V1 release runtime")
+    p.add_argument("--package-root", help="package-selected runtime 根目录；默认从 launcher 所在目录向上解析")
     fleet = p.add_mutually_exclusive_group(); fleet.add_argument("--fleet-auto", action="store_true", help="自动连接第一个在线 Browser Fleet 实例"); fleet.add_argument("--fleet-instance", type=int, help="连接指定编号的 Browser Fleet 实例")
     p.add_argument("--fleet-manifest", help="可选：Browser Fleet instances.json 路径")
     return p.parse_args()
@@ -39,6 +42,9 @@ def main() -> int:
 
     status = StatusStore(); stop = threading.Event(); tray_holder: dict[str, TrayApp] = {}
     proof_path = Path(args.proof_json).expanduser().resolve() if args.proof_json else None
+    package_root = Path(args.package_root).expanduser().resolve() if args.package_root else Path(__file__).resolve().parents[2]
+    alpha_runtime = AlphaRuntimeManager(package_root) if args.activate_alpha else None
+    status.update(alpha_requested=alpha_runtime is not None)
 
     def publish_status() -> None:
         if proof_path:
@@ -50,7 +56,7 @@ def main() -> int:
     def request_stop() -> None:
         stop.set(); monitor.stop()
 
-    monitor = LauncherMonitor(status, host=args.host, port=args.port, browser_preference=args.browser, browser_path=args.browser_path, profile_dir=Path(args.profile_dir).expanduser() if args.profile_dir else None, game_url=args.game_url, auto_launch_browser=not args.attach_only, on_change=publish_status)
+    monitor = LauncherMonitor(status, host=args.host, port=args.port, browser_preference=args.browser, browser_path=args.browser_path, profile_dir=Path(args.profile_dir).expanduser() if args.profile_dir else None, game_url=args.game_url, auto_launch_browser=not args.attach_only, on_change=publish_status, alpha_runtime=alpha_runtime)
     publish_status(); monitor.start()
 
     if args.no_tray:
