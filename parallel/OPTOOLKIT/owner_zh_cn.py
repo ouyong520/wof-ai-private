@@ -62,7 +62,6 @@ def translate_text(text: str) -> str:
         return EXACT[text]
     if not text:
         return text
-
     prefixes = [
         ("Git fetch failed. Check network/login.\n", "Git 更新远端信息失败。请检查网络或登录状态。\n技术详情："),
         ("Fast-forward update was not possible. No local file was overwritten.\n", "无法安全快进更新；没有覆盖任何本地文件。\n技术详情："),
@@ -81,13 +80,6 @@ def translate_text(text: str) -> str:
     for old, new in prefixes:
         if text.startswith(old):
             return new + text[len(old):]
-
-    if text.startswith("Live Proof started using existing PYLAUNCH. Enter WOF normally; no DevTools/JS paste.\nProof JSON:"):
-        return text.replace(
-            "Live Proof started using existing PYLAUNCH. Enter WOF normally; no DevTools/JS paste.\nProof JSON:",
-            "真人 Windows 验证已使用现有 PYLAUNCH 启动。请正常进入 WOF，不需要 DevTools，也不需要粘贴 JS。\n验证 JSON：",
-            1,
-        )
     if text.startswith("This action timed out."):
         return "本次操作超时。没有进行游戏内存写入，也没有发送游戏输入。"
     if text.startswith("Toolkit could not complete this action:"):
@@ -156,30 +148,28 @@ class ChineseToolkit(toolkit.Toolkit):
 
     def proof(self):
         print("\n[运行真人 Windows 验证]")
-        entry = self.root / "parallel/PYLAUNCH/launcher.py"
-        if not entry.is_file():
-            print("没有找到 PYLAUNCH。请先选择 1“更新项目”。")
+        supervisor = self.root / "parallel/OPTOOLKIT/live_session.py"
+        launcher = self.root / "parallel/PYLAUNCH/launcher.py"
+        if not supervisor.is_file() or not launcher.is_file():
+            print("没有找到完整的真人验证组件。请先选择 1“更新项目”。")
             return
-        out_dir = self.results / f"live_proof_{toolkit.stamp()}"
-        out_dir.mkdir(parents=True, exist_ok=True)
-        proof_json = out_dir / "WINDOWS_PROOF_STATUS.json"
+        session_dir = self.results / f"live_session_{toolkit.stamp()}"
+        session_dir.mkdir(parents=True, exist_ok=True)
+        final_zip = self.results / "packages" / f"WOF_LIVE_ACCEPTANCE_{session_dir.name}.zip"
         pyw = Path(toolkit.sys.executable).with_name("pythonw.exe")
         exe = pyw if toolkit.os.name == "nt" and pyw.exists() else Path(toolkit.sys.executable)
-        cmd = [
-            str(exe), str(entry),
-            "--proof-json", str(proof_json),
-            "--activate-alpha",
-            "--package-root", str(self.root),
-        ]
-        toolkit.subprocess.Popen(cmd, cwd=str(entry.parent), env=toolkit.os.environ.copy())
-        print("已启动 package-selected Alpha V1 真人验证。正常进入 WOF 即可，不需要 DevTools，也不需要粘贴 JS。")
-        print("只有当前 World 921031 身份和 runtime generation 都有效时才会启动 Alpha；失效时会自动撤销并 fail-closed。")
-        print("验证 JSON：" + str(proof_json))
+        # live_session launches PYLAUNCH with --activate-alpha and --package-root,
+        # then automatically retains partial evidence and creates the final ZIP.
+        cmd = [str(exe), str(supervisor), "--root", str(self.root), "--session-dir", str(session_dir)]
+        toolkit.subprocess.Popen(cmd, cwd=str(supervisor.parent), env=toolkit.os.environ.copy())
+        print("真人验证已启动。正常进入 WOF 即可，不需要 DevTools，也不需要粘贴 JS。")
+        print("首次需要头顶定位权威时，画面会自动出现一次校准：正常移动、点一次 P1 头顶、走纵深、跳跃、resize/fullscreen，再按画面提示选择唯一稳定模型。")
+        print("离开房间再进入时会自动撤销旧 runtime generation，并重新发现新 Worker/WASM/World 921031 后自动激活 Alpha。")
+        print("本次状态、校准证据和异常会自动收集；关闭 WOF 托盘验证后会自动整理并打包。")
+        print("最终 ZIP：" + str(final_zip))
 
     def package(self):
         print("\n[自动整理并打包结果]")
-        # Packaging is deliberately local/offline. It must never depend on a tool
-        # that might be absent from the immutable package or require menu 1/network.
         try:
             return super().package()
         except Exception as exc:
@@ -198,7 +188,6 @@ def main() -> int:
         print("无法确认 WOF 项目目录。")
         print(f"技术详情：{root}")
         return 2
-
     builtins.print = translated_print
     builtins.input = translated_input
     try:
