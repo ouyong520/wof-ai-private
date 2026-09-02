@@ -5,8 +5,22 @@
   "effectiveDedupKey": "alpha.enemy-target-head-labels.post-strict-type-fix-fresh-qa",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.enemy-target-head-labels.post-strict-type-fix-fresh-qa.json",
   "claimToken": "wri5i6p5RGAmW5tx9byNwu3ULn7cuvGQOkI_zIRdlDw",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
   "startCommit": "7e27899a5c44d84e96ae27d89581fb89eee474ca",
+  "claimCommit": "03ca03ca165eb76386779c9a1b8e8ca838adc0c2",
   "promptPath": "parallel/PM/ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V2_START_PROMPT.md",
-  "owner": "chatgpt-alpha-enemy-target-head-labels-qa-v2"
+  "owner": "chatgpt-alpha-enemy-target-head-labels-qa-v2",
+  "result": "BLOCKED — ALPHA V1 ENEMY TARGET HEAD LABELS FRESH QA V2 — drawing-buffer runtime epoch is not cross-checked against the current projection epoch",
+  "blocker": "An internally-consistent stale drawing-buffer epoch (runtime-old/runtime-old) is accepted alongside a current marker/projection epoch (runtime-a), allowing one confident label instead of fail-closed suppression.",
+  "resultPath": "parallel/ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V2/RESULT.md",
+  "resultCommit": "0a5d4e471c53c8e1a05ae5bb17be43d3fd131bd2",
+  "evidence": {
+    "fixtureCommit": "6cc7edd70fa36a3acb233f9e3cf6f8f3cf5a94f7",
+    "independentResultCommit": "844de5783a58e0be56655e8d40dae40884956559",
+    "testCount": 19,
+    "passCount": 18,
+    "failCount": 1,
+    "helperBlob": "50dfd831b21ea79ed06e34a1a7fb559aee011b6c",
+    "projectionBlob": "8de57739818503a0e14702d2fa0bb4eba58228d2"
+  }
 }
