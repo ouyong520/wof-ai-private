@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "winkawaks.collector.v3.long-session-segmented-capture",
+  "effectiveDedupKey": "winkawaks.collector.v3.long-session-segmented-capture",
+  "dedupMode": "exclusive",
+  "stageId": "WINKAWAKS_COLLECTOR_V3_LONG_SESSION_SEGMENTED_CAPTURE_V1",
+  "promptPath": "parallel/PM/WINKAWAKS_COLLECTOR_V3_LONG_SESSION_SEGMENTED_CAPTURE_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol",
+  "claimToken": "b0ed76a925667510811dc649b6e8712bf5e4c91476b3aea2",
+  "state": "ACTIVE",
+  "startCommit": "6375d8d8be81526500b28b7c9cee6580bee9487a"
+}
