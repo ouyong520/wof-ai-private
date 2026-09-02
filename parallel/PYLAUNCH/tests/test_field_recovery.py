@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+HERE = Path(__file__).resolve()
+PYLAUNCH = HERE.parents[1]
+if str(PYLAUNCH) not in sys.path:
+    sys.path.insert(0, str(PYLAUNCH))
 
 import wof_launcher.discovery_v2 as discovery_module
 from wof_launcher.alpha_runtime import AlphaRuntimeError, AlphaRuntimeManager, git_blob_sha
