@@ -8,8 +8,12 @@
   "promptPath": "parallel/PM/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_RECOVERY_V2_START_PROMPT.md",
   "owner": "chatgpt-gpt-5.6-sol-live-proof-tooling-recovery-v2",
   "claimToken": "9dc2b3ca-39f2-484d-9b5e-6d696f2192b7-d5595989907522d76a58b75a5c3eea2e",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "f4f6a7f161804d50e43fbf04713a2047dfb768f7",
+  "resultPath": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/RESULT.md",
+  "resultCommit": "c06bf2d89c755920adaf2ed144862b6599176268",
+  "manifestCommit": "cb6ad14a655a7f12b719360feb6f8760bfc5b0d9",
+  "repositoryTestCommit": "7e672e5ff882a55893265493b7d6817d1bfbfcd2",
   "recoveryOf": {
     "stageId": "ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_V1",
     "dedupKey": "alpha.v1.anchored-overlays.one-session-live-proof-tooling",
