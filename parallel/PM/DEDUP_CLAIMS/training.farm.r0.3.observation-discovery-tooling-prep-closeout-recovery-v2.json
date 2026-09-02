@@ -1,0 +1,15 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "training.farm.r0.3.observation-discovery-tooling-prep-closeout-recovery-v2",
+  "effectiveDedupKey": "training.farm.r0.3.observation-discovery-tooling-prep-closeout-recovery-v2",
+  "dedupMode": "exclusive",
+  "stageId": "TRAINING_FARM_R0_3_OBSERVATION_DISCOVERY_TOOLING_PREP_CLOSEOUT_RECOVERY_V2",
+  "promptPath": "parallel/PM/TRAINING_FARM_R0_3_OBSERVATION_DISCOVERY_TOOLING_PREP_CLOSEOUT_RECOVERY_V2_START_PROMPT.md",
+  "owner": "gpt-5.6-sol-training-farm-r0.3-closeout-recovery-v2",
+  "claimToken": "f70b0a24a16ead355e66fcf116e91559f8e0e8341f53ad1b",
+  "state": "ACTIVE",
+  "startCommit": "1c6e177f8265e8132ac14a829dc1bfb4e14c738a",
+  "supersedesCanonicalClaim": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.3.observation-discovery-tooling-prep.json",
+  "supersedesStageClaim": "parallel/PM/STAGE_CLAIMS/TRAINING_FARM_R0_3_OBSERVATION_DISCOVERY_TOOLING_PREP_V1.json"
+}
