@@ -10,9 +10,19 @@ This file records only metadata for the Owner-provided local WOF ROM used by Tra
 - size: `6366259` bytes
 - SHA-256: `6355d82b9457433725fe53cf1723f94eef752b569f3c07b51ac7e57be4a3cbaa`
 
+## Beginner Windows use
+
+Preferred Owner path is now the double-click launcher:
+
+```text
+training\farm\run_real_wof_proof_beginner.cmd
+```
+
+It opens a ZIP picker when `WOF_ROM_PATH` is absent, hashes the selected external file in place, and requires both the recorded size and SHA-256 above to match before handing off to the strict proof runner. Matching the filename alone is never sufficient. The launcher does not copy or unzip the ROM.
+
 ## Intended local use
 
-Place the Owner's legally held ROM archive somewhere outside the repository, for example:
+The strict/manual path remains available. Place the Owner's legally held ROM archive somewhere outside the repository, for example:
 
 ```text
 D:\ROM\wof.zip
