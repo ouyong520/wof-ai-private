@@ -1,10 +1,11 @@
-"""WOF Training Farm R0.1 thin emulator adapter bootstrap."""
+"""WOF Training Farm single-instance emulator adapter package."""
 
-from .adapter import CoreAction, FarmBackend, TrainingFarmAdapter
+from .adapter import CoreAction, CoreFrameInput, FarmBackend, TrainingFarmAdapter
 from .stable_retro_backend import StableRetroFbneoBackend
 
 __all__ = [
     "CoreAction",
+    "CoreFrameInput",
     "FarmBackend",
     "TrainingFarmAdapter",
     "StableRetroFbneoBackend",
