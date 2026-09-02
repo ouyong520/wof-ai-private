@@ -1,0 +1,12 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V2",
+  "dedupKey": "alpha.enemy-target-head-labels.post-strict-type-fix-fresh-qa",
+  "effectiveDedupKey": "alpha.enemy-target-head-labels.post-strict-type-fix-fresh-qa",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.enemy-target-head-labels.post-strict-type-fix-fresh-qa.json",
+  "claimToken": "wri5i6p5RGAmW5tx9byNwu3ULn7cuvGQOkI_zIRdlDw",
+  "state": "ACTIVE",
+  "startCommit": "7e27899a5c44d84e96ae27d89581fb89eee474ca",
+  "promptPath": "parallel/PM/ALPHA_ENEMY_TARGET_HEAD_LABELS_QA_V2_START_PROMPT.md",
+  "owner": "chatgpt-alpha-enemy-target-head-labels-qa-v2"
+}
