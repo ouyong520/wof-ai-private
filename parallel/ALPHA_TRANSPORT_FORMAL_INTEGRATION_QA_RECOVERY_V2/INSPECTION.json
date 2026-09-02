@@ -1,0 +1,50 @@
+{
+  "schema": "wof-alpha-formal-real-adapter-fresh-qa-recovery-v2-inspection-v1",
+  "stageId": "ALPHA_TRANSPORT_FORMAL_REAL_ADAPTER_INTEGRATION_FRESH_QA_RECOVERY_V2",
+  "method": "fresh-independent-adversarial-source-inspection",
+  "claimStartHead": "b9058081f283d109eac73777d3c9d39dda234427",
+  "ownerAction": "NO",
+  "productionBlobs": {
+    "product/alpha/wof_alpha_real_worker.js": "9c63a2c6a185ead8406487edd10038c035d41623",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/real_adapter.py": "1a5c6a255468c096ddd5df79993851e4d41e23cb",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/formal_integration_qa_sut.mjs": "46c36dca6e906b8134dda76068ada2b3aaedff5a",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/detector_local_identity_test.mjs": "4140d22114a6e10a8cef345f388b0b479dea1f5b",
+    "parallel/ALPHA_TRANSPORT_FORMAL_INTEGRATION/integration_test.mjs": "4b2b2eccb83e16e149a6ddd4f36c438c325c50b9",
+    "product/alpha/wof_alpha_bootstrap.user.js": "5aed15ff14aa39d95eade187cefb63dbd00848e6",
+    "product/alpha/wof_alpha_hud.js": "f41838c760ee9f7c40f3c91c71687e72ba740803",
+    "parallel/PYLAUNCH/wof_launcher/discovery_v2.py": "ec9d27bfe26557a11187a23853893b898a3366d1",
+    "parallel/PYLAUNCH/wof_launcher/probe.py": "789a6849b826b35542b22d56a4d2ca3628d285a1",
+    "parallel/PYLAUNCH/wof_launcher/cdp.py": "def308bed2a5609be1da26505a15d621395b66aa"
+  },
+  "vectors": [
+    {"id":"QA-R2-01","name":"detector-local full 1MiB SHA-256 at observer install","result":"PASS","evidence":"worker localIdentity locates one logical ROM candidate, hashes SHA-256 in current Worker, and fails unless digest equals exact World 921031 golden"},
+    {"id":"QA-R2-02","name":"Discovery SHA is provenance only","result":"PASS","evidence":"real_adapter derives launcherIdentitySha from current TargetChoice measurement; worker independently re-hashes and adapter re-checks returned local identity"},
+    {"id":"QA-R2-03","name":"same-targetId unsupported runtime replacement","result":"PASS","evidence":"stale golden Discovery assertion cannot authorize a replacement runtime whose current detector-local ROM digest is non-golden"},
+    {"id":"QA-R2-04","name":"Discovery identity generation freshness","result":"PASS","evidence":"discover() clears supplied identity_cache at every discovery generation and explicitly treats targetId as non-authoritative across runtime/execution-context generations"},
+    {"id":"QA-R2-05","name":"current authority status exactness","result":"PASS","evidence":"adapter requires exact page+worker targetIds, page bound/session/pairGeneration/pairNonce, worker running/local identity/runtimeEpoch/session/pairGeneration/pairNonce, queueDepth=0 and safety invariants"},
+    {"id":"QA-R2-06","name":"same-page rebind revokes warning authority","result":"PASS","evidence":"strict rebind clears current first and refuses a new generation when same-page reset cannot be proven"},
+    {"id":"QA-R2-07","name":"same-worker rebind stops old observer","result":"PASS","evidence":"strict rebind refuses a new generation when the same Worker observer cannot be proven stopped"},
+    {"id":"QA-R2-08","name":"Worker replacement lifecycle","result":"PASS","evidence":"page authority is revoked before best-effort stop of a replaced Worker; new pair nonce/runtime epoch/generation separates late old completions"},
+    {"id":"QA-R2-09","name":"stale in-flight completion after revoke","result":"PASS","evidence":"worker tick authority gate revoke clears active/inFlight and finish() rejects stale authority; one-in-flight/no-catch-up remains exact"},
+    {"id":"QA-R2-10","name":"disconnect/unsupported discovery fail closed","result":"PASS","evidence":"adapter step() calls revoke() before returning warningAuthority=false when current discovery is unsupported; run-loop exceptions also revoke while gameplay remains playable"},
+    {"id":"QA-R2-11","name":"heartbeat/staleness boundaries","result":"PASS","evidence":"worker publishes heartbeat at >=250ms; HUD treats warning state fresh through 1500ms and stale after 1500ms"},
+    {"id":"QA-R2-12","name":"QA seam consumes current production sources","result":"PASS","evidence":"formal_integration_qa_sut.mjs reads real worker/bootstrap/HUD/real_adapter directly from repository paths rather than embedding a separate implementation"},
+    {"id":"QA-R2-13","name":"safety and gameplay fail-open","result":"PASS","evidence":"readOnly=true, ramWrites=0, inputInjection=false, workerReplacement=false, blobRewrite=false, gamePostMessageControl=false, heapWrites=false, assistMode=false; bootstrap does not replace game Worker"},
+    {"id":"QA-R2-14","name":"historical adversarial blocker supersession","result":"PASS","evidence":"historical vulnerable worker/adapter blobs are no longer current; exact blocker condition is closed by current local SHA + adapter local-identity admission contract"}
+  ],
+  "summary": {
+    "result": "PASS",
+    "passCount": 14,
+    "failCount": 0,
+    "oldAdversarialBlockedSuperseded": true,
+    "formalIntegrationReleaseGateClosedByThisQa": true,
+    "true5hEnduranceEligibleForFreshRerun": true,
+    "true5hEnduranceAlreadyPassed": false,
+    "globalCurrentHeadReleaseComplete": false
+  },
+  "notes": [
+    "This recovery QA did not modify implementation.",
+    "The decisive evidence is independent current-source adversarial inspection; implementation-authored PASS counts were re-read only as supporting regression evidence, not used as the sole basis for verdict.",
+    "The historical True 5h endurance result remains BLOCKED because only 0.417h of the intended 5.417h executed; this QA removes the formal-integration dependency but does not fabricate the missing endurance duration."
+  ]
+}
