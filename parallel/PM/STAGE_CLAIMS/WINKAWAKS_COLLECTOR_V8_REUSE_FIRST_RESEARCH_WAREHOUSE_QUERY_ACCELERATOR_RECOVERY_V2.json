@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "WINKAWAKS_COLLECTOR_V8_REUSE_FIRST_RESEARCH_WAREHOUSE_QUERY_ACCELERATOR_RECOVERY_V2",
+  "dedupKey": "winkawaks.collector.v8.reuse-first-research-warehouse-query-accelerator.recovery-v2",
+  "effectiveDedupKey": "winkawaks.collector.v8.reuse-first-research-warehouse-query-accelerator.recovery-v2",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/winkawaks.collector.v8.reuse-first-research-warehouse-query-accelerator.recovery-v2.json",
+  "claimToken": "c8a0d6b89f7e4aa793be05bfc8a7d238e2db7976b7a84d73",
+  "state": "ACTIVE",
+  "startCommit": "0179508d13d9b4988a0f7e671d5b725e6b6e9dd9"
+}
