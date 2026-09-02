@@ -48,6 +48,19 @@ def _extract_projection_result(status: dict[str, Any] | None) -> dict[str, Any] 
     return result if isinstance(result, dict) else None
 
 
+def _durable_live_evidence(status: dict[str, Any] | None) -> dict[str, Any]:
+    value = status or {}
+    events = value.get("significantEvents")
+    if not isinstance(events, list):
+        events = []
+    return {
+        "lastAcceptedAuthority": value.get("lastAcceptedAuthority") if isinstance(value.get("lastAcceptedAuthority"), dict) else None,
+        "lastAlphaFailure": value.get("lastAlphaFailure") if isinstance(value.get("lastAlphaFailure"), dict) else None,
+        "lastCalibrationProgress": value.get("lastCalibrationProgress") if isinstance(value.get("lastCalibrationProgress"), dict) else None,
+        "significantEvents": [x for x in events[-96:] if isinstance(x, dict)],
+    }
+
+
 def _safe_upload(root: Path, zip_path: Path, session_dir: Path) -> dict[str, Any]:
     """Use only a repository-defined uploader; never inspect or request credentials.
 
@@ -113,18 +126,32 @@ def run_session(root: Path, session_dir: Path) -> int:
         stderr_path.write_text((stderr_path.read_text(encoding="utf-8", errors="replace") if stderr_path.exists() else "") + "\n" + launch_error + "\n", encoding="utf-8")
     status = _read_json(proof_json)
     projection = _extract_projection_result(status)
+    durable = _durable_live_evidence(status)
     if projection is not None:
         _write_json(session_dir / "PROJECTION_PROOF_RESULT.json", projection)
-    final_state = str((status or {}).get("state") or "UNKNOWN")
+    if durable["lastCalibrationProgress"] is not None:
+        _write_json(session_dir / "CALIBRATION_PROGRESS.json", durable["lastCalibrationProgress"])
+    if durable["significantEvents"]:
+        _write_json(session_dir / "SIGNIFICANT_EVENTS.json", {"schema": "wof-live-acceptance-significant-events-v1", "events": durable["significantEvents"], "safety": SAFETY})
+    final_state = str((status or {}).get("launcherState") or (status or {}).get("state") or "UNKNOWN")
+    final_disconnected = final_state in {"ERROR", "DISCONNECTED"} or not bool((status or {}).get("checks", {}).get("Browser") == "OK")
+    had_significant_live_state = any((durable["lastAcceptedAuthority"], durable["lastAlphaFailure"], durable["lastCalibrationProgress"], durable["significantEvents"]))
+    session_outcome = "ENDED_WITH_RETAINED_SIGNIFICANT_LIVE_STATE" if final_disconnected and had_significant_live_state else ("ENDED_DISCONNECTED_WITHOUT_ACCEPTED_LIVE_STATE" if final_disconnected else "ENDED_WITH_LIVE_STATUS")
     summary = {
-        "schema": "wof-live-acceptance-auto-evidence-v1",
+        "schema": "wof-live-acceptance-auto-evidence-v2",
         "startedAt": started,
         "endedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
         "packageVersion": _package_version(root),
         "launcherReturnCode": rc,
         "launcherError": launch_error,
         "finalState": final_state,
+        "finalSnapshotDisconnected": final_disconnected,
+        "sessionOutcome": session_outcome,
         "projectionVerdict": projection.get("verdict") if projection else None,
+        "lastAcceptedAuthority": durable["lastAcceptedAuthority"],
+        "lastAlphaFailure": durable["lastAlphaFailure"],
+        "lastCalibrationProgress": durable["lastCalibrationProgress"],
+        "significantEventCount": len(durable["significantEvents"]),
         "partialEvidenceRetained": True,
         "zipPath": str(zip_path),
         "safety": SAFETY,
