@@ -8,6 +8,9 @@
   "promptPath": "parallel/PM/ALPHA_V1_PROOF_AUTHORITY_HARDENING_V2_FINAL_FRESH_QA_START_PROMPT.md",
   "owner": "gpt-5.6-sol-final-fresh-qa",
   "claimToken": "facc6ee5efbe2754d2ec8590a826a36084aac57ac90ee788",
-  "state": "ACTIVE",
-  "startCommit": "239f2514dabb1a17ac12bcc1ecb566282cf15e6d"
+  "state": "BLOCKED",
+  "startCommit": "239f2514dabb1a17ac12bcc1ecb566282cf15e6d",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PROOF_AUTHORITY_HARDENING_V2_FINAL_FRESH_QA_RESULT.md",
+  "resultCommit": "1e3e6c4342e18c6d8cf5d630ceaf4cf090325563",
+  "blocker": "Frozen future_fresh_qa_preflight.mjs requires an obsolete Hardening V2 COMPLETE marker and rejects the only authoritative Recovery V5 COMPLETE result, so the mandatory exact-blob preflight cannot PASS without forbidden fixture/result falsification."
 }
