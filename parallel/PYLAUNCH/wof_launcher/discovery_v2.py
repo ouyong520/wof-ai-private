@@ -7,7 +7,8 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from .cdp import CdpClient, CdpError, CdpSession
-from .probe import GSTYPHOON_RE, IDENTITY_PROBE, LIGHT_WORKER_PROBE, PAGE_PROBE
+from .probe import GSTYPHOON_RE, LIGHT_WORKER_PROBE, PAGE_PROBE
+from .probe_v2 import IDENTITY_PROBE
 
 WORKER_TYPES = {"worker", "shared_worker", "service_worker"}
 WOF_HINT_RE = re.compile(r"\bwof\b|warriors.?of.?fate", re.I)
