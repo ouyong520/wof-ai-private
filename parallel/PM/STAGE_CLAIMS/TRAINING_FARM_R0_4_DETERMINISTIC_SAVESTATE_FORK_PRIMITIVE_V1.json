@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "TRAINING_FARM_R0_4_DETERMINISTIC_SAVESTATE_FORK_PRIMITIVE_V1",
+  "dedupKey": "training.farm.r0.4.deterministic-savestate-fork-primitive",
+  "effectiveDedupKey": "training.farm.r0.4.deterministic-savestate-fork-primitive",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.deterministic-savestate-fork-primitive.json",
+  "claimToken": "52889b5af747c403b7ca40d58b4bb25ce1cd32a215ec7682",
+  "state": "ACTIVE",
+  "startCommit": "ef3ce4da0baa525c00830915f8d51a0488d43d3b"
+}
