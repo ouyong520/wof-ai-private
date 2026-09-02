@@ -1,81 +1,116 @@
 # WOF Future Danger — Target-Lock Player-Head HUD Requirement
 
-Updated: 2026-09-01
-Status: AUTHORITATIVE PRODUCT REQUIREMENT
+Updated: 2026-09-02
+Status: **AUTHORITATIVE ALPHA V1 PRODUCT REQUIREMENT**
 
-## Product intent
+## Product decision
 
-The preferred future in-game target indicator is **player-head anchored**.
+Alpha V1 has exactly two mandatory in-game presentation surfaces:
 
-Enemy target/lock state determines **which player should be warned**, but the visual indicator is rendered above the targeted player character, not above the enemy.
+1. **player-head danger reminder** — when current authoritative danger/target evidence says a supported enemy threatens P1/P2/P3, the warning is rendered above the targeted live player;
+2. **enemy-head target tracker** — each supported live enemy shows its current target as `1P` / `2P` / `3P` above that enemy.
 
-Required behavior:
-- detect which player (P1 / P2 / P3) an enemy is currently targeting/locking;
-- show the corresponding target warning above that targeted player's head;
-- the indicator follows the targeted player character continuously;
-- when targeting changes, immediately remove the old target-bound indicator and move/show the warning above the newly targeted player;
-- do not leave the indicator attached to the enemy.
+A fixed HUD remains a fail-closed fallback/diagnostic surface only when the player-head anchor cannot be proven current and valid. It is no longer sufficient as the primary Alpha V1 warning presentation.
 
-Example:
-- an enemy targets P2 -> warning appears above P2's character;
-- that enemy retargets P3 -> P2 warning is invalidated immediately and the warning appears above P3;
-- if multiple enemies target the same player, their warning information may later be aggregated near that player's anchor without changing target correctness.
+This decision supersedes the earlier statement that player-head anchored warnings could wait for Beta.
 
-## Non-drift requirement
+## Player-head warning behavior
 
-This feature is not accepted merely because a label can be drawn above a player once.
+Enemy target/lock state determines **which player should be warned**. Required behavior:
 
-The marker must remain visually attached to the correct player without noticeable drift during:
+- detect which player (P1 / P2 / P3) the supported danger belongs to;
+- show the danger reminder above that targeted player's head;
+- follow the targeted live player continuously;
+- when targeting changes, immediately invalidate the old target-bound reminder and resolve the new target;
+- never leave the reminder attached to the wrong player or at a stale screen coordinate;
+- if player/camera/projection authority is stale, malformed, ambiguous, out of bounds or otherwise untrustworthy, suppress the anchored reminder and use the fixed fail-closed fallback.
+
+## Enemy-head target tracker behavior
+
+For supported live enemies:
+
+- `target7E == 0` -> `1P`;
+- `target7E == 4` -> `2P`;
+- `target7E == 8` -> `3P`;
+- unsupported/malformed/ambiguous target -> no confident enemy-head label;
+- retarget must replace the old label immediately;
+- disappearance, replacement, stale projection or epoch mismatch must not inherit an old label.
+
+## P0 non-drift requirement
+
+Alpha V1 is not accepted merely because either overlay can be drawn above a sprite once.
+
+Both the player-head danger reminder and enemy-head target tracker must remain visually attached to the correct live object without noticeable drift during:
+
 - player horizontal movement;
-- depth / lane movement;
-- jump / vertical displacement;
-- camera / stage scrolling;
+- player depth / lane movement;
+- jump / vertical displacement, including ascent, apex, descent and landing;
+- rapid forward/back movement;
+- enemy horizontal/depth movement;
+- simultaneous player + enemy movement;
+- camera / stage scrolling, including rapid whole-screen scrolling;
 - resize / fullscreen / DPR / drawing-buffer changes;
 - P1 / P2 / P3 simultaneous presence;
 - death / respawn / player object replacement;
-- live enemy retarget between P1 / P2 / P3.
+- enemy disappearance / same-slot replacement;
+- live retarget between P1 / P2 / P3.
 
-The anchor must follow the current live player identity and projection state, not a stale screen coordinate.
+**Any repeatable or clearly visible whole-screen/relative overlay drift in these scenarios is a P0 release blocker.**
+
+The render path must follow fresh live identity + current projection state, not a cached screen coordinate. When fresh authority cannot keep up, fail closed by hiding/falling back rather than visibly drifting.
 
 ## Retarget / lifecycle safety
 
-Target-bound display identity includes the target player.
-
 If an enemy retargets from P1 to P2:
-1. invalidate the old P1 target-bound indicator immediately;
+
+1. invalidate the old P1 target-bound warning immediately;
 2. resolve current P2 player anchor from fresh player/camera/projection state;
-3. render on P2 on the next fresh update;
-4. if P2 anchor is invalid or stale, use the fixed HUD fallback — never leave the marker above P1.
+3. render above P2 only on a current valid anchor;
+4. if P2 anchor is invalid or stale, use the fixed HUD fallback — never leave the marker above P1;
+5. update the enemy-head target tracker from `1P` to `2P` with no stale hold.
 
-A stale target marker must never survive across player respawn/object replacement or uncertain continuity.
+A stale target warning/label must never survive across player respawn, enemy replacement, runtime/projection epoch change, resize mapping change, or uncertain continuity.
 
-## Presentation
+## Presentation scope
 
-Minimum useful target indication may include:
-- `1P` / `2P` / `3P` target identity;
-- downward arrow / lock indicator;
-- warning color / urgency.
+Alpha V1 may keep presentation minimal. No separate polished desktop GUI is required for release.
 
-Later additions may include:
-- attack family / danger icon;
-- lead time;
-- multiple-threat aggregation.
+Minimum useful surfaces are:
 
-The visual design must not compromise stable anchoring.
+- concise player-head danger reminder;
+- compact enemy-head `1P` / `2P` / `3P` label;
+- fixed HUD fallback / startup / disabled diagnostics.
 
-## Alpha / Beta scope
+Later additions such as richer icons, lead-time text, threat aggregation and UI polish are non-blocking after Alpha V1 unless separately promoted.
 
-This requirement must **not delay the first trustworthy Alpha**.
+## Repository QA versus live proof
 
-- Alpha may retain the proven fixed in-game HUD as the safe fallback / first-release surface.
-- Player-head anchored, non-drifting target warnings are a high-value near-term/Beta presentation goal.
-- Existing HUDANCHOR player projection research is the relevant technical lineage.
-- Fixed HUD remains fallback whenever player/camera/projection state is invalid or stale.
+Repository/synthetic QA must aggressively cover bounds, stale state, epoch mismatch, lifecycle replacement, resize mapping and retarget behavior, but synthetic PASS is not proof that real Browser/WOF dynamic projection is visually stable.
 
-## Acceptance direction
+Before Alpha V1 release, bounded real Browser/WOF acceptance must visibly exercise at minimum:
 
-Final acceptance must prove the warning remains above the correct targeted player while the player and camera move, jump, scroll, resize/fullscreen, and while live enemy targeting changes between P1/P2/P3.
+- left/right player movement;
+- depth/lane movement;
+- jump/vertical displacement;
+- rapid forward movement with stage scrolling;
+- player movement while camera moves;
+- enemy movement while target labels are visible;
+- at least one live P1 -> P2/P3 retarget;
+- simultaneous supported enemies where practical;
+- resize/fullscreen or equivalent drawing-buffer remap if used by the release environment.
 
-The desired user experience is:
+The acceptance invariant is:
 
-`怪物锁定谁 -> 在被锁定角色头顶显示提示 -> 跟随角色移动 -> 不漂移 -> 换锁时立即切到新角色。`
+`玩家头顶危险提醒 + 怪物头顶目标跟踪 -> 跟随真实对象 -> 快速移动/跳跃/卷屏不明显漂移 -> 不确定时隐藏/降级 -> 改锁立即切换。`
+
+## Safety
+
+Presentation must not weaken existing Alpha safety constraints:
+
+- read-only observer path;
+- `ramWrites = 0`;
+- no gameplay input injection;
+- no Worker replacement;
+- no Blob Worker rewrite;
+- no target-selection or enemy-AI modification;
+- no stale projection/identity authority fabricated for visual continuity.
