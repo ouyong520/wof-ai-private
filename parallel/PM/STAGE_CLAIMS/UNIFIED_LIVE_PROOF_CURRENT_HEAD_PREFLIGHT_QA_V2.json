@@ -1,0 +1,14 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_CURRENT_HEAD_PREFLIGHT_QA_V2",
+  "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_CURRENT_HEAD_PREFLIGHT_QA_V2_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "c0343c12d99574e176765f5dd8ab843a92f2580d",
+  "startedAtUtc": "2026-09-02T02:12:32Z",
+  "auditedPreflightBlobs": {
+    "parallel/LIVE_PROOF_BUNDLE/unified_preflight.py": "c756b3da7a8a0c092efe20f2587e131d497f5f72",
+    "parallel/LIVE_PROOF_BUNDLE/unified_preflight_entrypoint.py": "1a73d02f8171dbbd50cabff52a83c989541de2f7",
+    "parallel/LIVE_PROOF_BUNDLE/test_unified_preflight.py": "c59edb55e3d99da219bb78d8dffc427cfd2fbb75",
+    "parallel/LIVE_PROOF_BUNDLE/UNIFIED_PREFLIGHT_STATUS.json": "6dc53eee9bc235d43b466ff83ff0aec2b6bfafe1"
+  }
+}
