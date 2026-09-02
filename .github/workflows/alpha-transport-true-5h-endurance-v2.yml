@@ -1,0 +1,518 @@
+name: Alpha Transport True 5h Endurance Recovery V2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/alpha-transport-true-5h-endurance-v2.yml'
+      - 'parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/endurance_runner.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: alpha-transport-true-5h-endurance-recovery-v2
+  cancel-in-progress: false
+
+env:
+  STAGE_ID: ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2
+  V2_DIR: parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2
+  SEGMENT_MS: '1500000'
+  EXPECTED_SEGMENTS: '13'
+  INTENDED_TOTAL_MS: '19500000'
+
+jobs:
+  preflight:
+    name: Infrastructure smoke and durable launch
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify current-main pinned Safe Transport snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main --quiet
+          check_blob() {
+            local p="$1" expected="$2" actual
+            actual="$(git rev-parse "origin/main:${p}" 2>/dev/null || true)"
+            test "$actual" = "$expected" || {
+              echo "snapshot drift: ${p} expected=${expected} actual=${actual:-missing}" >&2
+              return 1
+            }
+          }
+          check_blob parallel/ALPHA_TRANSPORT_IMPL/constants.mjs a29cb3ad714598e2e6aeeed64acc9e3eca8b221e
+          check_blob parallel/ALPHA_TRANSPORT_IMPL/page_authority.mjs 5e53bd2ad40823a8768802df0a1c5431adb19ee9
+          check_blob parallel/ALPHA_TRANSPORT_IMPL/worker_runtime.mjs c353b4500640e31950cde42173a934d541f22531
+          check_blob parallel/ALPHA_TRANSPORT_IMPL/acceptance_adapter.mjs d79dff0b2708c671ab8a11644fcc4f771ec75003
+          check_blob parallel/ALPHA_TRANSPORT_MOCK/fixtures.json 35bf36b4c741cda5d94be3f9884511a86653c11f
+          check_blob parallel/ALPHA_TRANSPORT_MOCK/vectors.json 5a0cbe2ccfcf7eb6e875552f56748f736722c14d
+          check_blob parallel/ALPHA_TRANSPORT_MOCK/expected_results.json 1231e0946d18068284724d92e732ea185e4e6af8
+
+      - name: Run short positive and negative infrastructure smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$V2_DIR/smoke" "$V2_DIR/checkpoints"
+
+          export ENDURANCE_SEGMENT_INDEX=9000
+          export ENDURANCE_SEGMENT_MS=1000
+          export ENDURANCE_CHECKPOINT_PATH="$V2_DIR/smoke/pass.json"
+          set -o pipefail
+          node "$V2_DIR/endurance_runner.mjs" 2>&1 | tee "$V2_DIR/smoke/pass.log"
+          test -s "$V2_DIR/smoke/pass.json"
+          test -s "$V2_DIR/smoke/pass.log"
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const x = JSON.parse(fs.readFileSync('parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/smoke/pass.json', 'utf8'));
+          if (x.status !== 'PASS') throw new Error(`positive smoke status=${x.status}`);
+          if (x.stageId !== 'ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2') throw new Error('wrong V2 stage id');
+          if (x.frozenCatalogControl?.status !== 'PASS' || x.frozenCatalogControl?.vectorCount !== 67 || x.frozenCatalogControl?.passCount !== 67) {
+            throw new Error('positive smoke frozen catalog did not pass 67/67');
+          }
+          NODE
+
+          set +e
+          export ENDURANCE_SEGMENT_INDEX=9001
+          export ENDURANCE_SEGMENT_MS=999
+          export ENDURANCE_CHECKPOINT_PATH="$V2_DIR/smoke/negative.json"
+          node "$V2_DIR/endurance_runner.mjs" 2>&1 | tee "$V2_DIR/smoke/negative.log"
+          negative_rc=$?
+          set -e
+          if [ "$negative_rc" -eq 0 ]; then
+            echo 'negative smoke unexpectedly returned zero' >&2
+            exit 1
+          fi
+          test -s "$V2_DIR/smoke/negative.log"
+          NEGATIVE_RC="$negative_rc" node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const pass = JSON.parse(fs.readFileSync('parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/smoke/pass.json', 'utf8'));
+          const result = {
+            schema: 'wof-alpha-transport-true-endurance-infra-smoke-v2',
+            stageId: 'ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2',
+            status: 'PASS',
+            notCountedTowardEndurance: true,
+            positive: {
+              exitCode: 0,
+              checkpointPresent: true,
+              logPresent: true,
+              actualElapsedMs: pass.actualElapsedMs,
+              frozenCatalogPassCount: pass.frozenCatalogControl?.passCount,
+              frozenCatalogVectorCount: pass.frozenCatalogControl?.vectorCount
+            },
+            negative: {
+              exitCode: Number(process.env.NEGATIVE_RC),
+              expectedNonZero: true,
+              logPresent: true,
+              reason: 'intentional invalid ENDURANCE_SEGMENT_MS=999 verifies pipefail/non-zero propagation'
+            }
+          };
+          fs.writeFileSync('parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/smoke/SMOKE_RESULT.json', JSON.stringify(result, null, 2) + '\n');
+          NODE
+
+      - name: Upload smoke evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-transport-true-5h-endurance-v2-smoke
+          path: |
+            parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/smoke/pass.json
+            parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/smoke/pass.log
+            parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/smoke/negative.log
+            parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/smoke/SMOKE_RESULT.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish durable smoke and executor launch marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$V2_DIR/smoke/SMOKE_RESULT.json" /tmp/SMOKE_RESULT.json
+          cp "$V2_DIR/smoke/pass.json" /tmp/smoke-pass.json
+          cp "$V2_DIR/smoke/pass.log" /tmp/smoke-pass.log
+          cp "$V2_DIR/smoke/negative.log" /tmp/smoke-negative.log
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const launch = {
+            schema: 'wof-alpha-transport-true-endurance-launch-v2',
+            stageId: 'ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2',
+            workflowRunId: process.env.GITHUB_RUN_ID,
+            workflowRunAttempt: process.env.GITHUB_RUN_ATTEMPT,
+            runHeadSha: process.env.GITHUB_SHA,
+            launchedAtUtc: new Date().toISOString(),
+            intendedSegments: 13,
+            segmentDurationMs: 1500000,
+            intendedExecutorDurationMs: 19500000,
+            requiredMinimumMs: 18000000,
+            checkpointCadenceMaxMs: 1800000,
+            sequentialNonOverlapping: true,
+            idlePadding: false,
+            v1ElapsedReused: false,
+            exactSutInputBlobs: {
+              'ALPHA_TRANSPORT_IMPL/constants.mjs': 'a29cb3ad714598e2e6aeeed64acc9e3eca8b221e',
+              'ALPHA_TRANSPORT_IMPL/page_authority.mjs': '5e53bd2ad40823a8768802df0a1c5431adb19ee9',
+              'ALPHA_TRANSPORT_IMPL/worker_runtime.mjs': 'c353b4500640e31950cde42173a934d541f22531',
+              'ALPHA_TRANSPORT_IMPL/acceptance_adapter.mjs': 'd79dff0b2708c671ab8a11644fcc4f771ec75003',
+              'ALPHA_TRANSPORT_MOCK/fixtures.json': '35bf36b4c741cda5d94be3f9884511a86653c11f',
+              'ALPHA_TRANSPORT_MOCK/vectors.json': '5a0cbe2ccfcf7eb6e875552f56748f736722c14d',
+              'ALPHA_TRANSPORT_MOCK/expected_results.json': '1231e0946d18068284724d92e732ea185e4e6af8'
+            },
+            infrastructure: {
+              baseRunnerBlobSha: '8d7decc9f61bddecba6c8ce3d5c2b4cc56e0a670',
+              logDirectoryCreatedBeforeTee: true,
+              pipefailPreserved: true,
+              negativeSmokeNonZeroVerified: true
+            }
+          };
+          fs.writeFileSync('/tmp/EXECUTOR_LAUNCHED.json', JSON.stringify(launch, null, 2) + '\n');
+          NODE
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main --quiet
+            git reset --hard HEAD
+            git clean -fd
+            git checkout -B alpha-endurance-v2-launch origin/main
+            mkdir -p "$V2_DIR/smoke"
+            cp /tmp/EXECUTOR_LAUNCHED.json "$V2_DIR/EXECUTOR_LAUNCHED.json"
+            cp /tmp/SMOKE_RESULT.json "$V2_DIR/smoke/SMOKE_RESULT.json"
+            cp /tmp/smoke-pass.json "$V2_DIR/smoke/pass.json"
+            cp /tmp/smoke-pass.log "$V2_DIR/smoke/pass.log"
+            cp /tmp/smoke-negative.log "$V2_DIR/smoke/negative.log"
+            git add "$V2_DIR/EXECUTOR_LAUNCHED.json" "$V2_DIR/smoke"
+            git commit -m "Alpha transport endurance V2: record executor launch ${GITHUB_RUN_ID}" || true
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          echo 'unable to publish V2 launch marker after retries' >&2
+          exit 1
+
+  endurance:
+    name: Endurance V2 segment ${{ matrix.segment }}
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        segment: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    env:
+      ENDURANCE_SEGMENT_INDEX: ${{ matrix.segment }}
+      ENDURANCE_SEGMENT_MS: '1500000'
+      ENDURANCE_CHECKPOINT_PATH: parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/checkpoints/segment-${{ matrix.segment }}.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run non-idle deterministic Safe Transport stress segment
+        shell: bash
+        run: |
+          mkdir -p "$V2_DIR/checkpoints"
+          LOG_PATH="$V2_DIR/checkpoints/segment-${ENDURANCE_SEGMENT_INDEX}.log"
+          : > "$LOG_PATH"
+          set -o pipefail
+          {
+            set -euo pipefail
+            check_current_main_snapshot() {
+              git fetch origin main --quiet
+              : > /tmp/alpha-endurance-v2-drift.txt
+              check_blob() {
+                local p="$1" expected="$2" actual
+                actual="$(git rev-parse "origin/main:${p}" 2>/dev/null || true)"
+                if [ "$actual" != "$expected" ]; then
+                  echo "snapshot drift: ${p} expected=${expected} actual=${actual:-missing}" >> /tmp/alpha-endurance-v2-drift.txt
+                fi
+              }
+              check_blob parallel/ALPHA_TRANSPORT_IMPL/constants.mjs a29cb3ad714598e2e6aeeed64acc9e3eca8b221e
+              check_blob parallel/ALPHA_TRANSPORT_IMPL/page_authority.mjs 5e53bd2ad40823a8768802df0a1c5431adb19ee9
+              check_blob parallel/ALPHA_TRANSPORT_IMPL/worker_runtime.mjs c353b4500640e31950cde42173a934d541f22531
+              check_blob parallel/ALPHA_TRANSPORT_IMPL/acceptance_adapter.mjs d79dff0b2708c671ab8a11644fcc4f771ec75003
+              check_blob parallel/ALPHA_TRANSPORT_MOCK/fixtures.json 35bf36b4c741cda5d94be3f9884511a86653c11f
+              check_blob parallel/ALPHA_TRANSPORT_MOCK/vectors.json 5a0cbe2ccfcf7eb6e875552f56748f736722c14d
+              check_blob parallel/ALPHA_TRANSPORT_MOCK/expected_results.json 1231e0946d18068284724d92e732ea185e4e6af8
+              test ! -s /tmp/alpha-endurance-v2-drift.txt
+            }
+            write_or_patch_drift_checkpoint() {
+              local blocker="$1"
+              DRIFT_BLOCKER="$blocker" node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const p = process.env.ENDURANCE_CHECKPOINT_PATH;
+          let x = {};
+          if (fs.existsSync(p)) x = JSON.parse(fs.readFileSync(p, 'utf8'));
+          const now = new Date().toISOString();
+          x = {
+            schema: 'wof-alpha-transport-true-endurance-checkpoint-v2',
+            stageId: 'ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2',
+            segmentIndex: Number(process.env.ENDURANCE_SEGMENT_INDEX),
+            intendedDurationMs: Number(process.env.ENDURANCE_SEGMENT_MS),
+            actualElapsedMs: Number(x.actualElapsedMs || 0),
+            startedAtUtc: x.startedAtUtc || now,
+            endedAtUtc: now,
+            status: 'BLOCKED',
+            blocker: process.env.DRIFT_BLOCKER,
+            scenarioCount: Number(x.scenarioCount || 0),
+            seedRange: x.seedRange || { start: null, end: null },
+            familyCounts: x.familyCounts || {},
+            failureCount: Math.max(1, Number(x.failureCount || 0)),
+            latestInvariantStatus: 'BLOCKED',
+            rollingEvidenceSha256: x.rollingEvidenceSha256 || null,
+            frozenCatalogControl: x.frozenCatalogControl || null,
+            sourceIntegrity: {
+              ...(x.sourceIntegrity || {}),
+              currentMainDriftDetected: true
+            },
+            safety: x.safety || { readOnly: true, ramWrites: 0, inputInjection: false, workerReplacement: false, blobRewrite: false },
+            run: {
+              workflowRunId: process.env.GITHUB_RUN_ID,
+              workflowRunAttempt: process.env.GITHUB_RUN_ATTEMPT,
+              runHeadSha: process.env.GITHUB_SHA
+            }
+          };
+          fs.mkdirSync(path.dirname(p), { recursive: true });
+          fs.writeFileSync(p, JSON.stringify(x, null, 2) + '\n');
+          NODE
+            }
+
+            if ! check_current_main_snapshot; then
+              blocker="current main SUT/input snapshot drift before segment ${ENDURANCE_SEGMENT_INDEX}: $(tr '\n' ' ' < /tmp/alpha-endurance-v2-drift.txt)"
+              echo "$blocker" >&2
+              write_or_patch_drift_checkpoint "$blocker"
+              exit 1
+            fi
+
+            node "$V2_DIR/endurance_runner.mjs"
+
+            if ! check_current_main_snapshot; then
+              blocker="current main SUT/input snapshot drift after segment ${ENDURANCE_SEGMENT_INDEX}: $(tr '\n' ' ' < /tmp/alpha-endurance-v2-drift.txt)"
+              echo "$blocker" >&2
+              write_or_patch_drift_checkpoint "$blocker"
+              exit 1
+            fi
+          } 2>&1 | tee -a "$LOG_PATH"
+
+      - name: Upload durable segment checkpoint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-transport-endurance-v2-segment-${{ matrix.segment }}
+          path: |
+            parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/checkpoints/segment-${{ matrix.segment }}.json
+            parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/checkpoints/segment-${{ matrix.segment }}.log
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Mirror durable checkpoint to repository lane
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$V2_DIR/checkpoints/segment-${ENDURANCE_SEGMENT_INDEX}.json" /tmp/segment.json 2>/dev/null || true
+          cp "$V2_DIR/checkpoints/segment-${ENDURANCE_SEGMENT_INDEX}.log" /tmp/segment.log 2>/dev/null || true
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main --quiet
+            git reset --hard HEAD
+            git clean -fd
+            git checkout -B alpha-endurance-v2-checkpoint origin/main
+            mkdir -p "$V2_DIR/checkpoints"
+            test ! -f /tmp/segment.json || cp /tmp/segment.json "$V2_DIR/checkpoints/segment-${ENDURANCE_SEGMENT_INDEX}.json"
+            test ! -f /tmp/segment.log || cp /tmp/segment.log "$V2_DIR/checkpoints/segment-${ENDURANCE_SEGMENT_INDEX}.log"
+            git add "$V2_DIR/checkpoints"
+            git commit -m "Alpha transport endurance V2: checkpoint segment ${ENDURANCE_SEGMENT_INDEX} run ${GITHUB_RUN_ID}" || exit 0
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          exit 1
+
+  summarize:
+    name: Aggregate and publish V2 endurance evidence
+    if: ${{ always() }}
+    needs: [preflight, endurance]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Download surviving V2 checkpoints
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: alpha-transport-endurance-v2-segment-*
+          path: parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/downloaded-checkpoints
+          merge-multiple: true
+
+      - name: Aggregate machine-readable V2 final summary
+        continue-on-error: true
+        env:
+          ENDURANCE_AGGREGATE_INPUT: parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/downloaded-checkpoints
+          ENDURANCE_FINAL_SUMMARY_PATH: parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/final-summary.json
+          ENDURANCE_EXPECTED_SEGMENTS: '13'
+          ENDURANCE_TOTAL_INTENDED_MS: '19500000'
+        run: node parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/endurance_runner.mjs --aggregate
+
+      - name: Reconcile final current-main snapshot drift
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main --quiet
+          : > /tmp/alpha-endurance-v2-final-drift.txt
+          check_blob() {
+            local p="$1" expected="$2" actual
+            actual="$(git rev-parse "origin/main:${p}" 2>/dev/null || true)"
+            if [ "$actual" != "$expected" ]; then
+              echo "snapshot drift: ${p} expected=${expected} actual=${actual:-missing}" >> /tmp/alpha-endurance-v2-final-drift.txt
+            fi
+          }
+          check_blob parallel/ALPHA_TRANSPORT_IMPL/constants.mjs a29cb3ad714598e2e6aeeed64acc9e3eca8b221e
+          check_blob parallel/ALPHA_TRANSPORT_IMPL/page_authority.mjs 5e53bd2ad40823a8768802df0a1c5431adb19ee9
+          check_blob parallel/ALPHA_TRANSPORT_IMPL/worker_runtime.mjs c353b4500640e31950cde42173a934d541f22531
+          check_blob parallel/ALPHA_TRANSPORT_IMPL/acceptance_adapter.mjs d79dff0b2708c671ab8a11644fcc4f771ec75003
+          check_blob parallel/ALPHA_TRANSPORT_MOCK/fixtures.json 35bf36b4c741cda5d94be3f9884511a86653c11f
+          check_blob parallel/ALPHA_TRANSPORT_MOCK/vectors.json 5a0cbe2ccfcf7eb6e875552f56748f736722c14d
+          check_blob parallel/ALPHA_TRANSPORT_MOCK/expected_results.json 1231e0946d18068284724d92e732ea185e4e6af8
+          if [ -s /tmp/alpha-endurance-v2-final-drift.txt ]; then
+            DRIFT_BLOCKER="current main SUT/input snapshot drift at final aggregation: $(tr '\n' ' ' < /tmp/alpha-endurance-v2-final-drift.txt)"
+            export DRIFT_BLOCKER
+            node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const p = 'parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/final-summary.json';
+          const x = JSON.parse(fs.readFileSync(p, 'utf8'));
+          x.finalCurrentMainSnapshot = { status: 'BLOCKED', blocker: process.env.DRIFT_BLOCKER };
+          if (x.status === 'PASS') {
+            x.status = 'BLOCKED';
+            x.blocker = process.env.DRIFT_BLOCKER;
+            x.verdict = `BLOCKED — ALPHA TRANSPORT TRUE 5H ENDURANCE V2 — ${process.env.DRIFT_BLOCKER}`;
+          }
+          fs.writeFileSync(p, JSON.stringify(x, null, 2) + '\n');
+          NODE
+          else
+            node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const p = 'parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/final-summary.json';
+          const x = JSON.parse(fs.readFileSync(p, 'utf8'));
+          x.finalCurrentMainSnapshot = { status: 'PASS', exactPinnedBlobsStillCurrent: true };
+          fs.writeFileSync(p, JSON.stringify(x, null, 2) + '\n');
+          NODE
+          fi
+
+      - name: Render owner result and final claim payload
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const summaryPath = 'parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/final-summary.json';
+          const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+          const hours = ms => (Number(ms || 0) / 3600000).toFixed(3);
+          const controls = Array.isArray(summary.frozenCatalogControls) ? summary.frozenCatalogControls : [];
+          const controlPasses = controls.filter(x => x.status === 'PASS' && x.passCount === 67 && x.vectorCount === 67).length;
+          const result = `# Alpha Safe Transport — True 5h+ Endurance Recovery V2\n\nStage: \`ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2\`\n\n## Verdict\n\n**${summary.verdict}**\n\n## Durable run identity\n\n- Workflow run ID: \`${process.env.GITHUB_RUN_ID}\`\n- Workflow run attempt: \`${process.env.GITHUB_RUN_ATTEMPT}\`\n- Run head SHA: \`${process.env.GITHUB_SHA}\`\n- V1 elapsed reused: **NO**\n\n## Duration\n\n- Intended executor duration: ${hours(summary.intendedDurationMs)} h (${summary.intendedDurationMs} ms)\n- Required minimum: 5.000 h (18000000 ms)\n- Actual executor elapsed: ${hours(summary.actualExecutorElapsedMs)} h (${summary.actualExecutorElapsedMs} ms)\n- Actual wall-clock span: ${hours(summary.actualWallClockMs)} h (${summary.actualWallClockMs} ms)\n- Durable checkpoints: ${summary.checkpointCount}/${summary.intendedCheckpointCount}\n\n## Generated evidence\n\n- Unique generated scenarios: ${summary.uniqueGeneratedScenarioCount}\n- Failure count: ${summary.failureCount}\n- Stress family counts: \`${JSON.stringify(summary.seedScenarioCoverage?.familyCounts || {})}\`\n- Frozen 67-vector controls passing 67/67: ${controlPasses}/${summary.checkpointCount}\n- Seed ranges and rolling evidence hashes: see \`final-summary.json\`.\n\n## Infrastructure recovery proof\n\n- The V2 workflow creates the checkpoint/log directory before \`tee\`.\n- \`pipefail\` is preserved; the preflight negative smoke proves a failing runner pipeline returns non-zero.\n- The positive smoke produces both JSON and log and is explicitly excluded from endurance duration.\n- Execution is max-parallel=1 across 13 x 25-minute non-idle stress segments; there is no sleep padding.\n- V1 elapsed evidence is not aggregated into V2.\n\n## Safety\n\n\`readOnly=true / ramWrites=0 / inputInjection=false / workerReplacement=false / blobRewrite=false\`\n\n## Exact SUT / input blobs\n\n\`${JSON.stringify(summary.exactSutInputBlobs)}\`\n\n## Current-main drift gate\n\n\`${JSON.stringify(summary.finalCurrentMainSnapshot || null)}\`\n\n## Blocker\n\n${summary.status === 'PASS' ? 'None.' : summary.blocker}\n\n## Integration reassessment\n\n${summary.integrationRequirementChange}\n\nOwner action: **NO**.\n`;
+          fs.writeFileSync('parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/RESULT.md', result);
+          const claim = {
+            schema: 'wof-pm-stage-claim-v1',
+            stageId: 'ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2',
+            promptPath: 'parallel/PM/ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2_START_PROMPT.md',
+            state: summary.status === 'PASS' ? 'COMPLETE' : 'BLOCKED',
+            startCommit: '0e24aa5f4e7dc7d64719f9a702dd166cbc24f99c',
+            startedAtUtc: '2026-09-02T00:51:00Z',
+            completedAtUtc: new Date().toISOString(),
+            verdict: summary.verdict,
+            blocker: summary.status === 'PASS' ? null : summary.blocker,
+            workflowRunId: process.env.GITHUB_RUN_ID,
+            workflowRunAttempt: process.env.GITHUB_RUN_ATTEMPT,
+            runHead: process.env.GITHUB_SHA,
+            actualExecutorElapsedMs: summary.actualExecutorElapsedMs,
+            actualWallClockMs: summary.actualWallClockMs,
+            checkpointCount: summary.checkpointCount,
+            intendedCheckpointCount: summary.intendedCheckpointCount,
+            uniqueGeneratedScenarioCount: summary.uniqueGeneratedScenarioCount,
+            failureCount: summary.failureCount,
+            frozenCatalogControls: summary.frozenCatalogControls,
+            safety: summary.safety,
+            exactSutInputBlobs: summary.exactSutInputBlobs,
+            finalCurrentMainSnapshot: summary.finalCurrentMainSnapshot,
+            v1ElapsedReused: false,
+            resultPath: 'parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/RESULT.md',
+            summaryPath: 'parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/final-summary.json',
+            smokeResultPath: 'parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/smoke/SMOKE_RESULT.json',
+            ownerAction: 'NO'
+          };
+          fs.writeFileSync('/tmp/alpha-endurance-v2-final-claim.json', JSON.stringify(claim, null, 2) + '\n');
+          NODE
+
+      - name: Upload final V2 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-transport-true-5h-endurance-v2-final
+          path: |
+            parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/final-summary.json
+            parallel/ALPHA_TRANSPORT_TRUE_ENDURANCE_V2/RESULT.md
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish final V2 evidence and close stage claim
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$V2_DIR/final-summary.json" /tmp/final-summary.json
+          cp "$V2_DIR/RESULT.md" /tmp/RESULT.md
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          result_commit=''
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main --quiet
+            git reset --hard HEAD
+            git clean -fd
+            git checkout -B alpha-endurance-v2-final origin/main
+            mkdir -p "$V2_DIR"
+            cp /tmp/final-summary.json "$V2_DIR/final-summary.json"
+            cp /tmp/RESULT.md "$V2_DIR/RESULT.md"
+            git add "$V2_DIR/final-summary.json" "$V2_DIR/RESULT.md"
+            git commit -m 'Alpha transport endurance V2: publish final evidence' || true
+            result_commit="$(git rev-parse HEAD)"
+            if git push origin HEAD:main; then break; fi
+            result_commit=''
+          done
+          test -n "$result_commit"
+
+          RESULT_COMMIT="$result_commit" node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const claim = JSON.parse(fs.readFileSync('/tmp/alpha-endurance-v2-final-claim.json', 'utf8'));
+          claim.resultCommit = process.env.RESULT_COMMIT;
+          fs.writeFileSync('/tmp/alpha-endurance-v2-final-claim-with-commit.json', JSON.stringify(claim, null, 2) + '\n');
+          NODE
+
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main --quiet
+            git reset --hard HEAD
+            git clean -fd
+            git checkout -B alpha-endurance-v2-claim origin/main
+            cp /tmp/alpha-endurance-v2-final-claim-with-commit.json parallel/PM/STAGE_CLAIMS/ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2.json
+            git add parallel/PM/STAGE_CLAIMS/ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2.json
+            git commit -m 'PM: close Alpha Transport true 5h endurance recovery V2' || exit 0
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          echo 'V2 final claim publication failed after retries' >&2
+          exit 1
