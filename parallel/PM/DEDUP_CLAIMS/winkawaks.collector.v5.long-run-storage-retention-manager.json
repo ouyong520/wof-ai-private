@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "winkawaks.collector.v5.long-run-storage-retention-manager",
+  "effectiveDedupKey": "winkawaks.collector.v5.long-run-storage-retention-manager",
+  "dedupMode": "exclusive",
+  "stageId": "WINKAWAKS_COLLECTOR_V5_LONG_RUN_STORAGE_RETENTION_MANAGER_V1",
+  "promptPath": "parallel/PM/WINKAWAKS_COLLECTOR_V5_LONG_RUN_STORAGE_RETENTION_MANAGER_START_PROMPT.md",
+  "owner": "gpt-5.6-sol-v5-storage-retention",
+  "claimToken": "d662f375d016d273e93606e664236b8144d443e04500f24d",
+  "state": "ACTIVE",
+  "startCommit": "cc7dc2ed14224ba8688d216cbcffa8cc338111e7"
+}
