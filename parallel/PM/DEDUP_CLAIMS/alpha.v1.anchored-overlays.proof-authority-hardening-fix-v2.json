@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.anchored-overlays.proof-authority-hardening-fix-v2",
+  "effectiveDedupKey": "alpha.v1.anchored-overlays.proof-authority-hardening-fix-v2",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_ANCHORED_OVERLAYS_PROOF_AUTHORITY_HARDENING_FIX_V2",
+  "promptPath": "parallel/PM/ALPHA_V1_ANCHORED_OVERLAYS_PROOF_AUTHORITY_HARDENING_FIX_V2_START_PROMPT.md",
+  "owner": "chatgpt-gpt5.6-sol-proof-authority-v2",
+  "claimToken": "eb3f8c1c-da1e-4e8b-a869-35972a1df8c4",
+  "state": "ACTIVE",
+  "startCommit": "88b0e583344801bf98ae298bef9e55474209dfb1"
+}
