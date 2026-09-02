@@ -5,6 +5,8 @@
   "effectiveDedupKey": "training.farm.r0.4.real-wof-proof-owner-runner-prep",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.real-wof-proof-owner-runner-prep.json",
   "claimToken": "5d4e07b116210bd958890270db4818ac8091557f330d948e",
-  "state": "ACTIVE",
-  "startCommit": "fd0dd8ebfa11d426cde768a061e70ea877093bc6"
+  "state": "COMPLETE",
+  "startCommit": "fd0dd8ebfa11d426cde768a061e70ea877093bc6",
+  "resultPath": "parallel/TRAINING_FARM_R0_4_REAL_WOF_PROOF_OWNER_RUNNER_PREP/RESULT.md",
+  "resultCommit": "c7eebb27a1fb5ac80f2871adc1817bc4b84bf889"
 }
