@@ -100,6 +100,23 @@ test('retarget sample barrier',()=>{
   const fresh=plan([warning('P2')],{P2:player(190,50,0,1010)},proj(0,1010),db(1010),1020,1010);
   assert.equal(fresh.anchored[0].player,'P2');
 });
+// 10b semantic warningSampleAt is exact primitive finite-number authority.
+test('strict warning sample time fail closed',()=>{
+  const args={warnings:[warning('P2')],players:{P2:player(190,50,0,1010)},projection:proj(0,1010),drawingBufferState:db(1010),nowMs:1020,warningEpoch:E};
+  const missing=A.buildPlan(args);
+  assert.equal(missing.anchored.length,0); assert.equal(missing.fixed[0].reason,'INVALID_WARNING_SAMPLE_TIME');
+  const attacks=[null,'1010',new Number(1010),{valueOf(){return 1010;}},{toString(){return '1010';}},NaN,Infinity,-Infinity];
+  for(const warningSampleAt of attacks){
+    const p=A.buildPlan({...args,warningSampleAt});
+    assert.equal(p.anchored.length,0); assert.equal(p.fixed[0].reason,'INVALID_WARNING_SAMPLE_TIME');
+  }
+  const valid=A.buildPlan({...args,warningSampleAt:1010});
+  assert.equal(valid.anchored.length,1); assert.equal(valid.fixed.length,0);
+  const oldSpatial=A.buildPlan({...args,players:{P2:player(190,50,0,1009)},warningSampleAt:1010});
+  assert.equal(oldSpatial.anchored.length,0); assert.equal(oldSpatial.fixed[0].reason,'SPATIAL_BEFORE_WARNING_SAMPLE');
+  const oldProjection=A.buildPlan({...args,projection:proj(0,1009),warningSampleAt:1010});
+  assert.equal(oldProjection.anchored.length,0); assert.equal(oldProjection.fixed[0].reason,'PROJECTION_BEFORE_WARNING_SAMPLE');
+});
 // 11 stale and malformed/nonfinite/out-of-bounds.
 test('stale malformed bounds',()=>{
   assert.equal(plan([warning()],{P1:player(100,50,0,900)},proj(),db(),1010).fixed[0].reason,'STALE_PLAYER');
@@ -167,4 +184,4 @@ test('loader integration',()=>{
   assert.ok(helper>=0&&hud>helper);
 });
 
-console.log(JSON.stringify({status:'PASS',passed,total:21,fixture:'SYNTHETIC_PLAYER_HEAD_WARNING_ONLY_NOT_BROWSER_PROOF'}));
+console.log(JSON.stringify({status:'PASS',passed,total:22,fixture:'SYNTHETIC_PLAYER_HEAD_WARNING_ONLY_NOT_BROWSER_PROOF'}));
