@@ -24,8 +24,11 @@ jobs:
         run: python -m pip install websocket-client
       - name: Camera READY stability / TOCTOU deterministic self-check
         run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_camera_ready_stability_recovery.py' -v
-      - name: Lifecycle-aware local identity and retained calibration regression
-        run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_owner_calibration_identity_recovery.py' -v
+      - name: Lifecycle-aware identity and retained calibration continuity
+        run: |
+          python parallel/PYLAUNCH/tests/test_owner_calibration_identity_recovery.py OwnerCalibrationIdentityRecoveryTests.test_field_adapter_lifecycle_identity_matrix_is_strict -v
+          python parallel/PYLAUNCH/tests/test_owner_calibration_identity_recovery.py OwnerCalibrationIdentityRecoveryTests.test_hudanchor_need_more_pauses_and_resumes_without_losing_samples -v
+          python parallel/PYLAUNCH/tests/test_owner_calibration_identity_recovery.py OwnerCalibrationIdentityRecoveryTests.test_significant_live_state_survives_terminal_disconnect -v
       - name: Re-entry / runtime generation regression
         run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_overlay_reentry_recovery.py' -v
       - name: Runtime syntax and read-only boundary assertions
