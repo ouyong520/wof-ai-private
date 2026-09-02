@@ -5,6 +5,12 @@
   "effectiveDedupKey": "winkawaks.collector.v6.segment-aware-analysis-reader.recovery-v2",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/winkawaks.collector.v6.segment-aware-analysis-reader.recovery-v2.json",
   "claimToken": "46b6ba65b262b792046c08a1557cf8c8216e448006250856",
-  "state": "ACTIVE",
-  "startCommit": "1474541af3f501b6872c3a0524de5a87c5721d09"
+  "state": "COMPLETE",
+  "startCommit": "1474541af3f501b6872c3a0524de5a87c5721d09",
+  "resultPath": "parallel/PM/WINKAWAKS_COLLECTOR_V6_SEGMENT_AWARE_ANALYSIS_READER_RECOVERY_V2_RESULT.md",
+  "resultCommit": "7d7c33e1a9e703d75f3e9555e25d409abe93998e",
+  "implementationRepository": "ouyong520/wof-winkawaks-bridge",
+  "implementationCommit": "c20c9dbe0684c645b4bb8760ab5110b00d12b09c",
+  "implementationTree": "4011e46717ae6323e53d05b1b7973c1fa836536a",
+  "workflowRunId": 33642019001
 }
