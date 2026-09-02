@@ -5,6 +5,14 @@
   "effectiveDedupKey": "alpha.v1.live-acceptance.camera-authority-ready-stability-recovery-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.live-acceptance.camera-authority-ready-stability-recovery-v1.json",
   "claimToken": "a48c5526-c562-449a-ac19-ae42cfad46d1",
-  "state": "ACTIVE",
-  "startCommit": "0d8322d91677cb80ab64cbac2162d42eced2b133"
+  "state": "COMPLETE",
+  "startCommit": "0d8322d91677cb80ab64cbac2162d42eced2b133",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_LIVE_ACCEPTANCE_CAMERA_AUTHORITY_READY_STABILITY_RECOVERY_V1_RESULT.md",
+  "resultCommit": "a1cc6b80728bc31aa0819fe0b84e0c588a7fa490",
+  "implementationRepository": "ouyong520/wof-ai-private",
+  "implementationCommit": "52c942085c99f6814d4389c43d8e5fe626bdea10",
+  "packageVersion": "2026.09.02.52c942085c99",
+  "manifestPublicationCommit": "c834497aabe5983801c30dbb7e7843074a9ad05a",
+  "implementationWorkflowRunId": 33660928233,
+  "workflowRunId": 33661111743
 }
