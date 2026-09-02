@@ -199,3 +199,20 @@ A correctly guarded new task converges to one of:
 - `CLAIM ACQUIRED — WORK STARTED`
 
 Owner does not need to remember which window received a prompt. Different `stageId` values do not bypass canonical dedup when PM assigned the same logical `dedupKey`.
+
+## 12. Dedup authorization does not imply QA authorization
+
+Authoritative testing cadence: `parallel/PM/TESTING_CADENCE_POLICY.md`.
+
+Canonical ownership only answers **who may execute a task**. It does not answer **whether another QA/retest/cross-check task should exist at all**.
+
+Before PM creates any new QA, retest, cross-check or independent-validation prompt, the module-boundary rules in the testing cadence policy must be satisfied. In particular:
+
+- do not schedule independent QA after every sub-file, sub-fix, integration step, manifest update or closeout step;
+- normally finish the coherent functional/module candidate first;
+- use implementation-owned self-checks while the module is still being built;
+- default to one independent QA for the stable module candidate;
+- if that QA finds concrete defects, batch the related fixes and run one focused retest;
+- do not allocate extra independent-validation keys merely because worker slots are free or because additional confidence would be nice.
+
+`dedupMode: independent-validation` is an exception mechanism for a **justified additional independent opinion**, not a mechanism for manufacturing more QA generations.
