@@ -5,6 +5,8 @@
   "effectiveDedupKey": "alpha.v1.player-head-danger-warning.post-strict-sampleat-fix-fresh-qa",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.player-head-danger-warning.post-strict-sampleat-fix-fresh-qa.json",
   "claimToken": "a9c0f7c8-4d6a-4f91-8ee4-7c93b20b5a13-6f22e8c91fd54f5f",
-  "state": "ACTIVE",
-  "startCommit": "a974621875150031e3c1dbc16f49aa502d2bd87b"
+  "state": "COMPLETE",
+  "startCommit": "a974621875150031e3c1dbc16f49aa502d2bd87b",
+  "durableResultPath": "parallel/ALPHA_V1_PLAYER_HEAD_WARNING_QA_V2/RESULT.md",
+  "resultCommit": "04ef0bc477fe71c250c6647360f23343b0bf56cd"
 }
