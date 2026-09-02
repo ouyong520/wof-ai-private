@@ -41,7 +41,7 @@ with exact current main start commit.
 Do **not** refresh early merely to make the manifest look current. Before generating V3, require current evidence that package-consumed release runtime has settled:
 
 1. `ALPHA_TRANSPORT_FORMAL_REAL_ADAPTER_INTEGRATION_FRESH_QA_V1` = COMPLETE/PASS;
-2. `UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_FRESH_QA_V1` = COMPLETE/PASS;
+2. `UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_V1` = COMPLETE/PASS;
 3. `PYLAUNCH_STARTUP_ATTESTATION_QA_V1` remains COMPLETE/PASS and its tested production blobs still equal current blobs;
 4. no active P0/P1 fix owns a package-selected runtime file.
 
