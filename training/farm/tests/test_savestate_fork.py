@@ -228,6 +228,52 @@ class ForkTests(unittest.TestCase):
         self.assertEqual(rejected["status"], "ERROR")
         self.assertEqual(rejected["reasonCode"], "INVALID_RESUME_RESULT")
 
+        extra_field = copy.deepcopy(partial)
+        extra_field["notInPublishedSchema"] = True
+        with TrainingFarmAdapter(DeterministicFakeBackend()) as adapter:
+            rejected_extra = run_fork_set(
+                adapter,
+                plan,
+                identity_provider=lambda: build_fixture_runtime_identity(adapter),
+                proof_scope=PROOF_SCOPE_FIXTURE,
+                resume_result=extra_field,
+            )
+        self.assertEqual(rejected_extra["status"], "ERROR")
+        self.assertEqual(rejected_extra["reasonCode"], "INVALID_RESUME_RESULT")
+
+        tampered_root = copy.deepcopy(partial)
+        tampered_root["rootAuthority"]["runtimeIdentitySha256"] = "0" * 64
+        with TrainingFarmAdapter(DeterministicFakeBackend()) as adapter:
+            rejected_root = run_fork_set(
+                adapter,
+                plan,
+                identity_provider=lambda: build_fixture_runtime_identity(adapter),
+                proof_scope=PROOF_SCOPE_FIXTURE,
+                resume_result=tampered_root,
+            )
+        self.assertEqual(rejected_root["status"], "ERROR")
+        self.assertEqual(rejected_root["reasonCode"], "INVALID_RESUME_RESULT")
+
+        duplicate_nonpass = copy.deepcopy(partial)
+        failed_row = duplicate_nonpass["branches"][0]
+        failed_row["status"] = "FAIL"
+        failed_row["reasonCode"] = "BRANCH_NON_DETERMINISTIC"
+        failed_row["message"] = "fixture malformed duplicate row"
+        failed_row["deterministic"] = False
+        duplicate_nonpass["branches"] = [failed_row, copy.deepcopy(failed_row)]
+        duplicate_nonpass["branchesAttempted"] = 2
+        duplicate_nonpass["branchesCompleted"] = 0
+        with TrainingFarmAdapter(DeterministicFakeBackend()) as adapter:
+            rejected_duplicate = run_fork_set(
+                adapter,
+                plan,
+                identity_provider=lambda: build_fixture_runtime_identity(adapter),
+                proof_scope=PROOF_SCOPE_FIXTURE,
+                resume_result=duplicate_nonpass,
+            )
+        self.assertEqual(rejected_duplicate["status"], "ERROR")
+        self.assertEqual(rejected_duplicate["reasonCode"], "INVALID_RESUME_RESULT")
+
         changed = copy.deepcopy(plan_value([branch("branch-a", 2), branch("branch-b", 1)]))
         changed_plan = parse_fork_plan(changed)
         with TrainingFarmAdapter(DeterministicFakeBackend()) as adapter:
