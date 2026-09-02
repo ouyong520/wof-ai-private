@@ -2,7 +2,10 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "UNIFIED_LIVE_PROOF_RECORDER_INFLIGHT_GENERATION_ATOMICITY_QA_V1",
   "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_RECORDER_INFLIGHT_GENERATION_ATOMICITY_QA_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "6adaaaf5619da0ed116abf8d0abbfc2b8cc1a085",
-  "startedAtUtc": "2026-09-02T01:04:00Z"
+  "claimCommit": "aec5ab69466ec66d9ee64b27d2020f7109906b7b",
+  "resultPath": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_INFLIGHT_ATOMICITY/RESULT.md",
+  "resultCommit": "c1d9a43193dcbc1cfea1db8012532416fb439361",
+  "stopCondition": "PASS — RECORDER IN-FLIGHT GENERATION ATOMICITY FRESH QA — READY FOR CURRENT-HEAD UNIFIED PREFLIGHT"
 }
