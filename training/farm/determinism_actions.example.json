@@ -1,0 +1,38 @@
+[
+  {
+    "frames": 2,
+    "inputs": [
+      {"player": 0, "pressed": []},
+      {"player": 1, "pressed": []},
+      {"player": 2, "pressed": []},
+      {"player": 3, "pressed": []}
+    ]
+  },
+  {
+    "frames": 3,
+    "inputs": [
+      {"player": 0, "pressed": [0]},
+      {"player": 1, "pressed": []},
+      {"player": 2, "pressed": []},
+      {"player": 3, "pressed": []}
+    ]
+  },
+  {
+    "frames": 1,
+    "inputs": [
+      {"player": 0, "pressed": [0, 1]},
+      {"player": 1, "pressed": []},
+      {"player": 2, "pressed": []},
+      {"player": 3, "pressed": []}
+    ]
+  },
+  {
+    "frames": 2,
+    "inputs": [
+      {"player": 0, "pressed": []},
+      {"player": 1, "pressed": []},
+      {"player": 2, "pressed": []},
+      {"player": 3, "pressed": []}
+    ]
+  }
+]
