@@ -5,7 +5,13 @@
   "effectiveDedupKey": "owner.oneclick.current-head.release-refresh-v3",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/owner.oneclick.current-head.release-refresh-v3.json",
   "claimToken": "6eeee728744422ab2ca92e0e40f9f13b783ab5eb94e6d7c0",
-  "state": "ACTIVE",
+  "state": "BLOCKED",
+  "terminalStatus": "WAITING_GATE",
   "startCommit": "d6e3a347567f4db5ae7d0d5a4e03561bd91c46c8",
-  "promptPath": "parallel/PM/OWNER_ONECLICK_CURRENT_HEAD_RELEASE_REFRESH_V3_CANONICAL_V2_START_PROMPT.md"
+  "promptPath": "parallel/PM/OWNER_ONECLICK_CURRENT_HEAD_RELEASE_REFRESH_V3_CANONICAL_V2_START_PROMPT.md",
+  "resultPath": "parallel/OWNER_ONECLICK/RESULT.md",
+  "resultCommit": "7a7fd5ef1a2e9c53ac2c811eb3ac2e59fe795708",
+  "result": "WAITING_GATE — OWNER ONECLICK V3 REFRESH MUST WAIT FOR FRESH RELEASE QA",
+  "blocker": "Current product/alpha/wof_alpha_real_worker.js and wof_alpha_hud.js no longer match the latest successful formal real-adapter fresh-QA audited production generation; no later current-generation formal fresh-QA successor was found.",
+  "ownerAction": "NO"
 }
