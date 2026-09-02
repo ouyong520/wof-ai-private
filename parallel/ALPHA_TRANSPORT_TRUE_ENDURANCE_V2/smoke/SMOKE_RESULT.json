@@ -1,0 +1,20 @@
+{
+  "schema": "wof-alpha-transport-true-endurance-infra-smoke-v2",
+  "stageId": "ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2",
+  "status": "PASS",
+  "notCountedTowardEndurance": true,
+  "positive": {
+    "exitCode": 0,
+    "checkpointPresent": true,
+    "logPresent": true,
+    "actualElapsedMs": 1045,
+    "frozenCatalogPassCount": 67,
+    "frozenCatalogVectorCount": 67
+  },
+  "negative": {
+    "exitCode": 1,
+    "expectedNonZero": true,
+    "logPresent": true,
+    "reason": "intentional invalid ENDURANCE_SEGMENT_MS=999 verifies pipefail/non-zero propagation"
+  }
+}
