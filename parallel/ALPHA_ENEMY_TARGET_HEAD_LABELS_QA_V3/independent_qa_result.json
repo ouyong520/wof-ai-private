@@ -1,0 +1,33 @@
+{
+  "schema": "wof-alpha-enemy-target-head-labels-independent-repository-qa-v3",
+  "status": "PASS",
+  "testCount": 23,
+  "passCount": 23,
+  "failCount": 0,
+  "evidenceClass": "SYNTHETIC_REPOSITORY_QA_ONLY_NOT_BROWSER_WOF_PROJECTION_PROOF",
+  "results": [
+    {"name":"01 primitive numeric 0/4/8 map exactly to 1P/2P/3P","ok":true},
+    {"name":"02 strict malformed/coercible raw target values fail closed","ok":true},
+    {"name":"03 raw/normalized target mismatch fails closed","ok":true},
+    {"name":"04 all marker/projection/drawing-buffer epochs runtime-a is valid","ok":true},
+    {"name":"05 current marker/projection runtime-a plus stale drawing-buffer runtime-old/runtime-old is suppressed","ok":true},
+    {"name":"06 drawing-buffer epoch/projectionEpoch split is suppressed","ok":true},
+    {"name":"07 marker/projection/drawing-buffer three-way mixed epochs fail closed","ok":true},
+    {"name":"08 projection epoch missing/malformed/non-string/coercible is rejected","ok":true},
+    {"name":"09 drawing-buffer epoch fields missing/malformed/non-string/coercible are rejected","ok":true},
+    {"name":"10 marker epoch missing/malformed/coercible/mismatch is rejected","ok":true},
+    {"name":"11 P1->P2->P3 retarget updates immediately with no old label hold","ok":true},
+    {"name":"12 simultaneous enemies retain independent targets","ok":true},
+    {"name":"13 disappearance/same-slot replacement cannot inherit stale label","ok":true},
+    {"name":"14 marker/projection/drawing-buffer freshness boundaries fail closed","ok":true},
+    {"name":"15 invalid confidence/non-finite coordinates/camera fail closed","ok":true},
+    {"name":"16 unsupported type/slot/target and invalid native anchor suppress","ok":true},
+    {"name":"17 edge clamp applies only to valid compact label rectangle","ok":true},
+    {"name":"18 resize/fullscreen remap changes mapping and stale generation cannot be reused","ok":true},
+    {"name":"19 invalid drawing-buffer geometry/content bounds suppress before clamp","ok":true},
+    {"name":"20 repository projection profile remains UNPROVEN and fail-closed","ok":true},
+    {"name":"21 malformed proof/profile facts fail closed","ok":true},
+    {"name":"22 marker array malformed input fails closed/no crash","ok":true},
+    {"name":"23 tiny valid drawing-buffer still clamps compact label rectangle within content rect","ok":true}
+  ]
+}
