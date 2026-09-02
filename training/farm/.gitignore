@@ -1,0 +1,12 @@
+# Never vendor copyrighted ROM/BIOS data or third-party emulator binaries.
+roms/
+bios/
+*.zip
+*.7z
+*.chd
+*.rom
+*.bin
+*.state
+*.dll
+*.so
+*.dylib
