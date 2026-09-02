@@ -18,6 +18,11 @@ const LOGICAL_BYTES=0x100000;
 const PLAYER_SPATIAL_PUBLISH_MS=20;
 const HEX32=/^[0-9a-f]{32}$/;
 const SAFETY=Object.freeze({readOnly:true,ramWrites:0,inputInjection:false,workerReplacement:false,blobRewrite:false,gamePostMessageControl:false,heapWrites:false,assistMode:false});
+const PLAYER_LOCAL_IDENTITY=Object.freeze([
+  Object.freeze({name:'P1',base:0xFFBE1C,expectedSelfIndex:0}),
+  Object.freeze({name:'P2',base:0xFFBEFC,expectedSelfIndex:4}),
+  Object.freeze({name:'P3',base:0xFFBFDC,expectedSelfIndex:8})
+]);
 
 function moduleGood(v){return !!(v&&v.HEAPU8 instanceof Uint8Array&&v.HEAPU32 instanceof Uint32Array&&v.HEAPU8.buffer===v.HEAPU32.buffer);}
 async function findModule(scope){
@@ -52,6 +57,26 @@ function createTickAuthorityGate(binding){
     status(){return{active,inFlight:!!inFlight,queueDepth:0,skippedTicks,...current};}
   };
 }
+function classifyPlayerLocalIdentity(presenceByte,selfIndex,expectedSelfIndex){
+  if(!Number.isInteger(presenceByte)||presenceByte<0||presenceByte>255||!Number.isInteger(selfIndex)||selfIndex<0||selfIndex>0xffff||!Number.isInteger(expectedSelfIndex)){
+    return{state:'UNKNOWN',applicable:false,ok:false,reason:'malformed-player-local-identity'};
+  }
+  if(presenceByte!==0){
+    if(selfIndex===expectedSelfIndex)return{state:'ACTIVE',applicable:true,ok:true,reason:'active-exact-self-index'};
+    return{state:'UNKNOWN',applicable:true,ok:false,reason:'active-self-index-mismatch'};
+  }
+  if(selfIndex===0)return{state:'INACTIVE',applicable:false,ok:true,reason:'inactive-zeroed-self-index'};
+  if(selfIndex===expectedSelfIndex)return{state:'INACTIVE',applicable:false,ok:true,reason:'inactive-retained-exact-self-index'};
+  return{state:'UNKNOWN',applicable:false,ok:false,reason:'inactive-contradictory-self-index'};
+}
+function evaluatePlayerLocalIdentities(readU8,readU16){
+  const players=PLAYER_LOCAL_IDENTITY.map(spec=>{
+    const presenceByte=readU8(spec.base),selfIndex=readU16(spec.base+0x7C),classification=classifyPlayerLocalIdentity(presenceByte,selfIndex,spec.expectedSelfIndex);
+    return{name:spec.name,base:spec.base,presenceByte,selfIndex,expectedSelfIndex:spec.expectedSelfIndex,...classification};
+  });
+  const bad=players.filter(p=>!p.ok);
+  return{ok:bad.length===0,players,selfIndexes:players.map(p=>p.selfIndex),activePlayers:players.filter(p=>p.state==='ACTIVE').map(p=>p.name),inactivePlayers:players.filter(p=>p.state==='INACTIVE').map(p=>p.name),badPlayers:bad.map(p=>p.name)};
+}
 async function verifySelectedIdentity(scope,mod,binding){
   if(!moduleGood(mod)||!validBinding(binding))return{ok:false,reason:'module/binding mismatch',...SAFETY};
   if(!scope.crypto?.subtle?.digest)return{ok:false,reason:'Web Crypto SHA-256 unavailable',...SAFETY};
@@ -66,9 +91,12 @@ async function verifySelectedIdentity(scope,mod,binding){
   if(!R||R+0x10000>M.length)return{ok:false,reason:'CPS RAM window unavailable',sha256,...SAFETY};
   const B=a=>M[R+((((a-0xFF0000)&0xffff)^1))]>>>0;
   const U16=a=>((B(a)<<8)|B(a+1))>>>0;
-  const selfIndexes=[U16(0xFFBE1C+0x7C),U16(0xFFBEFC+0x7C),U16(0xFFBFDC+0x7C)];
-  if(selfIndexes[0]!==0||selfIndexes[1]!==4||selfIndexes[2]!==8)return{ok:false,reason:'P1/P2/P3 local identity mismatch',sha256,selfIndexes,...SAFETY};
-  return{ok:true,reason:'detector-local exact SHA-256 at launcher-uniquely-selected locator',sha256,expectedSha256:GOLDEN_SHA,locator:{heapBase:base,swap16:swap},selfIndexes,...SAFETY};
+  const localIdentity=evaluatePlayerLocalIdentities(B,U16);
+  if(!localIdentity.ok){
+    const bad=localIdentity.players.filter(p=>!p.ok).map(p=>`${p.name}:${p.state}:${p.reason}:present=${p.presenceByte}:self=${p.selfIndex}:expected=${p.expectedSelfIndex}`).join(', ');
+    return{ok:false,reason:'P1/P2/P3 local identity contradictory: '+bad,sha256,selfIndexes:localIdentity.selfIndexes,playerLifecycle:localIdentity.players,...SAFETY};
+  }
+  return{ok:true,reason:'detector-local exact SHA-256 plus lifecycle-aware strict local identity',sha256,expectedSha256:GOLDEN_SHA,locator:{heapBase:base,swap16:swap},selfIndexes:localIdentity.selfIndexes,playerLifecycle:localIdentity.players,activePlayers:localIdentity.activePlayers,inactivePlayers:localIdentity.inactivePlayers,localIdentitySemantics:'active-exact/inactive-zeroed-or-retained-exact/unknown-fail-closed-v1',...SAFETY};
 }
 function stableWarningsHash(warnings){return JSON.stringify((warnings||[]).map(w=>[w.ruleId,w.slot,w.target7E,w.sourceSide,w.threatSide,w.attack,w.publication,w.evidence]));}
 function markerTargetHash(markers,projectionOk){return (projectionOk?'ok|':'invalid|')+JSON.stringify((markers||[]).map(m=>[m.slot,m.target7E,m.target]));}
@@ -157,5 +185,5 @@ async function install(scope,binding){
     status(){return{version:VERSION,release:RELEASE,running:running&&gate.status().active,identitySignature:IDENTITY_SIGNATURE,identity,...SAFETY,polls,lastError,playerHeadWarning:{moduleReady:true,projectionReady:!!playerProjectionProfile,proofId:playerProjectionProfile?.proofId??null,playerSpatialSeq,lastError:lastPlayerSpatialError,holdMs:0,smoothing:false,maxPublishHz:1000/PLAYER_SPATIAL_PUBLISH_MS,maxSpatialAgeMs:playerHeadApi.MAX_PLAYER_AGE_MS??80},enemyTargetLabels:{moduleReady:true,projectionReady:!!projectionProfile,proofId:projectionProfile?.proofId??null,markerSeq,lastError:lastMarkerError,holdMs:0,smoothing:false,maxPublishHz:20},...gate.status()};}};
   scope.__WOF_ALPHA_REAL_TRANSPORT=runtime;return runtime.status();
 }
-return{VERSION,RELEASE,SCHEMA,TRANSPORT,GOLDEN_SHA,IDENTITY_SIGNATURE,SAFETY,validBinding,verifySelectedIdentity,createTickAuthorityGate,install};
+return{VERSION,RELEASE,SCHEMA,TRANSPORT,GOLDEN_SHA,IDENTITY_SIGNATURE,SAFETY,PLAYER_LOCAL_IDENTITY,validBinding,classifyPlayerLocalIdentity,evaluatePlayerLocalIdentities,verifySelectedIdentity,createTickAuthorityGate,install};
 });
