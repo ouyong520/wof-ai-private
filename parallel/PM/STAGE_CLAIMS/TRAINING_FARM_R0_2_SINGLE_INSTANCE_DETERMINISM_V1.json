@@ -5,6 +5,8 @@
   "effectiveDedupKey": "training.farm.r0.2.single-instance-determinism",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.2.single-instance-determinism.json",
   "claimToken": "8b3a53c105bcfaa6f132587e364d5c5e",
-  "state": "ACTIVE",
-  "startCommit": "2a94880da214ef7515e349c8c44c01b5eb05d3df"
+  "state": "COMPLETE",
+  "startCommit": "2a94880da214ef7515e349c8c44c01b5eb05d3df",
+  "resultPath": "parallel/TRAINING_FARM_R0_2/RESULT.md",
+  "resultCommit": "d4886c6beeccedd534a865625bf0e42f4d3cb69e"
 }
