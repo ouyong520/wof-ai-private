@@ -8,6 +8,10 @@
   "promptPath": "parallel/PM/ALPHA_V1_BOUNDED_LIVE_ACCEPTANCE_OWNER_FLOW_V2_START_PROMPT.md",
   "owner": "Alpha V1 Bounded Live Acceptance Owner Flow V2 worker",
   "claimToken": "9ea439eabab50e2565ab2339fc991b1ef364fa4c6ac640e5",
-  "state": "ACTIVE",
-  "startCommit": "fa8f48712d3da580ca2b9aec437c1665ed6a8de8"
+  "state": "COMPLETE",
+  "startCommit": "fa8f48712d3da580ca2b9aec437c1665ed6a8de8",
+  "resultPath": "parallel/PM/ALPHA_V1_BOUNDED_LIVE_ACCEPTANCE_OWNER_FLOW_V2_RESULT.md",
+  "resultCommit": "155c3757ad7d5dfb9f5cd4c8d23aba8b5993422b",
+  "artifactPath": "parallel/PM/ALPHA_V1_BOUNDED_LIVE_ACCEPTANCE_OWNER_FLOW_V2.md",
+  "artifactCommit": "6b305362fe13010c9d677971314597559f6e8b0b"
 }
