@@ -1,0 +1,215 @@
+{
+  "schema": "wof-alpha-v1-named-danger-move-mapping-observation-v1",
+  "evidenceClass": "BOUNDED_LIVE_MAPPING_PROOF",
+  "preparationOnlyTemplate": true,
+  "sourceAuthority": {
+    "repositoryCommit": null,
+    "runtimeManifestRef": null,
+    "collectorOrLiveTraceRef": null,
+    "videoOrFrameArtifactRef": null
+  },
+  "run": {
+    "packetId": null,
+    "runId": null,
+    "startedAt": null,
+    "finishedAt": null,
+    "boundedSessionNote": null
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "lifecycle": {
+    "lifecycleKey": null,
+    "slot": null,
+    "lifecycleGeneration": null,
+    "numericType": null,
+    "firstSeenAt": null,
+    "lastSeenAt": null,
+    "rawSourceRefs": [],
+    "endedBy": null
+  },
+  "enemyIdentity": {
+    "requestedChineseName": null,
+    "status": "UNMAPPED",
+    "acceptedAnchorKind": null,
+    "labelTextObserved": null,
+    "anchorAt": null,
+    "visualEvidenceRef": null,
+    "sourceAuthorityRef": null,
+    "sameInstanceProof": null,
+    "operatorFamiliarityUsedAsAuthority": false,
+    "numericSamples": [],
+    "repeatThreshold": 2,
+    "repeatCount": 0,
+    "allSamplesAgreeOnLifecycleAndType": false,
+    "ambiguityReason": null,
+    "unmappedReason": "not yet observed"
+  },
+  "requiredNumericSampleShape": {
+    "observedAt": null,
+    "slot": null,
+    "lifecycleGeneration": null,
+    "numericType": null,
+    "cycleId": null,
+    "rawSourceRef": null
+  },
+  "requiredMoveCycleShape": {
+    "cycleId": null,
+    "cycleOrdinal": null,
+    "lifecycleKey": null,
+    "cycleStartedAt": null,
+    "cycleEndedAt": null,
+    "visualMove": {
+      "chineseMoveLabel": null,
+      "labelAuthority": "OPERATOR_LIVE_VISUAL_UNAMBIGUOUS",
+      "visibleFrom": null,
+      "visibleTo": null,
+      "videoOrFrameEvidenceRef": null,
+      "ambiguityNote": null
+    },
+    "zeroPrecursor": {
+      "observedAt": null,
+      "attack": 0,
+      "target7E": null,
+      "body": null,
+      "tm": null,
+      "descriptorTuple": {},
+      "rawTuple": {},
+      "rawSourceRef": null,
+      "exactCurrentRuleCandidate": null
+    },
+    "eventualActive": {
+      "observedAt": null,
+      "attackId": null,
+      "attackIdCanonical": null,
+      "target7E": null,
+      "targetPlayerLabel": null,
+      "slot": null,
+      "lifecycleGeneration": null,
+      "numericType": null,
+      "cycleId": null,
+      "rawSourceRef": null,
+      "directlyObserved": false
+    },
+    "transitionIntegrity": {
+      "zeroBeforeActiveInSourceOrder": false,
+      "sameLifecycleKey": false,
+      "sameCycleId": false,
+      "noLifecycleOrSourceGenerationDiscontinuity": false,
+      "activeIdDirectNotPredicted": false,
+      "deltaMs": null
+    },
+    "rawSourceRowRefs": []
+  },
+  "moveMappings": [
+    {
+      "chineseMoveLabel": "飞身",
+      "status": "UNMAPPED",
+      "repeatThreshold": 2,
+      "cycles": [],
+      "completeValidCycleCount": 0,
+      "stableDirectActiveAttackId": null,
+      "stableDirectActiveAttackIdCanonical": null,
+      "allCyclesSameLifecycle": false,
+      "allVisibleLabelsUnambiguous": false,
+      "allTransitionIntegrityPassed": false,
+      "conflictingAttackIds": [],
+      "ambiguityReason": null,
+      "unmappedReason": "not yet observed"
+    },
+    {
+      "chineseMoveLabel": "扑击",
+      "status": "UNMAPPED",
+      "repeatThreshold": 2,
+      "cycles": [],
+      "completeValidCycleCount": 0,
+      "stableDirectActiveAttackId": null,
+      "stableDirectActiveAttackIdCanonical": null,
+      "allCyclesSameLifecycle": false,
+      "allVisibleLabelsUnambiguous": false,
+      "allTransitionIntegrityPassed": false,
+      "conflictingAttackIds": [],
+      "ambiguityReason": null,
+      "unmappedReason": "not yet observed"
+    },
+    {
+      "chineseMoveLabel": "冲撞",
+      "status": "UNMAPPED",
+      "repeatThreshold": 2,
+      "cycles": [],
+      "completeValidCycleCount": 0,
+      "stableDirectActiveAttackId": null,
+      "stableDirectActiveAttackIdCanonical": null,
+      "allCyclesSameLifecycle": false,
+      "allVisibleLabelsUnambiguous": false,
+      "allTransitionIntegrityPassed": false,
+      "conflictingAttackIds": [],
+      "ambiguityReason": null,
+      "unmappedReason": "not yet observed"
+    }
+  ],
+  "candidateAttackNameDecisions": [
+    {
+      "attackId": 5440,
+      "attackIdCanonical": "A5440",
+      "currentNumericAuthority": "production-enabled for type 18 precursor only; Chinese move name unproven",
+      "飞身": "UNMAPPED",
+      "扑击": "UNMAPPED",
+      "冲撞": "UNMAPPED",
+      "evidenceCycleIds": []
+    },
+    {
+      "attackId": 5424,
+      "attackIdCanonical": "A5424",
+      "currentNumericAuthority": "production-enabled for type 18 precursor only; Chinese move name unproven",
+      "飞身": "UNMAPPED",
+      "扑击": "UNMAPPED",
+      "冲撞": "UNMAPPED",
+      "evidenceCycleIds": []
+    }
+  ],
+  "namedEnemyAnswers": [
+    {
+      "chineseName": "夏侯惇",
+      "status": "UNMAPPED",
+      "numericType": null,
+      "lifecycleKey": null,
+      "evidenceRefs": [],
+      "reason": "no current authoritative live identity anchor in this blank template"
+    },
+    {
+      "chineseName": "曹仁",
+      "status": "UNMAPPED",
+      "numericType": null,
+      "lifecycleKey": null,
+      "evidenceRefs": [],
+      "reason": "no current authoritative live identity anchor in this blank template"
+    }
+  ],
+  "classificationVocabulary": {
+    "mappingStatus": [
+      "MAPPED",
+      "AMBIGUOUS",
+      "UNMAPPED"
+    ],
+    "candidateAttackNameDecision": [
+      "YES",
+      "NO_OBSERVED_MAPPING",
+      "AMBIGUOUS",
+      "UNMAPPED"
+    ],
+    "sessionTargetVerdict": [
+      "PASS",
+      "AMBIGUOUS",
+      "UNMAPPED"
+    ]
+  },
+  "terminal": {
+    "requestedTargetVerdict": "UNMAPPED",
+    "allDerivedWithoutManualAttackIdInference": false,
+    "dangerRuleChangeRequested": false,
+    "notes": "Blank preparation template. Populate only from a future bounded read-only live session."
+  }
+}
