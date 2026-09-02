@@ -8,8 +8,13 @@
   "promptPath": "parallel/PM/ALPHA_V1_PROOF_AUTHORITY_HARDENING_INTEGRATION_FIX_V4_RECOVERY_V5_START_PROMPT.md",
   "owner": "chatgpt-recovery-v5",
   "claimToken": "028f677098cdfe6030eb49a7f40126a4",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "040b8a4335a4bfbb3b0b9d43a64aad70e3cd0ef6",
   "recoveryOfDedupKey": "alpha.v1.proof-authority-hardening-integration-fix-v4",
-  "notes": "PM-authorized stale-worker recovery. Historical V4 canonical/stage claim is preserved untouched."
+  "result": "COMPLETE — ALPHA V1 PROOF-AUTHORITY HARDENING INTEGRATION FIX V4 RECOVERY V5 — AUTHORITY-V2 RUNNABLE PATH / TRUST ROOT / LIFECYCLE / MANIFEST COHERENT — READY FOR THE ONE FINAL FRESH QA",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PROOF_AUTHORITY_HARDENING_INTEGRATION_FIX_V4_RECOVERY_V5_RESULT.md",
+  "resultCommit": "cb8a02b09ef86c56ee82689acc219a25133f968c",
+  "implementationCommit": "dec5ffd9b1c3d29559d3af47b200ef7b2f71e4cf",
+  "manifestCommit": "cd19b462e31f7464669471e73b651843e5c716c9",
+  "notes": "PM-authorized stale-worker recovery completed. Historical V4 canonical/stage claim remains preserved untouched."
 }
