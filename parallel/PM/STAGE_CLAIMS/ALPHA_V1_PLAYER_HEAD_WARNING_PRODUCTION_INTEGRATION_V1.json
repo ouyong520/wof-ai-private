@@ -5,6 +5,13 @@
   "effectiveDedupKey": "alpha.v1.player-head-danger-warning.production-integration",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.player-head-danger-warning.production-integration.json",
   "claimToken": "2aee7edc-d3c5-493f-a199-0e61497f22fa-1ac52937ab676e7d9ee822746236e736",
-  "state": "ACTIVE",
-  "startCommit": "72bcd5a7dd2245175b361d48ab89e10baaf1d276"
+  "state": "COMPLETE",
+  "startCommit": "72bcd5a7dd2245175b361d48ab89e10baaf1d276",
+  "result": "COMPLETE — ALPHA V1 PLAYER-HEAD DANGER WARNING PRODUCTION INTEGRATED — READY FOR FRESH QA / BOUNDED DYNAMIC LIVE PROOF",
+  "resultPath": "parallel/ALPHA_V1_PLAYER_HEAD_WARNING_PRODUCTION_INTEGRATION/RESULT.md",
+  "resultCommit": "ca12c344d6d67c079356deaa52d475d0880d3413",
+  "implementationCommits": [
+    "0ef85745dbe79674e37359ca4100197b3580c53a",
+    "d67835b66d0f6efadf3df63d2cc6ea9fadff4374"
+  ]
 }
