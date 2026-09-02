@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "TRAINING_FARM_R0_4_7_WINDOWS_PORTABLE_REAL_WOF_PROOF_BUNDLE_V1",
+  "dedupKey": "training.farm.r0.4.7.windows-portable-real-wof-proof-bundle-v1",
+  "effectiveDedupKey": "training.farm.r0.4.7.windows-portable-real-wof-proof-bundle-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.7.windows-portable-real-wof-proof-bundle-v1.json",
+  "claimToken": "19417695d39c83c46fb67666355a187043b9091d129a4827",
+  "state": "STARTED",
+  "startCommit": "af605c87f10113b900f89e57f26d9dbe1817e7fe",
+  "sourceCandidate": "89730c40fe4e425c80e02f1ccc882107ff6d28f6",
+  "resultPath": "parallel/TRAINING_FARM_R0_4_7_WINDOWS_PORTABLE_REAL_WOF_PROOF_BUNDLE_V1/RESULT.md",
+  "resultCommit": null
+}
