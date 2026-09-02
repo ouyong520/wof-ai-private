@@ -63,6 +63,7 @@ _REQUIRED_FILES = (
     "savestate_fork_plan.schema.json",
     "savestate_fork_result.schema.json",
     "real_wof_fork_smoke.plan.json",
+    "real_wof_proof_owner_runner.py",
 )
 
 _SOURCE_GUARD_FILES = (
@@ -82,6 +83,7 @@ _SOURCE_GUARD_FILES = (
     "savestate_fork_result.schema.json",
     "determinism_actions.example.json",
     "real_wof_fork_smoke.plan.json",
+    "real_wof_proof_owner_runner.py",
 )
 
 
