@@ -1,0 +1,64 @@
+{
+  "schema": "wof-unified-live-proof-recorder-inflight-atomicity-fresh-qa-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_RECORDER_INFLIGHT_GENERATION_ATOMICITY_QA_V1",
+  "result": "PASS",
+  "stopCondition": "PASS — RECORDER IN-FLIGHT GENERATION ATOMICITY FRESH QA — READY FOR CURRENT-HEAD UNIFIED PREFLIGHT",
+  "auditedHeadBeforeQaArtifacts": "aec5ab69466ec66d9ee64b27d2020f7109906b7b",
+  "qaArtifactHeadBeforeResult": "c04fbf39b9b4aa43aecdb3f5efc6091af143e4e5",
+  "production": {
+    "path": "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py",
+    "blob": "8df637d370d187660592fe8de0f1c73ff3057804",
+    "implementationCommit": "2b1c25a3a2a68cb7d90b83c0752587ac4d46852e",
+    "modifiedByQa": false
+  },
+  "qaV2Blocker": {
+    "previousVerdict": "BLOCKED — UNIFIED LIVE PROOF RECORDER AUTHORITY GENERATION FRESH QA V2 — P1 generation rollover is non-atomic against already-in-flight old-reader fatal/heartbeat mutation",
+    "closedByCurrentProduction": true,
+    "reason": "Old-generation authority events that passed the early feed check are revalidated under the shared authority-state lock at the final mutation boundary; once generation N+1 rollover completes, generation N commit is rejected."
+  },
+  "independentExecution": {
+    "mode": "source-exact isolated execution reconstructed from current GitHub blobs",
+    "nativePrivateCheckoutAvailable": false,
+    "nativeRunnerClaimedExecuted": false,
+    "vectorsPassed": 42,
+    "vectorsFailed": 0,
+    "groups": {
+      "inflightConcurrencyAndChildStartBoundaries": {"passed": 6, "failed": 0},
+      "recorderGenerationRegression": {"passed": 13, "failed": 0},
+      "recorderHeartbeatFreshnessRegression": {"passed": 8, "failed": 0},
+      "unifiedGenerationRecoveryAndStickyBlocker": {"passed": 2, "failed": 0},
+      "unifiedPreflightAdversarialSemantics": {"passed": 13, "failed": 0}
+    }
+  },
+  "committedQaArtifacts": {
+    "freshFixture": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_INFLIGHT_ATOMICITY/test_recorder_inflight_atomicity_fresh_qa.py",
+    "freshFixtureCommit": "fefd34ad68738f2cdc9457312514ae9b6e360f0b",
+    "runner": "parallel/LIVE_PROOF_BUNDLE_QA_RECORDER_INFLIGHT_ATOMICITY/run_qa.py",
+    "runnerCommit": "c04fbf39b9b4aa43aecdb3f5efc6091af143e4e5"
+  },
+  "boundaries": {
+    "oldHeartbeatCannotRefreshNewGeneration": "PASS",
+    "oldFatalCannotRevokeNewGeneration": "PASS",
+    "oldAdmissionCannotAdmitNewGeneration": "PASS",
+    "newGenerationAdmissionHeartbeatCanRecover": "PASS",
+    "failedRecorderStartRemainsFailClosed": "PASS",
+    "nonRecorderStartDoesNotRollRecorderGeneration": "PASS"
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "longCaptureAutoStarted": false,
+    "browserWofRun": false,
+    "wof052LongCaptureRun": false,
+    "ownerAction": "NO"
+  },
+  "scope": {
+    "productionImplementationModified": false,
+    "alphaTransportModified": false,
+    "pylaunchModified": false,
+    "ownerOneClickModified": false,
+    "hudModified": false,
+    "wof052LongCaptureModified": false
+  }
+}
