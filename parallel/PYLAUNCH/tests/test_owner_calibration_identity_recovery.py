@@ -138,6 +138,68 @@ globalThis.WOFOWNERPROJECTION.stop();
         self.assertIsNone(status["lastError"])
         self.assertEqual(10, status["executed"])
 
+    def test_tk_dispatcher_close_after_empty_observation_still_consumes_stop(self) -> None:
+        class RaceQueue:
+            def __init__(self):
+                self.inner = queue.Queue()
+                self.arm_empty_race = False
+                self.empty_observed = threading.Event()
+                self.release_empty = threading.Event()
+                self.stop_enqueued = threading.Event()
+                self.put_count = 0
+
+            def put(self, item):
+                self.put_count += 1
+                self.inner.put(item)
+                if self.put_count >= 2:
+                    self.stop_enqueued.set()
+
+            def get_nowait(self):
+                try:
+                    return self.inner.get_nowait()
+                except queue.Empty:
+                    if self.arm_empty_race:
+                        self.arm_empty_race = False
+                        self.empty_observed.set()
+                        self.release_empty.wait(2.0)
+                    raise
+
+        class FakeRoot:
+            def __init__(self): self.callbacks = queue.Queue(); self.quit_now = False
+            def withdraw(self): pass
+            def after(self, _ms, fn): self.callbacks.put(fn)
+            def mainloop(self):
+                while not self.quit_now:
+                    try: fn = self.callbacks.get(timeout=0.2)
+                    except queue.Empty: continue
+                    fn()
+            def quit(self): self.quit_now = True
+            def destroy(self): self.quit_now = True
+
+        dispatcher = TkUiDispatcher(root_factory=FakeRoot)
+        race_queue = RaceQueue()
+        dispatcher._queue = race_queue  # force the exact close-vs-drain-tail interleaving
+        callback_done = threading.Event()
+
+        def callback(_root):
+            race_queue.arm_empty_race = True
+            callback_done.set()
+
+        self.assertTrue(dispatcher.submit(callback))
+        self.assertTrue(callback_done.wait(2.0), dispatcher.status())
+        self.assertTrue(race_queue.empty_observed.wait(2.0), dispatcher.status())
+
+        close_done = threading.Event()
+        closer = threading.Thread(target=lambda: (dispatcher.close(), close_done.set()))
+        closer.start()
+        self.assertTrue(race_queue.stop_enqueued.wait(2.0), dispatcher.status())
+        race_queue.release_empty.set()
+        closer.join(timeout=2.0)
+
+        self.assertTrue(close_done.is_set(), dispatcher.status())
+        self.assertFalse(dispatcher.status()["running"])
+        self.assertIsNone(dispatcher.status()["lastError"])
+
 
 if __name__ == "__main__":
     unittest.main()
