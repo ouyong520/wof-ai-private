@@ -12,11 +12,13 @@ The historical `ALPHA_RELEASE_FREEZE_READINESS_AUDIT_V1` targeted an older HEAD 
 
 The goal is not to invent more work; it is to determine whether the exact current HEAD can be frozen, and if not, name the smallest remaining real blocker.
 
+Current Alpha V1 product scope now explicitly requires **enemy target head labels**: supported live enemies must show their current target above the enemy as `1P`, `2P`, or `3P`. This is a first-release requirement, not a Beta-only enhancement, and Freeze V2 must not certify a candidate that omits it.
+
 ## Dedup / claim
 
-Re-read latest main, all Alpha release-gate claims/results, current package manifest, acceptance preflight, and any newer freeze audit.
+Re-read latest main, all Alpha release-gate claims/results, current package manifest, acceptance preflight, mandatory target-head-label evidence, and any newer freeze audit.
 
-If a newer current-head freeze result already certifies the same release-candidate product/package snapshot, stop:
+If a newer current-head freeze result already certifies the same release-candidate product/package snapshot including the mandatory enemy target-head-label requirement, stop:
 
 `ALREADY COMPLETE — SAFE TO CLOSE`
 
@@ -35,15 +37,18 @@ with exact audit-target current main commit.
 Do not start a final freeze audit while required release-owned fixes are still moving. Require current evidence for:
 
 1. Formal Real-Adapter Integration Recovery V2 COMPLETE;
-2. `ALPHA_TRANSPORT_FORMAL_REAL_ADAPTER_INTEGRATION_FRESH_QA_V1` COMPLETE/PASS on current production blobs;
+2. current authoritative Formal Real-Adapter fresh QA COMPLETE/PASS on all freshness-sensitive current production blobs;
 3. `PYLAUNCH_STARTUP_ATTESTATION_QA_V1` COMPLETE/PASS and tested PYLAUNCH blobs still current;
-4. `UNIFIED_LIVE_PROOF_RECORDER_AUTHORITY_GENERATION_QA_V1` COMPLETE/PASS on current Unified runtime;
+4. current authoritative Unified Recorder generation/in-flight fresh QA COMPLETE/PASS on current Unified runtime;
 5. `OWNER_ONECLICK_CURRENT_HEAD_RELEASE_REFRESH_V3` COMPLETE/PASS with manifest matching current selected release runtime;
 6. `ALPHA_ACCEPTANCE_SUPERSEDING_GATE_RECONCILIATION_V1` COMPLETE/PASS and repo-only acceptance preflight green;
 7. current required Safe Transport regression gates green;
-8. `ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2` COMPLETE/PASS if current release policy still requires true 5h robustness evidence.
+8. `ALPHA_TRANSPORT_TRUE_5H_ENDURANCE_RECOVERY_V2` COMPLETE/PASS if current release policy still requires true 5h robustness evidence;
+9. `ALPHA_ENEMY_TARGET_HEAD_LABELS_V1` COMPLETE plus a fresh independent target-head-label QA PASS/currentness on the exact release-consumed Alpha blobs.
 
-If the current authoritative release policy has superseded or explicitly removed any listed historical requirement, document that exact superseding evidence rather than silently carrying or dropping it.
+If the target-head-label implementation changes `wof_alpha_real_worker.js`, `wof_alpha_core.js`, HUD, bootstrap, or other freshness-sensitive release-consumed product blobs after an earlier Formal QA/package PASS, those gates must be rebound/rerun as required. Do not treat an old PASS on stale blobs as current.
+
+If the current authoritative release policy has superseded or explicitly removed any listed historical requirement, document that exact superseding evidence rather than silently carrying or dropping it. The enemy target-head-label requirement may not be dropped without an explicit later product decision superseding this prompt.
 
 ## Audit method
 
@@ -68,7 +73,8 @@ At minimum re-check:
 - read-only/no-input/no-Worker-replacement/no-Blob-rewrite invariants;
 - Acceptance repo preflight current successor gates;
 - current true 5h evidence validity against exact Safe Transport snapshot;
-- HUDANCHOR current release-facing P1 status, without reopening already closed confidence/bounds fixes unless current source drift invalidated their fresh QA.
+- HUDANCHOR current release-facing bounds/confidence status;
+- mandatory enemy target-head-label behavior: `target7E` mapping to `1P/2P/3P`, lifecycle-safe retarget, no stale previous label, fail-closed stale/unknown target, current projection/drawing-buffer authority, multiple simultaneous enemies, and no game/HUD render-state corruption.
 
 ## Current-HEAD drift and package rule
 
@@ -93,6 +99,8 @@ Do not modify product/runtime/package implementation in this audit. If a real de
 
 Separate repository release readiness from real Owner WOF acceptance:
 
+- If all repository-side gates are PASS but the mandatory target-head-label projection still requires the bounded real Browser/WOF proof/visual confirmation already called out by its implementation/QA result, that exact proof must be part of the final bounded Owner acceptance before Alpha release.
+- The bounded Owner acceptance must visibly confirm supported live enemies show the correct `1P`/`2P`/`3P` above the enemy, labels follow movement/camera, and at least one real retarget updates without a stale prior label.
 - If all repository-side gates are PASS but the prepared Alpha acceptance contract still requires one bounded real Browser/WOF session with normal owner play/confirmation, classify that as the **only remaining Owner action** and do not call runtime acceptance PASS without evidence.
 - Do not request Owner action while any repository-side P0/P1 gate remains open.
 - Do not require DevTools, Worker Console, pasted JavaScript, RAM writes, or gameplay input injection.
@@ -101,15 +109,15 @@ Separate repository release readiness from real Owner WOF acceptance:
 
 ### Repository freeze-ready
 
-If every repository-side release gate is current and green, package is current, required robustness evidence is valid, and no P0/P1 remains:
+If every repository-side release gate is current and green, package is current, mandatory target-head-label implementation/fresh QA is current, required robustness evidence is valid, and no P0/P1 remains:
 
 `PASS — ALPHA RELEASE FREEZE CURRENT-HEAD RECHECK V2 — REPOSITORY FREEZE-READY`
 
-Record whether final bounded Owner acceptance is still required by the current acceptance contract.
+Record whether final bounded Owner acceptance, including the real target-head-label visual/retarget check, is still required by the current acceptance contract.
 
 ### Fully accepted/freeze-ready
 
-Only if current authoritative acceptance evidence is also already present and valid for the exact release snapshot:
+Only if current authoritative acceptance evidence is also already present and valid for the exact release snapshot, including the mandatory enemy target-head-label live behavior:
 
 `PASS — ALPHA CURRENT-HEAD ACCEPTANCE + RELEASE FREEZE GATES CLOSED`
 
@@ -117,7 +125,7 @@ Do not fabricate this branch.
 
 ## Failure stop
 
-On any real current P0/P1 blocker or stale mandatory gate:
+On any real current P0/P1 blocker, stale mandatory gate, or missing mandatory target-head-label implementation/QA:
 
 `BLOCKED — ALPHA RELEASE FREEZE CURRENT-HEAD RECHECK V2 — <smallest real blocker>`
 
