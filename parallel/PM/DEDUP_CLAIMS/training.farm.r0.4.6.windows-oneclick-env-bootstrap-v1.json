@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "training.farm.r0.4.6.windows-oneclick-env-bootstrap-v1",
+  "effectiveDedupKey": "training.farm.r0.4.6.windows-oneclick-env-bootstrap-v1",
+  "dedupMode": "exclusive",
+  "stageId": "TRAINING_FARM_R0_4_6_WINDOWS_ONECLICK_ENV_BOOTSTRAP_V1",
+  "promptPath": "parallel/PM/TRAINING_FARM_R0_4_6_WINDOWS_ONECLICK_ENV_BOOTSTRAP_V1_START_PROMPT.md",
+  "owner": "gpt-5.6-sol-r0.4.6-bootstrap",
+  "claimToken": "28343a9306bce8e7fcf8933934cf470f813aaccea8cde9e5",
+  "state": "ACTIVE",
+  "startCommit": "62c461b1ce7034812a96bd6f4966206311784bd9"
+}
