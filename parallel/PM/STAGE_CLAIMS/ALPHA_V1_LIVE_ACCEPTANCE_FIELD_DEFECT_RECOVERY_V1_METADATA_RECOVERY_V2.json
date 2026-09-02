@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_LIVE_ACCEPTANCE_FIELD_DEFECT_RECOVERY_V1_METADATA_RECOVERY_V2",
+  "dedupKey": "alpha.v1.live-acceptance.field-defect-recovery-v1",
+  "effectiveDedupKey": "alpha.v1.live-acceptance.field-defect-recovery-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.live-acceptance.field-defect-recovery-v1.json",
+  "claimToken": "52cEzzKy2kS_b7EHqli4Td-CSUPvGRS0",
+  "state": "ACTIVE",
+  "startCommit": "513a2d4fe5d62621e4069afde475c3ccbd8a5421"
+}
