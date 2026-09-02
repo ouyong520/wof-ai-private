@@ -1,45 +1,61 @@
 {
-  "schema": "wof-alpha-v1-dual-live-proof-tooling-repository-test-v1",
-  "stageId": "ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_RECOVERY_V2",
+  "schema": "wof-alpha-v1-dual-live-proof-tooling-repository-test-proof-authority-v1",
+  "stageId": "ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING_PROOF_AUTHORITY_FIX_V1",
   "evidenceClass": "SYNTHETIC_REPOSITORY_QA_ONLY_NOT_BROWSER_WOF_LIVE_PROOF",
   "verdict": "PASS",
   "node": "v22.16.0",
+  "implementationCommit": "e6042741486ed6aae215e282c2f700fd84167811",
+  "manifestCommit": "f2855ed2c554e41b0b8ef6cf2c03a60233c44b64",
   "syntaxChecks": [
     "proof_core.js",
     "wof_alpha_v1_dual_live_proof_top.js",
     "wof_alpha_v1_dual_live_proof_worker.js",
-    "wof_alpha_v1_dual_live_proof.js",
-    "tooling_regression.mjs"
+    "wof_alpha_v1_dual_live_proof.js"
   ],
-  "regression": {
+  "independentRegression": {
+    "command": "node parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/proof_authority_regression.mjs",
+    "passed": 10,
+    "failed": 0,
+    "role": "PRIMARY_ADVERSARIAL_EVIDENCE"
+  },
+  "supportiveRegression": {
     "command": "node parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/tooling_regression.mjs",
     "passed": 19,
-    "failed": 0
+    "failed": 0,
+    "role": "SUPPORTIVE_ONLY"
   },
   "runtimeBlobPins": {
-    "proof_core.js": "fbfa665daa624b7a81b6b75d488af504194bd378",
-    "wof_alpha_v1_dual_live_proof_top.js": "3f2ffdfc2947387518e593445306f8803132345c",
-    "wof_alpha_v1_dual_live_proof_worker.js": "5cc30f3a3b32ee0ef3dfe1b9ac2937dbabc774f3",
-    "wof_alpha_v1_dual_live_proof.js": "30c965bb8b16466810781e2741f2d2eb86a0533d",
-    "tooling_regression.mjs": "b681386040263780370fae85591c227a7553410a"
+    "proof_core.js": "6fa5b5178dd0dedcad2afe7e53c6cdda98c8a701",
+    "wof_alpha_v1_dual_live_proof_top.js": "e0e686cafc3463ce6041d83c5e0fe1030f7eb444",
+    "wof_alpha_v1_dual_live_proof_worker.js": "2b75092fee63cecafb51e108aa2af8b3d83cc696",
+    "wof_alpha_v1_dual_live_proof.js": "e71a802c8d150cf727345c51c4786512a82abb97",
+    "proof_authority_regression.mjs": "e3697ab88cb36922e717b7a85044e0bfca72a444",
+    "tooling_regression.mjs": "cfd3d15a9adc6d7a532d36026494a76e2c41c4d0"
   },
-  "coverage": [
-    "HUDANCHOR common-result compatibility",
-    "real-live-only player profile binding",
-    "player yBias/headClearance split fail-closed",
-    "real-live-only enemy type offsets and unproved-type omission",
-    "warningSampleAt/epoch/mapping correlation",
-    "enemy raw target/identity/label correlation",
-    "fixed-HUD and suppress invalid-authority decisions",
-    "anchored-during-invalid-authority failure",
-    "required live phase gating including retarget",
-    "both-surface stale-authority no-draw/fallback gating",
-    "visual confirmation gating",
-    "terminal evidence root shape",
-    "Top helper delegation/no input injection",
-    "Worker official install/proof-only fetch shim/finally restore/read-only RAM",
-    "HUDANCHOR-first loader ordering"
+  "independentAttackCoverage": [
+    "forged public live fields cannot bind candidate profiles",
+    "forged public session state cannot reach IMPLEMENTATION_READY",
+    "player epoch A plus enemy epoch B cannot jointly close a both-surface phase",
+    "same-slot replacement generation is not retarget",
+    "true same-occupant P1 to P2/P3 retarget remains scoreable with continuity",
+    "player respawn lifecycle mismatch invalidates head/body calibration",
+    "ambiguous same-type enemy replacement cannot establish head offset",
+    "synthetic STALE reason/event cannot close stale authority",
+    "strict raw target and cross-epoch tuple remain fail-closed",
+    "repository fixture cannot mint real runtime capability by design"
   ],
+  "safety": {
+    "warningSampleAtPrimitiveFiniteOnlyPreserved": true,
+    "rawTarget0_4_8StrictPreserved": true,
+    "crossEpochFailClosed": true,
+    "fixedHudFallbackPreserved": true,
+    "enemySuppressionPreserved": true,
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "workerReplacement": false,
+    "blobRewrite": false
+  },
   "boundaries": {
     "browserWofRunPerformed": false,
     "syntheticResultUsedAsLiveProof": false,
