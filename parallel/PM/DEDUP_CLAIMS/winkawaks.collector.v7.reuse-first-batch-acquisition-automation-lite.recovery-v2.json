@@ -8,8 +8,14 @@
   "promptPath": "parallel/PM/WINKAWAKS_COLLECTOR_V7_REUSE_FIRST_BATCH_ACQUISITION_AUTOMATION_LITE_RECOVERY_V2_START_PROMPT.md",
   "owner": "chatgpt-gpt-5.6-sol-v7-recovery-v2",
   "claimToken": "c8f114f6638b4a71867f29f5d2a4ee9b",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "615f63ee3bdd326adb4f4a4b15d59104df4376b0",
   "bridgeStartCommit": "5a49a42bc8c269be3bcc07b35b1762c6b8e76d1a",
+  "resultPath": "parallel/PM/WINKAWAKS_COLLECTOR_V7_REUSE_FIRST_BATCH_ACQUISITION_AUTOMATION_LITE_RECOVERY_V2_RESULT.md",
+  "resultCommit": "7d230d55e97f9fb707ac3256da4364254fd55927",
+  "finalBridgeCommit": "4eb4b33bd09cfaeeb6644110a59b3452c489ea9e",
+  "finalBridgeTree": "19f96fa973fc608e367e66325731e1ec869a44bc",
+  "workflowRunId": 33650865968,
+  "workflowHeadSha": "4eb4b33bd09cfaeeb6644110a59b3452c489ea9e",
   "supersedesDedupKey": "winkawaks.collector.v7.reuse-first-batch-acquisition-automation-lite"
 }
