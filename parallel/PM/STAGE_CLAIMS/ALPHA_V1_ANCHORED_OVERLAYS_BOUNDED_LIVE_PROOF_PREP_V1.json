@@ -1,0 +1,11 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_ANCHORED_OVERLAYS_BOUNDED_LIVE_PROOF_PREP_V1",
+  "dedupKey": "alpha.v1.anchored-overlays.bounded-dynamic-live-proof-prep",
+  "effectiveDedupKey": "alpha.v1.anchored-overlays.bounded-dynamic-live-proof-prep",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.anchored-overlays.bounded-dynamic-live-proof-prep.json",
+  "claimToken": "c6cbe077-4615-4056-8f44-ea6b3357b8b3-1742f2675eea934bc92b083f7b91df11",
+  "state": "ACTIVE",
+  "startCommit": "fd850d27d32b90efa5a96b1456c6244a1ecdf7da",
+  "canonicalClaimCommit": "138f99b35b4b0f98397ba5ad892e2c0a888b0814"
+}
