@@ -9,6 +9,7 @@ on:
       - 'parallel/OWNER_ONECLICK/**'
       - 'parallel/OPTOOLKIT/**'
       - 'parallel/PYLAUNCH/**'
+      - 'parallel/HUDANCHOR_PROOF/**'
       - 'parallel/BROWSER_FLEET/**'
       - 'parallel/WOF052L_RECORDER/**'
       - 'product/alpha/**'
@@ -28,16 +29,18 @@ jobs:
         run: python -m pip install --disable-pip-version-check -q -r parallel/PYLAUNCH/requirements.txt
       - name: Exact identity, generation cache and Alpha activation self-check
         run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_field_recovery.py' -v
+      - name: Overlay projection and room re-entry recovery self-check
+        run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_overlay_reentry_recovery.py' -v
       - name: Discovery late-readiness and association self-check
         working-directory: parallel/PYLAUNCH
         run: python -m unittest discover -s tests -p 'test_discovery_v2.py' -v
       - name: Live proof Alpha gate self-check
         run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_windows_proof.py' -v
-      - name: Owner menu integration self-check
+      - name: Owner menu and automatic evidence integration self-check
         run: python -m unittest discover -s parallel/OPTOOLKIT/tests -p 'test_*.py' -v
       - name: Frozen Alpha product regression
         run: node product/alpha/regression.mjs
-      - name: Syntax-check field recovery Python runtime
+      - name: Syntax-check overlay recovery runtime
         run: |
           python -m py_compile \
             parallel/PYLAUNCH/launcher.py \
@@ -46,9 +49,15 @@ jobs:
             parallel/PYLAUNCH/wof_launcher/discovery_v2.py \
             parallel/PYLAUNCH/wof_launcher/monitor.py \
             parallel/PYLAUNCH/wof_launcher/probe_v2.py \
+            parallel/PYLAUNCH/wof_launcher/projection_recovery.py \
+            parallel/PYLAUNCH/wof_launcher/reentry_discovery.py \
             parallel/PYLAUNCH/wof_launcher/runtime_authority.py \
             parallel/OPTOOLKIT/toolkit.py \
-            parallel/OPTOOLKIT/owner_zh_cn.py
+            parallel/OPTOOLKIT/owner_zh_cn.py \
+            parallel/OPTOOLKIT/live_session.py
+          node --check parallel/HUDANCHOR_PROOF/wof_owner_projection_worker.js
+          node --check parallel/HUDANCHOR_PROOF/wof_owner_projection_top.js
+          node --check parallel/HUDANCHOR_PROOF/wof_hudanchor_gl.js
 
   integrity:
     runs-on: ubuntu-latest
@@ -98,7 +107,7 @@ jobs:
           if ($version -notmatch '^[A-Za-z0-9._-]+$') { throw 'manifest packageVersion is invalid' }
           if ($sourceCommit -notmatch '^[0-9a-f]{40}$') { throw 'manifest sourceCommit is invalid' }
           if ([string]$manifest.baseUrl -ne ('https://raw.githubusercontent.com/ouyong520/wof-ai-private/' + $sourceCommit + '/')) { throw 'manifest baseUrl does not match sourceCommit' }
-          foreach ($component in @('ownerOneclick','alpha','pylaunch','recorder','browserFleet','liveProof')) {
+          foreach ($component in @('ownerOneclick','alpha','pylaunch','operatorToolkit','projectionProof','recorder','browserFleet','liveProof')) {
             if ([string]$manifest.components.$component.sourceCommit -ne $sourceCommit) { throw ('component sourceCommit mismatch: ' + $component) }
           }
           if ($manifest.safety.readOnly -ne $true -or [int]$manifest.safety.ramWrites -ne 0 -or $manifest.safety.inputInjection -ne $false) { throw 'manifest safety flags changed' }
@@ -134,17 +143,23 @@ jobs:
             'WOF_TOOLKIT.cmd',
             'parallel\OWNER_ONECLICK\bootstrap_v2.ps1',
             'parallel\OPTOOLKIT\owner_zh_cn.py',
+            'parallel\OPTOOLKIT\live_session.py',
             'parallel\PYLAUNCH\launcher.py',
             'parallel\PYLAUNCH\wof_launcher\alpha_runtime.py',
             'parallel\PYLAUNCH\wof_launcher\discovery_v2.py',
             'parallel\PYLAUNCH\wof_launcher\monitor.py',
             'parallel\PYLAUNCH\wof_launcher\probe_v2.py',
+            'parallel\PYLAUNCH\wof_launcher\projection_recovery.py',
+            'parallel\PYLAUNCH\wof_launcher\reentry_discovery.py',
             'parallel\PYLAUNCH\wof_launcher\runtime_authority.py',
+            'parallel\HUDANCHOR_PROOF\wof_hudanchor_gl.js',
+            'parallel\HUDANCHOR_PROOF\wof_owner_projection_worker.js',
+            'parallel\HUDANCHOR_PROOF\wof_owner_projection_top.js',
             'product\alpha\wof_alpha_field_adapter.js',
             'product\alpha\wof_alpha_enemy_head_projection.json',
             'product\alpha\wof_alpha_player_head_projection.json'
           )) {
-            if (-not (Test-Path -LiteralPath (Join-Path $release $p))) { throw ('installed field-recovery file missing: ' + $p) }
+            if (-not (Test-Path -LiteralPath (Join-Path $release $p))) { throw ('installed overlay-reentry file missing: ' + $p) }
           }
 
           $repoManifest = Get-Content -LiteralPath (Join-Path (Get-Location) 'parallel\OWNER_ONECLICK\package_manifest.json') -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -171,7 +186,7 @@ jobs:
           $release = Join-Path $env:WOF_PORTABLE_TEST_ROOT ('releases\' + $env:WOF_PACKAGE_VERSION)
           $venvPython = Join-Path $env:WOF_PORTABLE_TEST_ROOT 'venv\Scripts\python.exe'
           $launcher = Join-Path $release 'parallel\PYLAUNCH\launcher.py'
-          $status = Join-Path $env:RUNNER_TEMP 'FIELD_RECOVERY_WINDOWS_PROOF_STATUS.json'
+          $status = Join-Path $env:RUNNER_TEMP 'OVERLAY_REENTRY_WINDOWS_PROOF_STATUS.json'
           & $venvPython $launcher --no-tray --once --attach-only --activate-alpha --package-root $release --proof-json $status
           if ($LASTEXITCODE -ne 0) { throw ('packaged launcher smoke failed: ' + $LASTEXITCODE) }
           if (-not (Test-Path -LiteralPath $status)) { throw 'proof status was not written' }
