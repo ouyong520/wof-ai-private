@@ -1,75 +1,43 @@
-# WOF Training Farm R0.1 — Stable-Retro + FBNeo bootstrap
+# WOF Training Farm R0.2 — single-instance determinism
 
-This directory is an isolated internal R&D bootstrap. It is **not** part of
-`product/alpha/**`, does not ship ROMs/BIOS, and contains no PPO/SB3, multi-worker
-training, safe-route search, or player-input injection.
-
-## Project-line isolation — Owner policy
-
-Training Farm / `10训` is an **independent non-blocking R&D side lane**. It may
-continue development, deterministic-runtime proof, savestate experiments,
-trajectory/search tooling, and later multi-worker scaling in parallel with Alpha
-V1 and WinKawaks Collector, but it is not part of the Alpha V1 release-critical
-path unless Owner explicitly changes that policy in a later PM authority document.
-
-Hard project-management rule:
+This directory is the isolated Stable-Retro + FBNeo Training Farm lane. R0.2
+extends the R0.1 one-instance bootstrap with a strict determinism module:
 
 ```text
-Training Farm incomplete / ACTIVE / BLOCKED / awaiting QA
-!= Alpha V1 release blocker
-!= reason to stop or delay bounded real Browser/WOF acceptance
-!= WinKawaks Collector blocker
-!= reason to stop or delay Collector development/capture
+same savestate + same explicit action sequence + same frame horizon
+-> same observable result
 ```
 
-Default Training Farm write ownership is limited to:
+R0.2 remains an internal R&D module. It is not Alpha V1, is not WinKawaks
+Collector, and contains no PPO/SB3, route search, dataset expansion, or
+multi-worker orchestration.
 
-```text
-training/farm/**
-Training-Farm-owned tests / docs / schemas / claims / RESULT metadata
-```
+## Lane and authority boundary
 
-Without explicit Owner authority, Training Farm work must not modify, block,
-refactor, or take ownership of:
+Training Farm / `10训` is an independent non-blocking R&D side lane. Its runtime
+authority is `stable-retro-fbneo`. Browser/WASM and WinKawaks numeric offsets,
+runtime identities, timing assumptions, and lifecycle authority are not imported
+as if they applied to Stable-Retro/FBNeo.
+
+Training Farm input is allowed only through emulator/core APIs. This directory
+contains no OS/global keyboard path, `SendInput`, focus automation, Browser input,
+or WinKawaks input.
+
+The Farm may not modify or block:
 
 ```text
 product/alpha/**
-Alpha danger rules or target semantics
-Browser/WOF production projection/proof authority
+Alpha release/proof gates
 Transport / Recorder / PYLAUNCH / OneClick
-Alpha acceptance or release gates
-WinKawaks Collector code/config/contracts/results
-Collector read-only/input-safety semantics
+WinKawaks Collector code/contracts/results
 ```
 
-If a Training Farm task discovers that a cross-line change is required, it must
-**fail closed**: mark that Training Farm task `BLOCKED`, report the exact external
-dependency, and leave the other project line unchanged. It must not make an
-opportunistic cross-line edit just to make the Farm task pass.
-
-Runtime authority is also isolated. Browser/WASM, WinKawaks, and
-Stable-Retro/FBNeo numeric addresses, layouts, lifecycle identities, timing
-assumptions, and calibrations are not interchangeable. Training Farm memory
-semantics must be independently proven in its own runtime and durable Farm data
-must identify its source as `stable-retro-fbneo`.
-
-Training Farm input remains inside emulator/core APIs only. Permission to automate
-input in this isolated training runtime does not grant permission to add
-SendInput/global keyboard injection, autonomous input to the live Browser product,
-or gameplay input to WinKawaks Collector.
-
-The only intended interaction with the other lanes is operational resource
-scheduling on the same physical machine. Heavy 2/4/8/10-worker Farm runs should
-be paused or capped while a critical Alpha acceptance run or canonical long
-WinKawaks capture needs stable CPU/RAM/I/O/cadence. That is a machine-resource
-precaution only; it does **not** create a project dependency or release gate.
-
-Project-wide runtime/data-source authority remains governed by
+Project-wide provenance rules remain governed by
 `RUNTIME_DATA_SOURCE_BOUNDARIES.md`.
 
-## R0.1 API
+## Reused R0.1 single-instance adapter
 
-`TrainingFarmAdapter` exposes the required thin boundary:
+`TrainingFarmAdapter` still exposes the R0.1-compatible boundary:
 
 - `reset()`
 - `step(CoreAction(...))`
@@ -77,88 +45,232 @@ Project-wide runtime/data-source authority remains governed by
 - `save_state()`
 - `load_state(state)`
 
-The real backend uses Stable-Retro's low-level `RetroEmulator` directly. For a
-`.zip` ROM path Stable-Retro selects the FBNeo core. Input is applied with
-`RetroEmulator.set_button_mask(...)`; there is no OS/global keyboard path.
-RAM is the sorted concatenation of the memory blocks exposed through
-`GameData.memory.blocks`, matching Stable-Retro's `RetroEnv.get_ram()` ordering.
-Savestates use `RetroEmulator.get_state()` / `set_state()`.
+R0.2 adds:
+
+- `step_frame(CoreFrameInput(...))`
+- backend runtime/core identity components
+
+`step_frame` is the determinism path. It sets the input mask for **all four
+players before one emulator frame advances**. A neutral player is represented by
+an explicit empty `pressed` list; omitted players are rejected.
+
+The real backend remains `StableRetroFbneoBackend`, using one Stable-Retro
+`RetroEmulator` and the `.zip -> FBNeo` core mapping. It does not build a second
+emulator stack.
+
+## Runtime identity and ROM binding
+
+Every real determinism comparison is bound to one strict runtime identity with:
+
+- `sourceNamespace = stable-retro-fbneo`;
+- pinned and observed Stable-Retro version;
+- OS, release, machine, Python implementation/version/executable and process ID;
+- real external ROM SHA-256;
+- Farm candidate SHA-256 plus hashes of the module-owned runtime/schema files;
+- backend name and reliable FBNeo core/button identity.
+
+The ROM is hashed in place from the legal local external path. ROM bytes are
+never copied into the result, repository, or source identity.
+
+The identity is recomputed before/after replay repetitions. A runtime/core/ROM/
+Farm-source identity change invalidates the run instead of merging evidence.
+
+## Action sequence and frame horizon contract
+
+The CLI consumes canonical JSON. Each sequence step has:
+
+```json
+{
+  "frames": 2,
+  "inputs": [
+    {"player": 0, "pressed": [0]},
+    {"player": 1, "pressed": []},
+    {"player": 2, "pressed": []},
+    {"player": 3, "pressed": []}
+  ]
+}
+```
+
+Rules are fail-closed:
+
+- `frames`, `player`, button indices, horizon, and repetition count are strict
+  integers; booleans, strings, floats and boxed/coercible equivalents are not
+  accepted by the internal contract;
+- every step lists players exactly in order `0,1,2,3`;
+- neutral input is the explicit empty `pressed` array;
+- sequence frame counts must sum exactly to the declared horizon;
+- horizon is `1..100000` frames;
+- repetitions are `2..100`;
+- frame progression is driven only by emulator steps, never wall-clock timing.
+
+`training/farm/determinism_actions.example.json` is a ROM-free example covering
+8 frames.
+
+## Deterministic replay primitive
+
+For one run, R0.2:
+
+1. resets one instance;
+2. saves one starting savestate and hashes it;
+3. records starting RAM SHA-256;
+4. before every repetition, verifies bound identity and loads the exact same
+   starting savestate;
+5. requires restored RAM to match starting RAM;
+6. re-saves the restored state and requires the savestate SHA-256 to match;
+7. executes the exact same explicit action sequence to the exact frame horizon;
+8. records a RAM SHA-256 checkpoint for every emulated frame and final RAM hash;
+9. verifies identity again after the repetition;
+10. compares every repetition exactly and reports the first divergent frame when
+    known.
+
+A PASS is impossible when identity is malformed/partial, a savestate hash or
+restored RAM differs, load/save/RAM/action fails, frame count differs, or required
+repetitions are missing.
+
+## Structured result
+
+The CLI writes JSON to stdout and optionally to `--output`.
+
+Schema:
+
+```text
+training/farm/determinism.schema.json
+```
+
+Important fields include:
+
+- `runId`;
+- `status`: `PASS | FAIL | SKIP | ERROR`;
+- `reasonCode`;
+- `proofScope`;
+- `realWofProof`;
+- repetition count and frame horizon;
+- canonical action sequence and its SHA-256;
+- strict runtime identity and identity SHA-256;
+- starting savestate/RAM SHA-256;
+- per-repetition per-frame RAM checkpoints and final RAM SHA-256;
+- `firstDivergence`.
+
+Meaning:
+
+- `PASS / DETERMINISM_MATCH`: all required observables matched;
+- `FAIL / DETERMINISM_MISMATCH`: replay observables diverged;
+- `SKIP / RUNTIME_PREREQUISITE_UNAVAILABLE`: pinned real runtime or legal local
+  ROM is unavailable;
+- `ERROR`: malformed contract, identity invalidation, save/load/RAM/action error,
+  frame-count error, or other fail-closed runtime defect.
+
+Fake-backend PASS is always marked:
+
+```text
+proofScope = IMPLEMENTATION_FIXTURE
+realWofProof = false
+```
+
+It is implementation evidence only and is never a real-WOF determinism proof.
 
 ## Legal/local ROM boundary
 
-Set a local external path only:
+Configure a legal local ROM outside the repository:
 
-```text
-WOF_ROM_PATH=/absolute/path/to/your/legally-obtained/wof.zip
-```
+Windows:
 
-Do not copy ROMs, BIOS files, copyrighted game data, or third-party binaries
-into this repository. R0.1 does not download or import a ROM and does not hash
-or identify a copyrighted ROM set. Any support files required by a local runtime
-must remain outside the repository as well.
-
-## Runtime assumptions
-
-R0.1 records these narrow assumptions:
-
-- Python 3.10 through 3.14.
-- `stable-retro==0.9.8`.
-- Windows or Linux for the FBNeo path.
-- FBNeo arcade input/state/RAM is consumed through Stable-Retro.
-- A local arcade romset is a `.zip`, which Stable-Retro maps to FBNeo.
-
-Install only when doing a local emulator probe:
-
-```bash
-python -m pip install -r training/farm/requirements-r0.1.txt
-```
-
-If a wheel is not available for the local interpreter/platform, follow the
-Stable-Retro upstream source-build prerequisites rather than committing build
-products here.
-
-## ROM-free deterministic smoke
-
-This is the repository gate and requires no ROM or Stable-Retro installation:
-
-```bash
-python -m unittest training.farm.tests.test_contract -v
-python -m training.farm.smoke
-```
-
-The fake backend exists only to exercise the adapter contract, deterministic
-save/load replay, configuration boundary, and error paths. It is not evidence
-that real WOF/FBNeo execution is deterministic.
-
-## Environment/dependency probe
-
-```bash
-python -m training.farm.probe
-```
-
-The command reports Python/platform, Stable-Retro version, FBNeo declaration
-and `.zip` mapping when the dependency is installed, plus `WOF_ROM_PATH`
-status. Missing ROM is reported but is **not** an R0.1 repository-smoke failure.
-
-## Explicit one-instance local WOF probe
-
-Only on a machine that already has a legal local WOF ROM:
-
-```bash
+```bat
 set WOF_ROM_PATH=C:\path\to\wof.zip
-python -m training.farm.probe --runtime
 ```
 
 Linux:
 
 ```bash
 export WOF_ROM_PATH=/path/to/wof.zip
-python -m training.farm.probe --runtime
 ```
 
-The runtime probe performs one instance only: reset, RAM snapshot, savestate,
-one neutral frame, restore, and RAM equality check. It does not train, does not
-spawn workers, and does not search routes.
+Do not copy ROMs, BIOS files, copyrighted game data, savestates, emulator cores,
+or third-party binaries into this repository. `training/farm/.gitignore` blocks
+common local ROM/BIOS/state/core-binary forms.
 
-A missing dependency/ROM causes the explicit runtime probe to return `SKIP`
-(exit 2), not to rewrite the repository bootstrap verdict.
+R0.2 hashes the local ROM **only for identity binding**. The JSON report stores
+the SHA-256 digest, never ROM bytes.
+
+## Runtime assumptions
+
+Current pin remains:
+
+```text
+stable-retro==0.9.8
+Python 3.10..3.14
+Windows or Linux
+FBNeo for external arcade .zip ROM
+```
+
+Install only for a legal local emulator run:
+
+```bash
+python -m pip install -r training/farm/requirements-r0.1.txt
+```
+
+## R0.2 commands
+
+### Real single-instance determinism run
+
+With `WOF_ROM_PATH` set and the pinned runtime installed:
+
+```bash
+python -m training.farm.determinism \
+  --actions training/farm/determinism_actions.example.json \
+  --horizon 8 \
+  --repetitions 3
+```
+
+On Windows `cmd.exe`, put the command on one line or use `^` line continuation.
+
+If prerequisites are unavailable, the same command returns structured `SKIP`
+and exit code `2`. It must not claim PASS.
+
+### ROM-free implementation self-check
+
+```bash
+python -m compileall -q training
+python -m unittest discover -s training/farm/tests -v
+python -m training.farm.determinism \
+  --fake \
+  --actions training/farm/determinism_actions.example.json \
+  --horizon 8 \
+  --repetitions 3
+```
+
+The fake command returns PASS only for the module control flow and deterministic
+fixture.
+
+### R0.1 compatibility probes
+
+The prior probes remain available:
+
+```bash
+python -m training.farm.probe
+python -m training.farm.probe --runtime
+python -m training.farm.smoke
+```
+
+R0.1 `probe --runtime` remains a narrow one-frame save/load probe; the R0.2
+`determinism` command is the full repeated replay authority.
+
+## Exit codes
+
+For `python -m training.farm.determinism`:
+
+- `0`: PASS;
+- `1`: FAIL or ERROR;
+- `2`: real runtime prerequisite unavailable (`SKIP`).
+
+## R0.2 scope stop
+
+R0.2 intentionally stops at one instance and deterministic replay. Do not infer
+authorization for:
+
+- 2/4/8/10 worker orchestration;
+- observation-address calibration;
+- PPO/SB3/RL;
+- route/search-teacher implementation;
+- dataset expansion;
+- Browser/WOF or WinKawaks input automation.
