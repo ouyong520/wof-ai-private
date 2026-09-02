@@ -5,6 +5,10 @@
   "effectiveDedupKey": "alpha.enemy-target-head-labels.post-strict-type-fix-fresh-qa--iv--alpha-head-labels-post-fix--strict-type-crosscheck-1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.enemy-target-head-labels.post-strict-type-fix-fresh-qa--iv--alpha-head-labels-post-fix--strict-type-crosscheck-1.json",
   "claimToken": "abfc83e192613d1e819ff2656faed74e1b9e6e199b9c873d",
-  "state": "ACTIVE",
-  "startCommit": "5cd73fc8c516b80dfc97cfc326b6e08486f71f02"
+  "state": "COMPLETE",
+  "startCommit": "5cd73fc8c516b80dfc97cfc326b6e08486f71f02",
+  "result": "PASS — ALPHA ENEMY TARGET HEAD LABEL STRICT-TYPE CROSS-CHECK — INDEPENDENT SECOND OPINION GREEN",
+  "resultPath": "parallel/ALPHA_ENEMY_TARGET_HEAD_LABELS_STRICT_TYPE_CROSSCHECK/RESULT.md",
+  "resultCommit": "b918856e912f7b0f43ac5657b51fae136f511218",
+  "canonicalCloseCommit": "9c3b9f47a316c31167c0cf82116e4b3dc05a7b23"
 }
