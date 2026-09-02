@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "UNIFIED_LIVE_PROOF_CURRENT_HEAD_PREFLIGHT_QA_V1",
+  "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_CURRENT_HEAD_PREFLIGHT_QA_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "fbbd2e0535edce2dd5173d63be2db9eb12e86eed",
+  "startedAtUtc": "2026-09-02T01:30:05Z"
+}
