@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.0.0.current-head-release-gate-preflight",
+  "effectiveDedupKey": "alpha.v1.0.0.current-head-release-gate-preflight",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_0_0_CURRENT_HEAD_RELEASE_GATE_PREFLIGHT_V1",
+  "promptPath": "parallel/PM/ALPHA_V1_0_0_CURRENT_HEAD_RELEASE_GATE_PREFLIGHT_START_PROMPT.md",
+  "owner": "gpt-5.6-sol-release-preflight-20260902T1246+08",
+  "claimToken": "rgp-7f41d3c9a2e64b8f91cd5a73e0b6421e",
+  "state": "ACTIVE",
+  "startCommit": "40f60cc2c21899312f94f94c10ffb263c715b960"
+}
