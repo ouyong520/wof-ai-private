@@ -40,6 +40,12 @@ def compact_proof_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
         "alphaRequested": snapshot.get("alpha_requested") is True, "alphaRunning": snapshot.get("alpha_running") is True,
         "alphaRuntimeEpoch": snapshot.get("alpha_runtime_epoch"), "alphaPackageVersion": snapshot.get("alpha_package_version"),
         "alphaStatus": snapshot.get("alpha_status"), "alphaError": snapshot.get("alpha_error"),
+        # These survive a later browser/room shutdown so the final file remains useful
+        # for field diagnosis instead of collapsing to an all-empty disconnect state.
+        "lastAcceptedAuthority": snapshot.get("last_accepted_authority"),
+        "lastAlphaFailure": snapshot.get("last_alpha_failure"),
+        "lastCalibrationProgress": snapshot.get("last_calibration_progress"),
+        "significantEvents": list(snapshot.get("significant_events") or [])[-96:],
         "readOnly": snapshot.get("read_only") is True, "ramWrites": snapshot.get("ram_writes"),
         "inputInjection": snapshot.get("input_injection"), "lastError": snapshot.get("last_error"), "lastUpdateUtc": snapshot.get("last_update_utc"),
     }
