@@ -5,6 +5,9 @@
   "effectiveDedupKey": "alpha.v1.anchored-overlays.one-session-live-proof-tooling-proof-authority-fix-crosscheck-v2--iv--alpha.v1.dual-overlay.proof-authority-fix-v1--second-opinion-v2",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.anchored-overlays.one-session-live-proof-tooling-proof-authority-fix-crosscheck-v2--iv--alpha.v1.dual-overlay.proof-authority-fix-v1--second-opinion-v2.json",
   "claimToken": "aa0114a019cb14f8a280bee31d86ca9d",
-  "state": "ACTIVE",
-  "startCommit": "1f7e1c0cfe4dd41dc38a78b4a30ec91b68e9b87c"
+  "state": "BLOCKED",
+  "startCommit": "1f7e1c0cfe4dd41dc38a78b4a30ec91b68e9b87c",
+  "resultPath": "parallel/ALPHA_V1_ANCHORED_OVERLAYS_ONE_SESSION_LIVE_PROOF_TOOLING/PROOF_AUTHORITY_FIX_CROSSCHECK_V2_RESULT.md",
+  "resultCommit": "eb12405f1d9ee5cfb3054c169daa6f8670503a01",
+  "blocker": "Self-signed live-witness public key is not pinned to the real Worker; repository JavaScript can mint the internal live capability and serialize synthetic evidence as IMPLEMENTATION_READY."
 }
