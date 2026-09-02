@@ -1,0 +1,8 @@
+{
+  "schema": "wof-pm-stage-claim-v1",
+  "stageId": "ALPHA_ENEMY_TARGET_HEAD_LABELS_V1",
+  "promptPath": "parallel/PM/ALPHA_ENEMY_TARGET_HEAD_LABELS_START_PROMPT.md",
+  "state": "ACTIVE",
+  "startCommit": "3fb7862a59f9203d3f5d8f7f45756d366ec7b148",
+  "startedAtUtc": "2026-09-02T01:29:51Z"
+}
