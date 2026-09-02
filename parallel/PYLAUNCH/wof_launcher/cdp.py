@@ -19,6 +19,8 @@ READ_ONLY_METHODS = {
     "Page.getFrameTree",
     "Runtime.enable",
     "Runtime.evaluate",
+    # Stable V8 isolate identity is used only as a cheap runtime-generation fingerprint.
+    "Runtime.getIsolateId",
 }
 
 
