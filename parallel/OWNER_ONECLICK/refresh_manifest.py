@@ -15,7 +15,7 @@ DEFAULT_MANIFEST = Path(__file__).resolve().parent / "package_manifest.json"
 
 SCHEMA = "wof-owner-oneclick-package-v1"
 GENERATOR = "parallel/OWNER_ONECLICK/refresh_manifest.py"
-SELECTION_POLICY = "owner-oneclick-runtime-v3-field-recovery"
+SELECTION_POLICY = "owner-oneclick-runtime-v4-overlay-reentry-recovery"
 RUNTIME_SUFFIXES = {".py", ".js", ".mjs", ".cmd", ".bat", ".ps1"}
 EXCLUDED_PARTS = {"tests", "__pycache__"}
 
@@ -25,6 +25,10 @@ FIXED_PATHS = {
     "parallel/OWNER_ONECLICK/bootstrap_v2.ps1",
     "parallel/OPTOOLKIT/toolkit.py",
     "parallel/OPTOOLKIT/owner_zh_cn.py",
+    "parallel/OPTOOLKIT/live_session.py",
+    "parallel/HUDANCHOR_PROOF/wof_hudanchor_gl.js",
+    "parallel/HUDANCHOR_PROOF/wof_owner_projection_worker.js",
+    "parallel/HUDANCHOR_PROOF/wof_owner_projection_top.js",
     "product/alpha/regression.mjs",
     "product/alpha/wof_alpha_core.js",
     "product/alpha/wof_alpha_hud_model.js",
@@ -119,7 +123,7 @@ def is_runtime_path(path: str) -> bool:
 def selected_paths_from_commit(root: Path, commit: str) -> dict[str, str]:
     out = run_git(root, "-c", "core.quotepath=false", "ls-tree", "-r", commit, "--", "WOF_一键工具.cmd", "WOF_TOOLKIT.cmd",
                   "parallel/OWNER_ONECLICK", "parallel/OPTOOLKIT", "parallel/PYLAUNCH", "parallel/WOF052L_RECORDER",
-                  "parallel/BROWSER_FLEET", "parallel/LIVE_PROOF_BUNDLE", "product/alpha", "parallel/ALPHAQA_RC5")
+                  "parallel/BROWSER_FLEET", "parallel/LIVE_PROOF_BUNDLE", "parallel/HUDANCHOR_PROOF", "product/alpha", "parallel/ALPHAQA_RC5")
     selected: dict[str, str] = {}
     for line in out.splitlines():
         if not line.strip():
@@ -174,7 +178,9 @@ def generate_manifest(root: Path, source: str) -> dict:
         "components": {
             "ownerOneclick": {"sourceCommit": commit, "bootstrap": "parallel/OWNER_ONECLICK/bootstrap_v2.ps1", "files": [p for p in paths if p.startswith("parallel/OWNER_ONECLICK/") or p in {"WOF_一键工具.cmd", "WOF_TOOLKIT.cmd"}]},
             "alpha": {"sourceCommit": commit, "fieldAdapter": "product/alpha/wof_alpha_field_adapter.js", "files": component_paths(paths, "product/alpha/")},
-            "pylaunch": {"revision": "field-recovery-runtime-generation-v1", "sourceCommit": commit, "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd", "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd", "files": component_paths(paths, "parallel/PYLAUNCH/")},
+            "pylaunch": {"revision": "overlay-reentry-runtime-generation-v1", "sourceCommit": commit, "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd", "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd", "files": component_paths(paths, "parallel/PYLAUNCH/")},
+            "operatorToolkit": {"sourceCommit": commit, "ownerEntry": "parallel/OPTOOLKIT/owner_zh_cn.py", "files": component_paths(paths, "parallel/OPTOOLKIT/")},
+            "projectionProof": {"sourceCommit": commit, "mode": "package-selected-bounded-live", "files": component_paths(paths, "parallel/HUDANCHOR_PROOF/")},
             "recorder": {"sourceCommit": commit, "ownerEntry": "parallel/WOF052L_RECORDER/owner_zh_cn.py", "files": component_paths(paths, "parallel/WOF052L_RECORDER/")},
             "browserFleet": {"sourceCommit": commit, "ownerEntry": "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py", "files": component_paths(paths, "parallel/BROWSER_FLEET/")},
             "liveProof": {"sourceCommit": commit, "entry": "parallel/LIVE_PROOF_BUNDLE/RUN_WOF_UNIFIED_LIVE_PROOF.cmd", "files": component_paths(paths, "parallel/LIVE_PROOF_BUNDLE/")},
