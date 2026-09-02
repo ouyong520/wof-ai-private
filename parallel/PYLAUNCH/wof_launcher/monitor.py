@@ -16,6 +16,7 @@ from .cdp import CdpClient, CdpError
 from . import discovery_v2 as discovery_module
 from .discovery_v2 import TargetChoice
 from .probe_v2 import IDENTITY_PROBE as FIELD_IDENTITY_PROBE
+from .reentry_discovery import recover_page_only
 from .runtime_authority import RuntimeAuthorityGuard
 from .state import StatusStore
 
@@ -101,7 +102,8 @@ class LauncherMonitor:
     def _fresh_discover(self) -> TargetChoice:
         assert self._client is not None
         discovery_module.IDENTITY_PROBE = FIELD_IDENTITY_PROBE
-        return discovery_module.discover(self._client, identity_cache=self._identity_cache)
+        choice = discovery_module.discover(self._client, identity_cache=self._identity_cache)
+        return recover_page_only(self._client, choice, identity_cache=self._identity_cache)
 
     @staticmethod
     def _accepted(choice: TargetChoice) -> bool:
