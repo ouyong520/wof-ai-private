@@ -5,6 +5,9 @@
   "effectiveDedupKey": "alpha.v1.current-production-danger-coverage-authority-audit",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.current-production-danger-coverage-authority-audit.json",
   "claimToken": "093b457f520719d3db2f1466c5653669",
-  "state": "ACTIVE",
-  "startCommit": "fa8f48712d3da580ca2b9aec437c1665ed6a8de8"
+  "state": "DONE",
+  "startCommit": "fa8f48712d3da580ca2b9aec437c1665ed6a8de8",
+  "resultPath": "parallel/PM/ALPHA_V1_CURRENT_DANGER_COVERAGE_AUTHORITY_AUDIT_RESULT.md",
+  "resultCommit": "f48d5634e2dc08b3da9ce5842c9034a03a30b7b6",
+  "donePath": "parallel/PM/ALPHA_V1_CURRENT_DANGER_COVERAGE_AUTHORITY_AUDIT_DONE.md"
 }
