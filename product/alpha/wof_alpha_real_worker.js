@@ -13,6 +13,7 @@ const RELEASE='wof-alpha-rc3';
 const SCHEMA='wof-alpha-v2';
 const TRANSPORT='wof-alpha-safe-transport-v1';
 const CORE_VERSION='wof-alpha-core-rc3';
+const LABELS_VERSION='wof-alpha-enemy-target-labels-v1';
 const GOLDEN_SHA='5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62';
 const IDENTITY_SIGNATURE='wof-world-921031-maincpu-sha256-v1:5c369ce2de4f53d8';
 const RAW='https://raw.githubusercontent.com/ouyong520/wof-ai-private/main/product/alpha/';
@@ -70,6 +71,23 @@ async function ensureCore(scope){
   if(scope.WOFAlphaCore?.VERSION!==CORE_VERSION||scope.WOFAlphaCore?.SCHEMA!==SCHEMA)throw new Error('核心身份不匹配');
   return scope.WOFAlphaCore;
 }
+async function ensureEnemyTargetLabels(scope){
+  if(scope.WOFAlphaEnemyTargetLabels?.VERSION===LABELS_VERSION)return scope.WOFAlphaEnemyTargetLabels;
+  if(typeof scope.fetch!=='function')throw new Error('目标标签模块加载接口不可用');
+  const response=await scope.fetch(RAW+'wof_alpha_enemy_target_labels.js?transport='+encodeURIComponent(TRANSPORT)+'&x='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw new Error('目标标签模块加载失败 HTTP '+response.status);
+  (0,eval)(await response.text());
+  if(scope.WOFAlphaEnemyTargetLabels?.VERSION!==LABELS_VERSION)throw new Error('目标标签模块身份不匹配');
+  return scope.WOFAlphaEnemyTargetLabels;
+}
+async function loadEnemyHeadProjection(scope,labelApi){
+  if(typeof scope.fetch!=='function'||!labelApi?.validateProofProfile)return null;
+  const response=await scope.fetch(RAW+'wof_alpha_enemy_head_projection.json?x='+Date.now(),{cache:'no-store'});
+  if(!response.ok)return null;
+  const profile=await response.json();
+  const valid=labelApi.validateProofProfile(profile);
+  return valid?.ok?Object.freeze({...profile}):null;
+}
 async function localIdentity(scope,mod,binding){
   try{
     if(!moduleGood(mod)||binding.launcherIdentitySha!==GOLDEN_SHA)return{ok:false,reason:'模块或 Discovery 身份不匹配',...SAFETY};
@@ -119,6 +137,9 @@ async function localIdentity(scope,mod,binding){
 function stableWarningsHash(warnings){
   return JSON.stringify((warnings||[]).map(w=>[w.ruleId,w.slot,w.target7E,w.sourceSide,w.threatSide,w.attack,w.publication,w.evidence]));
 }
+function markerTargetHash(markers,projectionOk){
+  return (projectionOk?'ok|':'invalid|')+JSON.stringify((markers||[]).map(m=>[m.slot,m.target7E,m.target]));
+}
 
 async function install(scope,binding){
   if(!validBinding(binding))throw new Error('正式传输绑定无效');
@@ -131,27 +152,55 @@ async function install(scope,binding){
   const identity=await localIdentity(scope,mod,binding);
   if(!identity.ok||identity.sha256!==GOLDEN_SHA)throw new Error('检测器本地 World 921031 身份校验失败：'+identity.reason);
 
+  let labelApi=null,projectionProfile=null,markerSetupError=null;
+  try{
+    labelApi=await ensureEnemyTargetLabels(scope);
+    projectionProfile=await loadEnemyHeadProjection(scope,labelApi);
+  }catch(error){markerSetupError=String(error?.message||error);}
+
   const M=mod.HEAPU8,R=mod.HEAPU32[0x2e39e4>>>2]>>>0;
   const B=a=>M[R+((((a-0xFF0000)&0xffff)^1))]>>>0;
   const U16=a=>((B(a)<<8)|B(a+1))>>>0;
   const U32=a=>(B(a)*0x1000000+B(a+1)*0x10000+B(a+2)*0x100+B(a+3))>>>0;
   const S32=a=>{const v=U32(a);return v>=0x80000000?v-0x100000000:v;};
-  const X=a=>Math.round(S32(a+4)/65536);
+  const F16=a=>S32(a)/65536;
+  const X=a=>Math.round(F16(a+4));
   const ENEMY=0xFFC0BC,STRIDE=0xE0,SLOTS=20,PBASE={0:0xFFBE1C,4:0xFFBEFC,8:0xFFBFDC};
   function snap(i){
     const a=ENEMY+i*STRIDE,type=U16(a+0x20);if(type>=47)return null;
     const frameEnd=U32(a+0x12),next=U32(a+0x2C);if(!frameEnd&&!next)return null;
     const target7E=U16(a+0x7E),pb=PBASE[target7E],enemyX=X(a),targetX=pb?X(pb):null;
     return{slot:i,type,target7E,state99:B(a+0x99),action2A:B(a+0x2A),b2B:B(a+0x2B),body:U16(a+0x6E),attack:U16(a+0x70),
-      frameEnd,next,value30:U32(a+0x30),timer34:U16(a+0x34),payload6C:U16(a+0x6C),enemyX,targetX};
+      frameEnd,next,value30:U32(a+0x30),timer34:U16(a+0x34),payload6C:U16(a+0x6C),enemyX,targetX,
+      enemyWorldX:F16(a+0x04),enemyY:F16(a+0x08),enemyZ:F16(a+0x0C)};
+  }
+  function markerSnapshot(rows,sampleAt){
+    if(!labelApi||!projectionProfile)return null;
+    try{
+      const cameraRaw=U16(projectionProfile.cameraAddress);
+      const cameraX=cameraRaw*projectionProfile.cameraSign*projectionProfile.cameraScale;
+      if(!Number.isFinite(cameraX))throw new Error('camera sample non-finite');
+      const projection={...projectionProfile,epoch:binding.runtimeEpoch,sampleAt,confidence:1,cameraRaw,cameraX};
+      const markers=[];
+      for(const s of rows){
+        const target=core.TARGETS[s.target7E]||null;
+        if(!target||![s.enemyWorldX,s.enemyY,s.enemyZ].every(Number.isFinite)||!Number.isFinite(projectionProfile.enemyHeadOffsetsByType?.[String(s.type)]))continue;
+        markers.push({slot:s.slot,sourceId:'enemy-slot-'+s.slot,type:s.type,target7E:s.target7E,target,
+          enemyX:s.enemyWorldX,enemyY:s.enemyY,enemyZ:s.enemyZ,sampleAt,confidence:1,epoch:binding.runtimeEpoch,projectionEpoch:binding.runtimeEpoch});
+      }
+      return{projection,markers,projectionOk:true,error:null};
+    }catch(error){
+      return{projection:null,markers:[],projectionOk:false,error:String(error?.message||error)};
+    }
   }
 
   const bc=new scope.BroadcastChannel(binding.channel);
   const engine=core.createEngine();
   let running=true,timer=0,polls=0,lastError=null,lastHash=null,lastPublishedAt=null,seq=0;
+  let markerSeq=0,lastMarkerTargetHash=null,lastMarkerPublishedAt=null,lastMarkerError=markerSetupError;
   const nowMono=()=>Number(scope.performance?.now?.()||Date.now());
   const envelope=(kind,payload={})=>({schema:SCHEMA,kind,release:RELEASE,coreVersion:CORE_VERSION,transportVersion:TRANSPORT,
-    session:binding.session,pairGeneration:binding.pairGeneration,pairNonce:binding.pairNonce,identitySignature:IDENTITY_SIGNATURE,sentAt:Date.now(),...SAFETY,...payload});
+    session:binding.session,pairGeneration:binding.pairGeneration,pairNonce:binding.pairNonce,runtimeEpoch:binding.runtimeEpoch,identitySignature:IDENTITY_SIGNATURE,sentAt:Date.now(),...SAFETY,...payload});
   const postDiag=reason=>{try{bc.postMessage(envelope('diag',{status:'DISABLED',code:'runtime-exception',reason:String(reason||'检测器已禁用')}));}catch(_){}};
 
   function beginTick(){
@@ -164,7 +213,7 @@ async function install(scope,binding){
       if(gate.finish(authority)){lastError=String(error?.message||error);running=false;postDiag('只读快照失败：'+lastError);}
       return;
     }
-    const sampledAt=nowMono();
+    const sampledAt=nowMono(),sampleAtEpoch=Date.now();
     Promise.resolve().then(()=>engine.step(rows,sampledAt)).then(state=>{
       if(!gate.finish(authority))return;
       polls++;
@@ -174,6 +223,19 @@ async function install(scope,binding){
         seq++;
         bc.postMessage(envelope('state',{seq,warnings}));
         lastHash=hash;lastPublishedAt=sampledAt;
+      }
+
+      const markerState=markerSnapshot(rows,sampleAtEpoch);
+      if(markerState){
+        lastMarkerError=markerState.error;
+        const targetHash=markerTargetHash(markerState.markers,markerState.projectionOk);
+        const retargetOrPresenceChange=targetHash!==lastMarkerTargetHash;
+        const followHeartbeat=lastMarkerPublishedAt===null||sampledAt-lastMarkerPublishedAt>=50;
+        if(retargetOrPresenceChange||followHeartbeat){
+          markerSeq++;
+          bc.postMessage(envelope('enemy-target-markers',{markerSeq,markers:markerState.markers,projection:markerState.projection}));
+          lastMarkerTargetHash=targetHash;lastMarkerPublishedAt=sampledAt;
+        }
       }
     }).catch(error=>{
       if(!gate.finish(authority))return;
@@ -189,7 +251,8 @@ async function install(scope,binding){
       if(!running&&gate.status().active===false)return true;
       running=false;runtime.running=false;try{clearInterval(timer);}catch(_){};gate.revoke();try{engine.reset();}catch(_){};try{bc.close();}catch(_){};return true;
     },
-    status(){return{version:TRANSPORT,release:RELEASE,running:running&&gate.status().active,identitySignature:IDENTITY_SIGNATURE,identity,...SAFETY,polls,lastError,...gate.status()};}
+    status(){return{version:TRANSPORT,release:RELEASE,running:running&&gate.status().active,identitySignature:IDENTITY_SIGNATURE,identity,...SAFETY,polls,lastError,
+      enemyTargetLabels:{moduleReady:!!labelApi,projectionReady:!!projectionProfile,proofId:projectionProfile?.proofId??null,markerSeq,lastError:lastMarkerError,holdMs:0,smoothing:false,maxPublishHz:20},...gate.status()};}
   };
   scope.__WOF_ALPHA_REAL_TRANSPORT=runtime;
   return runtime.status();
