@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "TRAINING_FARM_R0_1_STABLE_RETRO_FBNEO_BOOTSTRAP_V1",
+  "dedupKey": "training.farm.r0.1.stable-retro-fbneo-bootstrap",
+  "effectiveDedupKey": "training.farm.r0.1.stable-retro-fbneo-bootstrap",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.1.stable-retro-fbneo-bootstrap.json",
+  "claimToken": "58128414b100831ac6692fef07e629b2",
+  "state": "ACTIVE",
+  "startCommit": "29f9e431c269baf7876e8d036ea6677616fb6a1a"
+}
