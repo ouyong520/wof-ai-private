@@ -1,0 +1,27 @@
+{
+  "status": "BLOCKED",
+  "fixture": "FRESH_INDEPENDENT_RETARGET_SAMPLEAT_REPOSITORY_QA_NOT_BROWSER_WOF_PROOF",
+  "helperBlob": "43b54e361f9bffcc4be278549692d0fb229aae7e",
+  "passed": 3,
+  "failed": 6,
+  "total": 9,
+  "failures": [
+    {"name": "malformed warningSampleAt: missing must fail closed", "pass": false, "error": "expected fixed fallback, anchored=1, fixed=0"},
+    {"name": "malformed warningSampleAt: null must fail closed", "pass": false, "error": "expected fixed fallback, anchored=1, fixed=0"},
+    {"name": "malformed warningSampleAt: numeric-string must fail closed", "pass": false, "error": "expected fixed fallback, anchored=1, fixed=0"},
+    {"name": "malformed warningSampleAt: boxed-number must fail closed", "pass": false, "error": "expected fixed fallback, anchored=1, fixed=0"},
+    {"name": "malformed warningSampleAt: NaN must fail closed", "pass": false, "error": "expected fixed fallback, anchored=1, fixed=0"},
+    {"name": "malformed warningSampleAt: Infinity must fail closed", "pass": false, "error": "expected fixed fallback, anchored=1, fixed=0"}
+  ],
+  "controls": [
+    {"name": "finite retarget sampleAt rejects older spatial", "pass": true, "detail": "SPATIAL_BEFORE_WARNING_SAMPLE"},
+    {"name": "malformed warningEpoch fails closed", "pass": true, "detail": "INVALID_EPOCH"},
+    {"name": "stale player still fails closed", "pass": true, "detail": "STALE_PLAYER"}
+  ],
+  "execution": {
+    "command": "node independent_retarget_sampleat_qa.mjs",
+    "exitCode": 1,
+    "helperReconstructionGitBlob": "43b54e361f9bffcc4be278549692d0fb229aae7e",
+    "classification": "LOCAL_NODE_EXECUTION_AGAINST_BYTE_EXACT_RECONSTRUCTED_CURRENT_HELPER_NOT_BROWSER_WOF_PROOF"
+  }
+}
