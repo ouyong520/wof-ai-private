@@ -2,7 +2,13 @@
   "schema": "wof-pm-stage-claim-v1",
   "stageId": "UNIFIED_LIVE_PROOF_RECORDER_CHILD_START_GENERATION_FIX_V1",
   "promptPath": "parallel/PM/UNIFIED_LIVE_PROOF_RECORDER_CHILD_START_GENERATION_FIX_START_PROMPT.md",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
   "startCommit": "b2345924c864d689d09b761daa1d04857aed5ad5",
-  "startedAtUtc": "2026-09-02T00:15:00Z"
+  "startedAtUtc": "2026-09-02T00:15:00Z",
+  "completedAtUtc": "2026-09-02T00:22:56Z",
+  "resultPath": "parallel/LIVE_PROOF_BUNDLE_RECORDER_CHILD_START_GENERATION_FIX/RESULT.md",
+  "resultCommit": "0297441c2a33d060bf110e05ecc95b0e7f858ee3",
+  "implementationCommit": "e8822137c71e16cca94e81f021e883894faea09a",
+  "regressionCommit": "40d29cb4d56572d01ebb8660d3b7a79b80b50472",
+  "stopCondition": "COMPLETE — RECORDER CHILD-START GENERATION FIX — READY FOR FRESH INDEPENDENT QA"
 }
