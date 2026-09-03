@@ -8,23 +8,27 @@ from pathlib import Path
 from typing import Any
 
 from wof_launcher import discovery_v2 as discovery_module
-from wof_launcher.browser import BrowserEndpoint, probe_endpoint_diagnostic
+from wof_launcher.browser import probe_endpoint_diagnostic
 from wof_launcher.cdp import CdpClient
-from wof_launcher.fleet import discover_fleet_instances
 from wof_launcher.probe_v2 import IDENTITY_PROBE as FIELD_IDENTITY_PROBE
 from wof_launcher.reentry_discovery import recover_page_only
 from wof_launcher.render_measurement_ui import MeasurementPublisher, MeasurementTrayApp
 from wof_launcher.state import StatusStore
 
 ATTACH_ONLY_ENV = "WOF_ALPHA_MENU6_ATTACH_ONLY"
+DEFAULT_OWNER_WOF_URL = "https://play.wo1wan.com/jjnext/play?id=314&mode=1&look=1&sev=4&linkid=5&sgstate=def"
 
 
 def _load_runner(root: Path):
-    runner=root/"parallel/RENDER_AUTHORITY_V3/measurement_runner.py"
-    if not runner.is_file(): raise RuntimeError("render authority V3 measurement runner missing")
-    spec=importlib.util.spec_from_file_location("wof_render_authority_v3_runner",runner)
-    if spec is None or spec.loader is None: raise RuntimeError("cannot load render authority V3 runner")
-    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
+    runner = root / "parallel/RENDER_AUTHORITY_V3/measurement_runner.py"
+    if not runner.is_file():
+        raise RuntimeError("render authority V3 measurement runner missing")
+    spec = importlib.util.spec_from_file_location("wof_render_authority_v3_runner", runner)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("cannot load render authority V3 runner")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _accepted(choice: Any) -> bool:
@@ -39,154 +43,151 @@ def _accepted(choice: Any) -> bool:
     )
 
 
-def _existing_endpoint_candidates(host: str, port: int) -> list[tuple[BrowserEndpoint, str]]:
-    rows: list[tuple[BrowserEndpoint, str]] = []
-    seen: set[tuple[str, int]] = set()
+def _endpoint_has_exact_wof(host: str, port: int) -> bool:
     endpoint, _ = probe_endpoint_diagnostic(host, port)
-    if endpoint is not None:
-        rows.append((endpoint, "existing-pylaunch-cdp"))
-        seen.add((endpoint.host, int(endpoint.port)))
-    for fleet in discover_fleet_instances(None, live_only=True):
-        key = (fleet.host, int(fleet.port))
-        if key in seen:
-            continue
-        candidate, _ = probe_endpoint_diagnostic(fleet.host, fleet.port)
-        if candidate is None:
-            continue
-        rows.append((candidate, f"existing-browser-fleet-{fleet.instance_id}"))
-        seen.add(key)
-    return rows
-
-
-def _probe_reusable_wof(host: str, port: int) -> tuple[BrowserEndpoint | None, str | None, dict[str, Any]]:
-    """Find an already-open exact WOF page without launching, restoring or navigating."""
-    candidates = _existing_endpoint_candidates(host, port)
-    diagnostic: dict[str, Any] = {
-        "candidateEndpointCount": len(candidates),
-        "browserLaunchAttempted": False,
-        "navigationAttempted": False,
-        "staleGameUrlIgnored": True,
-        "discoveryReason": "NO_REUSABLE_WOF_SESSION",
-    }
-    discovery_module.IDENTITY_PROBE = FIELD_IDENTITY_PROBE
-    for endpoint, entry_source in candidates:
-        client = CdpClient(endpoint.websocket_url, timeout=5.0)
-        identity_cache: dict[str, dict] = {}
+    if endpoint is None:
+        return False
+    client = CdpClient(endpoint.websocket_url, timeout=5.0)
+    try:
+        client.connect()
+        discovery_module.IDENTITY_PROBE = FIELD_IDENTITY_PROBE
+        choice = recover_page_only(
+            client,
+            discovery_module.discover(client, identity_cache={}),
+            identity_cache={},
+        )
+        return _accepted(choice)
+    except Exception:
+        return False
+    finally:
         try:
-            client.connect()
-            choice = recover_page_only(
-                client,
-                discovery_module.discover(client, identity_cache=identity_cache),
-                identity_cache=identity_cache,
-            )
-            diagnostic.update(
-                {
-                    "wofPageFound": choice.page is not None,
-                    "workerFound": choice.worker is not None,
-                    "wasmFound": bool(choice.worker_probe and choice.worker_probe.get("moduleOk")),
-                    "heapFound": bool(choice.worker_probe and choice.worker_probe.get("heapOk")),
-                    "discoveryReason": str(getattr(choice, "reason", None) or "NO_EXACT_WOF_ON_ENDPOINT"),
-                }
-            )
-            if _accepted(choice):
-                diagnostic.update(
-                    {
-                        "browserEntrySource": entry_source,
-                        "pageTargetId": str(choice.page.get("targetId")),
-                        "pageUrl": str(choice.page.get("url") or ""),
-                        "workerTargetId": str(choice.worker.get("targetId")),
-                    }
-                )
-                return endpoint, entry_source, diagnostic
-        except Exception as exc:
-            diagnostic["discoveryReason"] = f"ENDPOINT_SCAN_{type(exc).__name__}"
-        finally:
-            try:
-                client.close()
-            except Exception:
-                pass
-    return None, None, diagnostic
-
-
-def _waiting_payload(diagnostic: dict[str, Any]) -> dict[str, Any]:
-    payload = dict(diagnostic)
-    payload.update(
-        {
-            "browserConnected": bool(diagnostic.get("candidateEndpointCount")),
-            "wofPageFound": False,
-            "workerFound": False,
-            "wasmFound": False,
-            "heapFound": False,
-            "browserEntrySource": "attach-only-existing-wof",
-            "browserLaunchAttempted": False,
-            "navigationAttempted": False,
-            "staleGameUrlIgnored": True,
-        }
-    )
-    return payload
-
-
-def _reusable_payload(diagnostic: dict[str, Any], entry_source: str | None) -> dict[str, Any]:
-    """Merge a reusable-WOF status payload without duplicate keyword arguments."""
-    payload = dict(diagnostic)
-    payload["browserConnected"] = True
-    if entry_source and not payload.get("browserEntrySource"):
-        payload["browserEntrySource"] = entry_source
-    return payload
-
-
-def parse_args()->argparse.Namespace:
-    p=argparse.ArgumentParser(description="WOF Render Authority V3 owner-visible entry")
-    p.add_argument("--root",required=True);p.add_argument("--output-root",required=True);p.add_argument("--host",default="127.0.0.1");p.add_argument("--port",type=int,default=9223);p.add_argument("--browser",choices=["auto","chrome","edge"],default="auto");p.add_argument("--browser-path");p.add_argument("--game-url");return p.parse_args()
-
-
-def main()->int:
-    args=parse_args();root=Path(args.root).expanduser().resolve();output_root=Path(args.output_root).expanduser().resolve();output_root.mkdir(parents=True,exist_ok=True)
-    store=StatusStore();stop=threading.Event();publisher=MeasurementPublisher(store)
-    def request_stop()->None: stop.set()
-    tray=MeasurementTrayApp(store,quit_app=request_stop);publisher.on_change=tray.refresh
-    source_commit=str(os.environ.get("WOF_ALPHA_ACCEPTANCE_COMMIT") or "").strip()
-    source_label=source_commit[:8] if source_commit else "runtime"
-    def notify_blocked(reason: object)->None:
-        text=str(reason or "当前路径已 BLOCKED").strip()
-        if len(text)>240:text=text[:237]+"..."
-        try:
-            if tray.icon:
-                tray.icon.notify(text,f"WOF Alpha {source_label} BLOCKED")
+            client.close()
         except Exception:
             pass
-    def forward_status(state:str,payload:dict[str,Any])->None:
-        publisher.publish(state,**payload)
-        if state=="BLOCKED":notify_blocked(payload.get("blockedReason"))
-    publisher.publish("STARTING",browserConnected=False,wofPageFound=False,workerFound=False,wasmFound=False,heapFound=False,browserLaunchAttempted=False,navigationAttempted=False,staleGameUrlIgnored=True,sourceCommit=source_commit or None)
-    result={"code":None}
-    def worker()->None:
-        previous_attach_only=os.environ.get(ATTACH_ONLY_ENV);os.environ[ATTACH_ONLY_ENV]="1"
+
+
+def _choose_runner_port(host: str, preferred: int) -> tuple[int, str]:
+    endpoint, _ = probe_endpoint_diagnostic(host, preferred)
+    if endpoint is None:
+        return preferred, "program-launch-free-port"
+    if _endpoint_has_exact_wof(host, preferred):
+        return preferred, "reuse-existing-exact-wof"
+    for port in range(preferred + 1, preferred + 11):
+        candidate, _ = probe_endpoint_diagnostic(host, port)
+        if candidate is None:
+            return port, "program-launch-fresh-port"
+    raise RuntimeError("no free local CDP port available for program-owned WOF browser")
+
+
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="WOF Render Authority V3 owner-visible entry")
+    p.add_argument("--root", required=True)
+    p.add_argument("--output-root", required=True)
+    p.add_argument("--host", default="127.0.0.1")
+    p.add_argument("--port", type=int, default=9223)
+    p.add_argument("--browser", choices=["auto", "chrome", "edge"], default="chrome")
+    p.add_argument("--browser-path")
+    p.add_argument("--game-url")
+    return p.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    root = Path(args.root).expanduser().resolve()
+    output_root = Path(args.output_root).expanduser().resolve()
+    output_root.mkdir(parents=True, exist_ok=True)
+
+    store = StatusStore()
+    stop = threading.Event()
+    publisher = MeasurementPublisher(store)
+
+    def request_stop() -> None:
+        stop.set()
+
+    tray = MeasurementTrayApp(store, quit_app=request_stop)
+    publisher.on_change = tray.refresh
+    source_commit = str(os.environ.get("WOF_ALPHA_ACCEPTANCE_COMMIT") or "").strip()
+    source_label = source_commit[:8] if source_commit else "runtime"
+
+    def notify_blocked(reason: object) -> None:
+        text = str(reason or "当前路径已 BLOCKED").strip()
+        if len(text) > 240:
+            text = text[:237] + "..."
         try:
-            runner=_load_runner(root)
-            while not stop.is_set():
-                endpoint,entry_source,diagnostic=_probe_reusable_wof(args.host,args.port)
-                if endpoint is None:
-                    publisher.publish("WAITING_FOR_WOF",**_waiting_payload(diagnostic))
-                    stop.wait(0.8);continue
-                publisher.publish("WAITING_FOR_WOF",**_reusable_payload(diagnostic,entry_source))
-                code=int(runner.run(root,output_root,endpoint.host,endpoint.port,args.browser,args.browser_path,None,forward_status,stop) or 0)
-                if code in {3,4,5,6} and not stop.is_set():
-                    publisher.publish("WAITING_FOR_WOF",browserConnected=False,wofPageFound=False,workerFound=False,wasmFound=False,heapFound=False,browserEntrySource="attach-only-existing-wof",discoveryReason="REUSABLE_WOF_DISAPPEARED",browserLaunchAttempted=False,navigationAttempted=False,staleGameUrlIgnored=True)
-                    stop.wait(0.8);continue
-                result["code"]=code;return
-            result["code"]=0
+            if tray.icon:
+                tray.icon.notify(text, f"WOF Alpha {source_label} BLOCKED")
+        except Exception:
+            pass
+
+    def forward_status(state: str, payload: dict[str, Any]) -> None:
+        publisher.publish(state, **payload)
+        if state == "BLOCKED":
+            notify_blocked(payload.get("blockedReason"))
+
+    publisher.publish(
+        "STARTING",
+        browserConnected=False,
+        wofPageFound=False,
+        workerFound=False,
+        wasmFound=False,
+        heapFound=False,
+        browserLaunchAttempted=False,
+        navigationAttempted=False,
+        staleGameUrlIgnored=True,
+        sourceCommit=source_commit or None,
+    )
+
+    result = {"code": None}
+
+    def worker() -> None:
+        previous_attach_only = os.environ.get(ATTACH_ONLY_ENV)
+        os.environ.pop(ATTACH_ONLY_ENV, None)
+        try:
+            runner = _load_runner(root)
+            run_port, entry_source = _choose_runner_port(args.host, args.port)
+            game_url = str(args.game_url or DEFAULT_OWNER_WOF_URL).strip()
+            publisher.publish(
+                "WAITING_FOR_WOF",
+                browserConnected=False,
+                wofPageFound=False,
+                workerFound=False,
+                wasmFound=False,
+                heapFound=False,
+                browserEntrySource=entry_source,
+                browserLaunchAttempted=entry_source != "reuse-existing-exact-wof",
+                navigationAttempted=entry_source != "reuse-existing-exact-wof",
+                staleGameUrlIgnored=True,
+                configuredGameUrl=game_url,
+                browserPort=run_port,
+            )
+            code = int(
+                runner.run(
+                    root,
+                    output_root,
+                    args.host,
+                    run_port,
+                    args.browser,
+                    args.browser_path,
+                    None if entry_source == "reuse-existing-exact-wof" else game_url,
+                    forward_status,
+                    stop,
+                )
+                or 0
+            )
+            result["code"] = code
         except Exception as exc:
-            reason=f"V3 启动失败：{type(exc).__name__}: {exc}"
-            publisher.publish("BLOCKED",blockedReason=reason)
+            reason = f"V3 启动失败：{type(exc).__name__}: {exc}"
+            publisher.publish("BLOCKED", blockedReason=reason)
             notify_blocked(reason)
-            result["code"]=12
+            result["code"] = 12
         finally:
             if previous_attach_only is None:
-                os.environ.pop(ATTACH_ONLY_ENV,None)
+                os.environ.pop(ATTACH_ONLY_ENV, None)
             else:
-                os.environ[ATTACH_ONLY_ENV]=previous_attach_only
-    thread=threading.Thread(target=worker,name="wof-render-authority-v3",daemon=True);thread.start()
+                os.environ[ATTACH_ONLY_ENV] = previous_attach_only
+
+    thread = threading.Thread(target=worker, name="wof-render-authority-v3", daemon=True)
+    thread.start()
     try:
         tray.run()
     except ImportError as exc:
@@ -194,11 +195,23 @@ def main()->int:
         try:
             import tkinter as tk
             from tkinter import messagebox
-            r=tk.Tk();r.withdraw();messagebox.showerror("WOF Render Authority BLOCKED",f"缺少托盘依赖：{exc}\n请重新运行 WOF 一键工具完成依赖安装。",parent=r);r.destroy()
-        except Exception: pass
+
+            r = tk.Tk()
+            r.withdraw()
+            messagebox.showerror(
+                "WOF Render Authority BLOCKED",
+                f"缺少托盘依赖：{exc}\n请重新运行 WOF 一键工具完成依赖安装。",
+                parent=r,
+            )
+            r.destroy()
+        except Exception:
+            pass
         return 13
     finally:
-        stop.set();thread.join(timeout=3.0)
+        stop.set()
+        thread.join(timeout=3.0)
     return int(result["code"] or 0)
 
-if __name__=="__main__":raise SystemExit(main())
+
+if __name__ == "__main__":
+    raise SystemExit(main())
