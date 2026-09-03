@@ -14,16 +14,79 @@ function Stop-Wof([string]$Message, [int]$Code = 1) {
     exit $Code
 }
 
+function Test-WofRepo([string]$Path) {
+    if (-not $Path) { return $false }
+    return (Test-Path (Join-Path $Path '.git')) -and
+           (Test-Path (Join-Path $Path 'parallel\PYLAUNCH\render_authority_measurement_entry.py'))
+}
+
+function Find-WofRepo {
+    $candidates = New-Object System.Collections.Generic.List[string]
+    if ($env:WOF_ALPHA_REPO) { $candidates.Add($env:WOF_ALPHA_REPO) }
+    if ($env:USERPROFILE) {
+        $candidates.Add((Join-Path $env:USERPROFILE 'Documents\GitHub\wof-ai-private'))
+        $candidates.Add((Join-Path $env:USERPROFILE 'Desktop\wof-ai-private'))
+        $candidates.Add((Join-Path $env:USERPROFILE 'Downloads\wof-ai-private'))
+        $candidates.Add((Join-Path $env:USERPROFILE 'source\repos\wof-ai-private'))
+        $candidates.Add((Join-Path $env:USERPROFILE 'wof-ai-private'))
+    }
+    foreach ($drive in 'C','D','E','F','G') {
+        $root = $drive + ':\'
+        if (Test-Path $root) {
+            $candidates.Add((Join-Path $root 'wof-ai-private'))
+            $candidates.Add((Join-Path $root 'GitHub\wof-ai-private'))
+            $candidates.Add((Join-Path $root 'github\wof-ai-private'))
+            $candidates.Add((Join-Path $root 'Projects\wof-ai-private'))
+            $candidates.Add((Join-Path $root 'projects\wof-ai-private'))
+            $candidates.Add((Join-Path $root 'Code\wof-ai-private'))
+            $candidates.Add((Join-Path $root 'code\wof-ai-private'))
+        }
+    }
+    foreach ($candidate in ($candidates | Select-Object -Unique)) {
+        if (Test-WofRepo $candidate) { return (Resolve-Path $candidate).Path }
+    }
+
+    $searchRoots = @()
+    if ($env:USERPROFILE -and (Test-Path $env:USERPROFILE)) { $searchRoots += $env:USERPROFILE }
+    foreach ($drive in 'D','E','F','G') {
+        $root = $drive + ':\'
+        if (Test-Path $root) { $searchRoots += $root }
+    }
+    foreach ($root in $searchRoots) {
+        try {
+            $queue = New-Object System.Collections.Queue
+            $queue.Enqueue(@($root,0))
+            while ($queue.Count -gt 0) {
+                $item = $queue.Dequeue()
+                $dir = [string]$item[0]
+                $depth = [int]$item[1]
+                if ($depth -gt 4) { continue }
+                try {
+                    foreach ($child in Get-ChildItem -LiteralPath $dir -Directory -ErrorAction SilentlyContinue) {
+                        if ($child.Name -eq 'wof-ai-private' -and (Test-WofRepo $child.FullName)) {
+                            return $child.FullName
+                        }
+                        if ($depth -lt 4 -and $child.Name -notin @('Windows','$Recycle.Bin','System Volume Information','Program Files','Program Files (x86)','ProgramData','.git','node_modules')) {
+                            $queue.Enqueue(@($child.FullName,$depth+1))
+                        }
+                    }
+                } catch {}
+            }
+        } catch {}
+    }
+    return $null
+}
+
 if (-not $Repo) {
-    $Repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+    $Repo = Find-WofRepo
+}
+if (-not $Repo) {
+    Stop-Wof 'Could not find the wof-ai-private Git checkout. Open GitHub Desktop once, select wof-ai-private, then run this launcher again.' 20
 }
 $Repo = (Resolve-Path $Repo).Path
 
-if (-not (Test-Path (Join-Path $Repo '.git'))) {
-    Stop-Wof 'This launcher must run from the wof-ai-private Git checkout.' 20
-}
-if (-not (Test-Path (Join-Path $Repo 'parallel\PYLAUNCH\render_authority_measurement_entry.py'))) {
-    Stop-Wof 'Alpha runtime file is missing.' 21
+if (-not (Test-WofRepo $Repo)) {
+    Stop-Wof 'The located folder is not a valid wof-ai-private Git checkout.' 21
 }
 
 Write-Host ''
