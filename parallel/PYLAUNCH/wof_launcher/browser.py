@@ -89,6 +89,8 @@ def browser_candidates(preference: str = "auto") -> list[Path]:
     return result
 
 def find_browser(preference: str = "auto", explicit: str | None = None) -> Path | None:
+    if os.environ.get("WOF_ALPHA_MENU6_ATTACH_ONLY") == "1":
+        return None
     if explicit:
         p = Path(explicit).expanduser()
         if p.is_file(): return p
@@ -101,31 +103,32 @@ def default_profile_dir() -> Path:
     return root / "BrowserProfile"
 
 def known_owner_game_url(explicit: str | None = None) -> tuple[str | None, str | None]:
-    """Return only an already-configured Owner WOF URL. Never invent a game destination."""
-    candidates: list[tuple[str, str | None]] = [("explicit", explicit), ("environment", os.environ.get("WOF_GAME_URL"))]
-    fleet_settings = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "WOF Future Danger" / "Fleet" / "settings.json"
+    """Return only an explicitly supplied Owner URL; never mine persisted launch state.
+
+    WOF_GAME_URL, Fleet settings and browser profile history are deliberately not
+    navigation authorities. Menu 6 is attach/reuse-only and must never resurrect
+    a stale ROM destination from previous sessions.
+    """
+    value = str(explicit or "").strip()
+    if not value:
+        return None, None
     try:
-        raw = json.loads(fleet_settings.read_text(encoding="utf-8"))
-        if isinstance(raw, dict): candidates.append(("browser-fleet-settings", str(raw.get("gameUrl")) if raw.get("gameUrl") else None))
-    except (OSError, ValueError): pass
-    for source, value in candidates:
-        value = str(value or "").strip()
-        if not value: continue
-        try: parsed = urlsplit(value)
-        except ValueError: continue
-        if parsed.scheme in {"http", "https"} and parsed.netloc:
-            return value, source
+        parsed = urlsplit(value)
+    except ValueError:
+        return None, None
+    if parsed.scheme in {"http", "https"} and parsed.netloc:
+        return value, "explicit"
     return None, None
 
 def launch_debug_browser(executable: Path, *, host: str = "127.0.0.1", port: int = 9223, user_data_dir: Path | None = None, game_url: str | None = None, restore_last_session: bool = False) -> subprocess.Popen[Any]:
+    if os.environ.get("WOF_ALPHA_MENU6_ATTACH_ONLY") == "1":
+        raise RuntimeError("menu 6 is attach/reuse-only and cannot launch or restore a browser")
     if not is_loopback_host(host): raise ValueError("PYLAUNCH only permits loopback CDP endpoints")
     profile = (user_data_dir or default_profile_dir()).resolve(); profile.mkdir(parents=True, exist_ok=True)
     args = [str(executable), f"--remote-debugging-address={host}", f"--remote-debugging-port={port}", f"--user-data-dir={profile}", "--no-first-run", "--no-default-browser-check"]
     if game_url:
         args.append(game_url)
     elif restore_last_session:
-        # Reuse the persistent PYLAUNCH Owner profile instead of opening an empty browser.
-        # This does not guess or inject a game URL; Chrome/Edge restores the Owner's own last session.
         args.extend(["--restore-last-session", "--disable-session-crashed-bubble"])
     return subprocess.Popen(args, close_fds=True)
 
