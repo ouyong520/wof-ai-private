@@ -3,7 +3,7 @@
 Updated: 2026-09-03
 Authority: Owner interaction convention
 
-## `1` means continue
+## `1` means PM checkpoint + continue project
 
 When the Owner sends a message whose trimmed content is exactly:
 
@@ -11,14 +11,24 @@ When the Owner sends a message whose trimmed content is exactly:
 
 interpret it as:
 
-**Continue the current task / execution chain from the latest authoritative state.**
+**The current worker may already be finished. Re-read the latest authoritative Git state, inspect what the worker actually changed/completed, judge the real terminal status, then continue advancing the project through the shortest legitimate next step.**
 
 Operational rules:
 - Do **not** interpret standalone `1` as “choose option 1” unless the Owner explicitly says they are selecting a numbered option.
-- Do **not** ask what `1` means when there is an active task or execution chain in context.
-- Re-read the latest authoritative repository state when required by that task, then continue rather than restarting completed work.
-- Preserve the current task's dedup, stage, safety, testing-cadence, and no-duplicate-work rules.
-- `1` does not by itself authorize inventing a new stage, recovery, QA chain, or scope expansion; it means continue the already-authorized work.
+- Do **not** ask what `1` means when there is an active project/execution chain in context.
+- Treat `1` as a PM checkpoint trigger, not as an automatic instruction to tell the same worker to continue.
+- Re-read current `main` / relevant HEAD plus durable RESULT, canonical claim and stage claim as needed.
+- Inspect actual committed progress rather than trusting the worker chat summary alone.
+- If the current stage is COMPLETE/PASS, review/accept it and immediately identify the next legitimate product step.
+- If a fresh implementation/recovery/QA stage is genuinely required, create or surface the proper durable START_PROMPT under canonical dedup and give the Owner the new concise worker requirement.
+- If unfinished authorized work only needs closeout/recovery, continue that shortest path without redoing completed implementation.
+- If BLOCKED, route only the concrete blocker.
+- Preserve dedup, stage, safety, testing-cadence, and no-duplicate-work rules.
+- Never merely repeat the previous status after `1`; the project should move forward whenever Git truth permits it.
+
+In short:
+
+`Owner 发 1 -> PM 检查 worker 的 Git 进度 -> 判断完成/阻塞/未收口 -> 生成下一条正确需求 -> 继续推进项目`
 
 ## PM / worker handoff formatting
 
