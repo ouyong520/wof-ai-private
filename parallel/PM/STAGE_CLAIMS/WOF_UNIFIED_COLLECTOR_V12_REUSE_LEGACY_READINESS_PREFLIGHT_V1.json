@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "WOF_UNIFIED_COLLECTOR_V12_REUSE_LEGACY_READINESS_PREFLIGHT_V1",
+  "dedupKey": "wof.unified-collector.v12.preflight.reuse-legacy-readiness",
+  "effectiveDedupKey": "wof.unified-collector.v12.preflight.reuse-legacy-readiness",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v12.preflight.reuse-legacy-readiness.json",
+  "claimToken": "v12-preflight-13298016dc914bc181a1d8abc26cae1a",
+  "state": "ACTIVE",
+  "startCommit": "7f8f1ff5b7a5b684460e84a55c2d01c5d9e9b3a6"
+}
