@@ -33,7 +33,6 @@ EXACT = {
     "No game RAM write or gameplay input was sent.": "没有进行游戏内存写入，也没有发送游戏输入。",
 }
 
-
 def translate_text(text: str) -> str:
     if text in EXACT: return EXACT[text]
     if not text: return text
@@ -64,20 +63,12 @@ def translate_text(text: str) -> str:
     if text.endswith(": MISSING"): return text[:-len(": MISSING")]+"：缺失"
     return text
 
-
-def translated_print(*args, **kwargs):
-    return _ORIGINAL_PRINT(*(translate_text(x) if isinstance(x,str) else x for x in args), **kwargs)
-
-
+def translated_print(*args, **kwargs): return _ORIGINAL_PRINT(*(translate_text(x) if isinstance(x,str) else x for x in args), **kwargs)
 def translate_prompt(prompt: str) -> str:
     if prompt=="Choose 0-9: ": return "请选择 0-9："
     if prompt=="\nPress Enter to return to WOF Toolkit...": return "\n按回车返回 WOF 工具箱……"
     return prompt
-
-
-def translated_input(prompt: str=""):
-    return _ORIGINAL_INPUT(translate_prompt(prompt))
-
+def translated_input(prompt: str=""): return _ORIGINAL_INPUT(translate_prompt(prompt))
 
 class ChineseToolkit(toolkit.Toolkit):
     """Owner-facing integration surface for the immutable packaged runtime."""
@@ -94,23 +85,25 @@ class ChineseToolkit(toolkit.Toolkit):
     def proof(self):
         print("\n[运行真人 Windows 验证]")
         entry=self.root/"parallel/PYLAUNCH/render_authority_measurement_entry.py"
-        if not entry.is_file(): print("没有找到 Render Authority V2 自动采集组件。请先选择 1“更新项目”。"); return
+        if not entry.is_file(): print("没有找到 Render Authority V3 自动采集组件。请先选择 1“更新项目”。"); return
         pyw=Path(toolkit.sys.executable).with_name("pythonw.exe"); exe=pyw if toolkit.os.name=="nt" and pyw.exists() else Path(toolkit.sys.executable)
         cmd=[str(exe),str(entry),"--root",str(self.root),"--output-root",str(self.results)]
-        toolkit.subprocess.Popen(cmd,cwd=str(entry.parent),env=toolkit.os.environ.copy())
-        print("Render Authority V2 自动采集已启动。正常进入 WOF 并正常玩 20-30 秒即可。")
-        print("不需要点 P1 头顶，不需要 Y/Y-Z/Y+Z，不需要左右/纵深/跳跃/resize/fullscreen 清单。")
-        print("在 exact renderer/object screen-space authority 尚未证明前，旧 projection overlay 会被关闭；宁可暂时不显示，也不显示错位置。")
-        print("采集会绑定 exact World 921031、当前 Worker/runtime generation 和玩家/敌人 lifecycle；runtime 更换会自动撤销旧采集并重新发现。")
-        print("完成后会自动生成 WOF_LIVE_ACCEPTANCE_<session>.zip；无需 DevTools、Python 命令或手工整理证据。")
-        print("结果目录："+str(self.results/"packages"))
+        try: toolkit.subprocess.Popen(cmd,cwd=str(entry.parent),env=toolkit.os.environ.copy())
+        except Exception as exc:
+            print("Render Authority V3 启动失败。"); print("游戏本身没有受到影响。"); print("技术详情："+str(exc)); return
+        print("Render Authority V3 已启动。请看 Windows 右下角 WOF 托盘状态。")
+        print("正常进入 WOF；Camera 会自动准备，必要时最多点一次 P1 头顶，然后正常玩即可。")
+        print("工具会自动积累多头部样本并连续跟踪；识别不稳会立刻隐藏，恢复后自动重新显示。")
+        print("如果确实缺一个动作，托盘一次只提示一件事；不需要 Y/Y-Z/Y+Z、旧校准清单或手工打包。")
+        print("采集始终绑定 exact World 921031 和当前 Worker/runtime generation；runtime 更换会撤销旧位置并自动重发现。")
+        print("完成或 BLOCKED 会持续显示在托盘，结果 ZIP 自动生成到："+str(self.results/"packages"))
+        print("只读模式：开启 / 游戏内存写入：0 / 输入注入：关闭。")
 
     def package(self):
         print("\n[自动整理并打包结果]")
         try: return super().package()
         except Exception as exc:
             print("结果打包没有完成。原始诊断/验证文件都仍然保留。"); print("游戏本身没有受到影响。"); print(f"技术详情：{exc}"); return None
-
 
 def main() -> int:
     parser=argparse.ArgumentParser(description="WOF Windows 操作工具箱 — 简体中文 owner 界面"); parser.add_argument("--root",required=True,help="WOF 项目根目录"); args=parser.parse_args(); root=Path(args.root)
@@ -120,6 +113,5 @@ def main() -> int:
     except KeyboardInterrupt: print("\n已退出 WOF 工具箱。游戏本身没有受到影响。"); return 130
     except Exception as exc: print("WOF 工具箱发生了未预期的问题。"); print("游戏本身没有受到影响，也没有进行游戏内存写入或输入注入。"); print(f"技术详情：{exc}"); return 2
     finally: builtins.print=_ORIGINAL_PRINT; builtins.input=_ORIGINAL_INPUT
-
 
 if __name__=="__main__": raise SystemExit(main())
