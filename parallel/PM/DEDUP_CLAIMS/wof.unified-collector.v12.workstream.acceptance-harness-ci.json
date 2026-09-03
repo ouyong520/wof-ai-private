@@ -8,11 +8,24 @@
   "promptPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_PARALLEL_3_WORKER_DISPATCH.md",
   "owner": "chatgpt-gpt-5.6-sol-v12-worker-w3",
   "claimToken": "v12-w3-4e8c6f7a31d24c0b9f2a1e65d8b473ac",
-  "state": "ACTIVE",
+  "state": "SUBCOMPLETE",
   "startCommit": "ce124c7f595bd53e00d07589f941ece813b8a47d",
   "workstream": "W3",
   "parentCanonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v12.final-consolidation-oneclick-legacy-retirement.json",
   "parentClaimToken": "v12-umbrella-96e154cdfc014245b565a4d323d23ea1",
   "implementationRepo": "ouyong520/wof-winkawaks-bridge",
-  "implementationStartHead": "e80257d9486cd3129b115d4e1007bf24335b8852"
+  "implementationStartHead": "e80257d9486cd3129b115d4e1007bf24335b8852",
+  "implementationHead": "b5540d9678d572fc1a6a09cb5bbcf4e3014defd2",
+  "implementationTree": "87d636087d12e1cd025ce3dfacef756618690f8a",
+  "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_W3_ACCEPTANCE_HARNESS_CI_SUBRESULT.md",
+  "resultCommit": "cb3140ce8653288ef0238418f45c336ff0f2455a",
+  "workflowRunId": 33721059586,
+  "workflowJobId": 100540119852,
+  "focusedTestCount": 19,
+  "acceptanceSummary": {
+    "pass": 9,
+    "blocked": 0,
+    "deferred": 0
+  },
+  "subworkstreamVerdict": "W3_SUBCOMPLETE_V12_TERMINAL_AUTHORITY_NOT_CLAIMED"
 }
