@@ -1,14 +1,14 @@
 {
   "schema": "wof-owner-oneclick-package-v1",
-  "packageVersion": "2026.09.03.aabd8d24480c",
-  "sourceCommit": "aabd8d24480c2056bb8772b2107098c121a37356",
-  "generatedAtUtc": "2026-09-03T05:01:18Z",
+  "packageVersion": "2026.09.03.75ef7c6b2a2d",
+  "sourceCommit": "75ef7c6b2a2d797c0a9c3552f7cb6157b48026ca",
+  "generatedAtUtc": "2026-09-03T05:31:54Z",
   "generator": "parallel/OWNER_ONECLICK/refresh_manifest.py",
-  "selectionPolicy": "owner-oneclick-runtime-v6-render-authority-v3-zero-click-first-head-visual",
-  "baseUrl": "https://raw.githubusercontent.com/ouyong520/wof-ai-private/aabd8d24480c2056bb8772b2107098c121a37356/",
+  "selectionPolicy": "owner-oneclick-runtime-v7-render-authority-v3-w2-semantic-zero-click-first",
+  "baseUrl": "https://raw.githubusercontent.com/ouyong520/wof-ai-private/75ef7c6b2a2d797c0a9c3552f7cb6157b48026ca/",
   "components": {
     "ownerOneclick": {
-      "sourceCommit": "aabd8d24480c2056bb8772b2107098c121a37356",
+      "sourceCommit": "75ef7c6b2a2d797c0a9c3552f7cb6157b48026ca",
       "bootstrap": "parallel/OWNER_ONECLICK/bootstrap_v2.ps1",
       "files": [
         "WOF_TOOLKIT.cmd",
@@ -17,7 +17,7 @@
       ]
     },
     "alpha": {
-      "sourceCommit": "aabd8d24480c2056bb8772b2107098c121a37356",
+      "sourceCommit": "75ef7c6b2a2d797c0a9c3552f7cb6157b48026ca",
       "fieldAdapter": "product/alpha/wof_alpha_field_adapter.js",
       "files": [
         "product/alpha/regression.mjs",
@@ -36,8 +36,8 @@
       ]
     },
     "pylaunch": {
-      "revision": "render-authority-v3-zero-click-first-head-visual",
-      "sourceCommit": "aabd8d24480c2056bb8772b2107098c121a37356",
+      "revision": "render-authority-v3-w2-semantic-zero-click-first",
+      "sourceCommit": "75ef7c6b2a2d797c0a9c3552f7cb6157b48026ca",
       "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd",
       "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd",
       "files": [
@@ -69,7 +69,7 @@
       ]
     },
     "operatorToolkit": {
-      "sourceCommit": "aabd8d24480c2056bb8772b2107098c121a37356",
+      "sourceCommit": "75ef7c6b2a2d797c0a9c3552f7cb6157b48026ca",
       "ownerEntry": "parallel/OPTOOLKIT/owner_zh_cn.py",
       "files": [
         "parallel/OPTOOLKIT/live_session.py",
@@ -78,20 +78,23 @@
       ]
     },
     "renderAuthorityV3": {
-      "sourceCommit": "aabd8d24480c2056bb8772b2107098c121a37356",
-      "mode": "owner-visible-exact-world-zero-click-first-p1-multisample-head-visual",
+      "sourceCommit": "75ef7c6b2a2d797c0a9c3552f7cb6157b48026ca",
+      "mode": "owner-visible-exact-world-w2-semantic-zero-click-first-p1-head-visual",
       "entry": "parallel/PYLAUNCH/render_authority_measurement_entry.py",
-      "ownerFlow": "menu6 -> normal game -> auto P1 identity/HUD -> bounded live-scene P1 head auto seed -> normal play -> auto complete",
+      "ownerFlow": "menu6 -> normal game -> W2 semantic HUD/scene evidence gate -> zero-click seed when SAFE_UNIQUE -> otherwise fail closed -> one-click fallback maximum -> normal play -> auto complete",
       "ownerClickExpectedNormal": 0,
       "ownerClickMaximumPerAuthorityGeneration": 1,
       "ownerClickFallbackMaximumPerAuthorityGeneration": 1,
       "automaticSeedRequiredBeforeFallback": true,
+      "semanticIdentityGate": "W2_FAIL_CLOSED",
+      "genericHudPaletteSemanticIdentityAllowed": false,
       "hudPortraitMayIdentifyButNeverSeedSceneHead": true,
       "confidenceLossBehavior": "HIDE_AND_AUTO_RECOVER",
       "productionOverlayEnabled": false,
       "files": [
         "parallel/PYLAUNCH/render_authority_measurement_entry.py",
         "parallel/PYLAUNCH/wof_launcher/render_authority_capture.py",
+        "parallel/PYLAUNCH/wof_launcher/zero_click_identity_acquisition.py",
         "parallel/PYLAUNCH/wof_launcher/head_visual_tracker.py",
         "parallel/PYLAUNCH/wof_launcher/render_measurement_ui.py",
         "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js",
@@ -99,7 +102,7 @@
       ]
     },
     "projectionProof": {
-      "sourceCommit": "aabd8d24480c2056bb8772b2107098c121a37356",
+      "sourceCommit": "75ef7c6b2a2d797c0a9c3552f7cb6157b48026ca",
       "mode": "package-selected-bounded-live-compatibility-only",
       "files": [
         "parallel/HUDANCHOR_PROOF/wof_hudanchor_gl.js",
@@ -108,7 +111,7 @@
       ]
     },
     "recorder": {
-      "sourceCommit": "aabd8d24480c2056bb8772b2107098c121a37356",
+      "sourceCommit": "75ef7c6b2a2d797c0a9c3552f7cb6157b48026ca",
       "ownerEntry": "parallel/WOF052L_RECORDER/owner_zh_cn.py",
       "files": [
         "parallel/WOF052L_RECORDER/RUN_WOF052L_RECORDER.cmd",
@@ -126,7 +129,7 @@
       ]
     },
     "browserFleet": {
-      "sourceCommit": "aabd8d24480c2056bb8772b2107098c121a37356",
+      "sourceCommit": "75ef7c6b2a2d797c0a9c3552f7cb6157b48026ca",
       "ownerEntry": "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py",
       "files": [
         "parallel/BROWSER_FLEET/RUN_WOF_FLEET.cmd",
@@ -136,7 +139,7 @@
       ]
     },
     "liveProof": {
-      "sourceCommit": "aabd8d24480c2056bb8772b2107098c121a37356",
+      "sourceCommit": "75ef7c6b2a2d797c0a9c3552f7cb6157b48026ca",
       "entry": "parallel/LIVE_PROOF_BUNDLE/RUN_WOF_UNIFIED_LIVE_PROOF.cmd",
       "files": [
         "parallel/LIVE_PROOF_BUNDLE/RUN_WOF_UNIFIED_LIVE_PROOF.cmd",
@@ -149,78 +152,292 @@
   "safety": {
     "readOnly": true,
     "ramWrites": 0,
-    "inputInjection": false
+    "inputInjection": false,
+    "manualCalibration": false,
+    "legacyProjectionSelected": false,
+    "ownerClickMaximumPerAuthorityGeneration": 1,
+    "productionOverlayEnabled": false
   },
   "files": [
-    {"path": "WOF_TOOLKIT.cmd", "gitBlobSha": "65172ebe8b1d201fd6d0ec7c013dbf1a07e6e8ad"},
-    {"path": "WOF_一键工具.cmd", "gitBlobSha": "dcafacb599960a57c17419ebf3722c76e6995143"},
-    {"path": "parallel/ALPHAQA_RC5/independent_bootstrap_retest.mjs", "gitBlobSha": "ec231eeef89959c0e3c430db2cf02dc5c8c51457"},
-    {"path": "parallel/BROWSER_FLEET/RUN_WOF_FLEET.cmd", "gitBlobSha": "58c657427e018b173c1923bca1aaf36d82d4de15"},
-    {"path": "parallel/BROWSER_FLEET/fleet_discovery_v2.py", "gitBlobSha": "ecf0fb7a5fa19f4c1d2953ec3fee2fc0ec174b10"},
-    {"path": "parallel/BROWSER_FLEET/fleet_manager.py", "gitBlobSha": "0a76597bc4788c5aec820510cbf2a909769591b5"},
-    {"path": "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py", "gitBlobSha": "7ddefc8d3a624e52b07eae11dc1534523662839a"},
-    {"path": "parallel/HUDANCHOR_PROOF/wof_hudanchor_gl.js", "gitBlobSha": "e4f91799ecc2204c68894d25056c5d6b747bfaec"},
-    {"path": "parallel/HUDANCHOR_PROOF/wof_owner_projection_top.js", "gitBlobSha": "b931fb37959cb287d97d93bbd68f03e2c6308917"},
-    {"path": "parallel/HUDANCHOR_PROOF/wof_owner_projection_worker.js", "gitBlobSha": "6e1063196d572204a3f99367e6fc1df9acc05077"},
-    {"path": "parallel/LIVE_PROOF_BUNDLE/RUN_WOF_UNIFIED_LIVE_PROOF.cmd", "gitBlobSha": "0ede2bcc71b5c55295868b4a6eda2bef3cf0f209"},
-    {"path": "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py", "gitBlobSha": "8df637d370d187660592fe8de0f1c73ff3057804"},
-    {"path": "parallel/LIVE_PROOF_BUNDLE/unified_preflight.py", "gitBlobSha": "c756b3da7a8a0c092efe20f2587e131d497f5f72"},
-    {"path": "parallel/LIVE_PROOF_BUNDLE/unified_preflight_entrypoint.py", "gitBlobSha": "1a73d02f8171dbbd50cabff52a83c989541de2f7"},
-    {"path": "parallel/OPTOOLKIT/live_session.py", "gitBlobSha": "5a89f6074fb87f8de80121b2d154a8a7e7279f9c"},
-    {"path": "parallel/OPTOOLKIT/owner_zh_cn.py", "gitBlobSha": "1224ec5841d63ea06f9a03796748313e64559f55"},
-    {"path": "parallel/OPTOOLKIT/toolkit.py", "gitBlobSha": "6587b66dda4b78c453ca1c51f6244de126865509"},
-    {"path": "parallel/OWNER_ONECLICK/bootstrap_v2.ps1", "gitBlobSha": "1e14ef24c2db09b6bf31f8933abcbf26274a9fda"},
-    {"path": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd", "gitBlobSha": "a6c52c436d1d7f1fa1cffcd8c24849ec14dd806d"},
-    {"path": "parallel/PYLAUNCH/RUN_WOF_LAUNCHER.bat", "gitBlobSha": "8dd04159a16ca88ea2977177e203eda710e5e966"},
-    {"path": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd", "gitBlobSha": "f840103ea5a0a827c69d20f27c11f4bb4cef3490"},
-    {"path": "parallel/PYLAUNCH/launcher.py", "gitBlobSha": "1dfe5a106cedc9df2ec911996b8eacc0c7c1daef"},
-    {"path": "parallel/PYLAUNCH/render_authority_measurement_entry.py", "gitBlobSha": "dc89c1db04f1c2e70862351a3266a9e145aca2fb"},
-    {"path": "parallel/PYLAUNCH/requirements.txt", "gitBlobSha": "57aabab0f0fa012e063cbf5571edee2825b208f3"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/__init__.py", "gitBlobSha": "6ecb7cbddf1b75991f4c9e32f7ff7652b21dcd07"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/alpha_runtime.py", "gitBlobSha": "e669215f285030d7c01a658c86821da9f99ccba5"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/browser.py", "gitBlobSha": "9d468714e56bde6a22423b39515320cb356e7c2c"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/cdp.py", "gitBlobSha": "bf1ca628d4b64436c1cb5523902c700ea4f02c8e"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/discovery_v2.py", "gitBlobSha": "210702e1be775c39381d77a3b815a10eaa34be6f"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/fleet.py", "gitBlobSha": "aa0eb62482725f920de5f2019b71d9f65e9a0a19"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/head_visual_tracker.py", "gitBlobSha": "061925e2aef9a45efbc3bc09f15d6371953c0433"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/monitor.py", "gitBlobSha": "8323c48e0f4c9d1f3f9ddcfb4601410e3fa8e324"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/probe.py", "gitBlobSha": "789a6849b826b35542b22d56a4d2ca3628d285a1"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/probe_v2.py", "gitBlobSha": "a913f77568f07d199e3396a22a0528d4b734bc2b"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/projection_recovery.py", "gitBlobSha": "5d2e130b833e6bf6165ac0c6e80d3ea2e913b409"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/proof.py", "gitBlobSha": "847f6ca00716ec0364305e44db04e5f4f5453b86"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/reentry_discovery.py", "gitBlobSha": "5957cbabd400a53adff450b016e64fa4638e4590"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/render_authority_capture.py", "gitBlobSha": "38b9dd7fff3354750866bcf6def8953cad44d636"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/render_measurement_ui.py", "gitBlobSha": "2fde395bf83258a7a433a9c5f5784868205e89ae"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/runtime_authority.py", "gitBlobSha": "8ef859091c5fc1d20323153d5fefa6c8b77476bb"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/state.py", "gitBlobSha": "04d7b35137744ef29f5794dee43834a94bc6acc2"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/tray.py", "gitBlobSha": "1dd1ee37d841523fe028bb4aebdd64fa8d6b5ac9"},
-    {"path": "parallel/PYLAUNCH/wof_launcher/zero_click_identity_acquisition.py", "gitBlobSha": "0c1cead751a7f6ee949c84eb61ab342062df9a57"},
-    {"path": "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js", "gitBlobSha": "e802b65f43eef71e7c0997ac2937b6aa8dcce234"},
-    {"path": "parallel/RENDER_AUTHORITY_V3/measurement_runner.py", "gitBlobSha": "dddbb8be8669a91ee272226df14622058c25d829"},
-    {"path": "parallel/WOF052L_RECORDER/RUN_WOF052L_RECORDER.cmd", "gitBlobSha": "fdae80a1af13ab02154330deb3238ed6af1b867a"},
-    {"path": "parallel/WOF052L_RECORDER/discovery_v2_sync.py", "gitBlobSha": "a66731dbf9dd1c6eac8666b2c42ebe8f3f61eddf"},
-    {"path": "parallel/WOF052L_RECORDER/discovery_v2_sync_base.py", "gitBlobSha": "ddde07ed550110058ef1cae1ed62ae873382c462"},
-    {"path": "parallel/WOF052L_RECORDER/fleet_recorder.py", "gitBlobSha": "9398ef1569815439e6c141890f069674a30dca0f"},
-    {"path": "parallel/WOF052L_RECORDER/hardening_v2.py", "gitBlobSha": "4ade786786ec815a0c165c82b25cf41e07f218db"},
-    {"path": "parallel/WOF052L_RECORDER/hardening_v2_base.py", "gitBlobSha": "4268d39f62d62a624966e7d9fd4afda65f6e94c0"},
-    {"path": "parallel/WOF052L_RECORDER/identity_probe.js", "gitBlobSha": "2b8cd483669e0b06d6e20d3e1509aaf462a2c5fc"},
-    {"path": "parallel/WOF052L_RECORDER/owner_v2_zh_cn.py", "gitBlobSha": "cbdfa60d7c5080c64bd2578c291e471221b06dcc"},
-    {"path": "parallel/WOF052L_RECORDER/owner_zh_cn.py", "gitBlobSha": "0e0001b1b9e9ea1239450b1c2a14544ced580c1a"},
-    {"path": "parallel/WOF052L_RECORDER/recorder.py", "gitBlobSha": "9552d168534f3b742e7390597ff07ea5cfcaeaa2"},
-    {"path": "parallel/WOF052L_RECORDER/requirements.txt", "gitBlobSha": "b46dc37de963d35e04ce18f6c3a66c6c5c5ff734"},
-    {"path": "parallel/WOF052L_RECORDER/worker_probe.js", "gitBlobSha": "6947478af04e44088036f8edea62e8b74747995d"},
-    {"path": "product/alpha/regression.mjs", "gitBlobSha": "897f20133d371295c79c4aa6b43a4c099117b71e"},
-    {"path": "product/alpha/regression_result.json", "gitBlobSha": "54c0ff2ea65ee6b1d7126c09b208ac96e8fd4a64"},
-    {"path": "product/alpha/wof_alpha_bootstrap.user.js", "gitBlobSha": "5aed15ff14aa39d95eade187cefb63dbd00848e6"},
-    {"path": "product/alpha/wof_alpha_core.js", "gitBlobSha": "267a44190744b6848b0685712c3d5572627d3a8a"},
-    {"path": "product/alpha/wof_alpha_enemy_head_projection.json", "gitBlobSha": "8de57739818503a0e14702d2fa0bb4eba58228d2"},
-    {"path": "product/alpha/wof_alpha_enemy_target_labels.js", "gitBlobSha": "e6e1260559f735b85ce6f69e87803369f125b2de"},
-    {"path": "product/alpha/wof_alpha_field_adapter.js", "gitBlobSha": "5a3b77b8b009be2abb8408d0f4466e52f0bf7537"},
-    {"path": "product/alpha/wof_alpha_hud.js", "gitBlobSha": "50d944c451ac94b114e4f86441aeae8ad6b25c78"},
-    {"path": "product/alpha/wof_alpha_hud_model.js", "gitBlobSha": "16641129ff651c2733aebc6fae09a280e4bac49b"},
-    {"path": "product/alpha/wof_alpha_loader.js", "gitBlobSha": "66aee09fc2dd009c2f295d2092f3129548605efb"},
-    {"path": "product/alpha/wof_alpha_player_head_projection.json", "gitBlobSha": "bbed0618b348961580ca805bb93e4d17525f0142"},
-    {"path": "product/alpha/wof_alpha_player_head_warning.js", "gitBlobSha": "af7f2359514dc6f86f74fac0c47858e8a6acf107"},
-    {"path": "product/alpha/wof_alpha_real_worker.js", "gitBlobSha": "b7f4506fc90b681ede059df5ad3316e665c6f15e"}
+    {
+      "path": "WOF_TOOLKIT.cmd",
+      "gitBlobSha": "65172ebe8b1d201fd6d0ec7c013dbf1a07e6e8ad"
+    },
+    {
+      "path": "WOF_一键工具.cmd",
+      "gitBlobSha": "dcafacb599960a57c17419ebf3722c76e6995143"
+    },
+    {
+      "path": "parallel/ALPHAQA_RC5/independent_bootstrap_retest.mjs",
+      "gitBlobSha": "ec231eeef89959c0e3c430db2cf02dc5c8c51457"
+    },
+    {
+      "path": "parallel/BROWSER_FLEET/RUN_WOF_FLEET.cmd",
+      "gitBlobSha": "58c657427e018b173c1923bca1aaf36d82d4de15"
+    },
+    {
+      "path": "parallel/BROWSER_FLEET/fleet_discovery_v2.py",
+      "gitBlobSha": "ecf0fb7a5fa19f4c1d2953ec3fee2fc0ec174b10"
+    },
+    {
+      "path": "parallel/BROWSER_FLEET/fleet_manager.py",
+      "gitBlobSha": "0a76597bc4788c5aec820510cbf2a909769591b5"
+    },
+    {
+      "path": "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py",
+      "gitBlobSha": "7ddefc8d3a624e52b07eae11dc1534523662839a"
+    },
+    {
+      "path": "parallel/HUDANCHOR_PROOF/wof_hudanchor_gl.js",
+      "gitBlobSha": "e4f91799ecc2204c68894d25056c5d6b747bfaec"
+    },
+    {
+      "path": "parallel/HUDANCHOR_PROOF/wof_owner_projection_top.js",
+      "gitBlobSha": "b931fb37959cb287d97d93bbd68f03e2c6308917"
+    },
+    {
+      "path": "parallel/HUDANCHOR_PROOF/wof_owner_projection_worker.js",
+      "gitBlobSha": "6e1063196d572204a3f99367e6fc1df9acc05077"
+    },
+    {
+      "path": "parallel/LIVE_PROOF_BUNDLE/RUN_WOF_UNIFIED_LIVE_PROOF.cmd",
+      "gitBlobSha": "0ede2bcc71b5c55295868b4a6eda2bef3cf0f209"
+    },
+    {
+      "path": "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py",
+      "gitBlobSha": "8df637d370d187660592fe8de0f1c73ff3057804"
+    },
+    {
+      "path": "parallel/LIVE_PROOF_BUNDLE/unified_preflight.py",
+      "gitBlobSha": "c756b3da7a8a0c092efe20f2587e131d497f5f72"
+    },
+    {
+      "path": "parallel/LIVE_PROOF_BUNDLE/unified_preflight_entrypoint.py",
+      "gitBlobSha": "1a73d02f8171dbbd50cabff52a83c989541de2f7"
+    },
+    {
+      "path": "parallel/OPTOOLKIT/live_session.py",
+      "gitBlobSha": "5a89f6074fb87f8de80121b2d154a8a7e7279f9c"
+    },
+    {
+      "path": "parallel/OPTOOLKIT/owner_zh_cn.py",
+      "gitBlobSha": "8a29b8d2c6383701842298a84e1644a6f202d9c4"
+    },
+    {
+      "path": "parallel/OPTOOLKIT/toolkit.py",
+      "gitBlobSha": "6587b66dda4b78c453ca1c51f6244de126865509"
+    },
+    {
+      "path": "parallel/OWNER_ONECLICK/bootstrap_v2.ps1",
+      "gitBlobSha": "1e14ef24c2db09b6bf31f8933abcbf26274a9fda"
+    },
+    {
+      "path": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd",
+      "gitBlobSha": "a6c52c436d1d7f1fa1cffcd8c24849ec14dd806d"
+    },
+    {
+      "path": "parallel/PYLAUNCH/RUN_WOF_LAUNCHER.bat",
+      "gitBlobSha": "8dd04159a16ca88ea2977177e203eda710e5e966"
+    },
+    {
+      "path": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd",
+      "gitBlobSha": "f840103ea5a0a827c69d20f27c11f4bb4cef3490"
+    },
+    {
+      "path": "parallel/PYLAUNCH/launcher.py",
+      "gitBlobSha": "1dfe5a106cedc9df2ec911996b8eacc0c7c1daef"
+    },
+    {
+      "path": "parallel/PYLAUNCH/render_authority_measurement_entry.py",
+      "gitBlobSha": "dc89c1db04f1c2e70862351a3266a9e145aca2fb"
+    },
+    {
+      "path": "parallel/PYLAUNCH/requirements.txt",
+      "gitBlobSha": "57aabab0f0fa012e063cbf5571edee2825b208f3"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/__init__.py",
+      "gitBlobSha": "6ecb7cbddf1b75991f4c9e32f7ff7652b21dcd07"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/alpha_runtime.py",
+      "gitBlobSha": "e669215f285030d7c01a658c86821da9f99ccba5"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/browser.py",
+      "gitBlobSha": "9d468714e56bde6a22423b39515320cb356e7c2c"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/cdp.py",
+      "gitBlobSha": "bf1ca628d4b64436c1cb5523902c700ea4f02c8e"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/discovery_v2.py",
+      "gitBlobSha": "210702e1be775c39381d77a3b815a10eaa34be6f"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/fleet.py",
+      "gitBlobSha": "aa0eb62482725f920de5f2019b71d9f65e9a0a19"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/head_visual_tracker.py",
+      "gitBlobSha": "242ba4575239c56ae0344cea8c841a749b1fb304"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/monitor.py",
+      "gitBlobSha": "8323c48e0f4c9d1f3f9ddcfb4601410e3fa8e324"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/probe.py",
+      "gitBlobSha": "789a6849b826b35542b22d56a4d2ca3628d285a1"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/probe_v2.py",
+      "gitBlobSha": "a913f77568f07d199e3396a22a0528d4b734bc2b"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/projection_recovery.py",
+      "gitBlobSha": "5d2e130b833e6bf6165ac0c6e80d3ea2e913b409"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/proof.py",
+      "gitBlobSha": "847f6ca00716ec0364305e44db04e5f4f5453b86"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/reentry_discovery.py",
+      "gitBlobSha": "5957cbabd400a53adff450b016e64fa4638e4590"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/render_authority_capture.py",
+      "gitBlobSha": "38b9dd7fff3354750866bcf6def8953cad44d636"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/render_measurement_ui.py",
+      "gitBlobSha": "2fde395bf83258a7a433a9c5f5784868205e89ae"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/runtime_authority.py",
+      "gitBlobSha": "8ef859091c5fc1d20323153d5fefa6c8b77476bb"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/state.py",
+      "gitBlobSha": "04d7b35137744ef29f5794dee43834a94bc6acc2"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/tray.py",
+      "gitBlobSha": "1dd1ee37d841523fe028bb4aebdd64fa8d6b5ac9"
+    },
+    {
+      "path": "parallel/PYLAUNCH/wof_launcher/zero_click_identity_acquisition.py",
+      "gitBlobSha": "0c1cead751a7f6ee949c84eb61ab342062df9a57"
+    },
+    {
+      "path": "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js",
+      "gitBlobSha": "e802b65f43eef71e7c0997ac2937b6aa8dcce234"
+    },
+    {
+      "path": "parallel/RENDER_AUTHORITY_V3/measurement_runner.py",
+      "gitBlobSha": "19755d6a9336f94b1effa62cdbffe8a21dc87a39"
+    },
+    {
+      "path": "parallel/WOF052L_RECORDER/RUN_WOF052L_RECORDER.cmd",
+      "gitBlobSha": "fdae80a1af13ab02154330deb3238ed6af1b867a"
+    },
+    {
+      "path": "parallel/WOF052L_RECORDER/discovery_v2_sync.py",
+      "gitBlobSha": "a66731dbf9dd1c6eac8666b2c42ebe8f3f61eddf"
+    },
+    {
+      "path": "parallel/WOF052L_RECORDER/discovery_v2_sync_base.py",
+      "gitBlobSha": "ddde07ed550110058ef1cae1ed62ae873382c462"
+    },
+    {
+      "path": "parallel/WOF052L_RECORDER/fleet_recorder.py",
+      "gitBlobSha": "9398ef1569815439e6c141890f069674a30dca0f"
+    },
+    {
+      "path": "parallel/WOF052L_RECORDER/hardening_v2.py",
+      "gitBlobSha": "4ade786786ec815a0c165c82b25cf41e07f218db"
+    },
+    {
+      "path": "parallel/WOF052L_RECORDER/hardening_v2_base.py",
+      "gitBlobSha": "4268d39f62d62a624966e7d9fd4afda65f6e94c0"
+    },
+    {
+      "path": "parallel/WOF052L_RECORDER/identity_probe.js",
+      "gitBlobSha": "2b8cd483669e0b06d6e20d3e1509aaf462a2c5fc"
+    },
+    {
+      "path": "parallel/WOF052L_RECORDER/owner_v2_zh_cn.py",
+      "gitBlobSha": "cbdfa60d7c5080c64bd2578c291e471221b06dcc"
+    },
+    {
+      "path": "parallel/WOF052L_RECORDER/owner_zh_cn.py",
+      "gitBlobSha": "0e0001b1b9e9ea1239450b1c2a14544ced580c1a"
+    },
+    {
+      "path": "parallel/WOF052L_RECORDER/recorder.py",
+      "gitBlobSha": "9552d168534f3b742e7390597ff07ea5cfcaeaa2"
+    },
+    {
+      "path": "parallel/WOF052L_RECORDER/requirements.txt",
+      "gitBlobSha": "b46dc37de963d35e04ce18f6c3a66c6c5c5ff734"
+    },
+    {
+      "path": "parallel/WOF052L_RECORDER/worker_probe.js",
+      "gitBlobSha": "6947478af04e44088036f8edea62e8b74747995d"
+    },
+    {
+      "path": "product/alpha/regression.mjs",
+      "gitBlobSha": "897f20133d371295c79c4aa6b43a4c099117b71e"
+    },
+    {
+      "path": "product/alpha/regression_result.json",
+      "gitBlobSha": "54c0ff2ea65ee6b1d7126c09b208ac96e8fd4a64"
+    },
+    {
+      "path": "product/alpha/wof_alpha_bootstrap.user.js",
+      "gitBlobSha": "5aed15ff14aa39d95eade187cefb63dbd00848e6"
+    },
+    {
+      "path": "product/alpha/wof_alpha_core.js",
+      "gitBlobSha": "267a44190744b6848b0685712c3d5572627d3a8a"
+    },
+    {
+      "path": "product/alpha/wof_alpha_enemy_head_projection.json",
+      "gitBlobSha": "8de57739818503a0e14702d2fa0bb4eba58228d2"
+    },
+    {
+      "path": "product/alpha/wof_alpha_enemy_target_labels.js",
+      "gitBlobSha": "e6e1260559f735b85ce6f69e87803369f125b2de"
+    },
+    {
+      "path": "product/alpha/wof_alpha_field_adapter.js",
+      "gitBlobSha": "5a3b77b8b009be2abb8408d0f4466e52f0bf7537"
+    },
+    {
+      "path": "product/alpha/wof_alpha_hud.js",
+      "gitBlobSha": "50d944c451ac94b114e4f86441aeae8ad6b25c78"
+    },
+    {
+      "path": "product/alpha/wof_alpha_hud_model.js",
+      "gitBlobSha": "16641129ff651c2733aebc6fae09a280e4bac49b"
+    },
+    {
+      "path": "product/alpha/wof_alpha_loader.js",
+      "gitBlobSha": "66aee09fc2dd009c2f295d2092f3129548605efb"
+    },
+    {
+      "path": "product/alpha/wof_alpha_player_head_projection.json",
+      "gitBlobSha": "bbed0618b348961580ca805bb93e4d17525f0142"
+    },
+    {
+      "path": "product/alpha/wof_alpha_player_head_warning.js",
+      "gitBlobSha": "af7f2359514dc6f86f74fac0c47858e8a6acf107"
+    },
+    {
+      "path": "product/alpha/wof_alpha_real_worker.js",
+      "gitBlobSha": "b7f4506fc90b681ede059df5ad3316e665c6f15e"
+    }
   ]
 }
