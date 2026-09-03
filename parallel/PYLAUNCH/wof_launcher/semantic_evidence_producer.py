@@ -21,6 +21,12 @@ _SEMANTIC_AUTHORITY = {
     "tile-semantic": ("hud", "tile", "tile-character-id"),
     "render-semantic": ("hud", "render-object", "render-character-id"),
 }
+_IDENTITY_AUTHORITY_SOURCE = {
+    "hud-semantic": "hud",
+    "portrait-semantic": "hud-portrait",
+    "tile-semantic": "hud-portrait-tile",
+    "render-semantic": "hud-render-semantic",
+}
 _SCENE_AUTHORITY = {
     "sprite-head": "sprite",
     "tile-head": "tile",
@@ -87,12 +93,14 @@ def _binding_matches(
     row: Mapping[str, Any],
     *,
     world_sha256: str,
+    authority_key: str,
     runtime_epoch: str,
     layout_key: str,
     p1_generation: int,
 ) -> bool:
     return (
         str(row.get("worldSha256") or "") == world_sha256
+        and str(row.get("authorityKey") or "") == authority_key
         and str(row.get("runtimeEpoch") or "") == runtime_epoch
         and str(row.get("layoutKey") or "") == layout_key
         and _int(row.get("p1Generation")) == p1_generation
@@ -136,6 +144,7 @@ def _semantic_candidate(
     row: Mapping[str, Any],
     *,
     world_sha256: str,
+    authority_key: str,
     runtime_epoch: str,
     layout_key: str,
     p1_type: int,
@@ -169,6 +178,7 @@ def _semantic_candidate(
     if not _binding_matches(
         row,
         world_sha256=world_sha256,
+        authority_key=authority_key,
         runtime_epoch=runtime_epoch,
         layout_key=layout_key,
         p1_generation=p1_generation,
@@ -202,6 +212,7 @@ def _semantic_candidate(
         "independentOfRuntimeType": True,
         "authorityId": authority_id,
         "worldSha256": world_sha256,
+        "authorityKey": authority_key,
         "runtimeEpoch": runtime_epoch,
         "p1Generation": p1_generation,
         "layoutKey": layout_key,
@@ -212,6 +223,7 @@ def _scene_candidate(
     row: Mapping[str, Any],
     *,
     world_sha256: str,
+    authority_key: str,
     runtime_epoch: str,
     layout_key: str,
     p1_type: int,
@@ -238,6 +250,7 @@ def _scene_candidate(
     if not _binding_matches(
         row,
         world_sha256=world_sha256,
+        authority_key=authority_key,
         runtime_epoch=runtime_epoch,
         layout_key=layout_key,
         p1_generation=p1_generation,
@@ -290,6 +303,7 @@ def _scene_candidate(
         "authorityKind": authority_kind,
         "canvasDigest": canvas_digest,
         "worldSha256": world_sha256,
+        "authorityKey": authority_key,
         "runtimeEpoch": runtime_epoch,
         "layoutKey": layout_key,
     }, None
@@ -309,6 +323,7 @@ def _one_mapping(rows: Any, missing_reason: str, ambiguous_reason: str) -> tuple
 def produce_p1_zero_click_evidence(
     *,
     world_sha256: str,
+    authority_key: str,
     runtime_epoch: str,
     layout_key: str,
     p1_lifecycle: Mapping[str, Any] | None,
@@ -327,10 +342,13 @@ def produce_p1_zero_click_evidence(
     `p1ZeroClickEvidence` envelope.
     """
     world_sha256 = str(world_sha256 or "")
+    authority_key = str(authority_key or "").strip()
     runtime_epoch = str(runtime_epoch or "").strip()
     layout_key = str(layout_key or "").strip()
     if world_sha256 != EXACT_WORLD_SHA:
         return _failure("WORLD_MISMATCH")
+    if not authority_key:
+        return _failure("AUTHORITY_KEY_MISSING")
     if not runtime_epoch:
         return _failure("RUNTIME_EPOCH_MISSING")
     if not layout_key:
@@ -361,6 +379,7 @@ def produce_p1_zero_click_evidence(
     hud_candidate, error = _semantic_candidate(
         semantic_row,
         world_sha256=world_sha256,
+        authority_key=authority_key,
         runtime_epoch=runtime_epoch,
         layout_key=layout_key,
         p1_type=p1_type,
@@ -383,6 +402,7 @@ def produce_p1_zero_click_evidence(
     scene_candidate, error = _scene_candidate(
         scene_row,
         world_sha256=world_sha256,
+        authority_key=authority_key,
         runtime_epoch=runtime_epoch,
         layout_key=layout_key,
         p1_type=p1_type,
@@ -403,11 +423,23 @@ def produce_p1_zero_click_evidence(
         "producerSchema": PRODUCER_SCHEMA,
         "producerVerdict": "SAFE_UNIQUE",
         "worldSha256": world_sha256,
+        "authorityKey": authority_key,
         "runtimeEpoch": runtime_epoch,
         "layoutKey": layout_key,
         "p1Generation": p1_generation,
         "p1Type": p1_type,
         "canvasDigest": canvas_digest,
+        "identityAuthority": {
+            "kind": "semantic",
+            "source": _IDENTITY_AUTHORITY_SOURCE[str(hud_candidate["semanticAuthorityKind"])],
+            "authorityId": hud_candidate["authorityId"],
+            "authorityKind": hud_candidate["semanticAuthorityKind"],
+            "characterType": p1_type,
+            "identityKey": hud_candidate["identityKey"],
+            "independentOfRuntimeP1Type": True,
+            "derivedFromRuntimeP1Type": False,
+            "genericHudPalette": False,
+        },
         "hudIdentityCandidates": [hud_candidate],
         "sceneHeadCandidates": [scene_candidate],
         **SAFETY,
