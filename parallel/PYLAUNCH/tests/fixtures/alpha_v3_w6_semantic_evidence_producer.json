@@ -1,6 +1,7 @@
 {
   "base": {
     "worldSha256": "921031",
+    "authorityKey": "exact-world-921031:worker-17",
     "runtimeEpoch": "worker-17:wasm-4:g9",
     "layoutKey": "0:0:384:224:384:224",
     "p1Lifecycle": {
@@ -28,7 +29,8 @@
         "worldSha256": "921031",
         "runtimeEpoch": "worker-17:wasm-4:g9",
         "p1Generation": 9,
-        "layoutKey": "0:0:384:224:384:224"
+        "layoutKey": "0:0:384:224:384:224",
+        "authorityKey": "exact-world-921031:worker-17"
       }
     ],
     "sceneHead": [
@@ -41,14 +43,23 @@
         "identityKey": "wof-character:2",
         "confidence": 0.93,
         "ambiguityMargin": 0.18,
-        "center": [145.0, 119.0],
-        "box": [128.0, 101.0, 162.0, 137.0],
+        "center": [
+          145.0,
+          119.0
+        ],
+        "box": [
+          128.0,
+          101.0,
+          162.0,
+          137.0
+        ],
         "canvasDigest": "sha256:09f8b6b4c0c010720c6f5e61eec33bbb3fd03632ddcb4ede98282368a8a590a5",
         "coarsePriorConsistent": true,
         "worldSha256": "921031",
         "runtimeEpoch": "worker-17:wasm-4:g9",
         "p1Generation": 9,
-        "layoutKey": "0:0:384:224:384:224"
+        "layoutKey": "0:0:384:224:384:224",
+        "authorityKey": "exact-world-921031:worker-17"
       }
     ]
   },
@@ -107,6 +118,11 @@
       "sceneHead": {
         "ambiguityMargin": 0.02,
         "ambiguous": true
+      }
+    },
+    "staleAuthority": {
+      "semanticIdentity": {
+        "authorityKey": "exact-world-921031:worker-18"
       }
     }
   }
