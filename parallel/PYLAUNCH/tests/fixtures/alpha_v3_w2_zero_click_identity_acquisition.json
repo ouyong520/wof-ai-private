@@ -1,0 +1,24 @@
+{
+  "schema": "alpha-v3-w2-zero-click-acquisition-fixture-v1",
+  "worldSha256": "921031",
+  "safety": {"readOnly": true, "ramWrites": 0, "inputInjection": false},
+  "base": {
+    "p1Lifecycle": {"active": true, "alive": true, "type": 2, "generation": 7, "x": 112.0, "y": 84.0, "z": 0.0},
+    "canvas": {"width": 384, "height": 224, "screenshotDigest": "sha256:09f8b6b4c0c010720c6f5e61eec33bbb3fd03632ddcb4ede98282368a8a590a5"},
+    "hud": [
+      {"characterType": 2, "confidence": 0.95, "identityKey": "wof-player-type-2", "source": "hud", "evidenceSources": ["hud", "canvas"]}
+    ],
+    "scene": [
+      {"actor": "P1", "characterType": 2, "p1Generation": 7, "confidence": 0.93, "identityKey": "wof-player-type-2", "center": [145.0, 113.0], "box": [132.0, 99.0, 158.0, 127.0], "source": "sprite", "evidenceSources": ["canvas", "sprite"], "coarsePriorConsistent": true}
+    ]
+  },
+  "mutations": {
+    "wrongWorld": {"worldSha256": "not-921031"},
+    "wrongHudPortrait": {"hud": [{"characterType": 3, "confidence": 0.97, "identityKey": "wof-player-type-3", "source": "hud", "evidenceSources": ["hud", "canvas"]}]},
+    "ambiguousScene": {"sceneAppend": {"actor": "P1", "characterType": 2, "p1Generation": 7, "confidence": 0.90, "identityKey": "wof-player-type-2", "center": [245.0, 118.0], "box": [232.0, 104.0, 258.0, 132.0], "source": "tile", "evidenceSources": ["canvas", "tile"], "coarsePriorConsistent": true}},
+    "wrongActor": {"scenePatch": {"actor": "P2"}},
+    "staleGeneration": {"scenePatch": {"p1Generation": 6}},
+    "outOfBounds": {"scenePatch": {"center": [390.0, 113.0], "box": [378.0, 99.0, 402.0, 127.0]}},
+    "noSceneAuthority": {"scenePatch": {"evidenceSources": ["canvas"], "source": "canvas", "coarsePriorConsistent": false}}
+  }
+}
