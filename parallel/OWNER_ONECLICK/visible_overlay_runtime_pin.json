@@ -1,0 +1,14 @@
+{
+  "schema": "alpha-v1-visible-top-overlay-slice-a-pin-v1",
+  "sliceARuntimeCommit": "fe18750eb186bb85887af3a5b53ce6e85ce819c6",
+  "authority": "parallel/PM/ALPHA_V1_MAINLINE_VISIBLE_TOP_OVERLAY_PARALLEL_2_WORKER_DISPATCH.md",
+  "normalPath": "production-top-overlay",
+  "productionOverlaySource": "product/alpha/wof_alpha_hud.js",
+  "productionOverlayEnabled": true,
+  "productionOverlaySuppressed": false,
+  "diagnosticOnly": false,
+  "whiteAcquisitionMarkerIsProduct": false,
+  "readOnly": true,
+  "ramWrites": 0,
+  "inputInjection": false
+}
