@@ -33,6 +33,7 @@ def _args():
     base = copy.deepcopy(_fixture()["base"])
     return {
         "world_sha256": base["worldSha256"],
+        "authority_key": base["authorityKey"],
         "runtime_epoch": base["runtimeEpoch"],
         "layout_key": base["layoutKey"],
         "p1_lifecycle": base["p1Lifecycle"],
@@ -62,9 +63,21 @@ def test_safe_unique_produces_w2_consumable_envelope():
     assert envelope["schema"] == "alpha-v3-runtime-p1-zero-click-evidence-v1"
     assert envelope["producerSchema"] == producer.PRODUCER_SCHEMA
     assert envelope["worldSha256"] == "921031"
+    assert envelope["authorityKey"] == args["authority_key"]
     assert envelope["runtimeEpoch"] == args["runtime_epoch"]
     assert envelope["layoutKey"] == args["layout_key"]
     assert envelope["p1Generation"] == 9
+    assert envelope["identityAuthority"] == {
+        "kind": "semantic",
+        "source": "hud-portrait",
+        "authorityId": "semantic:p1-portrait:frame-314",
+        "authorityKind": "portrait-semantic",
+        "characterType": 2,
+        "identityKey": "wof-character:2",
+        "independentOfRuntimeP1Type": True,
+        "derivedFromRuntimeP1Type": False,
+        "genericHudPalette": False,
+    }
     assert envelope["readOnly"] is True and envelope["ramWrites"] == 0 and envelope["inputInjection"] is False
 
     acquisition = w2.acquire_zero_click_p1_head(
@@ -101,6 +114,7 @@ def test_semantic_or_scene_ambiguity_emits_no_envelope():
 def test_runtime_lifecycle_layout_and_canvas_staleness_revoke_evidence():
     expected = {
         "staleGeneration": "SCENE_HEAD_STALE",
+        "staleAuthority": "SEMANTIC_IDENTITY_STALE",
         "staleRuntime": "SEMANTIC_IDENTITY_STALE",
         "staleLayout": "SCENE_HEAD_STALE",
         "staleCanvas": "SCENE_CANVAS_STALE",
