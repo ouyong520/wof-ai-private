@@ -1,0 +1,90 @@
+name: Alpha V3 W2 Integration Closeout Once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/alpha-v3-w2-integration-closeout-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  focused-closeout:
+    runs-on: ubuntu-latest
+    env:
+      SOURCE_COMMIT: 75ef7c6b2a2d797c0a9c3552f7cb6157b48026ca
+      CANDIDATE_IMMUTABLE: /tmp/alpha-v3-w2-IMMUTABLE_PACKAGE.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install focused dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r parallel/PYLAUNCH/requirements.txt pytest
+
+      - name: Generate exact integrated candidate manifest
+        run: |
+          python parallel/OWNER_ONECLICK/refresh_manifest.py --source "$SOURCE_COMMIT" --output parallel/OWNER_ONECLICK/package_manifest.json
+          python parallel/OWNER_ONECLICK/refresh_manifest.py --source "$SOURCE_COMMIT" --check
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          manifest = json.loads(Path('parallel/OWNER_ONECLICK/package_manifest.json').read_text(encoding='utf-8'))
+          immutable = {
+              'schema': 'wof-owner-oneclick-immutable-publication-v1',
+              'packageVersion': manifest['packageVersion'],
+              'mode': 'W2_SEMANTIC_ZERO_CLICK_FIRST_FAIL_CLOSED',
+              'sourceCommit': manifest['sourceCommit'],
+              'manifestPath': 'parallel/OWNER_ONECLICK/package_manifest.json',
+              'ownerEntry': 'WOF_一键工具.cmd -> menu 6',
+              'ownerAction': 'AUTO_SEMANTIC_THEN_ONE_CLICK_FALLBACK_IF_NEEDED',
+              'semanticIdentityGate': 'W2_FAIL_CLOSED',
+              'genericHudPaletteSemanticIdentityAllowed': False,
+              'safety': {'readOnly': True, 'ramWrites': 0, 'inputInjection': False},
+          }
+          Path(os.environ['CANDIDATE_IMMUTABLE']).write_text(json.dumps(immutable, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print('CANDIDATE_PACKAGE_VERSION=' + manifest['packageVersion'])
+          print('CANDIDATE_SOURCE_COMMIT=' + manifest['sourceCommit'])
+          PY
+
+      - name: Run W2 focused tests
+        run: pytest -q parallel/PYLAUNCH/tests/test_zero_click_identity_acquisition_w2.py
+
+      - name: Run V3 zero-click tracker regression
+        env:
+          PYTHONPATH: parallel/PYLAUNCH
+        run: python parallel/PYLAUNCH/tests/test_render_authority_owner_visible_v3.py
+
+      - name: Run W3 fixture and candidate package gate
+        run: |
+          python parallel/PYLAUNCH/tests/test_zero_click_acceptance_fixture_w3.py
+          python parallel/PYLAUNCH/tests/test_zero_click_acceptance_fixture_w3.py --candidate-root . --manifest parallel/OWNER_ONECLICK/package_manifest.json --immutable "$CANDIDATE_IMMUTABLE"
+
+      - name: Emit exact candidate payloads
+        if: always()
+        run: |
+          echo '---MANIFEST-BEGIN---'
+          cat parallel/OWNER_ONECLICK/package_manifest.json || true
+          echo '---MANIFEST-END---'
+          echo '---IMMUTABLE-BEGIN---'
+          cat "$CANDIDATE_IMMUTABLE" || true
+          echo '---IMMUTABLE-END---'
+
+      - name: Upload candidate payloads
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-v3-w2-integrated-candidate
+          path: |
+            parallel/OWNER_ONECLICK/package_manifest.json
+            /tmp/alpha-v3-w2-IMMUTABLE_PACKAGE.json
+          if-no-files-found: error
