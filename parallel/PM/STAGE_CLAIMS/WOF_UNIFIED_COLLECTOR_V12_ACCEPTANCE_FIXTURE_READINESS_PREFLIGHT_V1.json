@@ -5,6 +5,11 @@
   "effectiveDedupKey": "wof.unified-collector.v12.preflight.acceptance-fixture-readiness",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v12.preflight.acceptance-fixture-readiness.json",
   "claimToken": "efe8c23fda8f7a273ca582c4d643265d",
-  "state": "ACTIVE",
-  "startCommit": "fe3cc2a7890ae9afbf5b953026da25dbed3ef7d5"
+  "state": "COMPLETE",
+  "startCommit": "fe3cc2a7890ae9afbf5b953026da25dbed3ef7d5",
+  "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_ACCEPTANCE_FIXTURE_READINESS_PREFLIGHT_RESULT.md",
+  "resultCommit": "e1d4ee3e179ca90270590f228a968c642ce35a9d",
+  "inspectedPrivateHead": "631a8af8d5f53d482c762654e7dc5b5b4fe00e75",
+  "inspectedBridgeHead": "8905732d93032a814e79d6fb3dd8077df0828ac0",
+  "verdict": "COMPLETE — V12 ACCEPTANCE / FIXTURE READINESS PREFLIGHT — MINIMAL FINAL EVIDENCE PLAN DURABLE"
 }
