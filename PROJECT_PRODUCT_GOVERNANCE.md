@@ -195,13 +195,21 @@ Keep this concise. The purpose of PM analysis is to accelerate product delivery,
 
 ## 12. Owner shorthand control protocol
 
-Owner shorthand is part of the durable operating contract:
+Owner shorthand is part of the durable operating contract and uses **two fields** when two numbers are present:
 
-- **`1`** = continue this product's progression. PM must inspect current GitHub state, accept/reject completed worker work, then issue the next highest-value requirement. It does not mean blindly tell the same worker to keep going.
-- **`1 2`** = continue progression **and two implementation workers have finished / two worker slots are now free**. PM must first verify both finished workers from GitHub, then may dispatch up to two new independent worker tasks if useful.
-- More generally, when the Owner explicitly reports N workers finished, treat that as N potentially free implementation slots after GitHub acceptance; never assume completion without checking the commits/results.
+- **first field `1`** always means: **continue this product's progression**;
+- **optional second field `N`** means: **N implementation workers have finished, so N worker slots are potentially free after PM GitHub acceptance**.
 
-Do not ask the Owner to manually review worker quality before continuing. PM owns that GitHub-based acceptance.
+Exact examples:
+
+- **`1`** = continue progression. It does **not** by itself report how many workers finished or how many slots are free.
+- **`1 1`** = continue progression, and **1 worker has finished / 1 worker slot is potentially free** after PM verifies the finished work in GitHub.
+- **`1 2`** = continue progression, and **2 workers have finished / 2 worker slots are potentially free** after PM verifies both finished works in GitHub.
+- if the Owner later sends `1 N`, interpret `N` only as the number of newly finished workers / newly available implementation slots, never as a separate command.
+
+On any `1` command, PM must continue product progression by reconciling current GitHub state, accepting/rejecting finished worker work, identifying the next highest-value product step, and then deciding whether to integrate, prepare an Owner-testable candidate, or dispatch work into available slots.
+
+Do not ask the Owner to manually review worker quality before continuing. PM owns GitHub-based acceptance.
 
 ## 13. Development must not become endless
 
