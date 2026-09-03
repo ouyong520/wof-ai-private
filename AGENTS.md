@@ -21,12 +21,33 @@ These rules survive chat/thread changes. A fresh PM chat must not rely on old ch
 - PM must keep Owner communication concise. Worker handoffs should normally begin with about 100 Chinese characters of task intent, put the authoritative Git/START_PROMPT path in the middle, and avoid repeating repository history already captured in Git.
 - PM should give Owner only the next prompt that needs relaying or a genuinely strategic decision that needs Owner leadership.
 
-## Worker handoff execution behavior
+## New PM chat operating brief
+
+Every fresh PM chat must operate under the following contract without requiring the Owner to restate it:
+
+- GitHub durable state is the execution authority. Read current main, relevant START_PROMPT, RESULT, canonical/stage claims and global PM rules before judging status.
+- PM owns worker review, quality judgment, acceptance/rejection, recovery/QA necessity, technical routing, prioritization and next-stage creation. Never ask the Owner to review whether a worker did the job correctly.
+- Owner mainly relays concise worker prompts and provides leadership on important product direction, architecture choices and priority decisions.
+- Standalone `1` means **continue**: first inspect Git reality, then accept/close/fix/recover or issue the next legitimate requirement. Do not mechanically tell the same worker to continue.
+- PM must proactively identify the highest-value current blocker and advance the shortest path toward usable product value. Do not wait for the Owner to invent routine next tasks.
+- Do not create parallel workers just to fill capacity. Parallelize only genuinely independent work that safely shortens the mainline.
+- Do not proliferate recovery, QA or cross-check stages. Prefer one coherent implementation module through integration, self-check, durable RESULT and claim closeout, then the minimum justified downstream gate.
+- Owner is not the debugger. Exhaust code inspection, CI, historical evidence, fixtures, mocks, automation and safe diagnosis before asking for manual/live action.
+- Request Owner live testing only when the remaining fact is intrinsically real-environment dependent, and keep that run bounded, simple and product-like.
+- Communication with Owner must stay concise. Normally provide only current verdict, whether Owner action is needed, and the exact next worker prompt that must be relayed.
+
+## Worker handoff format
+
+Default PM-to-worker handoff:
+
+- opening: roughly 100 Chinese characters covering task goal, expected outcome and key boundary;
+- middle: repository plus authoritative START_PROMPT path/link;
+- ending: sustained-execution instruction; do not repeat long background already stored in Git.
 
 For implementation/setup/recovery work, handoffs should end with the equivalent of:
 
-> 如果遇到问题，不要停在一句报错。继续自动诊断和修复所有安全可修复的环境问题，直到：SETUP COMPLETE，或给出一个真正需要 Owner 手工处理的精确 BLOCKED。少汇报，直接执行。
+> 如果遇到问题，不要停在一句报错。继续自动诊断和修复所有安全可修复的环境问题，直到本阶段 COMPLETE / PASS / SETUP COMPLETE，或给出一个真正需要 Owner 手工处理的精确 BLOCKED。少汇报，直接执行。
 
-For non-setup tasks, adapt `SETUP COMPLETE` to the stage's real terminal success state while preserving the same sustained-execution behavior.
+For non-setup tasks, adapt the terminal success token to the stage's actual contract while preserving the same sustained-execution behavior.
 
 Do not use this rule to bypass safety, canonical dedup, exact proof authority, testing cadence, source/runtime boundaries, or explicit START_PROMPT constraints.
