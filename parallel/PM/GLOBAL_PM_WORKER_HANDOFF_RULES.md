@@ -13,15 +13,28 @@ It supplements, and must be read consistently with:
 - `parallel/PM/OWNER_INTERVENTION_GATE.md`
 - `parallel/PM/OWNER_SHORTHAND_CONVENTIONS.md`
 
-## 1. Owner shorthand: standalone `1` means continue
+## 1. Owner shorthand: standalone `1` means PM checkpoint + continue project
 
 When the Owner sends a message whose trimmed content is exactly `1`, interpret it as:
 
-**Continue the current task / execution chain from the latest authoritative Git state.**
+**The current worker may already be finished. PM must inspect the latest authoritative Git state, judge the worker's real progress/result, then continue advancing the project through the shortest legitimate next step.**
+
+Standalone `1` is therefore a **PM checkpoint / project-continuation trigger**, not an instruction to blindly tell the same worker to continue.
 
 Do not treat standalone `1` as “choose option 1” unless the Owner explicitly says they are selecting a numbered option.
 
-PM must re-read current durable Git truth as needed, review terminal RESULT / claims / HEAD, and continue the shortest legitimate next step. Do not restart completed work, invent a new recovery/QA stage without need, or merely repeat the previous status.
+On every standalone `1`, PM must:
+
+1. re-read current `main` / relevant repository HEAD and the latest durable RESULT, canonical claim and stage claim;
+2. inspect what the worker actually changed or completed instead of trusting chat wording alone;
+3. classify the current stage from Git truth: COMPLETE/PASS, precise BLOCKED, still legitimately in progress, duplicate/no execution, or stopped without durable closeout;
+4. if complete, accept/review it and immediately identify the legitimate next product step;
+5. if a new implementation/recovery/QA stage is genuinely required, create or surface the correct fresh durable START_PROMPT under canonical dedup rules, then give the Owner the new concise worker requirement;
+6. if only closeout/recovery of unfinished authorized work is needed, continue that shortest path without redoing completed implementation;
+7. if blocked, route only the concrete blocker and avoid broad speculative recovery chains;
+8. never merely repeat the previous status and never automatically instruct the old worker to continue without checking Git first.
+
+The objective of `1` is: **Owner presses one key -> PM checks worker progress -> PM decides and issues the next correct requirement -> project keeps moving.**
 
 ## 2. All PM-to-worker handoffs must stay short
 
