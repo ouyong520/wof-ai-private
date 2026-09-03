@@ -9,19 +9,27 @@ for %%I in ("%~dp0.") do set "ROOT=%%~fI"
 
 if not exist "%ROOT%\.git" goto :not_checkout
 if not exist "%ROOT%\parallel\PYLAUNCH\render_authority_measurement_entry.py" goto :missing_alpha
+if not exist "%ROOT%\parallel\RENDER_AUTHORITY_V3\measurement_runner.py" goto :missing_alpha
+if not exist "%ROOT%\parallel\PYLAUNCH\wof_launcher\head_visual_tracker.py" goto :missing_alpha
+if not exist "%ROOT%\parallel\PYLAUNCH\wof_launcher\production_p1_overlay.py" goto :missing_alpha
+if not exist "%ROOT%\parallel\PYLAUNCH\wof_launcher\render_authority_capture.py" goto :missing_alpha
+if not exist "%ROOT%\product\alpha\wof_alpha_hud.js" goto :missing_alpha
+if not exist "%ROOT%\product\alpha\wof_alpha_relative_head_anchor.js" goto :missing_alpha
+if not exist "%ROOT%\product\alpha\wof_alpha_relative_enemy_overlay.js" goto :missing_alpha
 if not exist "%ROOT%\parallel\PYLAUNCH\requirements.txt" goto :missing_alpha
 
 where git >nul 2>&1
 if errorlevel 1 goto :no_git
 
-for /f "delims=" %%H in ('git -C "%ROOT%" status --porcelain') do set "DIRTY=1"
+set "DIRTY="
+for /f "delims=" %%H in ('git -C "%ROOT%" status --porcelain --untracked-files=all') do set "DIRTY=1"
 if defined DIRTY goto :dirty
 
 echo 正在确认 GitHub main exact SHA……
-git -C "%ROOT%" fetch --quiet origin main
+git -C "%ROOT%" fetch --quiet https://github.com/ouyong520/wof-ai-private.git +refs/heads/main:refs/remotes/wof-alpha-authority/main
 if errorlevel 1 goto :fetch_fail
 for /f "delims=" %%H in ('git -C "%ROOT%" rev-parse HEAD') do set "HEAD_SHA=%%H"
-for /f "delims=" %%H in ('git -C "%ROOT%" rev-parse refs/remotes/origin/main') do set "MAIN_SHA=%%H"
+for /f "delims=" %%H in ('git -C "%ROOT%" rev-parse refs/remotes/wof-alpha-authority/main') do set "MAIN_SHA=%%H"
 if not defined HEAD_SHA goto :sha_fail
 if not defined MAIN_SHA goto :sha_fail
 if /I not "%HEAD_SHA%"=="%MAIN_SHA%" goto :not_current_main
@@ -29,6 +37,7 @@ if /I not "%HEAD_SHA%"=="%MAIN_SHA%" goto :not_current_main
 echo.
 echo Alpha current main exact SHA: %HEAD_SHA%
 echo 此入口仅用于实机验收当前 main，不发布、不更新 immutable Owner package。
+echo 它直接启动菜单 6 最终调用的同一个 Alpha production runtime entry。
 echo 只运行 Alpha PYLAUNCH / production overlay 路径，不运行其他项目。
 echo.
 
@@ -64,7 +73,7 @@ if defined USERPROFILE (
   set "RESULTS=%TEMP%\WOF_RESULTS\alpha_current_main_acceptance"
 )
 if not exist "%RESULTS%" mkdir "%RESULTS%" >nul 2>&1
->"%RESULTS%\CURRENT_MAIN_ACCEPTANCE.json" echo {"schema":"wof-alpha-current-main-live-acceptance-v1","sourceCommit":"%HEAD_SHA%","mode":"production-runtime-live-acceptance-only","immutablePackagePublished":false,"readOnly":true,"ramWrites":0,"inputInjection":false}
+>"%RESULTS%\CURRENT_MAIN_ACCEPTANCE.json" echo {"schema":"wof-alpha-current-main-live-acceptance-v1","sourceCommit":"%HEAD_SHA%","mode":"production-runtime-live-acceptance-only","menu6RuntimeEntry":"parallel/PYLAUNCH/render_authority_measurement_entry.py","immutablePackagePublished":false,"readOnly":true,"ramWrites":0,"inputInjection":false}
 set "WOF_ALPHA_ACCEPTANCE_COMMIT=%HEAD_SHA%"
 
 cd /d "%ROOT%\parallel\PYLAUNCH"
@@ -94,11 +103,11 @@ git -C "%ROOT%" status --short
 exit /b 23
 
 :fetch_fail
-echo BLOCKED：无法获取 GitHub main，不能证明 current-main authority。
+echo BLOCKED：无法直接获取 ouyong520/wof-ai-private GitHub main，不能证明 current-main authority。
 exit /b 24
 
 :sha_fail
-echo BLOCKED：无法解析 HEAD / origin/main exact SHA。
+echo BLOCKED：无法解析 HEAD / GitHub main exact SHA。
 exit /b 25
 
 :not_current_main
