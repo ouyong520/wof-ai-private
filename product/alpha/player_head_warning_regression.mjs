@@ -7,10 +7,10 @@ const A=require('./wof_alpha_player_head_warning.js');
 const E='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const E2='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const profile={
-  schema:A.PROFILE_SCHEMA,status:'PROVED',proofId:'synthetic-proof-v1',projectionVersion:'synthetic-projection-v1',
+  schema:A.PROFILE_SCHEMA,status:'PROVED',proofId:'synthetic-proof-v2',projectionVersion:'synthetic-projection-v2',
   projectionKind:A.PROJECTION_KIND,source:'SYNTHETIC_ONLY_NOT_BROWSER_PROOF',
   nativeWidth:384,nativeHeight:224,cameraAddress:0xFF0100,cameraSign:1,cameraScale:1,
-  worldXScale:1,xBias:80,floorYScale:1,zScale:-1,yBias:120,headClearanceNative:24,
+  worldXScale:1,xBias:80,yAxisSign:1,yModel:'Y-Z',yBias:120,headClearanceNative:24,
   validationBounds:{minX:0,maxX:383,minY:0,maxY:223}
 };
 const good=A.validateProofProfile(profile);
@@ -18,7 +18,7 @@ assert.equal(good.ok,true,JSON.stringify(good));
 const proj=(cameraX=0,sampleAt=1000,epoch=E)=>({
   schema:A.PROFILE_SCHEMA,status:'PROVED',proofId:profile.proofId,version:profile.projectionVersion,projectionKind:A.PROJECTION_KIND,
   source:'SYNTHETIC_ONLY_NOT_BROWSER_PROOF',epoch,projectionEpoch:epoch,sampleAt,confidence:1,
-  nativeWidth:384,nativeHeight:224,cameraX,worldXScale:1,xBias:80,floorYScale:1,zScale:-1,yBias:120,headClearanceNative:24,
+  nativeWidth:384,nativeHeight:224,cameraX,worldXScale:1,xBias:80,yAxisSign:1,yModel:'Y-Z',yBias:120,headClearanceNative:24,
   validationBounds:{minX:0,maxX:383,minY:0,maxY:223}
 });
 const db=(sampleAt=1000,epoch=E,width=768,height=448,contentRect={x:0,y:0,width,height},fullscreen=false)=>({
@@ -34,6 +34,13 @@ const center=r=>[r.drawRectDb.x+r.drawRectDb.width/2,r.drawRectDb.y+r.drawRectDb
 let passed=0;
 const test=(name,fn)=>{fn();passed++;};
 
+test('geometry v2 profile and legacy scales',()=>{
+  assert.equal(A.GEOMETRY_VERSION,'wof-alpha-player-head-geometry-v2');
+  assert.deepEqual([...A.Y_MODELS].sort(),['Y','Y+Z','Y-Z'].sort());
+  const legacy={...profile,floorYScale:1,zScale:-1};
+  const invalid=A.validateProofProfile(legacy);
+  assert.equal(invalid.ok,false);assert.equal(invalid.reasons.includes('LEGACY_FREEFORM_Y_SCALES_UNSUPPORTED'),true);
+});
 // 1 horizontal current-snapshot following.
 test('horizontal movement',()=>{
   const a=plan([warning() ],{P1:player(80)}).anchored[0];
@@ -46,11 +53,18 @@ test('depth movement',()=>{
   const b=plan([warning()],{P1:player(100,60,0)}).anchored[0];
   assert.equal(center(b)[1]-center(a)[1],60);
 });
-// 3 jump ascent/apex/descent/landing uses fresh Z and returns.
+// 3 jump ascent/apex/descent/landing uses Y-Z and returns.
 test('jump series',()=>{
   const zs=[0,12,24,12,0];
   const ys=zs.map(z=>center(plan([warning()],{P1:player(100,50,z)}).anchored[0])[1]);
   assert.deepEqual(ys,[292,268,244,268,292]);
+});
+// Explicit yAxisSign is independent from model selection.
+test('vertical sign reversal is explicit',()=>{
+  const p={...proj(),yAxisSign:-1,yBias:180,yModel:'Y'};
+  const a=plan([warning()],{P1:player(100,30,0)},p).anchored[0];
+  const b=plan([warning()],{P1:player(100,60,0)},p).anchored[0];
+  assert.equal(Math.sign(center(b)[1]-center(a)[1]),-1);
 });
 // 4 rapid forward/back has no smoothing/hold.
 test('rapid movement no smoothing',()=>{
@@ -100,7 +114,6 @@ test('retarget sample barrier',()=>{
   const fresh=plan([warning('P2')],{P2:player(190,50,0,1010)},proj(0,1010),db(1010),1020,1010);
   assert.equal(fresh.anchored[0].player,'P2');
 });
-// 10b semantic warningSampleAt is exact primitive finite-number authority.
 test('strict warning sample time fail closed',()=>{
   const args={warnings:[warning('P2')],players:{P2:player(190,50,0,1010)},projection:proj(0,1010),drawingBufferState:db(1010),nowMs:1020,warningEpoch:E};
   const missing=A.buildPlan(args);
@@ -117,49 +130,40 @@ test('strict warning sample time fail closed',()=>{
   const oldProjection=A.buildPlan({...args,projection:proj(0,1009),warningSampleAt:1010});
   assert.equal(oldProjection.anchored.length,0); assert.equal(oldProjection.fixed[0].reason,'PROJECTION_BEFORE_WARNING_SAMPLE');
 });
-// 11 stale and malformed/nonfinite/out-of-bounds.
 test('stale malformed bounds',()=>{
   assert.equal(plan([warning()],{P1:player(100,50,0,900)},proj(),db(),1010).fixed[0].reason,'STALE_PLAYER');
   assert.equal(plan([warning()],{P1:{...player(),x:NaN}}).fixed[0].reason,'INVALID_PLAYER_XYZ');
   assert.equal(plan([warning()],{P1:player(360)}).fixed[0].reason,'PROJECTION_OUT_OF_BOUNDS');
 });
-// 12 epoch mismatch.
 test('epoch mismatch',()=>{
   assert.equal(plan([warning()],{P1:player(100,50,0,1000,E2)},proj(),db()).fixed[0].reason,'EPOCH_MISMATCH');
 });
-// 13 rapid valid/invalid alternation has no last-coordinate reuse.
 test('valid invalid valid',()=>{
   const a=plan([warning()],{P1:player(80)}); assert.equal(a.anchored.length,1);
   const b=plan([warning()],{P1:player(80,50,0,1000,E,false)}); assert.equal(b.anchored.length,0);
   const c=plan([warning()],{P1:player(160)}); assert.equal(center(c.anchored[0])[0],480);
 });
-// 14 invalid confidence.
 test('confidence fail closed',()=>{
   const p={...player(),confidence:NaN};
   assert.equal(plan([warning()],{P1:p}).fixed[0].reason,'INVALID_PLAYER_CONFIDENCE');
 });
-// 15 unproved production profile is non-activatable.
 test('unproved profile fail closed',()=>{
   const unproved=JSON.parse(fs.readFileSync(new URL('./wof_alpha_player_head_projection.json',import.meta.url),'utf8'));
   const v=A.validateProofProfile(unproved);
   assert.equal(v.ok,false); assert.equal(v.reasons.includes('PROFILE_NOT_PROVED'),true);
 });
-// 16 invalid projection and drawing-buffer confidence.
 test('projection db confidence',()=>{
   assert.equal(plan([warning()],{P1:player()}, {...proj(),confidence:'1'}).fixed[0].reason,'INVALID_PROJECTION_CONFIDENCE');
   assert.equal(plan([warning()],{P1:player()}, proj(), {...db(),confidence:null}).fixed[0].reason,'INVALID_DRAWING_BUFFER_CONFIDENCE');
 });
-// 17 multiple warnings aggregate by target.
 test('aggregation',()=>{
   const p=plan([warning('P1',0),warning('P1',1)],{P1:player()});
   assert.equal(p.anchored.length,1); assert.equal(p.anchored[0].warningCount,2);
 });
-// 18 strict invalid target never anchors.
 test('invalid target',()=>{
   const p=plan([{...warning(),target:'1P'}],{P1:player()});
   assert.equal(p.anchored.length,0); assert.equal(p.fixed[0].reason,'INVALID_TARGET');
 });
-// 19 production worker uses a bounded 20 ms active-warning spatial publication cadence.
 test('worker cadence integration',()=>{
   const src=fs.readFileSync(new URL('./wof_alpha_real_worker.js',import.meta.url),'utf8');
   assert.match(src,/const PLAYER_SPATIAL_PUBLISH_MS=20;/);
@@ -168,15 +172,15 @@ test('worker cadence integration',()=>{
   assert.match(src,/envelope\('state',\{seq,warnings,sampleAt:sampleAtEpoch\}\)/);
   assert.match(src,/timer=setInterval\(beginTick,10\)/);
 });
-// 20 page HUD is wired to player-head helper and fixed fallback.
-test('hud integration',()=>{
+test('hud integration uses direct P1 tracker before projection fallback',()=>{
   const src=fs.readFileSync(new URL('./wof_alpha_hud.js',import.meta.url),'utf8');
   assert.match(src,/WOFAlphaPlayerHeadWarning\?\.buildPlan/);
   assert.match(src,/m\.kind==='player-head-spatial'/);
+  assert.match(src,/drawP1HeadWarningFromTracker\(now,warnings\)/);
+  assert.match(src,/warnings\.filter\(w=>w\?\.target==='P1'\)/);
   assert.match(src,/drawFixedWarnings\(fixedWarnings\)/);
   assert.match(src,/holdMs:0,smoothing:false/);
 });
-// 21 loader includes helper before HUD.
 test('loader integration',()=>{
   const src=fs.readFileSync(new URL('./wof_alpha_loader.js',import.meta.url),'utf8');
   const helper=src.indexOf("await load('wof_alpha_player_head_warning.js')");
@@ -184,4 +188,4 @@ test('loader integration',()=>{
   assert.ok(helper>=0&&hud>helper);
 });
 
-console.log(JSON.stringify({status:'PASS',passed,total:22,fixture:'SYNTHETIC_PLAYER_HEAD_WARNING_ONLY_NOT_BROWSER_PROOF'}));
+console.log(JSON.stringify({status:'PASS',passed,total:passed,fixture:'SYNTHETIC_PLAYER_HEAD_WARNING_ONLY_NOT_BROWSER_PROOF'}));
