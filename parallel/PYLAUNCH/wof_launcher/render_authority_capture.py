@@ -23,7 +23,7 @@ class RenderAuthorityCapture:
         try:session.request("Runtime.enable");return session.evaluate(expression,timeout=timeout)
         finally:session.close()
     def status(self)->dict[str,Any]:
-        return {"schema":SCHEMA,"state":self._state,"authorityKey":self._authority_key,"runtimeEpoch":self._runtime_epoch,"terminal":self._result is not None,"error":self._error,"ownerActionZh":"正常玩；Camera 会先自动识别 P1 身份并尝试零点击定位场景 P1 头部；只有自动定位无法安全唯一确认时才允许最多一次实际头部点击。","measurementRequired":"exact runtime renderer/object authority plus bounded zero-click-first P1 head visual authority",**SAFETY}
+        return {"schema":SCHEMA,"state":self._state,"authorityKey":self._authority_key,"runtimeEpoch":self._runtime_epoch,"terminal":self._result is not None,"captureComplete":self._result is not None,"actorStreaming":self._state=="ANCHOR_STREAMING","error":self._error,"ownerActionZh":"正常玩；Camera 会先自动识别 P1 身份并尝试零点击定位场景 P1 头部；只有自动定位无法安全唯一确认时才允许最多一次实际头部点击。","measurementRequired":"exact runtime renderer/object authority plus bounded zero-click-first P1 head visual authority",**SAFETY}
     def result(self)->dict[str,Any]|None:return None if self._result is None else json.loads(json.dumps(self._result))
     @staticmethod
     def _validate_remote(remote:Any,*,authority_key:str,runtime_epoch:str)->dict[str,Any]:
@@ -54,10 +54,11 @@ class RenderAuthorityCapture:
             actors=remote.get("actors")
             if self._page_id and isinstance(actors,dict):
                 self._eval(client,self._page_id,f"window.WOFALPHARELATIVEENEMY?.ingestActorSnapshot?.({json.dumps(actors)});true",timeout=3.0)
-            if remote.get("terminal") is True:
+            capture_complete=remote.get("captureComplete") is True or remote.get("terminal") is True
+            if capture_complete:
                 result=self._eval(client,self._worker_id,"self.WOFRENDERAUTHV2?.result?.()||null");self._validate_remote(result,authority_key=authority_key,runtime_epoch=runtime_epoch)
-                if result.get("state")!="MEASUREMENT_COMPLETE" or result.get("resultVerdict")!="BOUNDED_CAPTURE_READY_FOR_RENDER_AUTHORITY_ANALYSIS":raise RenderAuthorityCaptureError("render-authority capture terminal result is not complete")
-                self._result=result;self._state="MEASUREMENT_COMPLETE"
+                if result.get("captureComplete") is not True or result.get("resultVerdict")!="BOUNDED_CAPTURE_READY_FOR_RENDER_AUTHORITY_ANALYSIS":raise RenderAuthorityCaptureError("render-authority bounded capture result is not complete")
+                self._result=result;self._state=str(remote.get("state") or result.get("state") or "MEASUREMENT_COMPLETE")
             else:self._state=str(remote.get("state") or "MEASURING")
             self._error=None;return {**self.status(),"remote":remote,"result":self.result()}
         except Exception as exc:self._state="ERROR";self._error=str(exc);return {**self.status(),"remote":None,"result":self.result()}
