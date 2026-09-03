@@ -20,6 +20,8 @@ MEASUREMENT_STATE_ZH = {
     "BLOCKED": "BLOCKED",
 }
 
+LIVE_ACCEPTANCE_PHASE = "P1_DRAW_READY_ENEMY_LIVE_CHECK"
+
 
 class MeasurementPublisher:
     def __init__(self, store: StatusStore, on_change: Callable[[], None] | None = None) -> None:
@@ -80,6 +82,14 @@ class MeasurementTrayApp(TrayApp):
         drawn = bool(int(overlay.get("drawCount") or 0) > 0 and overlay.get("drawHooked") is True)
         return visible, drawn, overlay
 
+    @staticmethod
+    def _relative_enemy(m: dict[str, Any], overlay: dict[str, Any]) -> dict[str, Any]:
+        direct = m.get("relativeEnemy")
+        if isinstance(direct, dict):
+            return direct
+        nested = overlay.get("relativeEnemy")
+        return nested if isinstance(nested, dict) else {}
+
     @classmethod
     def _owner_product_state(cls, s) -> str:
         m = cls._measurement(s)
@@ -95,6 +105,8 @@ class MeasurementTrayApp(TrayApp):
             return "需要一次点击 P1 真实头部"
         if state == "RUNTIME_REDISCOVERY" or int(vis.get("lostFrames") or 0) > 0:
             return "暂时丢失，恢复中"
+        if m.get("liveAcceptancePhase") == LIVE_ACCEPTANCE_PHASE and m.get("p1LiveGateReady") is True:
+            return "P1 已绘制 / 检查怪物头顶"
         overlay_visible, overlay_drawn, _overlay = cls._overlay_proof(m, vis)
         if overlay_visible and overlay_drawn:
             return "头顶已显示"
@@ -146,6 +158,29 @@ class MeasurementTrayApp(TrayApp):
             lines.append("正式头顶实际 draw：" + ("已确认" if overlay_drawn else "等待中"))
             if overlay.get("hudSource"):
                 lines.append("正式 renderer：" + str(overlay.get("hudSource")))
+        relative_enemy = cls._relative_enemy(m, overlay)
+        if relative_enemy:
+            fit = relative_enemy.get("fit") if isinstance(relative_enemy.get("fit"), dict) else {}
+            lines += [
+                "",
+                "怪物头顶阶段：中性圆点几何验收（不是最终 1P/2P/3P 标签）",
+                f"怪物输入：{relative_enemy.get('inputSource') or 'NONE'}",
+                f"怪物实时 drawCount：{int(relative_enemy.get('drawCount') or 0)}（只证明发生绘制，不证明位置正确）",
+                "怪物数据 freshness："
+                + ("enemy=新鲜" if relative_enemy.get("enemyFresh") is True else "enemy=过期/缺失")
+                + " · "
+                + ("player=新鲜" if relative_enemy.get("playerFresh") is True else "player=过期/缺失")
+                + " · "
+                + ("tracker=新鲜" if relative_enemy.get("trackerFresh") is True else "tracker=过期/缺失"),
+            ]
+            if fit:
+                lines.append(
+                    "怪物几何 fit："
+                    + ("READY" if fit.get("ok") is True else "等待中")
+                    + f" · model={fit.get('model')} · sign={fit.get('sign')} · residual={fit.get('residual')} · samples={fit.get('sampleCount')}"
+                )
+            if relative_enemy.get("suppressedReason"):
+                lines.append("怪物未绘制原因：" + str(relative_enemy.get("suppressedReason")))
         if m.get("runtimeRediscoveryCount"):
             lines.append(f"运行时自动重发现：{m['runtimeRediscoveryCount']} 次")
         if m.get("blockedReason"):
@@ -174,6 +209,8 @@ class MeasurementTrayApp(TrayApp):
             return "P1 authority 已建立，正在等待 maintained Alpha HUD 的 production overlay 实际 draw；不会把 tracker-only 当作头顶已显示。"
         if owner_state == "暂时丢失，恢复中":
             return "头顶标记已隐藏；保持正常游戏，恢复后会自动重新出现。"
+        if m.get("liveAcceptancePhase") == LIVE_ACCEPTANCE_PHASE and m.get("p1LiveGateReady") is True:
+            return "先确认游戏里 P1 的 1P 标记确实贴在真实头顶；P1 正确后再看怪物白色圆点。依次测试左右移动、纵深、跳跃/卷屏和短暂丢失恢复。状态中的 drawCount 只证明画过，不能替代肉眼位置验收。"
         if owner_state == "头顶已显示":
             return str(vis.get("actionZh") or "maintained Alpha HUD 已确认实际 draw；正常玩即可，丢失时会隐藏并自动恢复。")
         if state == "COMPLETE":
