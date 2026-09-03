@@ -7,10 +7,11 @@
   "claimToken": "v12-umbrella-96e154cdfc014245b565a4d323d23ea1",
   "state": "COMPLETE",
   "startCommit": "4f490518e6fad0606761daa8c587c55574882495",
-  "finalImplementationHead": "9b7c6897149cc7de615dd372e072d7b21e9de8f7",
+  "finalImplementationHead": "65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95",
+  "finalImplementationTree": "6102471dde9c4f8b6b6f85fed3d1c7cc54d41d55",
   "terminalCloseoutAuthority": "wof.unified-collector.v12.terminal-integration-closeout-recovery-v2",
   "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_FINAL_CONSOLIDATION_ONECLICK_LEGACY_RETIREMENT_RESULT.md",
-  "resultCommit": "bccb57985e4eb917e3588cc10eff2c6a401e4a42",
+  "resultCommit": "25db8577f8b76cb7d99052dcbaa882bb1f4fdc40",
   "acceptanceBundlePath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_FINAL_CONSOLIDATION_ONECLICK_LEGACY_RETIREMENT_ACCEPTANCE_BUNDLE.json",
-  "acceptanceBundleCommit": "88625b0bf78d5b1d14fdf0bda0e758f76dcedc97"
+  "acceptanceBundleCommit": "63ecacee09d78fa40bb4c3f58526e35048a6ff2b"
 }
