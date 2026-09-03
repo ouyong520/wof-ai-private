@@ -22,6 +22,7 @@ class ChineseOwnerUxTests(unittest.TestCase):
         self.assertEqual(owner.translate_text("READY"), "已就绪")
         self.assertEqual(owner.translate_text("MISSING"), "缺失")
         self.assertEqual(owner.translate_text("1 Update Project"), "1 更新项目")
+        self.assertEqual(owner.translate_text("6 运行真人浏览器验证"), "6 打开 WOF 头顶显示")
         self.assertEqual(owner.translate_prompt("Choose 0-9: "), "请选择 0-9：")
 
     def test_cmd_entrypoints_enable_utf8_and_use_chinese_frontends(self):
@@ -53,16 +54,21 @@ class ChineseOwnerUxTests(unittest.TestCase):
         self.assertIn('parallel/WOF052L_RECORDER/owner_zh_cn.py', src)
         self.assertNotIn('self.root / "parallel/WOF052L_RECORDER/recorder.py"', src)
 
-    def test_menu_six_activates_package_selected_alpha_without_devtools(self):
+    def test_menu_six_selects_only_pinned_production_top_overlay(self):
         src = (REPO / "parallel/OPTOOLKIT/owner_zh_cn.py").read_text(encoding="utf-8")
-        session = (REPO / "parallel/OPTOOLKIT/live_session.py").read_text(encoding="utf-8")
-        self.assertIn('parallel/OPTOOLKIT/live_session.py', src)
-        self.assertIn("不需要 DevTools", src)
-        self.assertIn("runtime generation", src)
-        self.assertIn("最终 ZIP", src)
-        self.assertIn('"--activate-alpha"', session)
-        self.assertIn('"--package-root"', session)
-        self.assertIn("WOF_LIVE_ACCEPTANCE_", session)
+        status = (REPO / "parallel/PYLAUNCH/wof_launcher/render_measurement_ui.py").read_text(encoding="utf-8")
+        self.assertIn('parallel/PYLAUNCH/render_authority_measurement_entry.py', src)
+        self.assertIn("sliceARuntimeCommit", src)
+        self.assertIn('selectedNormalPath") == "production-top-overlay"', src)
+        self.assertIn('productionOverlayEnabled") is True', src)
+        self.assertIn('productionOverlaySuppressed") is False', src)
+        self.assertIn('diagnosticOnly") is False', src)
+        self.assertIn('whiteAcquisitionMarkerIsProduct") is False', src)
+        for label in ["等待 WOF", "正在自动找 P1", "需要一次点击 P1 真实头部", "头顶已显示", "暂时丢失，恢复中", "BLOCKED"]:
+            self.assertIn(label, status)
+        self.assertIn("不会把空白浏览器当成功", src)
+        self.assertIn("白色 acquisition marker 不是正式产品", src)
+        self.assertNotIn('parallel/OPTOOLKIT/live_session.py', src)
 
     def test_menu_eight_is_local_self_contained_and_uses_core_zip_packager(self):
         src = (REPO / "parallel/OPTOOLKIT/owner_zh_cn.py").read_text(encoding="utf-8")
