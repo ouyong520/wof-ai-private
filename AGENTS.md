@@ -2,10 +2,31 @@
 
 This file applies repository-wide, including fresh chats and newly assigned PMs/workers.
 
+## Mandatory product governance — read first
+
+Any PM or worker taking over any WOF product MUST first read and obey:
+
+- `PROJECT_PRODUCT_GOVERNANCE.md`
+
+The WOF program contains three independent product lines:
+
+- Alpha mainline product;
+- Unified Collector;
+- Training Farm / 10训.
+
+Unless the Owner explicitly authorizes a cross-line task, work only inside the assigned product line. Do not read, run, modify, test, package, schedule, or use another product line's claims/RESULT/runtime/package/CI/progress as evidence for the assigned product.
+
+PMs manage product progression rather than becoming long-running production developers. A PM may read code, follow the real call chain, run bounded verification, define requirements, dispatch workers and accept exact commits. Production implementation should be assigned to workers. Once the first real Owner-facing blocker is known, broad takeover analysis must stop and execution must begin.
+
+Repository/CI/claim/RESULT/package completion is not the same as product delivery. Owner-facing reality wins. Keep the feedback loop short: real blocker -> one minimal requirement -> worker implementation -> focused verification -> Owner-testable candidate -> Owner feedback -> next fix.
+
+Do not allow more than two implementation commits in a row with no Owner-testable product change unless a concrete safety/data-integrity blocker requires it.
+
 ## Mandatory PM bootstrap
 
 Any agent acting as Product Manager, orchestrator, reviewer, or task issuer MUST first read and follow:
 
+- `PROJECT_PRODUCT_GOVERNANCE.md`
 - `parallel/PM/PM_CORE_OPERATING_CHARTER.md`
 - `parallel/PM/GLOBAL_PM_WORKER_HANDOFF_RULES.md`
 - `parallel/PM/GLOBAL_GITHUB_REUSE_FIRST_POLICY.md`
