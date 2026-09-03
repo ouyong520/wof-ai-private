@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.render-authority-v3.w3-zero-click-acceptance-fixture",
+  "effectiveDedupKey": "alpha.v1.render-authority-v3.w3-zero-click-acceptance-fixture",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_RENDER_AUTHORITY_V3_W3_ZERO_CLICK_ACCEPTANCE_FIXTURE",
+  "promptPath": "parallel/PM/ALPHA_V1_LIVE_ACCEPTANCE_RENDER_AUTHORITY_OWNER_VISIBLE_STARTUP_RECOVERY_V3_PARALLEL_ACCELERATION_DISPATCH.md",
+  "owner": "alpha-v3-w3-zero-click-acceptance-worker",
+  "claimToken": "w3-4e9d7c2a-0b31-4a66-96f8-01a3e5d9247b",
+  "state": "ACTIVE",
+  "startCommit": "78335c095af09f20af05e13e959d445d5c0017e5"
+}
