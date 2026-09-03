@@ -8,6 +8,7 @@ Any agent acting as Product Manager, orchestrator, reviewer, or task issuer MUST
 
 - `parallel/PM/PM_CORE_OPERATING_CHARTER.md`
 - `parallel/PM/GLOBAL_PM_WORKER_HANDOFF_RULES.md`
+- `parallel/PM/GLOBAL_GITHUB_REUSE_FIRST_POLICY.md`
 - `parallel/PM/STAGE_DEDUP_GUARD.md`
 - `parallel/PM/TESTING_CADENCE_POLICY.md`
 - `parallel/PM/OWNER_INTERVENTION_GATE.md`
@@ -30,11 +31,33 @@ Every fresh PM chat must operate under the following contract without requiring 
 - Owner mainly relays concise worker prompts and provides leadership on important product direction, architecture choices and priority decisions.
 - Standalone `1` means **continue**: first inspect Git reality, then accept/close/fix/recover or issue the next legitimate requirement. Do not mechanically tell the same worker to continue.
 - PM must proactively identify the highest-value current blocker and advance the shortest path toward usable product value. Do not wait for the Owner to invent routine next tasks.
+- Before committing to a new non-trivial implementation architecture, PM must apply `parallel/PM/GLOBAL_GITHUB_REUSE_FIRST_POLICY.md`: check maintained GitHub/official-ecosystem candidates, compare maintenance/deployment/reusable functions/licensing, make an explicit DIRECT_USE/ADAPT/FORK/REFERENCE_ONLY/SELF_BUILD/DEFER decision, and define the simplest MVP. Reuse an existing recent durable decision rather than repeating research for confidence.
 - Do not create parallel workers just to fill capacity. Parallelize only genuinely independent work that safely shortens the mainline.
 - Do not proliferate recovery, QA or cross-check stages. Prefer one coherent implementation module through integration, self-check, durable RESULT and claim closeout, then the minimum justified downstream gate.
 - Owner is not the debugger. Exhaust code inspection, CI, historical evidence, fixtures, mocks, automation and safe diagnosis before asking for manual/live action.
 - Request Owner live testing only when the remaining fact is intrinsically real-environment dependent, and keep that run bounded, simple and product-like.
 - Communication with Owner must stay concise. Normally provide only current verdict, whether Owner action is needed, and the exact next worker prompt that must be relayed.
+
+## Mandatory GitHub reuse-first preflight
+
+For any new non-trivial capability, dependency, infrastructure component, adapter, workflow, algorithmic subsystem, UI/runtime integration, storage/query layer, automation layer or similar engineering surface, PM must check whether maintained GitHub/open-source code can be used directly or adapted before choosing a self-built architecture.
+
+The required sequence is:
+
+`READ CURRENT GIT -> DEDUP -> GITHUB/OFFICIAL-ECOSYSTEM REUSE PREFLIGHT -> DIRECT_USE/ADAPT/FORK/REFERENCE_ONLY/SELF_BUILD/DEFER -> SIMPLEST MVP -> IMPLEMENT`
+
+A meaningful candidate review must answer:
+
+1. whether the project is still maintained;
+2. how difficult deployment/integration is;
+3. which exact functions/modules can be reused;
+4. which candidate is best for secondary development;
+5. whether the correct decision is direct use, adaptation, fork, reference-only, self-build or defer;
+6. the simplest MVP that minimizes new code, dependencies, deployment burden, maintenance cost and Owner manual work.
+
+License, attribution/copyleft implications and material supply-chain/security risk must be checked before import/fork. Stars alone are not maintenance evidence. Do not force a heavyweight framework into the project when a small local implementation has lower total lifecycle cost.
+
+The full authoritative rule is `parallel/PM/GLOBAL_GITHUB_REUSE_FIRST_POLICY.md`.
 
 ## Mandatory duplicate-task preflight — Owner may paste the wrong or repeated task
 
