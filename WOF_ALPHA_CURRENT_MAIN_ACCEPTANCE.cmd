@@ -38,6 +38,7 @@ echo.
 echo Alpha current main exact SHA: %HEAD_SHA%
 echo 此入口仅用于实机验收当前 main，不发布、不更新 immutable Owner package。
 echo 它直接启动菜单 6 最终调用的同一个 Alpha production runtime entry。
+echo P1 production draw 建立后不会自动退出，会继续保持实时 actor feed 供怪物头顶验收。
 echo 只运行 Alpha PYLAUNCH / production overlay 路径，不运行其他项目。
 echo.
 
@@ -73,8 +74,9 @@ if defined USERPROFILE (
   set "RESULTS=%TEMP%\WOF_RESULTS\alpha_current_main_acceptance"
 )
 if not exist "%RESULTS%" mkdir "%RESULTS%" >nul 2>&1
->"%RESULTS%\CURRENT_MAIN_ACCEPTANCE.json" echo {"schema":"wof-alpha-current-main-live-acceptance-v1","sourceCommit":"%HEAD_SHA%","mode":"production-runtime-live-acceptance-only","menu6RuntimeEntry":"parallel/PYLAUNCH/render_authority_measurement_entry.py","immutablePackagePublished":false,"readOnly":true,"ramWrites":0,"inputInjection":false}
+>"%RESULTS%\CURRENT_MAIN_ACCEPTANCE.json" echo {"schema":"wof-alpha-current-main-live-acceptance-v1","sourceCommit":"%HEAD_SHA%","mode":"production-runtime-live-acceptance-only","menu6RuntimeEntry":"parallel/PYLAUNCH/render_authority_measurement_entry.py","liveAcceptanceHoldAfterP1":true,"immutablePackagePublished":false,"readOnly":true,"ramWrites":0,"inputInjection":false}
 set "WOF_ALPHA_ACCEPTANCE_COMMIT=%HEAD_SHA%"
+set "WOF_ALPHA_LIVE_ACCEPTANCE_HOLD=1"
 
 cd /d "%ROOT%\parallel\PYLAUNCH"
 "%VENV_PY%" "%ROOT%\parallel\PYLAUNCH\render_authority_measurement_entry.py" --root "%ROOT%" --output-root "%RESULTS%"
