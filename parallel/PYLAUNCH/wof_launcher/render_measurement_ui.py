@@ -12,9 +12,9 @@ MEASUREMENT_STATE_ZH = {
     "CAMERA_PREPARING": "正在自动找 P1",
     "HEAD_ACQUIRING": "正在自动找 P1",
     "ONE_CLICK_REQUIRED": "需要一次点击 P1 真实头部",
-    "HEAD_TRACKING": "头顶已显示",
-    "MEASURING": "头顶已显示",
-    "RUNNING": "头顶已显示",
+    "HEAD_TRACKING": "正在建立头顶显示",
+    "MEASURING": "正在建立头顶显示",
+    "RUNNING": "正在建立头顶显示",
     "RUNTIME_REDISCOVERY": "暂时丢失，恢复中",
     "COMPLETE": "本次运行完成",
     "BLOCKED": "BLOCKED",
@@ -69,6 +69,17 @@ class MeasurementTrayApp(TrayApp):
         v = a.get("renderAuthorityV3") if isinstance(a, dict) else None
         return v if isinstance(v, dict) else {}
 
+    @staticmethod
+    def _overlay_proof(m: dict[str, Any], vis: dict[str, Any]) -> tuple[bool, bool, dict[str, Any]]:
+        overlay = m.get("productionOverlay") if isinstance(m.get("productionOverlay"), dict) else {}
+        visible = bool(
+            m.get("productionOverlayVisible") is True
+            or vis.get("productionOverlayVisible") is True
+            or overlay.get("visible") is True
+        )
+        drawn = bool(int(overlay.get("drawCount") or 0) > 0 and overlay.get("drawHooked") is True)
+        return visible, drawn, overlay
+
     @classmethod
     def _owner_product_state(cls, s) -> str:
         m = cls._measurement(s)
@@ -84,9 +95,11 @@ class MeasurementTrayApp(TrayApp):
             return "需要一次点击 P1 真实头部"
         if state == "RUNTIME_REDISCOVERY" or int(vis.get("lostFrames") or 0) > 0:
             return "暂时丢失，恢复中"
-        overlay_visible = m.get("productionOverlayVisible") is True or vis.get("productionOverlayVisible") is True
-        if overlay_visible or state in {"HEAD_TRACKING", "MEASURING", "RUNNING"}:
+        overlay_visible, overlay_drawn, _overlay = cls._overlay_proof(m, vis)
+        if overlay_visible and overlay_drawn:
             return "头顶已显示"
+        if state in {"HEAD_TRACKING", "MEASURING", "RUNNING"}:
+            return "正在建立头顶显示"
         if state == "COMPLETE":
             return "本次运行完成"
         return MEASUREMENT_STATE_ZH.get(state, state)
@@ -94,7 +107,6 @@ class MeasurementTrayApp(TrayApp):
     @classmethod
     def _format_status(cls, s) -> str:
         m = cls._measurement(s)
-        state = str(m.get("measurementState") or s.state)
         owner_state = cls._owner_product_state(s)
         lines = [
             f"产品状态：{owner_state}",
@@ -124,10 +136,16 @@ class MeasurementTrayApp(TrayApp):
                 lines.append("当前只需做一件事：" + str(vis["actionZh"]))
             if int(vis.get("lostFrames") or 0) > 0:
                 lines.append("产品状态：暂时丢失，恢复中；头顶标记已隐藏，恢复后会自动重新出现。")
+        overlay_visible, overlay_drawn, overlay = cls._overlay_proof(m, vis)
         if m.get("productionOverlayEnabled") is not None:
             lines.append("正式头顶显示：" + ("已启用" if m.get("productionOverlayEnabled") is True else "未启用"))
         if m.get("productionOverlaySuppressed") is not None:
             lines.append("正式头顶显示抑制：" + ("是" if m.get("productionOverlaySuppressed") is True else "否"))
+        if overlay:
+            lines.append("正式头顶可见：" + ("是" if overlay_visible else "否"))
+            lines.append("正式头顶实际 draw：" + ("已确认" if overlay_drawn else "等待中"))
+            if overlay.get("hudSource"):
+                lines.append("正式 renderer：" + str(overlay.get("hudSource")))
         if m.get("runtimeRediscoveryCount"):
             lines.append(f"运行时自动重发现：{m['runtimeRediscoveryCount']} 次")
         if m.get("blockedReason"):
@@ -152,10 +170,12 @@ class MeasurementTrayApp(TrayApp):
             return str(vis.get("actionZh") or "正在自动识别 P1 身份并定位真实场景头部；安全唯一时无需点击。")
         if owner_state == "需要一次点击 P1 真实头部":
             return str(vis.get("actionZh") or "自动定位无法安全唯一确认；请只点一次场景中 P1 人物真实头部。")
+        if owner_state == "正在建立头顶显示":
+            return "P1 authority 已建立，正在等待 maintained Alpha HUD 的 production overlay 实际 draw；不会把 tracker-only 当作头顶已显示。"
         if owner_state == "暂时丢失，恢复中":
             return "头顶标记已隐藏；保持正常游戏，恢复后会自动重新出现。"
         if owner_state == "头顶已显示":
-            return str(vis.get("actionZh") or "正式头顶显示已工作；正常玩即可，丢失时会隐藏并自动恢复。")
+            return str(vis.get("actionZh") or "maintained Alpha HUD 已确认实际 draw；正常玩即可，丢失时会隐藏并自动恢复。")
         if state == "COMPLETE":
             return "本次运行已完成。"
         if state == "BLOCKED":
