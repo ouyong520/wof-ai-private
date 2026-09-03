@@ -1,0 +1,15 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "wof.unified-collector.v12.post-freeze-crossline-revalidation-v1",
+  "effectiveDedupKey": "wof.unified-collector.v12.post-freeze-crossline-revalidation-v1",
+  "dedupMode": "exclusive",
+  "stageId": "WOF_UNIFIED_COLLECTOR_V12_POST_FREEZE_CROSSLINE_REVALIDATION_V1",
+  "promptPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_POST_FREEZE_CROSSLINE_REVALIDATION_V1_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol-v12-postfreeze-w1-audit-coordinator",
+  "claimToken": "v12-postfreeze-parent-8b9e6f0d4b7c4a5d91733bcb52bdb9ef",
+  "state": "ACTIVE",
+  "startCommit": "ea8efbc651140cd07032c097a99b81ab4d43a81f",
+  "implementationRepo": "ouyong520/wof-winkawaks-bridge",
+  "implementationStartHead": "65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95"
+}
