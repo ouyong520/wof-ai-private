@@ -7,8 +7,10 @@ root.WOFAlphaPlayerHeadWarning=api;
 'use strict';
 
 const VERSION='wof-alpha-player-head-warning-v1';
-const PROFILE_SCHEMA='wof-alpha-player-head-projection-v1';
-const PROJECTION_KIND='world-camera-floor-z-affine-v1';
+const GEOMETRY_VERSION='wof-alpha-player-head-geometry-v2';
+const PROFILE_SCHEMA='wof-alpha-player-head-projection-v2';
+const PROJECTION_KIND='world-camera-y-sign-z-head-clearance-v2';
+const Y_MODELS=new Set(['Y-Z','Y+Z','Y']);
 const PLAYERS=Object.freeze(['P1','P2','P3']);
 const PLAYER_SET=new Set(PLAYERS);
 const EPOCH_RE=/^[0-9a-f]{32}$/;
@@ -47,9 +49,12 @@ function validateProofProfile(profile){
   if(!finite(profile?.nativeWidth)||profile.nativeWidth<=0||!finite(profile?.nativeHeight)||profile.nativeHeight<=0)reasons.push('INVALID_NATIVE_VIEWPORT');
   if(!Number.isInteger(profile?.cameraAddress)||profile.cameraAddress<0xFF0000||profile.cameraAddress>0xFFFFFF)reasons.push('INVALID_CAMERA_ADDRESS');
   if(profile?.cameraSign!==1&&profile?.cameraSign!==-1)reasons.push('INVALID_CAMERA_SIGN');
-  for(const key of ['cameraScale','worldXScale','xBias','floorYScale','zScale','yBias','headClearanceNative']){
+  for(const key of ['cameraScale','worldXScale','xBias','yBias','headClearanceNative']){
     if(!finite(profile?.[key]))reasons.push('INVALID_'+key.toUpperCase());
   }
+  if(profile?.yAxisSign!==1&&profile?.yAxisSign!==-1)reasons.push('INVALID_Y_AXIS_SIGN');
+  if(!Y_MODELS.has(profile?.yModel))reasons.push('INVALID_Y_MODEL');
+  if(Object.prototype.hasOwnProperty.call(profile||{},'floorYScale')||Object.prototype.hasOwnProperty.call(profile||{},'zScale'))reasons.push('LEGACY_FREEFORM_Y_SCALES_UNSUPPORTED');
   if(finite(profile?.headClearanceNative)&&profile.headClearanceNative<0)reasons.push('INVALID_HEAD_CLEARANCE');
   if(finite(profile?.nativeWidth)&&finite(profile?.nativeHeight)&&!validateBounds(profile?.validationBounds,profile.nativeWidth,profile.nativeHeight)){
     reasons.push('INVALID_VALIDATION_BOUNDS');
@@ -82,8 +87,8 @@ function buildProjectionSnapshot(profile,{cameraRaw,epoch,sampleAt}={}){
     cameraX,
     worldXScale:profile.worldXScale,
     xBias:profile.xBias,
-    floorYScale:profile.floorYScale,
-    zScale:profile.zScale,
+    yAxisSign:profile.yAxisSign,
+    yModel:profile.yModel,
     yBias:profile.yBias,
     headClearanceNative:profile.headClearanceNative,
     validationBounds:{...profile.validationBounds}
@@ -94,17 +99,26 @@ function buildProjectionSnapshot(profile,{cameraRaw,epoch,sampleAt}={}){
 function validProjectionState(projection){
   if(!projection||projection.schema!==PROFILE_SCHEMA||projection.status!=='PROVED'||projection.projectionKind!==PROJECTION_KIND)return false;
   if(typeof projection.proofId!=='string'||projection.proofId.length<8||typeof projection.version!=='string'||projection.version.length<8)return false;
-  if(![projection.nativeWidth,projection.nativeHeight,projection.cameraX,projection.worldXScale,projection.xBias,projection.floorYScale,projection.zScale,projection.yBias,projection.headClearanceNative].every(finite))return false;
+  if(![projection.nativeWidth,projection.nativeHeight,projection.cameraX,projection.worldXScale,projection.xBias,projection.yBias,projection.headClearanceNative].every(finite))return false;
+  if(projection.yAxisSign!==1&&projection.yAxisSign!==-1)return false;
+  if(!Y_MODELS.has(projection.yModel))return false;
   if(projection.nativeWidth<=0||projection.nativeHeight<=0||projection.headClearanceNative<0)return false;
   return validateBounds(projection.validationBounds,projection.nativeWidth,projection.nativeHeight);
 }
 
+function baseYForModel(playerState,yModel){
+  if(yModel==='Y-Z')return playerState.y-playerState.z;
+  if(yModel==='Y+Z')return playerState.y+playerState.z;
+  return playerState.y;
+}
+
 function projectNative(playerState,projection){
   const bodyXNative=(playerState.x-projection.cameraX)*projection.worldXScale+projection.xBias;
-  const bodyYNative=playerState.y*projection.floorYScale+playerState.z*projection.zScale+projection.yBias;
+  const baseY=baseYForModel(playerState,projection.yModel);
+  const bodyYNative=projection.yAxisSign*baseY+projection.yBias;
   const anchorXNative=bodyXNative;
   const anchorYNative=bodyYNative-projection.headClearanceNative;
-  return{bodyXNative,bodyYNative,anchorXNative,anchorYNative,confidence:1};
+  return{bodyXNative,bodyYNative,anchorXNative,anchorYNative,baseY,yModel:projection.yModel,yAxisSign:projection.yAxisSign,headClearanceNative:projection.headClearanceNative,confidence:1};
 }
 
 function failAnchor(player,reason,metadata={}){
@@ -172,6 +186,7 @@ function resolveAnchor({player,playerState,projection,drawingBufferState,nowMs,w
     drawingBufferState.mappingVersion??'',drawingBufferState.fullscreen?'fs':'win',projection.version
   ].join(':');
   return{ok:true,player,reason:null,xDb,yDb,bodyXDb,bodyYDb,
+    yModel:projected.yModel,yAxisSign:projected.yAxisSign,headClearanceNative:projected.headClearanceNative,
     confidence:Math.min(playerState.confidence,projection.confidence,drawingBufferState.confidence,projected.confidence),
     ageMs:Math.max(pAge,projAge,dbAge),sampleAt:Math.min(playerState.sampleAt,projection.sampleAt,drawingBufferState.sampleAt),
     mappingKey};
@@ -220,7 +235,7 @@ function buildPlan({warnings,players,projection,drawingBufferState,nowMs,warning
 }
 
 return{
-  VERSION,PROFILE_SCHEMA,PROJECTION_KIND,PLAYERS,MAX_PLAYER_AGE_MS,MAX_PROJECTION_AGE_MS,MAX_DRAWING_BUFFER_AGE_MS,
+  VERSION,GEOMETRY_VERSION,PROFILE_SCHEMA,PROJECTION_KIND,Y_MODELS,PLAYERS,MAX_PLAYER_AGE_MS,MAX_PROJECTION_AGE_MS,MAX_DRAWING_BUFFER_AGE_MS,
   validateProofProfile,buildProjectionSnapshot,resolveAnchor,buildPlan
 };
 });
