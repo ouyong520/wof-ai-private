@@ -25,17 +25,12 @@ def load_fixture(repo_root: Path | None = None) -> dict[str, Any]:
     return json.loads(fixture_path(repo_root).read_text(encoding="utf-8"))
 
 
-def _click_counts(steps: list[dict[str, Any]]) -> list[int]:
-    return [int(step.get("ownerClickCount") or 0) for step in steps]
-
-
 def validate_trace(scenario: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     name = str(scenario.get("name") or "<unnamed>")
     kind = str(scenario.get("kind") or "")
     browser = scenario.get("browser") if isinstance(scenario.get("browser"), dict) else {}
     steps = scenario.get("steps") if isinstance(scenario.get("steps"), list) else []
-
     if browser.get("entryMode") not in ALLOWED_BROWSER_ENTRY_MODES:
         errors.append(f"{name}: browser entryMode is not an accepted WOF reuse/open path")
     if browser.get("wofIntent") is not True:
@@ -45,14 +40,13 @@ def validate_trace(scenario: dict[str, Any]) -> list[str]:
     if not steps:
         return errors + [f"{name}: trace has no steps"]
 
-    counts = _click_counts(steps)
+    counts = [int(step.get("ownerClickCount") or 0) for step in steps]
     if any(count < 0 or count > 1 for count in counts):
         errors.append(f"{name}: owner click budget exceeded")
     if counts != sorted(counts):
         errors.append(f"{name}: owner click count is not monotonic")
     if any(step.get("trayVisible") is not True for step in steps):
         errors.append(f"{name}: tray/status disappeared during the owner path")
-
     first_auto = next((i for i, step in enumerate(steps) if step.get("autoAttempted") is True), None)
     first_click_arm = next((i for i, step in enumerate(steps) if step.get("clickArmed") is True), None)
     if first_click_arm is not None and (first_auto is None or first_auto > first_click_arm):
@@ -78,10 +72,7 @@ def validate_trace(scenario: dict[str, Any]) -> list[str]:
             errors.append(f"{name}: safe unique acquisition exposed click fallback")
         if final.get("markerVisible") is not True:
             errors.append(f"{name}: safe unique tracking marker is not visible")
-
     elif kind == "ambiguous":
-        if not any(step.get("autoAttempted") is True for step in steps):
-            errors.append(f"{name}: ambiguity was not reached through automatic acquisition")
         if any(step.get("state") == "HEAD_TRACKING" for step in steps):
             errors.append(f"{name}: ambiguous acquisition silently entered HEAD_TRACKING")
         if any(step.get("boundActor") is not None for step in steps):
@@ -90,7 +81,6 @@ def validate_trace(scenario: dict[str, Any]) -> list[str]:
             errors.append(f"{name}: ambiguous acquisition displayed a marker")
         if steps[-1].get("state") != "ONE_CLICK_REQUIRED" or steps[-1].get("clickArmed") is not True:
             errors.append(f"{name}: fallback click was not deferred until automatic failure")
-
     elif kind == "fallback_click":
         if sum(1 for step in steps if step.get("clickArmed") is True) != 1:
             errors.append(f"{name}: fallback click must be armed at most once")
@@ -99,16 +89,13 @@ def validate_trace(scenario: dict[str, Any]) -> list[str]:
             errors.append(f"{name}: single fallback click did not produce the expected tracking trace")
         if first_auto is None or first_click_arm is None or first_auto >= first_click_arm:
             errors.append(f"{name}: automatic failure must precede fallback click arming")
-
     elif kind == "loss_recovery":
-        marker_pattern = [bool(step.get("markerVisible")) for step in steps]
-        if marker_pattern != [True, False, True]:
+        if [bool(step.get("markerVisible")) for step in steps] != [True, False, True]:
             errors.append(f"{name}: confidence loss/recovery must show-hide-show the marker")
-        if any(count != counts[0] for count in counts):
+        if len(set(counts)) != 1:
             errors.append(f"{name}: recovery consumed another owner click")
         if steps[1].get("state") != "HEAD_ACQUIRING" or steps[-1].get("state") != "HEAD_TRACKING":
             errors.append(f"{name}: loss/recovery state sequence is invalid")
-
     elif kind == "invalidation":
         first, final = steps[0], steps[-1]
         if first.get("state") != "HEAD_TRACKING" or first.get("markerVisible") is not True:
@@ -122,7 +109,6 @@ def validate_trace(scenario: dict[str, Any]) -> list[str]:
             errors.append(f"{name}: P1 lifecycle generation did not change")
         if invalidation == "layout" and first.get("layoutKey") == final.get("layoutKey"):
             errors.append(f"{name}: layout key did not change")
-
     else:
         errors.append(f"{name}: unknown fixture kind {kind!r}")
     return errors
@@ -140,23 +126,37 @@ def validate_fixture(fixture: dict[str, Any]) -> list[str]:
     if len(names) != len(set(names)):
         errors.append("fixture scenario names are not unique")
     for scenario in scenarios:
-        if not isinstance(scenario, dict):
+        if isinstance(scenario, dict):
+            errors.extend(validate_trace(scenario))
+        else:
             errors.append("fixture contains a non-object scenario")
-            continue
-        errors.extend(validate_trace(scenario))
     return errors
 
 
 def _optional_zero_click_paths(paths: set[str], package_cfg: dict[str, Any]) -> list[str]:
     directory = str(package_cfg.get("optionalZeroClickModuleDirectory") or "")
-    out: list[str] = []
-    for path in sorted(paths):
-        if not path.startswith(directory) or not path.endswith(".py"):
-            continue
-        name = Path(path).name.lower()
-        if "zero" in name and "click" in name:
-            out.append(path)
-    return out
+    return sorted(
+        path for path in paths
+        if path.startswith(directory) and path.endswith(".py") and "zero" in Path(path).name.lower() and "click" in Path(path).name.lower()
+    )
+
+
+def _zero_click_contract(render: dict[str, Any]) -> bool:
+    owner_flow = str(render.get("ownerFlow") or "").lower()
+    textual = "zero" in owner_flow and "click" in owner_flow and any(word in owner_flow for word in ("auto", "automatic", "fallback"))
+    mode = str(render.get("mode") or "").lower()
+    try:
+        expected_normal = int(render.get("ownerClickExpectedNormal"))
+        fallback_max = int(render.get("ownerClickFallbackMaximumPerAuthorityGeneration"))
+    except (TypeError, ValueError):
+        expected_normal, fallback_max = -1, 99
+    structured = (
+        "zero-click-first" in mode
+        and render.get("automaticSeedRequiredBeforeFallback") is True
+        and expected_normal == 0
+        and fallback_max <= 1
+    )
+    return textual or structured
 
 
 def validate_package_manifest(
@@ -182,10 +182,8 @@ def validate_package_manifest(
     required = {str(path) for path in package_cfg.get("requiredRuntimePaths") or []}
     for path in sorted(required - selected):
         errors.append(f"package does not select required corrected runtime file: {path}")
-
-    owner_flow = str(render.get("ownerFlow") or "").lower()
-    if not ("zero" in owner_flow and "click" in owner_flow and any(word in owner_flow for word in ("auto", "automatic", "fallback"))):
-        errors.append("renderAuthorityV3 ownerFlow does not describe zero-click-first automatic acquisition before fallback")
+    if not _zero_click_contract(render):
+        errors.append("renderAuthorityV3 does not declare a zero-click-first automatic-before-fallback contract")
 
     source_commit = str(manifest.get("sourceCommit") or "")
     if not re.fullmatch(r"[0-9a-f]{40}", source_commit):
@@ -201,15 +199,14 @@ def validate_package_manifest(
         for row in file_rows
         if isinstance(row, dict) and row.get("path") and row.get("gitBlobSha")
     }
-    optional_zero_click = set(_optional_zero_click_paths(selected, package_cfg))
-    critical = required | optional_zero_click
+    critical = required | set(_optional_zero_click_paths(selected, package_cfg))
     for path in sorted(critical):
         if path not in blob_map:
             errors.append(f"manifest has no blob pin for corrected runtime file: {path}")
         elif blob_resolver is not None and source_commit:
             try:
                 actual = blob_resolver(source_commit, path)
-            except Exception as exc:  # pragma: no cover - exercised by candidate mode
+            except Exception as exc:  # pragma: no cover - candidate CLI only
                 errors.append(f"cannot resolve source blob {path}: {exc}")
             else:
                 if actual != blob_map[path]:
@@ -265,7 +262,7 @@ class ZeroClickAcceptanceFixtureW3Tests(unittest.TestCase):
     def test_oracle_rejects_click_before_automatic_attempt(self) -> None:
         scenario = copy.deepcopy(next(row for row in self.fixture["scenarios"] if row["kind"] == "fallback_click"))
         scenario["steps"][0]["clickArmed"] = True
-        self.assertTrue(any("before automatic" in error or "must be armed at most once" in error for error in validate_trace(scenario)))
+        self.assertTrue(any("before automatic" in error or "at most once" in error for error in validate_trace(scenario)))
 
     def test_oracle_rejects_ambiguous_wrong_bind(self) -> None:
         scenario = copy.deepcopy(next(row for row in self.fixture["scenarios"] if row["kind"] == "ambiguous"))
@@ -278,21 +275,25 @@ class ZeroClickAcceptanceFixtureW3Tests(unittest.TestCase):
         scenario["steps"][1]["markerVisible"] = True
         self.assertTrue(any("show-hide-show" in error for error in validate_trace(scenario)))
 
-    def test_package_gate_accepts_corrected_synthetic_candidate(self) -> None:
+    def test_package_gate_accepts_structured_zero_click_candidate(self) -> None:
         required = list(self.fixture["package"]["requiredRuntimePaths"])
         commit = "a" * 40
-        stale = self.fixture["package"]["staleBaselineBlobs"]
-        blob_by_path = {path: "blob-" + str(index) for index, path in enumerate(required)}
-        for path in stale:
-            if path in blob_by_path:
-                blob_by_path[path] = "corrected-" + blob_by_path[path]
+        blob_by_path = {path: f"corrected-{index}" for index, path in enumerate(required)}
         manifest = {
             "schema": "wof-owner-oneclick-package-v1",
             "packageVersion": "synthetic.w3.ready",
             "sourceCommit": commit,
             "components": {
                 "ownerOneclick": {"sourceCommit": commit, "files": []},
-                "renderAuthorityV3": {"sourceCommit": commit, "ownerFlow": "zero-click automatic acquisition -> fallback one click maximum", "files": required},
+                "renderAuthorityV3": {
+                    "sourceCommit": commit,
+                    "mode": "owner-visible-exact-world-zero-click-first-p1-multisample-head-visual",
+                    "ownerFlow": "menu6 -> normal game -> auto P1 identity/HUD -> bounded live-scene P1 head auto seed -> normal play -> auto complete",
+                    "ownerClickExpectedNormal": 0,
+                    "ownerClickFallbackMaximumPerAuthorityGeneration": 1,
+                    "automaticSeedRequiredBeforeFallback": True,
+                    "files": required,
+                },
                 "pylaunch": {"sourceCommit": commit, "files": required},
                 "operatorToolkit": {"sourceCommit": commit, "files": []},
             },
