@@ -15,7 +15,7 @@ DEFAULT_MANIFEST = Path(__file__).resolve().parent / "package_manifest.json"
 
 SCHEMA = "wof-owner-oneclick-package-v1"
 GENERATOR = "parallel/OWNER_ONECLICK/refresh_manifest.py"
-SELECTION_POLICY = "owner-oneclick-runtime-v4-overlay-reentry-recovery"
+SELECTION_POLICY = "owner-oneclick-runtime-v5-render-authority-v3-owner-visible-head-visual"
 RUNTIME_SUFFIXES = {".py", ".js", ".mjs", ".cmd", ".bat", ".ps1"}
 EXCLUDED_PARTS = {"tests", "__pycache__"}
 
@@ -50,6 +50,7 @@ PYLAUNCH_TOP = {
     "parallel/PYLAUNCH/RUN_WOF_LAUNCHER.bat",
     "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd",
     "parallel/PYLAUNCH/launcher.py",
+    "parallel/PYLAUNCH/render_authority_measurement_entry.py",
     "parallel/PYLAUNCH/requirements.txt",
 }
 
@@ -58,6 +59,11 @@ LIVE_PROOF_TOP = {
     "parallel/LIVE_PROOF_BUNDLE/unified_live_proof.py",
     "parallel/LIVE_PROOF_BUNDLE/unified_preflight.py",
     "parallel/LIVE_PROOF_BUNDLE/unified_preflight_entrypoint.py",
+}
+
+RENDER_AUTHORITY_V3_PATHS = {
+    "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js",
+    "parallel/RENDER_AUTHORITY_V3/measurement_runner.py",
 }
 
 RUNTIME_ROOTS = (
@@ -111,7 +117,7 @@ def is_runtime_path(path: str) -> bool:
         return False
     if p.name.startswith("test_"):
         return False
-    if path in FIXED_PATHS or path in PYLAUNCH_TOP or path in LIVE_PROOF_TOP:
+    if path in FIXED_PATHS or path in PYLAUNCH_TOP or path in LIVE_PROOF_TOP or path in RENDER_AUTHORITY_V3_PATHS:
         return True
     if path.startswith("parallel/PYLAUNCH/wof_launcher/"):
         return p.suffix.lower() == ".py"
@@ -121,9 +127,13 @@ def is_runtime_path(path: str) -> bool:
 
 
 def selected_paths_from_commit(root: Path, commit: str) -> dict[str, str]:
-    out = run_git(root, "-c", "core.quotepath=false", "ls-tree", "-r", commit, "--", "WOF_一键工具.cmd", "WOF_TOOLKIT.cmd",
-                  "parallel/OWNER_ONECLICK", "parallel/OPTOOLKIT", "parallel/PYLAUNCH", "parallel/WOF052L_RECORDER",
-                  "parallel/BROWSER_FLEET", "parallel/LIVE_PROOF_BUNDLE", "parallel/HUDANCHOR_PROOF", "product/alpha", "parallel/ALPHAQA_RC5")
+    out = run_git(
+        root, "-c", "core.quotepath=false", "ls-tree", "-r", commit, "--",
+        "WOF_一键工具.cmd", "WOF_TOOLKIT.cmd", "parallel/OWNER_ONECLICK", "parallel/OPTOOLKIT",
+        "parallel/PYLAUNCH", "parallel/RENDER_AUTHORITY_V2", "parallel/RENDER_AUTHORITY_V3",
+        "parallel/WOF052L_RECORDER", "parallel/BROWSER_FLEET", "parallel/LIVE_PROOF_BUNDLE",
+        "parallel/HUDANCHOR_PROOF", "product/alpha", "parallel/ALPHAQA_RC5",
+    )
     selected: dict[str, str] = {}
     for line in out.splitlines():
         if not line.strip():
@@ -133,14 +143,14 @@ def selected_paths_from_commit(root: Path, commit: str) -> dict[str, str]:
         if obj_type == "blob" and is_runtime_path(path):
             selected[path] = sha.lower()
 
-    missing = sorted((FIXED_PATHS | PYLAUNCH_TOP | LIVE_PROOF_TOP) - selected.keys())
+    missing = sorted((FIXED_PATHS | PYLAUNCH_TOP | LIVE_PROOF_TOP | RENDER_AUTHORITY_V3_PATHS) - selected.keys())
     if missing:
         raise ManifestError("固定 package runtime 文件缺失：" + ", ".join(missing))
     return dict(sorted(selected.items()))
 
 
 def selected_worktree_paths(root: Path) -> list[str]:
-    candidates: set[str] = set(FIXED_PATHS | PYLAUNCH_TOP | LIVE_PROOF_TOP)
+    candidates: set[str] = set(FIXED_PATHS | PYLAUNCH_TOP | LIVE_PROOF_TOP | RENDER_AUTHORITY_V3_PATHS)
     py_pkg = root / "parallel" / "PYLAUNCH" / "wof_launcher"
     if py_pkg.is_dir():
         for p in py_pkg.glob("*.py"):
@@ -167,6 +177,17 @@ def generate_manifest(root: Path, source: str) -> dict:
     generated_at = commit_generated_at_utc(root, commit)
     selected = selected_paths_from_commit(root, commit)
     paths = list(selected)
+    render_files = [
+        "parallel/PYLAUNCH/render_authority_measurement_entry.py",
+        "parallel/PYLAUNCH/wof_launcher/render_authority_capture.py",
+        "parallel/PYLAUNCH/wof_launcher/head_visual_tracker.py",
+        "parallel/PYLAUNCH/wof_launcher/render_measurement_ui.py",
+        "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js",
+        "parallel/RENDER_AUTHORITY_V3/measurement_runner.py",
+    ]
+    for path in render_files:
+        if path not in selected:
+            raise ManifestError("Render Authority V3 package 文件未被选择：" + path)
     return {
         "schema": SCHEMA,
         "packageVersion": package_version(commit, generated_at),
@@ -178,9 +199,10 @@ def generate_manifest(root: Path, source: str) -> dict:
         "components": {
             "ownerOneclick": {"sourceCommit": commit, "bootstrap": "parallel/OWNER_ONECLICK/bootstrap_v2.ps1", "files": [p for p in paths if p.startswith("parallel/OWNER_ONECLICK/") or p in {"WOF_一键工具.cmd", "WOF_TOOLKIT.cmd"}]},
             "alpha": {"sourceCommit": commit, "fieldAdapter": "product/alpha/wof_alpha_field_adapter.js", "files": component_paths(paths, "product/alpha/")},
-            "pylaunch": {"revision": "overlay-reentry-runtime-generation-v1", "sourceCommit": commit, "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd", "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd", "files": component_paths(paths, "parallel/PYLAUNCH/")},
+            "pylaunch": {"revision": "render-authority-v3-owner-visible-head-visual", "sourceCommit": commit, "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd", "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd", "files": component_paths(paths, "parallel/PYLAUNCH/")},
             "operatorToolkit": {"sourceCommit": commit, "ownerEntry": "parallel/OPTOOLKIT/owner_zh_cn.py", "files": component_paths(paths, "parallel/OPTOOLKIT/")},
-            "projectionProof": {"sourceCommit": commit, "mode": "package-selected-bounded-live", "files": component_paths(paths, "parallel/HUDANCHOR_PROOF/")},
+            "renderAuthorityV3": {"sourceCommit": commit, "mode": "owner-visible-exact-world-p1-multisample-head-visual", "entry": "parallel/PYLAUNCH/render_authority_measurement_entry.py", "ownerFlow": "menu6 -> normal game -> camera prepare -> one P1 head click maximum -> normal play -> auto complete", "ownerClickMaximumPerAuthorityGeneration": 1, "confidenceLossBehavior": "HIDE_AND_AUTO_RECOVER", "productionOverlayEnabled": False, "files": render_files},
+            "projectionProof": {"sourceCommit": commit, "mode": "package-selected-bounded-live-compatibility-only", "files": component_paths(paths, "parallel/HUDANCHOR_PROOF/")},
             "recorder": {"sourceCommit": commit, "ownerEntry": "parallel/WOF052L_RECORDER/owner_zh_cn.py", "files": component_paths(paths, "parallel/WOF052L_RECORDER/")},
             "browserFleet": {"sourceCommit": commit, "ownerEntry": "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py", "files": component_paths(paths, "parallel/BROWSER_FLEET/")},
             "liveProof": {"sourceCommit": commit, "entry": "parallel/LIVE_PROOF_BUNDLE/RUN_WOF_UNIFIED_LIVE_PROOF.cmd", "files": component_paths(paths, "parallel/LIVE_PROOF_BUNDLE/")},
