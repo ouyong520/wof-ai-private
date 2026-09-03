@@ -1,0 +1,113 @@
+{
+  "base": {
+    "worldSha256": "921031",
+    "runtimeEpoch": "worker-17:wasm-4:g9",
+    "layoutKey": "0:0:384:224:384:224",
+    "p1Lifecycle": {
+      "active": true,
+      "alive": true,
+      "type": 2,
+      "generation": 9
+    },
+    "canvas": {
+      "width": 384,
+      "height": 224,
+      "screenshotDigest": "sha256:09f8b6b4c0c010720c6f5e61eec33bbb3fd03632ddcb4ede98282368a8a590a5"
+    },
+    "semanticIdentity": [
+      {
+        "proven": true,
+        "authorityId": "semantic:p1-portrait:frame-314",
+        "authorityKind": "portrait-semantic",
+        "identityDerivation": "portrait-character-id",
+        "independentOfRuntimeType": true,
+        "characterType": 2,
+        "identityKey": "wof-character:2",
+        "confidence": 0.96,
+        "ambiguityMargin": 0.31,
+        "worldSha256": "921031",
+        "runtimeEpoch": "worker-17:wasm-4:g9",
+        "p1Generation": 9,
+        "layoutKey": "0:0:384:224:384:224"
+      }
+    ],
+    "sceneHead": [
+      {
+        "proven": true,
+        "authorityId": "scene:p1-head:sprite-8112:frame-314",
+        "authorityKind": "sprite-head",
+        "actor": "P1",
+        "characterType": 2,
+        "identityKey": "wof-character:2",
+        "confidence": 0.93,
+        "ambiguityMargin": 0.18,
+        "center": [145.0, 119.0],
+        "box": [128.0, 101.0, 162.0, 137.0],
+        "canvasDigest": "sha256:09f8b6b4c0c010720c6f5e61eec33bbb3fd03632ddcb4ede98282368a8a590a5",
+        "coarsePriorConsistent": true,
+        "worldSha256": "921031",
+        "runtimeEpoch": "worker-17:wasm-4:g9",
+        "p1Generation": 9,
+        "layoutKey": "0:0:384:224:384:224"
+      }
+    ]
+  },
+  "mutations": {
+    "runtimeTypeCopy": {
+      "semanticIdentity": {
+        "authorityKind": "hud-semantic",
+        "identityDerivation": "runtime-p1-type",
+        "independentOfRuntimeType": false
+      }
+    },
+    "genericPalette": {
+      "semanticIdentity": {
+        "authorityKind": "generic-palette",
+        "identityDerivation": "palette-color-similarity",
+        "independentOfRuntimeType": false
+      }
+    },
+    "semanticAmbiguous": {
+      "semanticIdentity": {
+        "ambiguityMargin": 0.01,
+        "ambiguous": true
+      }
+    },
+    "staleGeneration": {
+      "sceneHead": {
+        "p1Generation": 8
+      }
+    },
+    "staleRuntime": {
+      "semanticIdentity": {
+        "runtimeEpoch": "worker-17:wasm-4:g8"
+      }
+    },
+    "staleLayout": {
+      "sceneHead": {
+        "layoutKey": "0:0:512:288:512:288"
+      }
+    },
+    "identityConflict": {
+      "sceneHead": {
+        "identityKey": "wof-character:3"
+      }
+    },
+    "semanticTypeConflict": {
+      "semanticIdentity": {
+        "characterType": 3
+      }
+    },
+    "staleCanvas": {
+      "sceneHead": {
+        "canvasDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "sceneAmbiguous": {
+      "sceneHead": {
+        "ambiguityMargin": 0.02,
+        "ambiguous": true
+      }
+    }
+  }
+}
