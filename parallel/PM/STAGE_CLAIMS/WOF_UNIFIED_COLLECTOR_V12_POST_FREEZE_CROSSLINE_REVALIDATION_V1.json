@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "WOF_UNIFIED_COLLECTOR_V12_POST_FREEZE_CROSSLINE_REVALIDATION_V1",
+  "dedupKey": "wof.unified-collector.v12.post-freeze-crossline-revalidation-v1",
+  "effectiveDedupKey": "wof.unified-collector.v12.post-freeze-crossline-revalidation-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v12.post-freeze-crossline-revalidation-v1.json",
+  "claimToken": "v12-postfreeze-parent-8b9e6f0d4b7c4a5d91733bcb52bdb9ef",
+  "state": "ACTIVE",
+  "startCommit": "ea8efbc651140cd07032c097a99b81ab4d43a81f"
+}
