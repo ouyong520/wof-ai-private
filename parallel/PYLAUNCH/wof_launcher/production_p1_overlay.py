@@ -11,6 +11,7 @@ HUD_SOURCES = (
     "product/alpha/wof_alpha_player_head_warning.js",
     "product/alpha/wof_alpha_relative_head_anchor.js",
     "product/alpha/wof_alpha_hud.js",
+    "product/alpha/wof_alpha_relative_enemy_overlay.js",
 )
 SOURCE = "product/alpha/wof_alpha_hud.js"
 SCHEMA = "wof-alpha-production-p1-overlay-adapter-v1"
@@ -53,7 +54,7 @@ class ProductionP1Overlay:
         self._session.request("Runtime.enable")
         binding = {"authorityKey": authority_key, "runtimeEpoch": runtime_epoch}
         try:
-            compatible = self._session.evaluate("!!(window.WOFALPHAHUD&&typeof window.WOFALPHAHUD.bindP1HeadTrackerAuthority==='function'&&typeof window.WOFALPHAHUD.setP1HeadTracker==='function'&&typeof window.WOFALPHAHUD.clearP1HeadTrackerAuthority==='function')", timeout=5.0)
+            compatible = self._session.evaluate("!!(window.WOFALPHAHUD&&typeof window.WOFALPHAHUD.bindP1HeadTrackerAuthority==='function'&&typeof window.WOFALPHAHUD.setP1HeadTracker==='function'&&typeof window.WOFALPHAHUD.clearP1HeadTrackerAuthority==='function'&&window.WOFALPHARELATIVEENEMY?.version==='wof-alpha-relative-enemy-overlay-v1')", timeout=5.0)
             if compatible is not True:
                 prep = f"""(()=>{{const c=window.__WOF_ALPHA_CONFIG,t=window.__WOF_ALPHA_TRANSPORT_V1;const ok=!!(c&&c.release==='wof-alpha-rc3'&&typeof c.session==='string'&&c.session.length>=16&&typeof c.channel==='string'&&t&&t.version==='wof-alpha-safe-transport-v1'&&typeof t.matches==='function');if(ok)return 'PRESERVED_CONFIG';const session={json.dumps(runtime_epoch)},channel={json.dumps('wof-alpha-v3-direct-'+runtime_epoch)};window.__WOF_ALPHA_CONFIG={{release:'wof-alpha-rc3',session,channel}};window.__WOF_ALPHA_TRANSPORT_V1={{version:'wof-alpha-safe-transport-v1',matches:m=>!!m&&m.session===session}};return 'DIRECT_CONFIG';}})()"""
                 self._install_mode = str(self._session.evaluate(prep, timeout=5.0) or "DIRECT_CONFIG")
