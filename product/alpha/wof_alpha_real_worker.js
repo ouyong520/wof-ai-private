@@ -212,7 +212,7 @@ async function install(scope,binding){
       const markers=[];
       for(const s of rows){
         const target=core.TARGETS[s.target7E]||null;
-        if(!target||![s.enemyWorldX,s.enemyY,s.enemyZ].every(Number.isFinite)||!Number.isFinite(projectionProfile.enemyHeadOffsetsByType?.[String(s.type)]))continue;
+        if(!target||![s.enemyWorldX,s.enemyY,s.enemyZ].every(Number.isFinite)||!Number.isFinite(projectionProfile.enemyHeadClearanceByType?.[String(s.type)]))continue;
         markers.push({slot:s.slot,sourceId:'enemy-slot-'+s.slot,type:s.type,target7E:s.target7E,target,
           enemyX:s.enemyWorldX,enemyY:s.enemyY,enemyZ:s.enemyZ,sampleAt,confidence:1,epoch:binding.runtimeEpoch,projectionEpoch:binding.runtimeEpoch});
       }
