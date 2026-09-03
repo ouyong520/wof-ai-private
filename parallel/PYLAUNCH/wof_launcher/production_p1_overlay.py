@@ -9,6 +9,7 @@ HUD_SOURCES = (
     "product/alpha/wof_alpha_hud_model.js",
     "product/alpha/wof_alpha_enemy_target_labels.js",
     "product/alpha/wof_alpha_player_head_warning.js",
+    "product/alpha/wof_alpha_relative_head_anchor.js",
     "product/alpha/wof_alpha_hud.js",
 )
 SOURCE = "product/alpha/wof_alpha_hud.js"
