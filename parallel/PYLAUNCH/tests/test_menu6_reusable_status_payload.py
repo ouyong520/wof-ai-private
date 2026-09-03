@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import sys
 import unittest
 
 HERE = Path(__file__).resolve()
 PYLAUNCH = HERE.parents[1]
+if str(PYLAUNCH) not in sys.path:
+    sys.path.insert(0, str(PYLAUNCH))
 ENTRY = PYLAUNCH / "render_authority_measurement_entry.py"
 
 
