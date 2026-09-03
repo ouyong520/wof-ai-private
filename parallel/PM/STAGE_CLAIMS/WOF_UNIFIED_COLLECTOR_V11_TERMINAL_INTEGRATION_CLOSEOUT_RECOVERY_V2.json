@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "WOF_UNIFIED_COLLECTOR_V11_TERMINAL_INTEGRATION_CLOSEOUT_RECOVERY_V2",
+  "dedupKey": "wof.unified-collector.v11.terminal-integration-closeout-recovery-v2",
+  "effectiveDedupKey": "wof.unified-collector.v11.terminal-integration-closeout-recovery-v2",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v11.terminal-integration-closeout-recovery-v2.json",
+  "claimToken": "7d2ccf6019672b2ee26df5e2ba53a302",
+  "state": "ACTIVE",
+  "startCommit": "d5b166bb129f47a9aac7023e901531b9ee5f11d6"
+}
