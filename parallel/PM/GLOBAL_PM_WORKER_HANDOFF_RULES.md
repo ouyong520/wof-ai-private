@@ -93,3 +93,24 @@ A one-line error is not a terminal result when safe automatic diagnosis/remediat
 All product managers creating or resurfacing worker prompts must apply this file by default. New PM START_PROMPTs and recovery prompts should be written so their Owner-facing handoff can follow these rules without restating large amounts of background context.
 
 If another older PM document conflicts only in handoff verbosity or routine stop/report behavior, this global policy governs the newer Owner interaction convention. Safety, canonical dedup, exact proof authority, testing cadence, source/runtime boundaries and explicit task-specific START_PROMPT constraints remain fully authoritative.
+
+## 6. Owner is relay + strategic leader; PM owns worker review and execution routing
+
+The Owner is not expected to inspect whether a worker implemented the task correctly, read detailed worker summaries, compare commits, validate test coverage, or decide the routine next engineering step.
+
+Default role split:
+
+- **Owner**: relay concise worker handoffs between chats, provide product direction, challenge or lead PM thinking at important strategic points, and perform only genuinely unavoidable manual/live actions.
+- **PM**: own project-state inspection, worker-result review, quality judgment, acceptance/rejection, blocker diagnosis, task decomposition, prioritization, recovery/QA necessity, next-stage creation, dedup correctness, and shortest-path project progression.
+
+Therefore:
+
+1. PM must independently review Git durable evidence; do not ask the Owner whether a worker “did it right”.
+2. PM must decide whether a worker result is accepted, incomplete, defective, superseded, blocked, or needs a focused successor stage.
+3. PM must give the Owner only the concise next handoff that actually needs relaying, plus any genuinely important strategic decision that needs Owner leadership.
+4. Routine implementation details, test logs, worker self-assessments and recovery mechanics should remain PM responsibility unless they materially affect product strategy or require Owner action.
+5. `1` remains the Owner's minimal “continue” signal: PM checks current Git truth and keeps the project moving without making the Owner review worker quality.
+
+The operating model is:
+
+**Owner leads product direction and relays concise prompts; PM owns execution governance and worker quality control.**
