@@ -1,6 +1,7 @@
 {
-  "schema": "wof-alpha-enemy-head-projection-v1",
+  "schema": "wof-alpha-enemy-head-projection-v2",
   "verdict": "UNPROVEN",
+  "projectionKind": "world-camera-y-sign-z-head-clearance-v2",
   "proofId": null,
   "romSha256": "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62",
   "nativeWidth": 384,
@@ -10,8 +11,10 @@
   "cameraSign": null,
   "cameraScale": null,
   "xBias": null,
+  "yAxisSign": null,
   "yModel": null,
-  "evidence": "parallel/HUDANCHOR_REVERSE/MINIMAL_LIVE_PROOF.md + bounded enemy-head clearance proof for each supported enemy type",
-  "status": "FAIL_CLOSED_UNTIL_IMPLEMENTATION_READY_PROOF",
-  "enemyHeadOffsetsByType": {}
+  "yBias": null,
+  "evidence": "ALPHA_V1_HEAD_ANCHOR_MAINLINE: reuse bounded live Y / Y-Z / Y+Z evidence; select Y direction, Z model, camera sign/bias, and per-type head clearance without broad RAM scanning",
+  "status": "FAIL_CLOSED_UNTIL_CORRECTED_LIVE_ENEMY_HEAD_GEOMETRY_IS_BOUND",
+  "enemyHeadClearanceByType": {}
 }
