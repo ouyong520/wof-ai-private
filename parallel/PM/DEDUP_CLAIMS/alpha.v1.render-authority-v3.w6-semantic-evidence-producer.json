@@ -8,6 +8,19 @@
   "promptPath": "parallel/PM/ALPHA_V1_RENDER_AUTHORITY_V3_FINAL_ZERO_CLICK_PRODUCER_PARALLEL_ACCELERATION_DISPATCH.md",
   "owner": "alpha-v3-w6-semantic-evidence-producer",
   "claimToken": "b80a5241753db7ea56a2afca4fbcf159",
-  "state": "ACTIVE",
-  "startCommit": "d902a5e0ce082b2267cd44f2163f830f7cb130d2"
+  "state": "SUBCOMPLETE",
+  "startCommit": "d902a5e0ce082b2267cd44f2163f830f7cb130d2",
+  "resultPath": "parallel/PM/ALPHA_V1_RENDER_AUTHORITY_V3_W6_SEMANTIC_EVIDENCE_PRODUCER_SUBRESULT.md",
+  "resultCommit": "0c0eec1bc191edeb1c72c5105d7ddbe2f0bb0138",
+  "modulePath": "parallel/PYLAUNCH/wof_launcher/semantic_evidence_producer.py",
+  "moduleCommit": "89d91d7cde439726e8a0c6b9499ccc885599d2fa",
+  "moduleBlob": "505ff1122e9c45e3d12d0fc187f00a92a8067288",
+  "fixturePath": "parallel/PYLAUNCH/tests/fixtures/alpha_v3_w6_semantic_evidence_producer.json",
+  "fixtureCommit": "91ad89bc47904c862ff0f8908e59abc5ca04bd85",
+  "fixtureBlob": "5d7e104949202c954d6b4c1bcb1de1c1b9656969",
+  "testPath": "parallel/PYLAUNCH/tests/test_semantic_evidence_producer_w6.py",
+  "testCommit": "ba6df097307180e31f2b87bfe33c19d0f104a117",
+  "testBlob": "bfdb25b9389c266d0b0c332a5fddc0dbc7589982",
+  "focusedSelfCheck": "8 passed in 0.07s; py_compile PASS",
+  "subworkstreamVerdict": "W6_SUBCOMPLETE_HANDOFF_TO_V3_UMBRELLA"
 }
