@@ -1,7 +1,8 @@
 {
   "schema": "alpha-v3-w5-zero-click-producer-readiness-fixture-v1",
-  "description": "Deterministic W5 oracle inputs. A W2 consumer/fallback is not normal zero-click product readiness without an explicitly selected semantic p1ZeroClickEvidence producer.",
+  "description": "Deterministic W5 oracle inputs. A W2 consumer/fallback is not normal zero-click product readiness without an explicitly selected and executed semantic p1ZeroClickEvidence producer.",
   "evidenceSchema": "alpha-v3-runtime-p1-zero-click-evidence-v1",
+  "producerSchema": "alpha-v3-w6-semantic-evidence-producer-v1",
   "outputField": "p1ZeroClickEvidence",
   "safety": {"readOnly": true, "ramWrites": 0, "inputInjection": false},
   "manifest": {
@@ -11,82 +12,111 @@
       "parallel/PYLAUNCH/wof_launcher/head_visual_tracker.py",
       "parallel/RENDER_AUTHORITY_V3/measurement_runner.py"
     ],
-    "producerPathExample": "parallel/PYLAUNCH/wof_launcher/p1_zero_click_evidence_producer.py"
+    "producerPath": "parallel/PYLAUNCH/wof_launcher/semantic_evidence_producer.py",
+    "producerCallable": "produce_p1_zero_click_evidence",
+    "producerInputFixture": "parallel/PYLAUNCH/tests/fixtures/alpha_v3_w6_semantic_evidence_producer.json"
   },
   "baseContext": {
     "worldSha256": "921031",
-    "authorityKey": "exact-world-921031:worker-A",
-    "runtimeEpoch": "runtime-A",
-    "layoutKey": "0:0:960:600:384:224",
-    "p1Generation": 4,
-    "p1Type": 7
+    "runtimeEpoch": "worker-17:wasm-4:g9",
+    "layoutKey": "0:0:384:224:384:224",
+    "p1Generation": 9,
+    "p1Type": 2
   },
   "validEvidence": {
     "schema": "alpha-v3-runtime-p1-zero-click-evidence-v1",
+    "producerSchema": "alpha-v3-w6-semantic-evidence-producer-v1",
+    "producerVerdict": "SAFE_UNIQUE",
     "worldSha256": "921031",
-    "authorityKey": "exact-world-921031:worker-A",
-    "runtimeEpoch": "runtime-A",
-    "layoutKey": "0:0:960:600:384:224",
-    "p1Generation": 4,
+    "runtimeEpoch": "worker-17:wasm-4:g9",
+    "layoutKey": "0:0:384:224:384:224",
+    "p1Generation": 9,
+    "p1Type": 2,
+    "canvasDigest": "sha256:09f8b6b4c0c010720c6f5e61eec33bbb3fd03632ddcb4ede98282368a8a590a5",
     "readOnly": true,
     "ramWrites": 0,
     "inputInjection": false,
-    "identityAuthority": {
-      "kind": "semantic",
-      "source": "hud-portrait-tile",
-      "characterType": 7,
-      "independentOfRuntimeP1Type": true,
-      "derivedFromRuntimeP1Type": false,
-      "genericHudPalette": false
-    },
     "hudIdentityCandidates": [
       {
-        "confidence": 0.97,
-        "characterType": 7,
-        "identityKey": "semantic-p1-type7",
+        "characterType": 2,
+        "identityKey": "wof-character:2",
+        "confidence": 0.96,
+        "ambiguityMargin": 0.31,
         "source": "hud",
-        "evidenceSources": ["hud", "tile", "canvas"]
+        "evidenceSources": ["hud"],
+        "semanticAuthority": true,
+        "semanticAuthorityKind": "portrait-semantic",
+        "identityDerivation": "portrait-character-id",
+        "independentOfRuntimeType": true,
+        "authorityId": "semantic:p1-portrait:frame-314",
+        "worldSha256": "921031",
+        "runtimeEpoch": "worker-17:wasm-4:g9",
+        "p1Generation": 9,
+        "layoutKey": "0:0:384:224:384:224"
       }
     ],
     "sceneHeadCandidates": [
       {
-        "confidence": 0.94,
         "actor": "P1",
-        "characterType": 7,
-        "p1Generation": 4,
-        "identityKey": "semantic-p1-type7",
-        "center": [102.0, 100.0],
-        "box": [90.0, 88.0, 114.0, 112.0],
+        "characterType": 2,
+        "p1Generation": 9,
+        "identityKey": "wof-character:2",
+        "center": [145.0, 119.0],
+        "box": [128.0, 101.0, 162.0, 137.0],
+        "confidence": 0.93,
+        "ambiguityMargin": 0.18,
+        "coarsePriorConsistent": true,
         "source": "sprite",
-        "evidenceSources": ["canvas", "sprite"]
+        "evidenceSources": ["canvas", "sprite"],
+        "authorityId": "scene:p1-head:sprite-8112:frame-314",
+        "authorityKind": "sprite-head",
+        "canvasDigest": "sha256:09f8b6b4c0c010720c6f5e61eec33bbb3fd03632ddcb4ede98282368a8a590a5",
+        "worldSha256": "921031",
+        "runtimeEpoch": "worker-17:wasm-4:g9",
+        "layoutKey": "0:0:384:224:384:224"
       }
     ]
   },
-  "negativeCases": [
+  "negativeEvidenceCases": [
     {
       "name": "generic_hud_palette_is_not_identity_authority",
-      "mutations": {"identityAuthority.source": "generic-hud-palette", "identityAuthority.genericHudPalette": true},
+      "mutations": {
+        "hudIdentityCandidates.0.semanticAuthorityKind": "generic-palette",
+        "hudIdentityCandidates.0.identityDerivation": "palette-color-similarity",
+        "hudIdentityCandidates.0.independentOfRuntimeType": false
+      },
       "errorContains": "generic HUD palette"
     },
     {
       "name": "runtime_p1_type_copy_is_circular",
-      "mutations": {"identityAuthority.independentOfRuntimeP1Type": false, "identityAuthority.derivedFromRuntimeP1Type": true},
+      "mutations": {
+        "hudIdentityCandidates.0.identityDerivation": "runtime-p1-type",
+        "hudIdentityCandidates.0.independentOfRuntimeType": false
+      },
       "errorContains": "runtime P1 type"
     },
     {
       "name": "runtime_change_revokes_old_evidence",
-      "contextMutations": {"runtimeEpoch": "runtime-B", "authorityKey": "exact-world-921031:worker-B"},
+      "contextMutations": {"runtimeEpoch": "worker-17:wasm-4:g10"},
       "errorContains": "runtime"
     },
     {
       "name": "lifecycle_change_revokes_old_evidence",
-      "contextMutations": {"p1Generation": 5},
+      "contextMutations": {"p1Generation": 10},
       "errorContains": "generation"
     },
     {
       "name": "layout_change_revokes_old_evidence",
-      "contextMutations": {"layoutKey": "0:0:1280:720:384:224"},
+      "contextMutations": {"layoutKey": "0:0:512:288:512:288"},
       "errorContains": "layout"
     }
-  ]
+  ],
+  "executedProducerCases": {
+    "safeUnique": {"fixtureMutation": null, "expectedOk": true},
+    "genericHudPalette": {"fixtureMutation": "genericPalette", "expectedOk": false},
+    "runtimeTypeCopy": {"fixtureMutation": "runtimeTypeCopy", "expectedOk": false},
+    "runtimeChanged": {"fixtureMutation": "staleRuntime", "expectedOk": false},
+    "lifecycleChanged": {"fixtureMutation": "staleGeneration", "expectedOk": false},
+    "layoutChanged": {"fixtureMutation": "staleLayout", "expectedOk": false}
+  }
 }
