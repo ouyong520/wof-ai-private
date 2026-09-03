@@ -66,6 +66,25 @@ function Test-ReleaseIntegrity([string]$ReleaseDir, $Manifest) {
     }
     return $true
 }
+function Assert-VisibleOverlayManifest($Manifest) {
+    if (-not $Manifest.components -or -not $Manifest.components.renderAuthorityV3) { throw '版本清单没有选择 Alpha production 顶部显示 runtime' }
+    $ra = $Manifest.components.renderAuthorityV3
+    if ([string]$ra.sliceARuntimeCommit -notmatch '^[0-9a-f]{40}$') { throw '版本清单缺少 Slice A exact runtime commit pin' }
+    if ([string]$Manifest.sourceCommit -notmatch '^[0-9a-f]{40}$') { throw '版本清单 source commit 未固定' }
+    if ([string]$ra.selectedNormalPath -ne 'production-top-overlay') { throw '版本清单 normal path 不是 production top overlay' }
+    if ($ra.productionOverlayEnabled -ne $true) { throw '版本清单仍是 productionOverlayEnabled=false；拒绝安装为正式包' }
+    if ($ra.productionOverlaySuppressed -ne $false) { throw '版本清单未证明 productionOverlaySuppressed=false；拒绝安装为正式包' }
+    if ($ra.diagnosticOnly -ne $false) { throw 'diagnostic-only 候选不能安装为正式包' }
+    if ($ra.whiteAcquisitionMarkerIsProduct -ne $false) { throw '白色 acquisition marker 不能冒充正式产品' }
+    if ($ra.automaticSeedRequiredBeforeFallback -ne $true) { throw '正式包必须先自动获取 P1，再允许 fallback' }
+    if ([int]$ra.ownerClickFallbackMaximumPerAuthorityGeneration -ne 1) { throw '正式包的一次点击 fallback 上限必须为 1' }
+    if (-not $Manifest.safety) { throw '版本清单缺少 safety contract' }
+    if ($Manifest.safety.readOnly -ne $true -or [int]$Manifest.safety.ramWrites -ne 0 -or $Manifest.safety.inputInjection -ne $false) { throw '版本清单破坏只读安全 contract' }
+    if ($Manifest.safety.manualCalibration -ne $false) { throw '正式包禁止 manual calibration' }
+    if ($Manifest.safety.legacyProjectionSelected -ne $false) { throw '正式包禁止选择 legacy projection' }
+    if ($Manifest.safety.productionOverlayEnabled -ne $true -or $Manifest.safety.productionOverlaySuppressed -ne $false) { throw '正式包 safety metadata 未选择 production overlay' }
+    if ($Manifest.components.projectionProof -and $Manifest.components.projectionProof.selected -ne $false) { throw 'legacy projection proof 不能成为 selected normal path' }
+}
 function Find-Python {
     try { $py=Get-Command py.exe -ErrorAction SilentlyContinue; if($py){$out=& $py.Source -3 -c 'import sys; print(sys.executable)' 2>$null;if($LASTEXITCODE -eq 0 -and $out){$p=($out|Select-Object -Last 1).Trim();if(Test-Path -LiteralPath $p){return $p}}} } catch {}
     try { $python=Get-Command python.exe -ErrorAction SilentlyContinue; if($python){$out=& $python.Source -c 'import sys; print(sys.executable)' 2>$null;if($LASTEXITCODE -eq 0 -and $out){$p=($out|Select-Object -Last 1).Trim();if(Test-Path -LiteralPath $p){return $p}}} } catch {}
@@ -100,6 +119,7 @@ try {
     $manifestTemp=Join-Path $env:TEMP ('wof_owner_manifest_'+[Guid]::NewGuid().ToString('N')+'.json'); Download-File $ManifestUrl $manifestTemp
     try{$manifest=Get-Content -LiteralPath $manifestTemp -Raw -Encoding UTF8|ConvertFrom-Json}finally{Remove-Item -LiteralPath $manifestTemp -Force -ErrorAction SilentlyContinue}
     if(-not $manifest.packageVersion){throw '版本清单缺少 packageVersion'}
+    Assert-VisibleOverlayManifest $manifest
     $packageBase=[string]$manifest.baseUrl
     if($packageBase -notmatch '^https://raw\.githubusercontent\.com/ouyong520/wof-ai-private/[0-9a-f]{40}/$'){throw '版本清单下载源不是固定官方 commit'}
     if(-not $manifest.files -or $manifest.files.Count -lt 1){throw '版本清单没有文件'}
@@ -111,7 +131,7 @@ try {
         $stage=Join-Path $ReleaseRoot ($version+'.staging-'+[Guid]::NewGuid().ToString('N'));Ensure-Dir $stage
         try{
             $i=0;foreach($f in $manifest.files){$i++;$rel=[string]$f.path;$sha=([string]$f.gitBlobSha).ToLowerInvariant();if(-not $rel -or $rel.Contains('..') -or [IO.Path]::IsPathRooted($rel)){throw '清单包含不安全路径：'+$rel};if($sha -notmatch '^[0-9a-f]{40}$'){throw '清单缺少有效完整性哈希：'+$rel};Write-Host ('下载 {0}/{1}：{2}' -f $i,$manifest.files.Count,$rel);$dest=Join-Path $stage ($rel -replace '/', '\');Download-File ($packageBase+($rel -replace ' ','%20')) $dest;$actual=Get-GitBlobSha1 $dest;if($actual -ne $sha){throw ('文件完整性校验失败：{0} expected={1} actual={2}' -f $rel,$sha,$actual)}}
-            $manifest|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $stage 'PACKAGE_MANIFEST.json') -Encoding UTF8
+            $manifest|ConvertTo-Json -Depth 12|Set-Content -LiteralPath (Join-Path $stage 'PACKAGE_MANIFEST.json') -Encoding UTF8
             Set-Content -LiteralPath (Join-Path $stage 'installed.ok') -Value ('verified '+(Get-Date -Format o)) -Encoding UTF8
             if(-not(Test-ReleaseIntegrity $stage $manifest)){throw 'staging 完整性复核失败'}
             if(Test-Path -LiteralPath $releaseDir){$quarantine=$releaseDir+'.replaced-'+[Guid]::NewGuid().ToString('N');Move-Item -LiteralPath $releaseDir -Destination $quarantine}
@@ -130,5 +150,6 @@ try {
 }catch{
     $detail=[string]$_.Exception.Message
     if($detail -match '^文件完整性校验失败：'){Fail $detail $null 21}
+    if($detail -match 'productionOverlay|diagnostic-only|Slice A exact|production top overlay|白色 acquisition marker|legacy projection'){Fail '当前官方候选还不是可发布的 WOF production 头顶显示包。' $detail 22}
     Fail 'WOF portable 工具准备失败。' $detail 20
 }
