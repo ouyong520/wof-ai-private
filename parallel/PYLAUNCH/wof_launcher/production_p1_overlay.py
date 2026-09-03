@@ -17,6 +17,18 @@ SOURCE = "product/alpha/wof_alpha_hud.js"
 SCHEMA = "wof-alpha-production-p1-overlay-adapter-v1"
 SAFETY = {"readOnly": True, "ramWrites": 0, "inputInjection": False, "productionOverlayEnabled": True}
 
+_DIAGNOSTIC_SUPPRESS_EXPR = r"""
+(()=>{const b=window.WOFHEADVISUALV3;
+if(!b||typeof b.showMarker!=='function')return false;
+if(!b.__WOF_ALPHA_PRODUCT_MARKER_ORIGINAL_V1){
+  const original=b.showMarker.bind(b);
+  Object.defineProperty(b,'__WOF_ALPHA_PRODUCT_MARKER_ORIGINAL_V1',{value:original,configurable:true});
+  b.showMarker=function(x,y,_visible){return original(x,y,false);};
+}
+b.showMarker(0,0,false);
+return true;})()
+"""
+
 
 class ProductionP1OverlayError(RuntimeError):
     pass
@@ -32,7 +44,21 @@ class ProductionP1Overlay:
         self._runtime_epoch: str | None = None
         self._owns_hud = False
         self._install_mode = "UNBOUND"
-        self._last: dict[str, Any] = {"schema": SCHEMA, "visible": False, "drawCount": 0, "drawHooked": False, "hudSource": SOURCE, **SAFETY}
+        self._draw_baseline = 0
+        self._tracker_generation = 0
+        self._diagnostic_marker_suppressed = False
+        self._last: dict[str, Any] = {
+            "schema": SCHEMA,
+            "visible": False,
+            "drawCount": 0,
+            "drawHooked": False,
+            "drawnCurrentTracker": False,
+            "trackerGeneration": 0,
+            "drawBaseline": 0,
+            "diagnosticMarkerSuppressed": False,
+            "hudSource": SOURCE,
+            **SAFETY,
+        }
 
     @staticmethod
     def _validate(remote: Any, authority_key: str, runtime_epoch: str) -> dict[str, Any]:
@@ -47,6 +73,28 @@ class ProductionP1Overlay:
     @staticmethod
     def _status_expr(authority_key: str, runtime_epoch: str, call: str) -> str:
         return """(()=>{const h=window.WOFALPHAHUD;if(!h||typeof h.status!=='function')return null;const t=(CALL);const s=h.status();const r=window.WOFALPHARELATIVEENEMY?.status?.()||null;return {schema:SCHEMA,authorityKey:AUTH,runtimeEpoch:EPOCH,productionOverlayEnabled:true,visible:t?.visible===true,drawCount:Number(t?.drawCount||0),drawHooked:s?.drawHooked===true,hudVersion:String(s?.version||''),hudSource:'product/alpha/wof_alpha_hud.js',tracker:t||null,relativeEnemy:r,readOnly:true,ramWrites:0,inputInjection:false};})()""".replace("CALL", call).replace("SCHEMA", json.dumps(SCHEMA)).replace("AUTH", json.dumps(authority_key)).replace("EPOCH", json.dumps(runtime_epoch))
+
+    def _decorate(self, remote: dict[str, Any]) -> dict[str, Any]:
+        out = dict(remote)
+        draw_count = int(out.get("drawCount") or 0)
+        out["trackerGeneration"] = self._tracker_generation
+        out["drawBaseline"] = self._draw_baseline
+        out["drawnCurrentTracker"] = bool(
+            out.get("visible") is True
+            and out.get("drawHooked") is True
+            and self._tracker_generation > 0
+            and draw_count > self._draw_baseline
+        )
+        out["diagnosticMarkerSuppressed"] = self._diagnostic_marker_suppressed
+        return out
+
+    def _suppress_diagnostic_marker(self) -> bool:
+        if not self._session:
+            return False
+        try:
+            return self._session.evaluate(_DIAGNOSTIC_SUPPRESS_EXPR, timeout=5.0) is True
+        except Exception:
+            return False
 
     def bind(self, client: CdpClient, page_target_id: str, authority_key: str, runtime_epoch: str) -> dict[str, Any]:
         self.dispose()
@@ -64,6 +112,7 @@ class ProductionP1Overlay:
             else:
                 self._install_mode = "EXISTING_PRODUCTION_HUD"
                 self._owns_hud = False
+            self._diagnostic_marker_suppressed = self._suppress_diagnostic_marker()
             call = f"h.bindP1HeadTrackerAuthority({json.dumps(binding)})"
             remote = self._session.evaluate(self._status_expr(authority_key, runtime_epoch, call), timeout=5.0)
         except Exception as exc:
@@ -71,7 +120,9 @@ class ProductionP1Overlay:
             raise ProductionP1OverlayError(f"maintained Alpha HUD P1 binding failed: {exc}") from exc
         self._authority_key = authority_key
         self._runtime_epoch = runtime_epoch
-        self._last = self._validate(remote, authority_key, runtime_epoch)
+        validated = self._validate(remote, authority_key, runtime_epoch)
+        self._draw_baseline = int(validated.get("drawCount") or 0)
+        self._last = self._decorate(validated)
         self._last["installMode"] = self._install_mode
         return self.status()
 
@@ -80,6 +131,10 @@ class ProductionP1Overlay:
             return self.status()
         center = visual.get("center") if isinstance(visual, dict) else None
         visible = bool(isinstance(center, list) and len(center) >= 2 and visual.get("state") == "HEAD_TRACKING" and int(visual.get("lostFrames") or 0) == 0 and isinstance(layout, dict))
+        was_visible = self._last.get("visible") is True
+        if visible and not was_visible:
+            self._tracker_generation += 1
+            self._draw_baseline = int(self._last.get("drawCount") or 0)
         try:
             if isinstance(actor_snapshot, dict):
                 self._session.evaluate(f"window.WOFALPHARELATIVEENEMY?.ingestActorSnapshot?.({json.dumps(actor_snapshot)});true", timeout=3.0)
@@ -92,7 +147,8 @@ class ProductionP1Overlay:
                 reason = str(visual.get("revocationReason") or visual.get("state") or "TRACKER_NOT_VISIBLE") if isinstance(visual, dict) else "TRACKER_NOT_VISIBLE"
                 call = f"h.clearP1HeadTracker({json.dumps(reason)})"
             remote = self._session.evaluate(self._status_expr(self._authority_key, self._runtime_epoch, call), timeout=5.0)
-            self._last = self._validate(remote, self._authority_key, self._runtime_epoch)
+            validated = self._validate(remote, self._authority_key, self._runtime_epoch)
+            self._last = self._decorate(validated)
             self._last["installMode"] = self._install_mode
         except Exception as exc:
             raise ProductionP1OverlayError(f"maintained Alpha HUD P1 update failed: {exc}") from exc
@@ -102,7 +158,16 @@ class ProductionP1Overlay:
         return dict(self._last)
 
     def visible_and_drawn(self) -> bool:
-        return bool(self._last.get("visible") is True and int(self._last.get("drawCount") or 0) > 0 and self._last.get("drawHooked") is True)
+        return bool(
+            self._last.get("visible") is True
+            and int(self._last.get("drawCount") or 0) > 0
+            and self._last.get("drawHooked") is True
+            and self._last.get("drawnCurrentTracker") is True
+            and self._last.get("diagnosticMarkerSuppressed") is True
+            and self._last.get("readOnly") is True
+            and self._last.get("ramWrites") == 0
+            and self._last.get("inputInjection") is False
+        )
 
     def dispose(self) -> None:
         if self._session:
@@ -122,4 +187,18 @@ class ProductionP1Overlay:
         self._runtime_epoch = None
         self._owns_hud = False
         self._install_mode = "UNBOUND"
-        self._last = {"schema": SCHEMA, "visible": False, "drawCount": 0, "drawHooked": False, "hudSource": SOURCE, **SAFETY}
+        self._draw_baseline = 0
+        self._tracker_generation = 0
+        self._diagnostic_marker_suppressed = False
+        self._last = {
+            "schema": SCHEMA,
+            "visible": False,
+            "drawCount": 0,
+            "drawHooked": False,
+            "drawnCurrentTracker": False,
+            "trackerGeneration": 0,
+            "drawBaseline": 0,
+            "diagnosticMarkerSuppressed": False,
+            "hudSource": SOURCE,
+            **SAFETY,
+        }
