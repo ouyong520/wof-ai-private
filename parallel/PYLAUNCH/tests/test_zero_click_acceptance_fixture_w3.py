@@ -147,16 +147,14 @@ def validate_fixture(fixture: dict[str, Any]) -> list[str]:
     return errors
 
 
-def _zero_click_paths(paths: set[str], package_cfg: dict[str, Any]) -> list[str]:
-    directory = str(package_cfg.get("zeroClickModuleDirectory") or "")
-    tokens = [str(token).lower() for token in package_cfg.get("zeroClickNameTokens") or []]
+def _optional_zero_click_paths(paths: set[str], package_cfg: dict[str, Any]) -> list[str]:
+    directory = str(package_cfg.get("optionalZeroClickModuleDirectory") or "")
     out: list[str] = []
     for path in sorted(paths):
-        lower = path.lower()
         if not path.startswith(directory) or not path.endswith(".py"):
             continue
         name = Path(path).name.lower()
-        if all(token in name for token in tokens):
+        if "zero" in name and "click" in name:
             out.append(path)
     return out
 
@@ -185,10 +183,6 @@ def validate_package_manifest(
     for path in sorted(required - selected):
         errors.append(f"package does not select required corrected runtime file: {path}")
 
-    zero_click = _zero_click_paths(selected, package_cfg)
-    if len(zero_click) != 1:
-        errors.append(f"package must select exactly one distinct zero-click module, found {zero_click}")
-
     owner_flow = str(render.get("ownerFlow") or "").lower()
     if not ("zero" in owner_flow and "click" in owner_flow and any(word in owner_flow for word in ("auto", "automatic", "fallback"))):
         errors.append("renderAuthorityV3 ownerFlow does not describe zero-click-first automatic acquisition before fallback")
@@ -207,7 +201,8 @@ def validate_package_manifest(
         for row in file_rows
         if isinstance(row, dict) and row.get("path") and row.get("gitBlobSha")
     }
-    critical = required | set(zero_click)
+    optional_zero_click = set(_optional_zero_click_paths(selected, package_cfg))
+    critical = required | optional_zero_click
     for path in sorted(critical):
         if path not in blob_map:
             errors.append(f"manifest has no blob pin for corrected runtime file: {path}")
@@ -219,6 +214,12 @@ def validate_package_manifest(
             else:
                 if actual != blob_map[path]:
                     errors.append(f"manifest blob pin is stale for {path}: {blob_map[path]} != {actual}")
+
+    stale = package_cfg.get("staleBaselineBlobs") if isinstance(package_cfg.get("staleBaselineBlobs"), dict) else {}
+    if package_cfg.get("requireAnyCorrectedIntegrationBlobChange") is True and stale:
+        changed = any(path in blob_map and blob_map[path] != str(old_blob) for path, old_blob in stale.items())
+        if not changed:
+            errors.append("package still pins the pre-zero-click integration runtime blobs")
 
     if immutable is not None:
         immutable_safety = immutable.get("safety") if isinstance(immutable.get("safety"), dict) else {}
@@ -279,35 +280,39 @@ class ZeroClickAcceptanceFixtureW3Tests(unittest.TestCase):
 
     def test_package_gate_accepts_corrected_synthetic_candidate(self) -> None:
         required = list(self.fixture["package"]["requiredRuntimePaths"])
-        zero_click = "parallel/PYLAUNCH/wof_launcher/p1_zero_click_acquisition.py"
-        selected = required + [zero_click]
         commit = "a" * 40
+        stale = self.fixture["package"]["staleBaselineBlobs"]
+        blob_by_path = {path: "blob-" + str(index) for index, path in enumerate(required)}
+        for path in stale:
+            if path in blob_by_path:
+                blob_by_path[path] = "corrected-" + blob_by_path[path]
         manifest = {
             "schema": "wof-owner-oneclick-package-v1",
             "packageVersion": "synthetic.w3.ready",
             "sourceCommit": commit,
             "components": {
                 "ownerOneclick": {"sourceCommit": commit, "files": []},
-                "renderAuthorityV3": {"sourceCommit": commit, "ownerFlow": "zero-click automatic acquisition -> fallback one click maximum", "files": selected},
-                "pylaunch": {"sourceCommit": commit, "files": selected},
+                "renderAuthorityV3": {"sourceCommit": commit, "ownerFlow": "zero-click automatic acquisition -> fallback one click maximum", "files": required},
+                "pylaunch": {"sourceCommit": commit, "files": required},
                 "operatorToolkit": {"sourceCommit": commit, "files": []},
             },
             "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False, "ownerClickMaximumPerAuthorityGeneration": 1},
-            "files": [{"path": path, "gitBlobSha": "blob-" + str(index)} for index, path in enumerate(selected)],
+            "files": [{"path": path, "gitBlobSha": blob_by_path[path]} for path in required],
         }
-        expected_blobs = {row["path"]: row["gitBlobSha"] for row in manifest["files"]}
         immutable = {
             "packageVersion": manifest["packageVersion"],
             "sourceCommit": commit,
             "manifestPath": "parallel/OWNER_ONECLICK/package_manifest.json",
             "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False},
         }
-        errors = validate_package_manifest(manifest, self.fixture, blob_resolver=lambda _commit, path: expected_blobs[path], immutable=immutable)
+        errors = validate_package_manifest(manifest, self.fixture, blob_resolver=lambda _commit, path: blob_by_path[path], immutable=immutable)
         self.assertEqual(errors, [])
 
     def test_package_gate_rejects_preintegration_one_click_manifest(self) -> None:
         required = list(self.fixture["package"]["requiredRuntimePaths"])
+        stale = self.fixture["package"]["staleBaselineBlobs"]
         commit = "b" * 40
+        blob_by_path = {path: stale.get(path, "blob") for path in required}
         manifest = {
             "sourceCommit": commit,
             "components": {
@@ -315,11 +320,11 @@ class ZeroClickAcceptanceFixtureW3Tests(unittest.TestCase):
                 "pylaunch": {"sourceCommit": commit, "files": required},
             },
             "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False, "ownerClickMaximumPerAuthorityGeneration": 1},
-            "files": [{"path": path, "gitBlobSha": "blob"} for path in required],
+            "files": [{"path": path, "gitBlobSha": blob_by_path[path]} for path in required],
         }
         errors = validate_package_manifest(manifest, self.fixture)
-        self.assertTrue(any("zero-click module" in error for error in errors))
         self.assertTrue(any("zero-click-first" in error for error in errors))
+        self.assertTrue(any("pre-zero-click" in error for error in errors))
 
 
 def _parse_candidate_args(argv: list[str]) -> argparse.Namespace:
