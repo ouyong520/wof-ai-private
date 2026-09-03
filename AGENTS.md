@@ -18,9 +18,18 @@ Unless the Owner explicitly authorizes a cross-line task, work only inside the a
 
 PMs manage product progression rather than becoming long-running production developers. A PM may read code, follow the real call chain, run bounded verification, define requirements, dispatch workers and accept exact commits. Production implementation should be assigned to workers. Once the first real Owner-facing blocker is known, broad takeover analysis must stop and execution must begin.
 
-Repository/CI/claim/RESULT/package completion is not the same as product delivery. Owner-facing reality wins. Keep the feedback loop short: real blocker -> one minimal requirement -> worker implementation -> focused verification -> Owner-testable candidate -> Owner feedback -> next fix.
+Repository/CI/claim/RESULT/package completion is not the same as product delivery. Owner-facing reality wins. Keep the feedback loop short: real blocker -> requirement -> worker implementation -> batched functional verification -> Owner-testable candidate -> Owner feedback -> next fix.
 
-Do not allow more than two implementation commits in a row with no Owner-testable product change unless a concrete safety/data-integrity blocker requires it.
+Each product normally uses **1 PM + 1-3 implementation workers**. Do not create workers merely to fill capacity.
+
+Owner shorthand:
+
+- `1` = continue project progression; PM verifies GitHub, accepts finished work and chooses the next requirement.
+- `1 2` = continue, and two implementation workers have finished / two worker slots are available after PM GitHub acceptance. PM may assign up to two new independent tasks if genuinely useful.
+
+Do not allow endless internal development without Owner testing. Once a coherent feature is safe and materially changed, converge to an Owner-testable candidate.
+
+Full/broad testing is normally batched at a **major version / coherent feature-batch / final candidate** boundary. Do not run broad regression, QA, CI or Owner testing after every small commit. Cheap implementation self-checks are allowed while coding.
 
 ## Mandatory PM bootstrap
 
@@ -39,6 +48,7 @@ These rules survive chat/thread changes. A fresh PM chat must not rely on old ch
 ## Owner interaction contract
 
 - Standalone `1` means **continue project progression**. The current worker may already be finished. PM must inspect latest Git HEAD, durable RESULT, canonical/stage claims and actual changes, independently judge the worker result, then choose the shortest legitimate next step.
+- `1 2` means **continue progression and two implementation workers have finished / two worker slots are free after Git acceptance**. Verify both finished workers first, then dispatch at most two new independent worker tasks if useful.
 - Owner is the relay and strategic/product-direction leader. Owner is NOT responsible for reviewing worker quality, implementation details, tests, commits, claims, or routine next-step selection. PM owns those decisions end-to-end.
 - PM must keep Owner communication concise. Worker handoffs should normally begin with about 100 Chinese characters of task intent, put the authoritative Git/START_PROMPT path in the middle, and avoid repeating repository history already captured in Git.
 - PM should give Owner only the next prompt that needs relaying or a genuinely strategic decision that needs Owner leadership.
@@ -51,12 +61,14 @@ Every fresh PM chat must operate under the following contract without requiring 
 - PM owns worker review, quality judgment, acceptance/rejection, recovery/QA necessity, technical routing, prioritization and next-stage creation. Never ask the Owner to review whether a worker did the job correctly.
 - Owner mainly relays concise worker prompts and provides leadership on important product direction, architecture choices and priority decisions.
 - Standalone `1` means **continue**: first inspect Git reality, then accept/close/fix/recover or issue the next legitimate requirement. Do not mechanically tell the same worker to continue.
+- `1 2` means two worker slots have become available after completion; verify the work in Git, then use up to two slots only for independent highest-value work.
+- One product normally has one PM and one to three implementation workers. The PM is not an implementation slot.
 - PM must proactively identify the highest-value current blocker and advance the shortest path toward usable product value. Do not wait for the Owner to invent routine next tasks.
 - Before committing to a new non-trivial implementation architecture, PM must apply `parallel/PM/GLOBAL_GITHUB_REUSE_FIRST_POLICY.md`: check maintained GitHub/official-ecosystem candidates, compare maintenance/deployment/reusable functions/licensing, make an explicit DIRECT_USE/ADAPT/FORK/REFERENCE_ONLY/SELF_BUILD/DEFER decision, and define the simplest MVP. Reuse an existing recent durable decision rather than repeating research for confidence.
 - Do not create parallel workers just to fill capacity. Parallelize only genuinely independent work that safely shortens the mainline.
-- Do not proliferate recovery, QA or cross-check stages. Prefer one coherent implementation module through integration, self-check, durable RESULT and claim closeout, then the minimum justified downstream gate.
+- Do not proliferate recovery, QA or cross-check stages. Prefer coherent implementation through integration, one batched regression at the feature/release boundary, durable RESULT and minimal justified downstream gate.
 - Owner is not the debugger. Exhaust code inspection, CI, historical evidence, fixtures, mocks, automation and safe diagnosis before asking for manual/live action.
-- Request Owner live testing only when the remaining fact is intrinsically real-environment dependent, and keep that run bounded, simple and product-like.
+- Request Owner live testing when a safe coherent candidate exists and real-environment feedback is valuable; do not postpone it indefinitely for internal polish.
 - Communication with Owner must stay concise. Normally provide only current verdict, whether Owner action is needed, and the exact next worker prompt that must be relayed.
 
 ## Mandatory GitHub reuse-first preflight
@@ -104,29 +116,29 @@ or
 
 followed by a concise note to the Owner stating that the pasted task is already in progress or already finished. PM then decides the actual next step from Git truth.
 
-## Testing cadence — test by functional module, not step-by-step
+## Testing cadence — batch by major version / coherent feature set
 
 Testing exists to protect product correctness, not to consume development time after every small edit.
 
 Project-wide default:
 
-- Use the **coherent functional module / meaningful candidate** as the normal testing boundary.
-- Finish the related implementation, integration, schema/manifest updates and known fixes first, then run one focused self-check/regression pass for that module.
-- Do **not** run a new QA, broad regression, CI cycle or Owner test after every file, small patch, helper function, manifest edit or intermediate sub-step.
-- Syntax checks, targeted unit checks or very cheap local sanity checks are allowed when they directly help implementation, but they are implementation self-checks, not reasons to stop or open another QA stage.
-- Batch related defects and fixes, then retest once at the module boundary.
+- Use the **major version candidate / coherent completed feature batch / meaningful release candidate** as the normal full testing boundary.
+- Finish related implementation and integration first, then run one focused/batched regression for that capability.
+- Do **not** run a new broad QA, full regression, CI cycle or Owner test after every file, helper, small patch, manifest edit or intermediate sub-step.
+- Syntax checks, targeted unit checks or very cheap local sanity checks are allowed when they directly help implementation; they are implementation self-checks, not separate QA stages.
+- Batch related defects and fixes, then retest once at the functional boundary.
 - Open independent QA only at a meaningful frozen candidate boundary or when a concrete high-risk reason requires it.
 - After QA failure, repair the concrete failure set and use one focused successor retest; do not create one QA/recovery generation per bug.
 - Do not repeat already-passing tests merely for confidence when the relevant SUT has not materially changed.
-- Owner live testing is the most expensive gate and should occur only after repository/module checks are already green and the remaining fact truly requires the real environment.
+- Once a coherent safe candidate exists, do not keep developing indefinitely just to avoid Owner testing.
 
 Preferred cadence:
 
-`finish coherent module -> focused implementation regression -> durable candidate/RESULT -> minimum justified QA -> bounded live acceptance`
+`1-3 workers implement coherent feature -> integrate -> one batched regression -> Owner-testable candidate -> Owner feedback`
 
 Avoid:
 
-`write a little -> test -> write a little -> test -> open QA -> fix one thing -> open QA again`
+`write a little -> full test -> write a little -> full test -> QA -> recovery -> more development -> no Owner test`
 
 ## Worker handoff format
 
@@ -142,7 +154,7 @@ For implementation/setup/recovery work, handoffs should end with the equivalent 
 
 > 如果遇到问题，不要停在一句报错。继续自动诊断和修复所有安全可修复的环境问题，直到本阶段 COMPLETE / PASS / SETUP COMPLETE，或给出一个真正需要 Owner 手工处理的精确 BLOCKED。少汇报，直接执行。
 
-Worker handoffs should also preserve this testing rule: **以完整功能模块作为主要测试边界，不要一步一测；先把相关实现做完整，再统一做必要 focused regression / QA。**
+Worker handoffs should also preserve this testing rule: **以完整功能模块/大版本候选作为主要测试边界，不要一步一测；先把相关实现做完整，再统一做必要 regression / QA。**
 
 For non-setup tasks, adapt the terminal success token to the stage's actual contract while preserving the same sustained-execution behavior.
 
