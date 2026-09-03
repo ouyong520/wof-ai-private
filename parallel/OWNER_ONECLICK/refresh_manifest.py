@@ -12,17 +12,20 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = Path(__file__).resolve().parent / "package_manifest.json"
+PIN_PATH = "parallel/OWNER_ONECLICK/visible_overlay_runtime_pin.json"
+DEFAULT_PIN = ROOT / PIN_PATH
 
 SCHEMA = "wof-owner-oneclick-package-v1"
 GENERATOR = "parallel/OWNER_ONECLICK/refresh_manifest.py"
 SELECTION_POLICY = "owner-oneclick-runtime-v8-visible-production-top-overlay-slice-a-pinned"
-RUNTIME_SUFFIXES = {".py", ".js", ".mjs", ".cmd", ".bat", ".ps1"}
+RUNTIME_SUFFIXES = {".py", ".js", ".mjs", ".cmd", ".bat", ".ps1", ".json"}
 EXCLUDED_PARTS = {"tests", "__pycache__"}
 
 FIXED_PATHS = {
     "WOF_一键工具.cmd",
     "WOF_TOOLKIT.cmd",
     "parallel/OWNER_ONECLICK/bootstrap_v2.ps1",
+    PIN_PATH,
     "parallel/OPTOOLKIT/toolkit.py",
     "parallel/OPTOOLKIT/owner_zh_cn.py",
     "parallel/OPTOOLKIT/live_session.py",
@@ -71,10 +74,24 @@ RUNTIME_ROOTS = (
     "parallel/BROWSER_FLEET/",
 )
 
-SLICE_A_OWNER_FORBIDDEN_PREFIXES = (
-    "parallel/OPTOOLKIT/",
-    "parallel/OWNER_ONECLICK/",
+# A Slice A pin is a complete runtime snapshot, not merely the files touched by
+# the final commit. These are the authority -> tracker -> maintained HUD pieces
+# that must remain byte-identical between the Slice A handoff and final package.
+SLICE_A_RUNTIME_PATHS = (
+    "parallel/RENDER_AUTHORITY_V3/measurement_runner.py",
+    "parallel/PYLAUNCH/wof_launcher/render_authority_capture.py",
+    "parallel/PYLAUNCH/wof_launcher/semantic_evidence_producer.py",
+    "parallel/PYLAUNCH/wof_launcher/zero_click_identity_acquisition.py",
+    "parallel/PYLAUNCH/wof_launcher/head_visual_tracker.py",
+    "parallel/PYLAUNCH/wof_launcher/production_p1_overlay.py",
+    "product/alpha/wof_alpha_hud_model.js",
+    "product/alpha/wof_alpha_enemy_target_labels.js",
+    "product/alpha/wof_alpha_player_head_warning.js",
+    "product/alpha/wof_alpha_hud.js",
 )
+
+PRODUCTION_OVERLAY_SOURCE = "product/alpha/wof_alpha_hud.js"
+REMOVED_FORKED_OVERLAY_SOURCE = "product/alpha/wof_alpha_p1_tracker_overlay.js"
 
 
 class ManifestError(RuntimeError):
@@ -191,6 +208,37 @@ def _blob_at(root: Path, commit: str, path: str) -> str:
     return sha.lower()
 
 
+def _read_pin_file(root: Path) -> dict | None:
+    path = root / PIN_PATH
+    try:
+        value = json.loads(path.read_text(encoding="utf-8-sig"))
+    except FileNotFoundError:
+        return None
+    except Exception as exc:
+        raise ManifestError(f"无法读取 Slice A pin：{path}") from exc
+    return value if isinstance(value, dict) else None
+
+
+def resolve_slice_a_pin(root: Path, explicit: str | None) -> tuple[str, dict]:
+    pin = _read_pin_file(root)
+    candidate = explicit or (str(pin.get("sliceARuntimeCommit")) if pin and pin.get("sliceARuntimeCommit") else None)
+    if not candidate:
+        raise ManifestError("Slice A exact commit 尚未提供；拒绝生成 production package manifest")
+    commit = resolve_commit(root, candidate)
+    if pin is not None:
+        if pin.get("schema") != "alpha-v1-visible-top-overlay-slice-a-pin-v1":
+            raise ManifestError("Slice A pin schema 不匹配")
+        if str(pin.get("sliceARuntimeCommit") or "").lower() != commit:
+            raise ManifestError("显式 Slice A commit 与 durable pin 文件不一致")
+        if pin.get("normalPath") != "production-top-overlay":
+            raise ManifestError("Slice A pin normalPath 不是 production-top-overlay")
+        if pin.get("productionOverlaySource") != PRODUCTION_OVERLAY_SOURCE:
+            raise ManifestError("Slice A pin 未选择 maintained Alpha HUD")
+        if pin.get("productionOverlayEnabled") is not True or pin.get("productionOverlaySuppressed") is not False:
+            raise ManifestError("Slice A pin overlay enable/suppress contract 不满足")
+    return commit, pin or {"sliceARuntimeCommit": commit}
+
+
 def validate_visible_overlay_text(text: str) -> None:
     enabled_true = re.search(r"['\"]productionOverlayEnabled['\"]\s*:\s*True\b", text)
     enabled_false = re.search(r"['\"]productionOverlayEnabled['\"]\s*:\s*False\b", text)
@@ -203,49 +251,49 @@ def validate_visible_overlay_text(text: str) -> None:
     for key in ("manualCalibration", "legacyProjectionSelected"):
         if not re.search(rf"['\"]{key}['\"]\s*:\s*False\b", text):
             raise ManifestError(f"selected runtime 未保持 {key}=false")
+    if PRODUCTION_OVERLAY_SOURCE not in text:
+        raise ManifestError("selected runtime 未选择 maintained Alpha HUD production source")
+    if REMOVED_FORKED_OVERLAY_SOURCE in text:
+        raise ManifestError("selected runtime 仍引用已移除 forked P1 overlay")
 
 
-def _is_slice_a_runtime_path(path: str) -> bool:
-    p = Path(path)
-    if any(part in EXCLUDED_PARTS for part in p.parts) or p.name.startswith("test_"):
-        return False
-    if path == "parallel/RENDER_AUTHORITY_V3/measurement_runner.py":
-        return True
-    if path.startswith("parallel/PYLAUNCH/wof_launcher/") and p.suffix.lower() == ".py":
-        return True
-    if path.startswith("product/alpha/") and p.suffix.lower() in {".js", ".mjs", ".json"}:
-        return True
-    return False
+def validate_overlay_adapter_text(text: str) -> None:
+    required = [
+        'SOURCE = "product/alpha/wof_alpha_hud.js"',
+        "window.WOFALPHAHUD",
+        "bindP1HeadTrackerAuthority",
+        "setP1HeadTracker",
+        "clearP1HeadTrackerAuthority",
+        '"productionOverlayEnabled": True',
+        '"readOnly": True',
+        '"ramWrites": 0',
+        '"inputInjection": False',
+    ]
+    missing = [token for token in required if token not in text]
+    if missing:
+        raise ManifestError("production overlay adapter contract 缺失：" + ", ".join(missing))
+    if REMOVED_FORKED_OVERLAY_SOURCE in text:
+        raise ManifestError("production overlay adapter 仍引用已移除 forked HUD")
 
 
-def validate_slice_a_pin(root: Path, source_commit: str, slice_a_source: str) -> dict:
-    slice_a = resolve_commit(root, slice_a_source)
+def validate_slice_a_pin(root: Path, source_commit: str, slice_a_source: str | None) -> dict:
+    slice_a, pin_meta = resolve_slice_a_pin(root, slice_a_source)
     cp = subprocess.run(
         ["git", "merge-base", "--is-ancestor", slice_a, source_commit], cwd=root,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
     )
     if cp.returncode != 0:
         raise ManifestError("Slice A exact commit 不是 package source 的 ancestor，拒绝 pin")
-    changed = [
-        line.strip() for line in run_git(
-            root, "-c", "core.quotepath=false", "diff-tree", "--root", "--no-commit-id", "--name-only", "-r", slice_a,
-        ).splitlines() if line.strip()
-    ]
-    forbidden = sorted(path for path in changed if path.startswith(SLICE_A_OWNER_FORBIDDEN_PREFIXES))
-    if forbidden:
-        raise ManifestError("Slice A commit 越过 Owner/package 边界：" + ", ".join(forbidden))
-    runtime_files = sorted(path for path in changed if _is_slice_a_runtime_path(path))
-    if "parallel/RENDER_AUTHORITY_V3/measurement_runner.py" not in runtime_files:
-        raise ManifestError("Slice A exact commit 未包含 measurement_runner.py visible-overlay integration")
     rows = []
-    for path in runtime_files:
+    for path in SLICE_A_RUNTIME_PATHS:
         slice_blob = _blob_at(root, slice_a, path)
         source_blob = _blob_at(root, source_commit, path)
         if source_blob != slice_blob:
             raise ManifestError(f"Slice A runtime 在 package source 中已漂移：{path}")
         rows.append({"path": path, "gitBlobSha": slice_blob})
     validate_visible_overlay_text(_git_file_text(root, source_commit, "parallel/RENDER_AUTHORITY_V3/measurement_runner.py"))
-    return {"commit": slice_a, "files": rows}
+    validate_overlay_adapter_text(_git_file_text(root, source_commit, "parallel/PYLAUNCH/wof_launcher/production_p1_overlay.py"))
+    return {"commit": slice_a, "files": rows, "pin": pin_meta}
 
 
 def verify_publishable_manifest(manifest: dict) -> None:
@@ -259,9 +307,11 @@ def verify_publishable_manifest(manifest: dict) -> None:
         (re.fullmatch(r"[0-9a-f]{40}", source) is not None, "sourceCommit 未固定"),
         (re.fullmatch(r"[0-9a-f]{40}", slice_a) is not None, "Slice A exact commit 未固定"),
         (render.get("selectedNormalPath") == "production-top-overlay", "normal path 不是 production top overlay"),
+        (render.get("productionOverlaySource") == PRODUCTION_OVERLAY_SOURCE, "production overlay source 不是 maintained Alpha HUD"),
         (render.get("productionOverlayEnabled") is True, "productionOverlayEnabled 必须为 true"),
         (render.get("productionOverlaySuppressed") is False, "productionOverlaySuppressed 必须为 false"),
         (render.get("diagnosticOnly") is False, "diagnostic-only 候选不可发布"),
+        (render.get("emptyBrowserMayCountAsSuccess") is False, "空浏览器不得计为成功"),
         (render.get("whiteAcquisitionMarkerIsProduct") is False, "白色 acquisition marker 不得冒充正式产品"),
         (render.get("automaticSeedRequiredBeforeFallback") is True, "自动获取必须先于点击 fallback"),
         (render.get("ownerClickFallbackMaximumPerAuthorityGeneration") == 1, "fallback 点击上限必须为 1"),
@@ -286,28 +336,16 @@ def verify_publishable_manifest(manifest: dict) -> None:
 
 def generate_manifest(root: Path, source: str, slice_a_commit: str | None = None) -> dict:
     commit = resolve_commit(root, source)
-    if not slice_a_commit:
-        raise ManifestError("Slice A exact commit 尚未提供；拒绝生成 production package manifest")
     slice_a = validate_slice_a_pin(root, commit, slice_a_commit)
     generated_at = commit_generated_at_utc(root, commit)
     selected = selected_paths_from_commit(root, commit)
     paths = list(selected)
-    render_files = [
+    render_files = sorted(set([
         "parallel/PYLAUNCH/render_authority_measurement_entry.py",
-        "parallel/PYLAUNCH/wof_launcher/render_authority_capture.py",
-        "parallel/PYLAUNCH/wof_launcher/zero_click_identity_acquisition.py",
-        "parallel/PYLAUNCH/wof_launcher/head_visual_tracker.py",
         "parallel/PYLAUNCH/wof_launcher/render_measurement_ui.py",
         "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js",
-        "parallel/RENDER_AUTHORITY_V3/measurement_runner.py",
-        "product/alpha/wof_alpha_core.js",
-        "product/alpha/wof_alpha_hud_model.js",
-        "product/alpha/wof_alpha_enemy_target_labels.js",
-        "product/alpha/wof_alpha_player_head_warning.js",
-        "product/alpha/wof_alpha_hud.js",
-    ]
-    render_files.extend(row["path"] for row in slice_a["files"])
-    render_files = sorted(set(render_files))
+        *SLICE_A_RUNTIME_PATHS,
+    ]))
     for path in render_files:
         if path not in selected:
             raise ManifestError("production top-overlay package 文件未被选择：" + path)
@@ -320,7 +358,12 @@ def generate_manifest(root: Path, source: str, slice_a_commit: str | None = None
         "selectionPolicy": SELECTION_POLICY,
         "baseUrl": f"https://raw.githubusercontent.com/ouyong520/wof-ai-private/{commit}/",
         "components": {
-            "ownerOneclick": {"sourceCommit": commit, "bootstrap": "parallel/OWNER_ONECLICK/bootstrap_v2.ps1", "files": [p for p in paths if p.startswith("parallel/OWNER_ONECLICK/") or p in {"WOF_一键工具.cmd", "WOF_TOOLKIT.cmd"}]},
+            "ownerOneclick": {
+                "sourceCommit": commit,
+                "bootstrap": "parallel/OWNER_ONECLICK/bootstrap_v2.ps1",
+                "runtimePin": PIN_PATH,
+                "files": [p for p in paths if p.startswith("parallel/OWNER_ONECLICK/") or p in {"WOF_一键工具.cmd", "WOF_TOOLKIT.cmd"}],
+            },
             "alpha": {"sourceCommit": commit, "fieldAdapter": "product/alpha/wof_alpha_field_adapter.js", "files": component_paths(paths, "product/alpha/")},
             "pylaunch": {"revision": "visible-production-top-overlay-slice-a-pinned", "sourceCommit": commit, "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd", "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd", "files": component_paths(paths, "parallel/PYLAUNCH/")},
             "operatorToolkit": {"sourceCommit": commit, "ownerEntry": "parallel/OPTOOLKIT/owner_zh_cn.py", "files": component_paths(paths, "parallel/OPTOOLKIT/")},
@@ -330,8 +373,9 @@ def generate_manifest(root: Path, source: str, slice_a_commit: str | None = None
                 "sliceARuntimeFiles": slice_a["files"],
                 "mode": "owner-visible-production-top-overlay-v1",
                 "selectedNormalPath": "production-top-overlay",
+                "productionOverlaySource": PRODUCTION_OVERLAY_SOURCE,
                 "entry": "parallel/PYLAUNCH/render_authority_measurement_entry.py",
-                "ownerFlow": "menu6 -> reuse/enter WOF -> visible tray status -> automatic P1 attempt -> SAFE_UNIQUE zero-click OR bounded one-click real-P1-head fallback -> same production top overlay -> loss hides -> recovery reappears",
+                "ownerFlow": "menu6 -> reuse/enter WOF -> visible tray status -> automatic P1 attempt -> SAFE_UNIQUE zero-click OR bounded one-click real-P1-head fallback -> same maintained Alpha production top overlay -> loss hides -> recovery reappears",
                 "ownerClickExpectedNormal": 0,
                 "ownerClickMaximumPerAuthorityGeneration": 1,
                 "ownerClickFallbackMaximumPerAuthorityGeneration": 1,
@@ -343,6 +387,7 @@ def generate_manifest(root: Path, source: str, slice_a_commit: str | None = None
                 "productionOverlayEnabled": True,
                 "productionOverlaySuppressed": False,
                 "diagnosticOnly": False,
+                "emptyBrowserMayCountAsSuccess": False,
                 "whiteAcquisitionMarkerIsProduct": False,
                 "ownerStatusStates": ["WAITING_FOR_WOF", "AUTO_ACQUIRING_P1", "ONE_CLICK_REQUIRED", "TOP_OVERLAY_VISIBLE", "TEMPORARILY_LOST_RECOVERING", "BLOCKED"],
                 "files": render_files,
@@ -394,7 +439,7 @@ def render_manifest(manifest: dict) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="从一个明确 immutable git commit 确定性生成 Owner One-Click package manifest")
     parser.add_argument("--source", default="HEAD", help="固定 package source commit/ref；默认 HEAD")
-    parser.add_argument("--slice-a-commit", help="Slice A visible-overlay integration 的 exact commit；production package 必填")
+    parser.add_argument("--slice-a-commit", help="Slice A visible-overlay integration 的 exact commit；未提供时读取 durable runtime pin")
     parser.add_argument("--output", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--check", action="store_true", help="只校验现有 manifest 与 source/worktree 一致")
     args = parser.parse_args(argv)
@@ -411,7 +456,7 @@ def main(argv: list[str] | None = None) -> int:
             if existing != generated:
                 raise ManifestError("package manifest 不是当前所选 immutable snapshot + Slice A exact pin 的确定性产物；请重新生成")
             verify_worktree_payload(ROOT, existing)
-            print("PACKAGE MANIFEST PASS：" f"{existing['packageVersion']} source={existing['sourceCommit']} sliceA={pinned} files={len(existing['files'])}")
+            print("PACKAGE MANIFEST PASS：" f"{existing['packageVersion']} source={existing['sourceCommit']} sliceA={generated['components']['renderAuthorityV3']['sliceARuntimeCommit']} files={len(existing['files'])}")
             return 0
         generated = generate_manifest(ROOT, args.source, args.slice_a_commit)
         args.output.write_text(render_manifest(generated), encoding="utf-8")
