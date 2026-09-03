@@ -5,6 +5,10 @@
   "effectiveDedupKey": "wof.unified-collector.v12.final-consolidation-oneclick-legacy-retirement",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v12.final-consolidation-oneclick-legacy-retirement.json",
   "claimToken": "v12-umbrella-96e154cdfc014245b565a4d323d23ea1",
-  "state": "ACTIVE",
-  "startCommit": "4f490518e6fad0606761daa8c587c55574882495"
+  "state": "COMPLETE",
+  "startCommit": "4f490518e6fad0606761daa8c587c55574882495",
+  "finalImplementationHead": "9b7c6897149cc7de615dd372e072d7b21e9de8f7",
+  "terminalCloseoutAuthority": "wof.unified-collector.v12.terminal-integration-closeout-recovery-v2",
+  "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_FINAL_CONSOLIDATION_ONECLICK_LEGACY_RETIREMENT_RESULT.md",
+  "resultCommit": "da801b29c86c93f630343d556721aa2cd2315c84"
 }
