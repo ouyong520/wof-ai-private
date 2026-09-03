@@ -145,8 +145,9 @@ def run(root:Path,output_root:Path,host:str="127.0.0.1",port:int=9223,browser:st
             vstate=str(v.get("state") or "CAMERA_PREPARING")
             state=vstate if vstate in {"CAMERA_PREPARING","HEAD_ACQUIRING","ONE_CLICK_REQUIRED","HEAD_TRACKING"} and not v.get("qualified") else "MEASURING"
             publish(state,visual=v,productionOverlay=overlay_status,productionOverlayVisible=overlay_status.get("visible") is True,sampleCount=sample_count,candidateCount=candidate_count)
-            if polled.get("state")=="MEASUREMENT_COMPLETE" and terminal_capture is None:
-                terminal_capture=polled.get("result");terminal_seen_at=time.monotonic();event("CAPTURE_CORE_COMPLETE",sampleCount=sample_count,candidateCount=candidate_count)
+            capture_result=polled.get("result") if isinstance(polled,dict) else None
+            if terminal_capture is None and isinstance(capture_result,dict):
+                terminal_capture=capture_result;terminal_seen_at=time.monotonic();event("CAPTURE_CORE_COMPLETE",sampleCount=sample_count,candidateCount=candidate_count,captureState=polled.get("state"))
             if terminal_capture is not None:
                 if visual.qualified() and overlay.visible_and_drawn():
                     result=terminal_capture
