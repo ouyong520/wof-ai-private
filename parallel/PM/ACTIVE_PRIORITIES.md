@@ -6,6 +6,7 @@ Authoritative operating rules:
 - `parallel/PM/PM_CORE_OPERATING_CHARTER.md`
 - `parallel/PM/COMPLETED_WORK_PM_AUDIT_2026-09-01.md`
 - `parallel/PM/EXECUTION_QUEUE.md`
+- `parallel/PM/OWNER_SHORTHAND_CONVENTIONS.md`
 
 ## Product north star
 
