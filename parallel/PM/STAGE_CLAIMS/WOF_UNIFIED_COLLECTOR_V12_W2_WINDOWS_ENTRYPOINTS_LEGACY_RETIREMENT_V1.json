@@ -5,6 +5,11 @@
   "effectiveDedupKey": "wof.unified-collector.v12.workstream.windows-entrypoints-legacy-retirement",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v12.workstream.windows-entrypoints-legacy-retirement.json",
   "claimToken": "ad30249c-2bb6-4378-83b9-0c55095dccb6",
-  "state": "ACTIVE",
-  "startCommit": "484e35a617d68d8ebbf957ca1845d6b17590c909"
+  "state": "SUBCOMPLETE",
+  "startCommit": "484e35a617d68d8ebbf957ca1845d6b17590c909",
+  "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_W2_WINDOWS_ENTRYPOINTS_LEGACY_RETIREMENT_SUBRESULT.md",
+  "resultCommit": "cdb768770a3a9c06e3a86136b1b54f3cd909306b",
+  "implementationRepo": "ouyong520/wof-winkawaks-bridge",
+  "implementationHead": "e7a4cffefe72c45c0f902512b23ac9c0efccd0d6",
+  "terminalAuthorityClaimed": false
 }
