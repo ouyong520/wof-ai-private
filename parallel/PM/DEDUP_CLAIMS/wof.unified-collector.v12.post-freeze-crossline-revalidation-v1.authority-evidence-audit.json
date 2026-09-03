@@ -1,0 +1,18 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "wof.unified-collector.v12.post-freeze-crossline-revalidation-v1.authority-evidence-audit",
+  "effectiveDedupKey": "wof.unified-collector.v12.post-freeze-crossline-revalidation-v1.authority-evidence-audit",
+  "dedupMode": "exclusive",
+  "stageId": "WOF_UNIFIED_COLLECTOR_V12_POST_FREEZE_CROSSLINE_REVALIDATION_V1",
+  "promptPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_POST_FREEZE_CROSSLINE_REVALIDATION_V1_PARALLEL_2_WORKER_DISPATCH.md",
+  "owner": "chatgpt-gpt-5.6-sol-v12-post-freeze-w2-authority-evidence-audit",
+  "claimToken": "v12-postfreeze-w2-4445a5da0c0573900da570cea46b1622",
+  "state": "ACTIVE",
+  "startCommit": "d280e6a7524132534cf162ff9a8406986211b26b",
+  "workstream": "W2",
+  "scope": "PM authority/evidence audit only; no parent terminal authority; no bridge production/tests mutation",
+  "parentDedupKey": "wof.unified-collector.v12.post-freeze-crossline-revalidation-v1",
+  "parentAuthorityClaimed": false,
+  "terminalAuthorityClaimed": false
+}
