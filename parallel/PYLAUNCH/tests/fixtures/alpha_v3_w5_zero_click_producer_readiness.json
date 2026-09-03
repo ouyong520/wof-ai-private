@@ -1,0 +1,92 @@
+{
+  "schema": "alpha-v3-w5-zero-click-producer-readiness-fixture-v1",
+  "description": "Deterministic W5 oracle inputs. A W2 consumer/fallback is not normal zero-click product readiness without an explicitly selected semantic p1ZeroClickEvidence producer.",
+  "evidenceSchema": "alpha-v3-runtime-p1-zero-click-evidence-v1",
+  "outputField": "p1ZeroClickEvidence",
+  "safety": {"readOnly": true, "ramWrites": 0, "inputInjection": false},
+  "manifest": {
+    "producerSelectionFields": ["p1ZeroClickEvidenceProducer", "zeroClickEvidenceProducer"],
+    "requiredConsumerPaths": [
+      "parallel/PYLAUNCH/wof_launcher/zero_click_identity_acquisition.py",
+      "parallel/PYLAUNCH/wof_launcher/head_visual_tracker.py",
+      "parallel/RENDER_AUTHORITY_V3/measurement_runner.py"
+    ],
+    "producerPathExample": "parallel/PYLAUNCH/wof_launcher/p1_zero_click_evidence_producer.py"
+  },
+  "baseContext": {
+    "worldSha256": "921031",
+    "authorityKey": "exact-world-921031:worker-A",
+    "runtimeEpoch": "runtime-A",
+    "layoutKey": "0:0:960:600:384:224",
+    "p1Generation": 4,
+    "p1Type": 7
+  },
+  "validEvidence": {
+    "schema": "alpha-v3-runtime-p1-zero-click-evidence-v1",
+    "worldSha256": "921031",
+    "authorityKey": "exact-world-921031:worker-A",
+    "runtimeEpoch": "runtime-A",
+    "layoutKey": "0:0:960:600:384:224",
+    "p1Generation": 4,
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "identityAuthority": {
+      "kind": "semantic",
+      "source": "hud-portrait-tile",
+      "characterType": 7,
+      "independentOfRuntimeP1Type": true,
+      "derivedFromRuntimeP1Type": false,
+      "genericHudPalette": false
+    },
+    "hudIdentityCandidates": [
+      {
+        "confidence": 0.97,
+        "characterType": 7,
+        "identityKey": "semantic-p1-type7",
+        "source": "hud",
+        "evidenceSources": ["hud", "tile", "canvas"]
+      }
+    ],
+    "sceneHeadCandidates": [
+      {
+        "confidence": 0.94,
+        "actor": "P1",
+        "characterType": 7,
+        "p1Generation": 4,
+        "identityKey": "semantic-p1-type7",
+        "center": [102.0, 100.0],
+        "box": [90.0, 88.0, 114.0, 112.0],
+        "source": "sprite",
+        "evidenceSources": ["canvas", "sprite"]
+      }
+    ]
+  },
+  "negativeCases": [
+    {
+      "name": "generic_hud_palette_is_not_identity_authority",
+      "mutations": {"identityAuthority.source": "generic-hud-palette", "identityAuthority.genericHudPalette": true},
+      "errorContains": "generic HUD palette"
+    },
+    {
+      "name": "runtime_p1_type_copy_is_circular",
+      "mutations": {"identityAuthority.independentOfRuntimeP1Type": false, "identityAuthority.derivedFromRuntimeP1Type": true},
+      "errorContains": "runtime P1 type"
+    },
+    {
+      "name": "runtime_change_revokes_old_evidence",
+      "contextMutations": {"runtimeEpoch": "runtime-B", "authorityKey": "exact-world-921031:worker-B"},
+      "errorContains": "runtime"
+    },
+    {
+      "name": "lifecycle_change_revokes_old_evidence",
+      "contextMutations": {"p1Generation": 5},
+      "errorContains": "generation"
+    },
+    {
+      "name": "layout_change_revokes_old_evidence",
+      "contextMutations": {"layoutKey": "0:0:1280:720:384:224"},
+      "errorContains": "layout"
+    }
+  ]
+}
