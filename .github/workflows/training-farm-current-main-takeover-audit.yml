@@ -1,0 +1,168 @@
+name: Training Farm Current-Main Takeover Audit
+
+on:
+  push:
+    branches:
+      - pm/training-farm-takeover-audit-c4e9418b
+
+permissions:
+  contents: read
+
+jobs:
+  training-farm-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact audit branch
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile Training Farm in-scope runtime only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            training/farm/__init__.py \
+            training/farm/adapter.py \
+            training/farm/background_runtime.py \
+            training/farm/beginner_real_wof_launcher.py \
+            training/farm/determinism.py \
+            training/farm/fake_backend.py \
+            training/farm/identity.py \
+            training/farm/observation_discovery.py \
+            training/farm/probe.py \
+            training/farm/real_wof_proof_owner_runner.py \
+            training/farm/savestate_fork.py \
+            training/farm/savestate_fork_branch.py \
+            training/farm/savestate_fork_contract.py \
+            training/farm/savestate_fork_runner.py \
+            training/farm/smoke.py \
+            training/farm/stable_retro_backend.py \
+            training/farm/windows_oneclick_bootstrap.py \
+            training/farm/windows_portable_real_wof_bundle.py \
+            training/farm/windows_portable_real_wof_bundle_verifier.py
+
+      - name: Run Training Farm isolated unit regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest -v \
+            training.farm.tests.test_contract \
+            training.farm.tests.test_determinism \
+            training.farm.tests.test_observation_discovery \
+            training.farm.tests.test_savestate_fork \
+            training.farm.tests.test_background_runtime \
+            training.farm.tests.test_windows_oneclick_bootstrap \
+            training.farm.tests.test_beginner_real_wof_launcher \
+            training.farm.tests.test_real_wof_owner_runner \
+            training.farm.test_windows_portable_real_wof_bundle
+
+      - name: Run R0.1 ROM-free smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m training.farm.smoke
+
+      - name: Run R0.2 deterministic fixture smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m training.farm.determinism \
+            --fake \
+            --actions training/farm/determinism_actions.example.json \
+            --horizon 8 \
+            --repetitions 3 \
+            --output /tmp/r02_fixture.json
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/r02_fixture.json', encoding='utf-8'))
+          assert p['status']=='PASS'
+          assert p['reasonCode']=='DETERMINISM_MATCH'
+          assert p['proofScope']=='IMPLEMENTATION_FIXTURE'
+          assert p['realWofProof'] is False
+          PY
+
+      - name: Run R0.3 observation fixture smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m training.farm.observation_discovery \
+            --fake \
+            --plan training/farm/observation_plan.example.json \
+            --output /tmp/r03_fixture.json
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/r03_fixture.json', encoding='utf-8'))
+          assert p['proofScope']=='IMPLEMENTATION_FIXTURE'
+          assert p['realWofProof'] is False
+          assert p['status'] in ('PASS','COMPLETE')
+          PY
+
+      - name: Run R0.4 savestate-fork fixture smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m training.farm.savestate_fork \
+            --fake \
+            --plan training/farm/savestate_fork_plan.example.json \
+            --output /tmp/r04_fixture.json
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/r04_fixture.json', encoding='utf-8'))
+          assert p['status']=='PASS'
+          assert p['reasonCode']=='FORK_SET_DETERMINISTIC'
+          assert p['proofScope']=='IMPLEMENTATION_FIXTURE'
+          assert p['realWofProof'] is False
+          PY
+
+      - name: Run R0.4.5 decision-only background diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m training.farm.background_runtime --help >/dev/null
+          python - <<'PY'
+          from training.farm.background_runtime import default_policy, ForegroundFriendlyController, LoadSample
+          p=default_policy()
+          assert p.resource_budget.configured_worker_ceiling == 10
+          d=ForegroundFriendlyController(p.resource_budget).evaluate(LoadSample(0, False, 20, 20))
+          assert d.allowed_worker_target == 8
+          assert d.to_dict()['realWorkersStarted'] == 0
+          print(d.to_dict())
+          PY
+
+      - name: Run R0.4.6 ROM-free bootstrap diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m training.farm.windows_oneclick_bootstrap \
+            --diagnostics-json \
+            --local-root '/tmp/三国 10训 (takeover-local)' \
+            --evidence-root '/tmp/三国 10训 (takeover-local)/evidence' \
+            > /tmp/r046_diagnostics.json
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/r046_diagnostics.json', encoding='utf-8'))
+          assert p['romAccessed'] is False
+          assert p['realWofProof'] is False
+          assert p['r0_5Authorized'] is False
+          assert p['realWorkerExecutionStarted'] is False
+          PY
+
+      - name: Run R0.4.7 portable bundle unit regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest -v training.farm.test_windows_portable_real_wof_bundle
+
+      - name: Assert takeover remains ROM-free and no real workers are claimed
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "${WOF_ROM_PATH:-}"
+          echo 'TAKEOVER_AUDIT_ROM_FREE=PASS'
+          echo 'REAL_WOF_EXECUTED=NO'
+          echo 'REAL_10_WORKERS_EXECUTED=NO'
