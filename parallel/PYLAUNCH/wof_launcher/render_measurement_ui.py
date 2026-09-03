@@ -10,8 +10,8 @@ MEASUREMENT_STATE_ZH = {
     "WAITING_FOR_WOF": "等待 WOF",
     "EXACT_WORLD_LOCKED": "World 921031 已锁定",
     "CAMERA_PREPARING": "Camera 自动准备",
-    "HEAD_ACQUIRING": "正在重新识别 P1 头部",
-    "ONE_CLICK_REQUIRED": "需要点一次 P1 头顶",
+    "HEAD_ACQUIRING": "正在自动识别/重新识别 P1 头部",
+    "ONE_CLICK_REQUIRED": "自动定位未能安全唯一确认，需要一次场景 P1 头部 fallback",
     "HEAD_TRACKING": "P1 头部视觉跟踪中",
     "MEASURING": "采集中",
     "RUNNING": "运行中",
@@ -71,8 +71,10 @@ class MeasurementTrayApp(TrayApp):
         if vis:
             lines += ["",f"P1 视觉状态：{MEASUREMENT_STATE_ZH.get(str(vis.get('state') or ''),str(vis.get('state') or ''))}",
                       f"头部样本：{vis.get('templateCount',0)} / {vis.get('templateMinimum',3)} · 连续跟踪帧：{vis.get('trackedFrames',0)}",
-                      f"点击次数：{vis.get('ownerClickCount',0)} / {vis.get('ownerClickMaximum',1)}"]
+                      f"Owner 点击：{vis.get('ownerClickCount',0)} / fallback 上限 {vis.get('ownerClickMaximum',1)}（正常预期 0）"]
             if vis.get("confidence") is not None: lines.append(f"视觉置信度：{float(vis['confidence']):.3f}")
+            if vis.get("autoSeedAttemptCount") is not None and not vis.get("seedSource"): lines.append(f"自动头部 seed：{vis.get('autoSeedAttemptCount',0)} / {vis.get('autoSeedMaximumFrames',0)}")
+            if vis.get("seedSource"): lines.append("头部 seed 来源："+str(vis.get("seedSource")))
             if vis.get("actionZh"): lines.append("当前只需做一件事："+str(vis["actionZh"]))
             if int(vis.get("lostFrames") or 0)>0: lines.append("识别不稳时标记已自动隐藏；恢复后会自动重新显示。")
         if m.get("sampleCount") is not None: lines.append(f"采集进度：{m.get('sampleCount',0)} samples / {m.get('candidateCount',0)} structural candidates")
@@ -87,7 +89,8 @@ class MeasurementTrayApp(TrayApp):
     def _human_hint(cls,s)->str:
         m=cls._measurement(s); state=str(m.get("measurementState") or s.state); vis=m.get("visual") if isinstance(m.get("visual"),dict) else {}
         if state=="WAITING_FOR_WOF": return "请正常进入 WOF；工具会自动等待，不需要 DevTools。"
-        if state=="ONE_CLICK_REQUIRED": return str(vis.get("actionZh") or "请点一下 P1 头顶（只需一次）。")
+        if state=="HEAD_ACQUIRING": return str(vis.get("actionZh") or "正在自动识别 P1 身份并定位场景头部；正常路径无需点击。")
+        if state=="ONE_CLICK_REQUIRED": return str(vis.get("actionZh") or "自动定位无法安全唯一确认；请点一下场景中 P1 人物实际头部（只需一次）。")
         if state in {"HEAD_TRACKING","MEASURING","RUNNING"}: return str(vis.get("actionZh") or "正常玩即可；样本与证据会自动积累。")
         if state=="RUNTIME_REDISCOVERY": return "Worker/runtime 已变化；旧视觉位置已撤销，正在自动重发现。"
         if state=="COMPLETE": return "自动采集与打包已完成。"
