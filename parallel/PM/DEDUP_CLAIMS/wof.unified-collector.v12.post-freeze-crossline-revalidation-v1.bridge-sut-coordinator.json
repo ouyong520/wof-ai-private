@@ -8,11 +8,19 @@
   "promptPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_POST_FREEZE_CROSSLINE_REVALIDATION_V1_PARALLEL_2_WORKER_DISPATCH.md",
   "owner": "chatgpt-gpt-5.6-sol-v12-postfreeze-w1-audit-coordinator",
   "claimToken": "v12-postfreeze-w1-a64d7ce6f8c14db59ef6c16ddba97b32",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
+  "disposition": "SUPERSEDED",
   "startCommit": "883535a1dab1d722a9243be70ff576b999427a64",
   "workstream": "W1",
   "parentCanonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v12.post-freeze-crossline-revalidation-v1.json",
   "parentClaimToken": "v12-postfreeze-parent-8b9e6f0d4b7c4a5d91733bcb52bdb9ef",
   "implementationRepo": "ouyong520/wof-winkawaks-bridge",
-  "implementationStartHead": "65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95"
+  "implementationStartHead": "65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95",
+  "finalImplementationHead": "65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95",
+  "finalImplementationTree": "6102471dde9c4f8b6b6f85fed3d1c7cc54d41d55",
+  "reconciledByDedupKey": "wof.unified-collector.v12.post-freeze-crossline-revalidation-v1.closeout-recovery-v2",
+  "reconciledByStageId": "WOF_UNIFIED_COLLECTOR_V12_POST_FREEZE_CROSSLINE_REVALIDATION_V1_CLOSEOUT_RECOVERY_V2",
+  "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_POST_FREEZE_CROSSLINE_REVALIDATION_V1_CLOSEOUT_RECOVERY_V2_RESULT.md",
+  "resultCommit": "22d4b0e4c5c0f7bd3f726f3e998548d14c4416c3",
+  "completionReason": "Original W1 bridge SUT audit worker stopped without sub-result; Recovery V2 independently completed the bridge audit and supersedes this stale ACTIVE authority."
 }
