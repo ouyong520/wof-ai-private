@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.render-authority-v3.w4-semantic-p1-identity-reuse-preflight",
+  "effectiveDedupKey": "alpha.v1.render-authority-v3.w4-semantic-p1-identity-reuse-preflight",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_RENDER_AUTHORITY_V3_W4_SEMANTIC_P1_IDENTITY_REUSE_PREFLIGHT",
+  "promptPath": "parallel/PM/ALPHA_V1_RENDER_AUTHORITY_V3_W4_SEMANTIC_P1_IDENTITY_REUSE_PREFLIGHT_DISPATCH.md",
+  "owner": "chatgpt-alpha-v3-w4-semantic-p1-identity-preflight",
+  "claimToken": "w4-cd638794fc8d4b704532",
+  "state": "ACTIVE",
+  "startCommit": "735a85146c610919ca4e2423b2d2b4258b97942e"
+}
