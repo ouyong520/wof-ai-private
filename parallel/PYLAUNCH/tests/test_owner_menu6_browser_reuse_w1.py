@@ -40,23 +40,9 @@ class OwnerMenu6BrowserReuseW1Tests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "attach/reuse-only"):
                 browser.launch_debug_browser(Path("C:/fake/chrome.exe"), restore_last_session=True)
 
-    def test_existing_real_wof_endpoint_is_selected_for_reuse(self):
+    @staticmethod
+    def _load_entry_with_fake_wof(choice, endpoint, fleet_instance):
         entry_path = Path(__file__).resolve().parents[1] / "render_authority_measurement_entry.py"
-        endpoint = SimpleNamespace(
-            host="127.0.0.1",
-            port=9333,
-            browser="Chrome/151.0",
-            websocket_url="ws://127.0.0.1:9333/devtools/browser/existing",
-            http_base="http://127.0.0.1:9333",
-        )
-        fleet_instance = SimpleNamespace(instance_id=7, host="127.0.0.1", port=9333)
-        choice = SimpleNamespace(
-            page={"targetId": "page-real-wof", "url": "https://owner.example/wof"},
-            worker={"targetId": "worker-real-wof"},
-            worker_probe={"moduleOk": True, "heapOk": True},
-            identity={"ok": True, "sha256": "world"},
-            reason="EXACT_WORLD_921031",
-        )
         closed = []
 
         class FakeClient:
@@ -73,7 +59,7 @@ class OwnerMenu6BrowserReuseW1Tests(unittest.TestCase):
         discovery.discover = lambda client, identity_cache=None: choice
         browser_mod = types.ModuleType("wof_launcher.browser")
         browser_mod.BrowserEndpoint = object
-        browser_mod.probe_endpoint_diagnostic = lambda host, port: ((endpoint, None) if port == 9333 else (None, None))
+        browser_mod.probe_endpoint_diagnostic = lambda host, port: ((endpoint, None) if port == endpoint.port else (None, None))
         cdp_mod = types.ModuleType("wof_launcher.cdp");cdp_mod.CdpClient = FakeClient
         fleet_mod = types.ModuleType("wof_launcher.fleet");fleet_mod.discover_fleet_instances = lambda _path, live_only=True: [fleet_instance]
         probe_mod = types.ModuleType("wof_launcher.probe_v2");probe_mod.IDENTITY_PROBE = object()
@@ -94,9 +80,28 @@ class OwnerMenu6BrowserReuseW1Tests(unittest.TestCase):
         package.discovery_v2 = discovery
         with patch.dict(sys.modules, fake_modules, clear=False):
             spec = importlib.util.spec_from_file_location("w1_entry_fixture", entry_path)
-            self.assertIsNotNone(spec);self.assertIsNotNone(spec.loader)
+            assert spec is not None and spec.loader is not None
             module = importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
-            selected, source, diagnostic = module._probe_reusable_wof("127.0.0.1", 9223)
+        return module, closed
+
+    def test_existing_real_wof_endpoint_is_selected_for_reuse(self):
+        endpoint = SimpleNamespace(
+            host="127.0.0.1",
+            port=9333,
+            browser="Chrome/151.0",
+            websocket_url="ws://127.0.0.1:9333/devtools/browser/existing",
+            http_base="http://127.0.0.1:9333",
+        )
+        fleet_instance = SimpleNamespace(instance_id=7, host="127.0.0.1", port=9333)
+        choice = SimpleNamespace(
+            page={"targetId": "page-real-wof", "url": "https://owner.example/wof"},
+            worker={"targetId": "worker-real-wof"},
+            worker_probe={"moduleOk": True, "heapOk": True},
+            identity={"ok": True, "sha256": "world"},
+            reason="EXACT_WORLD_921031",
+        )
+        module, closed = self._load_entry_with_fake_wof(choice, endpoint, fleet_instance)
+        selected, source, diagnostic = module._probe_reusable_wof("127.0.0.1", 9223)
         self.assertIs(selected, endpoint)
         self.assertEqual(source, "existing-browser-fleet-7")
         self.assertEqual(diagnostic["pageTargetId"], "page-real-wof")
@@ -105,9 +110,39 @@ class OwnerMenu6BrowserReuseW1Tests(unittest.TestCase):
         self.assertTrue(diagnostic["staleGameUrlIgnored"])
         self.assertEqual(closed, [endpoint.websocket_url])
 
+    def test_partial_or_wrong_browser_candidate_stays_stable_waiting(self):
+        endpoint = SimpleNamespace(
+            host="127.0.0.1",
+            port=9444,
+            browser="Edge/151.0",
+            websocket_url="ws://127.0.0.1:9444/devtools/browser/wrong",
+            http_base="http://127.0.0.1:9444",
+        )
+        fleet_instance = SimpleNamespace(instance_id=9, host="127.0.0.1", port=9444)
+        choice = SimpleNamespace(
+            page={"targetId": "wrong-page", "url": "https://stale.example/rom-error"},
+            worker=None,
+            worker_probe=None,
+            identity=None,
+            reason="NO_EXACT_WOF_WORKER",
+        )
+        module, _closed = self._load_entry_with_fake_wof(choice, endpoint, fleet_instance)
+        selected, source, diagnostic = module._probe_reusable_wof("127.0.0.1", 9223)
+        self.assertIsNone(selected);self.assertIsNone(source)
+        payload = module._waiting_payload(diagnostic)
+        self.assertTrue(payload["browserConnected"])
+        self.assertFalse(payload["wofPageFound"])
+        self.assertFalse(payload["workerFound"])
+        self.assertFalse(payload["wasmFound"])
+        self.assertFalse(payload["heapFound"])
+        self.assertEqual(payload["browserEntrySource"], "attach-only-existing-wof")
+        self.assertFalse(payload["browserLaunchAttempted"])
+        self.assertFalse(payload["navigationAttempted"])
+        self.assertTrue(payload["staleGameUrlIgnored"])
+
     def test_no_wof_path_is_stable_waiting_before_runner(self):
         entry = (Path(__file__).resolve().parents[1] / "render_authority_measurement_entry.py").read_text(encoding="utf-8")
-        self.assertIn('publisher.publish(\n                        "WAITING_FOR_WOF"', entry)
+        self.assertIn('publisher.publish("WAITING_FOR_WOF",**_waiting_payload(diagnostic))', entry)
         self.assertIn('os.environ[ATTACH_ONLY_ENV]="1"', entry)
         self.assertIn('runner.run(root,output_root,endpoint.host,endpoint.port', entry)
         self.assertIn('args.browser,args.browser_path,None', entry)
