@@ -108,6 +108,24 @@ def _probe_reusable_wof(host: str, port: int) -> tuple[BrowserEndpoint | None, s
     return None, None, diagnostic
 
 
+def _waiting_payload(diagnostic: dict[str, Any]) -> dict[str, Any]:
+    payload = dict(diagnostic)
+    payload.update(
+        {
+            "browserConnected": bool(diagnostic.get("candidateEndpointCount")),
+            "wofPageFound": False,
+            "workerFound": False,
+            "wasmFound": False,
+            "heapFound": False,
+            "browserEntrySource": "attach-only-existing-wof",
+            "browserLaunchAttempted": False,
+            "navigationAttempted": False,
+            "staleGameUrlIgnored": True,
+        }
+    )
+    return payload
+
+
 def parse_args()->argparse.Namespace:
     p=argparse.ArgumentParser(description="WOF Render Authority V3 owner-visible entry")
     p.add_argument("--root",required=True);p.add_argument("--output-root",required=True);p.add_argument("--host",default="127.0.0.1");p.add_argument("--port",type=int,default=9223);p.add_argument("--browser",choices=["auto","chrome","edge"],default="auto");p.add_argument("--browser-path");p.add_argument("--game-url");return p.parse_args()
@@ -127,16 +145,7 @@ def main()->int:
             while not stop.is_set():
                 endpoint,entry_source,diagnostic=_probe_reusable_wof(args.host,args.port)
                 if endpoint is None:
-                    publisher.publish(
-                        "WAITING_FOR_WOF",
-                        browserConnected=bool(diagnostic.get("candidateEndpointCount")),
-                        wofPageFound=False,
-                        workerFound=False,
-                        wasmFound=False,
-                        heapFound=False,
-                        browserEntrySource="attach-only-existing-wof",
-                        **diagnostic,
-                    )
+                    publisher.publish("WAITING_FOR_WOF",**_waiting_payload(diagnostic))
                     stop.wait(0.8);continue
                 publisher.publish("WAITING_FOR_WOF",browserConnected=True,browserEntrySource=entry_source,**diagnostic)
                 code=int(runner.run(root,output_root,endpoint.host,endpoint.port,args.browser,args.browser_path,None,lambda state,payload:publisher.publish(state,**payload),stop) or 0)
