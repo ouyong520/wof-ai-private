@@ -77,6 +77,15 @@ def _zero_click_identity_evidence(remote:Any)->dict[str,Any]|None:
 def _visual_with_overlay(visual:dict[str,Any],overlay:dict[str,Any])->dict[str,Any]:
     out=dict(visual);out["productionOverlayEnabled"]=True;out["productionOverlayVisible"]=overlay.get("visible") is True;out["productionOverlaySource"]=PRODUCTION_OVERLAY_SOURCE;out["productionOverlay"]=dict(overlay);return out
 
+def _owner_click_pending(visual:Any)->bool:
+    if not isinstance(visual,dict) or str(visual.get("state") or "")!="ONE_CLICK_REQUIRED":
+        return False
+    try:
+        count=int(visual.get("ownerClickCount") or 0);maximum=max(1,int(visual.get("ownerClickMaximum") or 1))
+    except (TypeError,ValueError):
+        return True
+    return count<maximum
+
 def run(root:Path,output_root:Path,host:str="127.0.0.1",port:int=9223,browser:str="auto",browser_path:str|None=None,game_url:str|None=None,status_callback:Callable[[str,dict[str,Any]],None]|None=None,stop_event:threading.Event|None=None)->int:
     root=root.resolve();output_root=output_root.resolve();stop_event=stop_event or threading.Event();live_acceptance_hold=os.environ.get(LIVE_ACCEPTANCE_HOLD_ENV)=="1"
     stamp=datetime.now().astimezone().strftime("%Y%m%d_%H%M%S")+"_"+secrets.token_hex(4);session_dir=output_root/f"render_authority_v3_{stamp}";zip_path=output_root/"packages"/f"WOF_LIVE_ACCEPTANCE_{session_dir.name}.zip";session_dir.mkdir(parents=True,exist_ok=True)
@@ -147,8 +156,12 @@ def run(root:Path,output_root:Path,host:str="127.0.0.1",port:int=9223,browser:st
             publish(state,visual=v,productionOverlay=overlay_status,productionOverlayVisible=overlay_status.get("visible") is True,sampleCount=sample_count,candidateCount=candidate_count)
             capture_result=polled.get("result") if isinstance(polled,dict) else None
             if terminal_capture is None and isinstance(capture_result,dict):
-                terminal_capture=capture_result;terminal_seen_at=time.monotonic();event("CAPTURE_CORE_COMPLETE",sampleCount=sample_count,candidateCount=candidate_count,captureState=polled.get("state"))
+                terminal_capture=capture_result;terminal_seen_at=None;event("CAPTURE_CORE_COMPLETE",sampleCount=sample_count,candidateCount=candidate_count,captureState=polled.get("state"))
             if terminal_capture is not None:
+                if _owner_click_pending(v):
+                    terminal_seen_at=None;publish("ONE_CLICK_REQUIRED",visual=v,productionOverlay=overlay_status,productionOverlayVisible=False,sampleCount=sample_count,candidateCount=candidate_count,ownerActionRequired="CLICK_P1_REAL_HEAD_ONCE");time.sleep(0.18);continue
+                if terminal_seen_at is None:
+                    terminal_seen_at=time.monotonic();event("P1_VISUAL_GRACE_STARTED",visualState=vstate,ownerClickCount=int(v.get("ownerClickCount") or 0))
                 if visual.qualified() and overlay.visible_and_drawn():
                     result=terminal_capture
                     if not isinstance(result,dict):return blocked("terminal capture result missing",8,visual=v,productionOverlay=overlay_status)
