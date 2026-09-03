@@ -16,7 +16,7 @@ class RenderAuthorityCaptureError(RuntimeError): pass
 class RenderAuthorityCapture:
     """Bounded fail-closed exact-runtime renderer-authority measurement."""
     def __init__(self, verified_text: Callable[[str], str]) -> None:
-        self._verified_text=verified_text;self._authority_key=None;self._runtime_epoch=None;self._worker_id=None;self._state="UNRESOLVED";self._error=None;self._result=None
+        self._verified_text=verified_text;self._authority_key=None;self._runtime_epoch=None;self._worker_id=None;self._page_id=None;self._state="UNRESOLVED";self._error=None;self._result=None
     @staticmethod
     def _eval(client:CdpClient,target_id:str,expression:str,*,timeout:float=15.0)->Any:
         session=client.attach(target_id)
@@ -33,9 +33,10 @@ class RenderAuthorityCapture:
         return remote
     def ensure_started(self,client:CdpClient,choice:TargetChoice,authority_key:str,runtime_epoch:str)->dict[str,Any]:
         if self._authority_key==authority_key and self._runtime_epoch==runtime_epoch and self._state in {"MEASURING","MEASUREMENT_COMPLETE"}:return self.status()
-        if not choice.worker or not choice.identity or choice.identity.get("ok") is not True:raise RenderAuthorityCaptureError("render-authority capture requires accepted exact World page/Worker authority")
+        if not choice.page or not choice.worker or not choice.identity or choice.identity.get("ok") is not True:raise RenderAuthorityCaptureError("render-authority capture requires accepted exact World page/Worker authority")
         if choice.identity.get("sha256")!=WORLD_SHA256:raise RenderAuthorityCaptureError("render-authority capture exact World SHA authority mismatch")
-        worker_id=str(choice.worker.get("targetId") or "")
+        page_id=str(choice.page.get("targetId") or "");worker_id=str(choice.worker.get("targetId") or "")
+        if not page_id:raise RenderAuthorityCaptureError("render-authority capture page target id missing")
         if not worker_id:raise RenderAuthorityCaptureError("render-authority capture Worker target id missing")
         locator=choice.identity.get("locator")
         if not isinstance(locator,dict) or not isinstance(locator.get("heapBase"),int) or not isinstance(locator.get("swap16"),bool):raise RenderAuthorityCaptureError("render-authority capture exact World locator missing")
@@ -45,11 +46,14 @@ class RenderAuthorityCapture:
             self._eval(client,worker_id,f"(0,eval)({json.dumps(source)}); true",timeout=20.0)
             remote=self._eval(client,worker_id,f"self.WOFRENDERAUTHV2.start({json.dumps(binding)})",timeout=20.0)
         except Exception as exc:self._state="ERROR";self._error=str(exc);raise RenderAuthorityCaptureError(str(exc)) from exc
-        self._validate_remote(remote,authority_key=authority_key,runtime_epoch=runtime_epoch);self._authority_key=authority_key;self._runtime_epoch=runtime_epoch;self._worker_id=worker_id;self._state="MEASURING";self._error=None;self._result=None;return self.status()
+        self._validate_remote(remote,authority_key=authority_key,runtime_epoch=runtime_epoch);self._authority_key=authority_key;self._runtime_epoch=runtime_epoch;self._worker_id=worker_id;self._page_id=page_id;self._state="MEASURING";self._error=None;self._result=None;return self.status()
     def poll(self,client:CdpClient,authority_key:str,runtime_epoch:str)->dict[str,Any]:
         if self._authority_key!=authority_key or self._runtime_epoch!=runtime_epoch or not self._worker_id:return self.status()
         try:
             remote=self._eval(client,self._worker_id,"self.WOFRENDERAUTHV2?.status?.()||null");self._validate_remote(remote,authority_key=authority_key,runtime_epoch=runtime_epoch)
+            actors=remote.get("actors")
+            if self._page_id and isinstance(actors,dict):
+                self._eval(client,self._page_id,f"window.WOFALPHARELATIVEENEMY?.ingestActorSnapshot?.({json.dumps(actors)});true",timeout=3.0)
             if remote.get("terminal") is True:
                 result=self._eval(client,self._worker_id,"self.WOFRENDERAUTHV2?.result?.()||null");self._validate_remote(result,authority_key=authority_key,runtime_epoch=runtime_epoch)
                 if result.get("state")!="MEASUREMENT_COMPLETE" or result.get("resultVerdict")!="BOUNDED_CAPTURE_READY_FOR_RENDER_AUTHORITY_ANALYSIS":raise RenderAuthorityCaptureError("render-authority capture terminal result is not complete")
@@ -61,6 +65,6 @@ class RenderAuthorityCapture:
         if client and self._worker_id:
             try:self._eval(client,self._worker_id,"try{self.WOFRENDERAUTHV2?.stop?.('authority-revoked');true}catch(_){false}")
             except Exception:pass
-        self._authority_key=None;self._runtime_epoch=None;self._worker_id=None
+        self._authority_key=None;self._runtime_epoch=None;self._worker_id=None;self._page_id=None
         if self._result is None:self._state="UNRESOLVED"
         self._error=None
