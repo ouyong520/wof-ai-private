@@ -8,9 +8,17 @@
   "promptPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V11_PARALLEL_3_WORKER_DISPATCH.md",
   "owner": "chatgpt-gpt-5.6-sol-v11-worker-w2",
   "claimToken": "v11-w2-c5d403b032c4f4901aa98627126b5e31",
-  "state": "ACTIVE",
+  "state": "SUBCOMPLETE",
   "startCommit": "39ce85be8bf80519521754f3bcd2bcc039dbf3b4",
   "workstream": "W2",
   "parentCanonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v11.training-farm-adapter-unified-task-data-stack.json",
-  "parentClaimToken": "v11-8ae06246ff6533ce7ba6df8d37fc5f93"
+  "parentClaimToken": "v11-8ae06246ff6533ce7ba6df8d37fc5f93",
+  "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V11_W2_ADAPTER_SCHEMA_AGENT_RESULT.md",
+  "resultCommit": "fde529a5c0ba257067b91dfe8792d3d669233de9",
+  "implementationRepo": "ouyong520/wof-winkawaks-bridge",
+  "implementationHead": "8905732d93032a814e79d6fb3dd8077df0828ac0",
+  "implementationTree": "c57b389370e4526cb2459d64aff562f3c2f001a4",
+  "workflowRunId": 33714170008,
+  "workflowJobId": 100519730722,
+  "subworkstreamVerdict": "W2_SUBCOMPLETE_V11_TERMINAL_AUTHORITY_NOT_CLAIMED"
 }
