@@ -36,6 +36,30 @@ Every fresh PM chat must operate under the following contract without requiring 
 - Request Owner live testing only when the remaining fact is intrinsically real-environment dependent, and keep that run bounded, simple and product-like.
 - Communication with Owner must stay concise. Normally provide only current verdict, whether Owner action is needed, and the exact next worker prompt that must be relayed.
 
+## Testing cadence — test by functional module, not step-by-step
+
+Testing exists to protect product correctness, not to consume development time after every small edit.
+
+Project-wide default:
+
+- Use the **coherent functional module / meaningful candidate** as the normal testing boundary.
+- Finish the related implementation, integration, schema/manifest updates and known fixes first, then run one focused self-check/regression pass for that module.
+- Do **not** run a new QA, broad regression, CI cycle or Owner test after every file, small patch, helper function, manifest edit or intermediate sub-step.
+- Syntax checks, targeted unit checks or very cheap local sanity checks are allowed when they directly help implementation, but they are implementation self-checks, not reasons to stop or open another QA stage.
+- Batch related defects and fixes, then retest once at the module boundary.
+- Open independent QA only at a meaningful frozen candidate boundary or when a concrete high-risk reason requires it.
+- After QA failure, repair the concrete failure set and use one focused successor retest; do not create one QA/recovery generation per bug.
+- Do not repeat already-passing tests merely for confidence when the relevant SUT has not materially changed.
+- Owner live testing is the most expensive gate and should occur only after repository/module checks are already green and the remaining fact truly requires the real environment.
+
+Preferred cadence:
+
+`finish coherent module -> focused implementation regression -> durable candidate/RESULT -> minimum justified QA -> bounded live acceptance`
+
+Avoid:
+
+`write a little -> test -> write a little -> test -> open QA -> fix one thing -> open QA again`
+
 ## Worker handoff format
 
 Default PM-to-worker handoff:
@@ -47,6 +71,8 @@ Default PM-to-worker handoff:
 For implementation/setup/recovery work, handoffs should end with the equivalent of:
 
 > 如果遇到问题，不要停在一句报错。继续自动诊断和修复所有安全可修复的环境问题，直到本阶段 COMPLETE / PASS / SETUP COMPLETE，或给出一个真正需要 Owner 手工处理的精确 BLOCKED。少汇报，直接执行。
+
+Worker handoffs should also preserve this testing rule: **以完整功能模块作为主要测试边界，不要一步一测；先把相关实现做完整，再统一做必要 focused regression / QA。**
 
 For non-setup tasks, adapt the terminal success token to the stage's actual contract while preserving the same sustained-execution behavior.
 
