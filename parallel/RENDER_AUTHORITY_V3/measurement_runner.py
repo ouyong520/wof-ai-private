@@ -22,8 +22,9 @@ from wof_launcher.runtime_authority import RuntimeAuthorityGuard
 
 SAFETY={"readOnly":True,"ramWrites":0,"inputInjection":False,"manualCalibration":False,"legacyProjectionSelected":False,"productionOverlayEnabled":False}
 SCHEMA="wof-render-authority-owner-visible-session-v3"
+ZERO_CLICK_EVIDENCE_SCHEMA="alpha-v3-runtime-p1-zero-click-evidence-v1"
 VISUAL_GRACE_SECONDS=12.0
-OWNER_FLOW="MENU6_NORMAL_GAME_AUTO_P1_IDENTITY_BOUNDED_SCENE_HEAD_ZERO_CLICK_FIRST_FALLBACK_ONE_CLICK_MAX_NORMAL_PLAY_AUTO_COMPLETE"
+OWNER_FLOW="MENU6_NORMAL_GAME_W2_SEMANTIC_IDENTITY_ZERO_CLICK_FIRST_FAIL_CLOSED_FALLBACK_ONE_CLICK_MAX_NORMAL_PLAY_AUTO_COMPLETE"
 
 def _write(path:Path,value:object)->None:
     path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(value,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
@@ -48,10 +49,30 @@ def _page_cleanup_and_surface(client:CdpClient,target_id:str)->dict[str,Any]:
 def _accepted(choice)->bool:
     return bool(choice.page and choice.worker and choice.worker_probe and choice.worker_probe.get("moduleOk") is True and choice.identity and choice.identity.get("ok") is True)
 
+def _zero_click_identity_evidence(remote:Any)->dict[str,Any]|None:
+    """Accept only an explicit read-only semantic-evidence envelope.
+
+    Current exact-runtime capture may legitimately provide no such envelope; in
+    that case the W2 tracker gate fails closed and only its bounded one-click
+    fallback may be offered. Lifecycle.type is never copied into HUD evidence.
+    """
+    if not isinstance(remote,dict):
+        return None
+    evidence=remote.get("p1ZeroClickEvidence")
+    if not isinstance(evidence,dict) or evidence.get("schema")!=ZERO_CLICK_EVIDENCE_SCHEMA:
+        return None
+    if evidence.get("readOnly") is not True or evidence.get("ramWrites")!=0 or evidence.get("inputInjection") is not False:
+        return None
+    hud=evidence.get("hudIdentityCandidates")
+    scene=evidence.get("sceneHeadCandidates")
+    if not isinstance(hud,list) or not isinstance(scene,list):
+        return None
+    return {"hudIdentityCandidates":[dict(row) for row in hud if isinstance(row,dict)],"sceneHeadCandidates":[dict(row) for row in scene if isinstance(row,dict)]}
+
 def run(root:Path,output_root:Path,host:str="127.0.0.1",port:int=9223,browser:str="auto",browser_path:str|None=None,game_url:str|None=None,status_callback:Callable[[str,dict[str,Any]],None]|None=None,stop_event:threading.Event|None=None)->int:
     root=root.resolve();output_root=output_root.resolve();stop_event=stop_event or threading.Event()
     stamp=datetime.now().astimezone().strftime("%Y%m%d_%H%M%S")+"_"+secrets.token_hex(4);session_dir=output_root/f"render_authority_v3_{stamp}";zip_path=output_root/"packages"/f"WOF_LIVE_ACCEPTANCE_{session_dir.name}.zip";session_dir.mkdir(parents=True,exist_ok=True)
-    events:list[dict[str,Any]]=[];started=datetime.now().astimezone().isoformat(timespec="seconds");shared:dict[str,Any]={"runtimeRediscoveryCount":0,"browserConnected":False,"wofPageFound":False,"workerFound":False,"wasmFound":False,"heapFound":False}
+    events:list[dict[str,Any]]=[];started=datetime.now().astimezone().isoformat(timespec="seconds");shared:dict[str,Any]={"runtimeRediscoveryCount":0,"browserConnected":False,"wofPageFound":False,"workerFound":False,"wasmFound":False,"heapFound":False,"semanticIdentityContract":"W2_FAIL_CLOSED","semanticIdentityEvidenceAvailable":False}
     def event(kind:str,**payload:Any)->None:
         events.append({"at":datetime.now().astimezone().isoformat(timespec="milliseconds"),"kind":kind,**payload})
         if len(events)>200: del events[:-200]
@@ -62,8 +83,8 @@ def run(root:Path,output_root:Path,host:str="127.0.0.1",port:int=9223,browser:st
             try:status_callback(state,dict(snap))
             except Exception:pass
     def blocked(reason:str,code:int,**extra:Any)->int:
-        event("BLOCKED",reason=reason,**extra);summary={"schema":SCHEMA,"startedAt":started,"endedAt":datetime.now().astimezone().isoformat(timespec="seconds"),"verdict":"BLOCKED","blockedReason":reason,"ownerFlow":OWNER_FLOW,"safety":SAFETY,"zipPath":str(zip_path),**extra};_write(session_dir/"SESSION_SUMMARY.json",summary);_zip_dir(session_dir,zip_path);publish("BLOCKED",blockedReason=reason,zipPath=str(zip_path),**extra);return code
-    publish("STARTING");event("SESSION_STARTED",ownerFlow=OWNER_FLOW,ownerClickExpectedNormal=0,ownerClickFallbackMaximumPerAuthorityGeneration=1)
+        event("BLOCKED",reason=reason,**extra);summary={"schema":SCHEMA,"startedAt":started,"endedAt":datetime.now().astimezone().isoformat(timespec="seconds"),"verdict":"BLOCKED","blockedReason":reason,"ownerFlow":OWNER_FLOW,"semanticIdentityContract":"W2_FAIL_CLOSED","safety":SAFETY,"zipPath":str(zip_path),**extra};_write(session_dir/"SESSION_SUMMARY.json",summary);_zip_dir(session_dir,zip_path);publish("BLOCKED",blockedReason=reason,zipPath=str(zip_path),**extra);return code
+    publish("STARTING");event("SESSION_STARTED",ownerFlow=OWNER_FLOW,ownerClickExpectedNormal=0,ownerClickFallbackMaximumPerAuthorityGeneration=1,semanticIdentityContract="W2_FAIL_CLOSED")
     endpoint,rejection=probe_endpoint_diagnostic(host,port);browser_proc=None;entry_source="existing-pylaunch-cdp" if endpoint else None
     if endpoint is None:
         fleet=select_fleet_instance(None,live_only=True)
@@ -107,7 +128,9 @@ def run(root:Path,output_root:Path,host:str="127.0.0.1",port:int=9223,browser:st
                 visual.dispose();capture.stop_runtime(client);guard.clear();identity_cache.clear();accepted=None;authority_key=None;runtime_epoch=None;terminal_capture=None;terminal_seen_at=None;time.sleep(0.4);continue
             polled=capture.poll(client,authority_key,runtime_epoch);remote=polled.get("remote") if isinstance(polled,dict) else None
             lifecycle=remote.get("p1Lifecycle") if isinstance(remote,dict) else None
-            v=visual.poll(lifecycle);sample_count=int(remote.get("sampleCount") or 0) if isinstance(remote,dict) else 0;candidate_count=int(remote.get("candidateCount") or 0) if isinstance(remote,dict) else 0
+            identity_evidence=_zero_click_identity_evidence(remote)
+            v=visual.poll(lifecycle,identity_evidence);sample_count=int(remote.get("sampleCount") or 0) if isinstance(remote,dict) else 0;candidate_count=int(remote.get("candidateCount") or 0) if isinstance(remote,dict) else 0
+            shared["semanticIdentityEvidenceAvailable"]=identity_evidence is not None
             if polled.get("state")=="ERROR":return blocked("Render Authority 只读采集失败："+str(polled.get("error") or "unknown"),7,visual=v)
             vstate=str(v.get("state") or "CAMERA_PREPARING")
             state=vstate if vstate in {"CAMERA_PREPARING","HEAD_ACQUIRING","ONE_CLICK_REQUIRED","HEAD_TRACKING"} and not v.get("qualified") else "MEASURING"
@@ -119,7 +142,7 @@ def run(root:Path,output_root:Path,host:str="127.0.0.1",port:int=9223,browser:st
                     result=terminal_capture
                     if not isinstance(result,dict):return blocked("terminal capture result missing",8,visual=v)
                     result["pageSurface"]=page_surface;result["sessionSafety"]=SAFETY;_write(session_dir/"RENDER_AUTHORITY_CAPTURE_RESULT.json",result);_write(session_dir/"P1_HEAD_VISUAL_RESULT.json",visual.result())
-                    summary={"schema":SCHEMA,"startedAt":started,"endedAt":datetime.now().astimezone().isoformat(timespec="seconds"),"verdict":"BOUNDED_CAPTURE_AND_P1_HEAD_VISUAL_AUTHORITY_READY","ownerFlow":OWNER_FLOW,"ownerClickExpectedNormal":0,"ownerClickFallbackMaximumPerAuthorityGeneration":1,"worldSha256":result.get("worldSha256"),"runtimeEpoch":result.get("runtimeEpoch"),"authorityKey":result.get("authorityKey"),"sampleCount":result.get("sampleCount"),"candidateCount":len(result.get("candidateRegions") or []),"visual":visual.result(),"legacyProjectionUsed":False,"manualProjectionCalibrationUsed":False,"productionOverlaySuppressed":True,"automaticPackaging":True,"safety":SAFETY,"zipPath":str(zip_path)}
+                    summary={"schema":SCHEMA,"startedAt":started,"endedAt":datetime.now().astimezone().isoformat(timespec="seconds"),"verdict":"BOUNDED_CAPTURE_AND_P1_HEAD_VISUAL_AUTHORITY_READY","ownerFlow":OWNER_FLOW,"ownerClickExpectedNormal":0,"ownerClickFallbackMaximumPerAuthorityGeneration":1,"semanticIdentityContract":"W2_FAIL_CLOSED","semanticIdentityEvidenceAvailable":bool(visual.status().get("semanticIdentityEvidenceAvailable")),"worldSha256":result.get("worldSha256"),"runtimeEpoch":result.get("runtimeEpoch"),"authorityKey":result.get("authorityKey"),"sampleCount":result.get("sampleCount"),"candidateCount":len(result.get("candidateRegions") or []),"visual":visual.result(),"legacyProjectionUsed":False,"manualProjectionCalibrationUsed":False,"productionOverlaySuppressed":True,"automaticPackaging":True,"safety":SAFETY,"zipPath":str(zip_path)}
                     _write(session_dir/"SESSION_SUMMARY.json",summary);event("COMPLETE",zipPath=str(zip_path));_zip_dir(session_dir,zip_path);(session_dir/"FINAL_ZIP.txt").write_text(str(zip_path)+"\n",encoding="utf-8");publish("COMPLETE",visual=visual.result(),zipPath=str(zip_path),sampleCount=sample_count,candidateCount=candidate_count);return 0
                 if terminal_seen_at is not None and time.monotonic()-terminal_seen_at>=VISUAL_GRACE_SECONDS:
                     reason="P1 头部视觉 authority 在有界窗口内未达到安全多样本/连续跟踪门槛；未启用不可信 overlay。"
