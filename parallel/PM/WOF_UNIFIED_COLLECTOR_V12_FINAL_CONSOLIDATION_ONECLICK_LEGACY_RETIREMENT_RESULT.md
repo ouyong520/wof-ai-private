@@ -12,9 +12,9 @@ Date: 2026-09-03
 
 Final `ouyong520/wof-winkawaks-bridge` candidate:
 
-- HEAD: `9b7c6897149cc7de615dd372e072d7b21e9de8f7`
-- tree: `9da51bd18af28c5093095cc2684e74c669f3eebe`
-- final commit: `Collector V12: align stale-stop acceptance with observed target`
+- HEAD: `65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95`
+- tree: `6102471dde9c4f8b6b6f85fed3d1c7cc54d41d55`
+- final commit: `Collector V12: close lifecycle identity and readiness races`
 
 Consumed exact V11 terminal authority without forking:
 
@@ -33,7 +33,7 @@ Consumed completed subworkstreams without redoing them:
 - W1 lifecycle core: `8725c7063a8a6817bb40cb9edcff04bdf63e75b1`.
 - W1 Unified Agent lifecycle binding: `ccf11433362ac79030fa971e29250b417d1aef29`.
 
-PM-authorized terminal reconciliation authority `wof.unified-collector.v12.terminal-integration-closeout-recovery-v2` is COMPLETE and did not create a second Collector product.
+A PM-authorized terminal reconciliation authority, `wof.unified-collector.v12.terminal-integration-closeout-recovery-v2`, was already present on current main during terminal execution. It is COMPLETE, was consumed rather than duplicated, and did not create a second Collector product or redo W2/W3.
 
 ## Terminal architecture
 
@@ -60,11 +60,22 @@ Existing source-aware dataset/provenance, retention/storage, analysis, DuckDB wa
 
 ## Lifecycle integration and terminal defect closure
 
-Lifecycle state is under `runtime/collector-v12/` with atomic `instance.json`, `heartbeat.json`, `stop-request.json` and lifecycle-owned `tmp/`. Existing Windows named mutex `Global\\WOF_WINKAWAKS_COLLECTOR_V1` remains the single-instance authority.
+Lifecycle state remains under `runtime/collector-v12/` with atomic `instance.json`, `heartbeat.json`, `stop-request.json` and lifecycle-owned `tmp/`. Existing Windows named mutex `Global\\WOF_WINKAWAKS_COLLECTOR_V1` remains the single-instance authority.
 
-`status`, heartbeat/process health, and Unified Agent readiness are distinct. `runtime/unified_collector_health.json` remains the one domain health surface and continues to expose all three adapter states.
+`status`, heartbeat/process health, and Unified Agent/control-plane readiness remain distinct. `runtime/unified_collector_health.json` is still the one domain health surface and exposes the three adapter states only when that health document is bound to the same live lifecycle instance.
 
-Terminal integration found and fixed a real stale-stop rollover race. Commit `a89fe3754282181069f26f368ff6494977821029` binds a stop request to the initially observed `instanceId` + PID, rather than re-reading replacement instance metadata. Commit `459c79d66e01d484411e0e49bb73de70a4fbc74f` adds the A -> B rollover regression. Final commit `9b7c6897149cc7de615dd372e072d7b21e9de8f7` aligns the W3 static acceptance detector with the stronger observed-target contract.
+Terminal integration fixed the real rollover defect already found after W1/W2/W3 integration:
+
+- `a89fe3754282181069f26f368ff6494977821029` binds a stop request to the initially observed `instanceId` + PID rather than re-reading replacement instance metadata.
+- `459c79d66e01d484411e0e49bb73de70a4fbc74f` adds an explicit A -> B replacement regression proving the emitted stop still targets A.
+- `9b7c6897149cc7de615dd372e072d7b21e9de8f7` aligns the W3 repository detector with the stronger observed-target contract.
+
+Final review then found and closed four remaining lifecycle/control-plane boundary gaps in `65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95`:
+
+1. A stale mismatched `stop-request.json` is now ignored and preserved rather than unlinked. This removes the read-stale / concurrent-atomic-replace / unlink race that could otherwise erase a newly matching stop request.
+2. `health` now rejects a lifecycle `instance.json` that changes after the status observation (`INSTANCE_CHANGED_DURING_HEALTH_SNAPSHOT`) instead of mixing old status with replacement heartbeat/domain state.
+3. Adapter states are surfaced only from a `runtime/unified_collector_health.json` document bound to the current lifecycle instance and PID; stale-domain adapter state no longer leaks into current health.
+4. readiness now requires `agentInitialized=true`, `controlPlaneReady=true`, fresh/nonfatal lifecycle heartbeat, and current-instance-bound domain health. Lifecycle instance metadata also records the canonical public entrypoint `START_WOF_UNIFIED_COLLECTOR.bat`.
 
 Cooperative stop remains idempotent and never force-kills a process.
 
@@ -84,35 +95,58 @@ Cooperative stop remains idempotent and never force-kills a process.
 
 Final focused workflow: `Collector V12 Focused Acceptance`.
 
-- run: `33722396068`
-- job: `100544061556`
-- exact checkout: `9b7c6897149cc7de615dd372e072d7b21e9de8f7`
-- compile gate: PASS
-- focused tests: `19/19 PASS`
+- run: `33723112765`
+- job: `100546230865`
+- exact checkout: `65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95`
+- exact tree: `6102471dde9c4f8b6b6f85fed3d1c7cc54d41d55`
+- Python compile gate: PASS
+- focused V12 tests: `19/19 PASS`
 - machine repository acceptance: `PASS:9 BLOCKED:0 DEFERRED:0`
-- generated JSON bundle ID: `collector-v12-repository-9b7c6897149c`
-- generated JSON SHA-256: `3a264c01c77091c058be546eb3ba9896d85bbc08264e729bde19b97481f24c6f`
-- uploaded artifact id: `9880685207`
-- artifact name: `collector-v12-repository-acceptance-9b7c6897149cc7de615dd372e072d7b21e9de8f7`
-- artifact ZIP SHA-256: `90a0e3e21068cbd9b5a1ce4819917cdbfa0a5503eb5c1957b4195faccea407cf`
+- generated repository bundle ID: `collector-v12-repository-65831cb0cf3e`
+- generated repository JSON SHA-256: `86b3439e58d1b31103c1ef35cc6176d582931b78042ba56f2136e9f406fa3f41`
+- uploaded artifact id: `9880942586`
+- artifact name: `collector-v12-repository-acceptance-65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95`
+- artifact ZIP SHA-256: `b2d8871036459d60b79b35a1f3de59874230fbdcba05f84fa4a0e4f8f04ef3f8`
 - artifact retention: 14 days
 
 Durable terminal machine-readable bundle:
 
 `parallel/PM/WOF_UNIFIED_COLLECTOR_V12_FINAL_CONSOLIDATION_ONECLICK_LEGACY_RETIREMENT_ACCEPTANCE_BUNDLE.json`
 
-The durable bundle preserves the exact CI artifact metadata and repository acceptance facts, and separately records external runtime facts as `BLOCKED` / `DEFERRED` rather than manufacturing PASS.
+- durable bundle update commit: `63ecacee09d78fa40bb4c3f58526e35048a6ff2b`
+- repository acceptance embedded byte-for-byte from the final CI artifact
+- external runtime facts remain separately `BLOCKED` / `DEFERRED`; no unavailable live proof is manufactured as PASS
 
 ### Affected V10/V11 compatibility reuse
 
-`bridge/unified_collector_agent.py` was materially changed at `ccf11433362ac79030fa971e29250b417d1aef29`, so the directly affected suites already ran once on that material Agent candidate after W2 launcher work was present:
+`bridge/unified_collector_agent.py` was materially changed at `ccf11433362ac79030fa971e29250b417d1aef29`. The directly affected maintained suites ran once on that material Agent candidate after the W2 launcher work was already present:
 
-- V10 affected regression: run `33720816956`, job `100539399338`, `187/187 PASS` including `36/36` V10 Unified Agent/fake-CDP compatibility.
-- V11 terminal affected regression: run `33720816923`, job `100539399267`, `189/189 PASS` including `2/2` V11 terminal integration.
+- V10 affected regression: run `33720816956`, job `100539399338`, `187/187 PASS`, including `36/36` V10 Unified Agent/fake-CDP compatibility.
+- V11 terminal affected regression: run `33720816923`, job `100539399267`, `189/189 PASS`, including `2/2` V11 terminal integration and the three-source provenance/safety gate.
 
-After `ccf11433362ac79030fa971e29250b417d1aef29`, only V12 workflow/lifecycle/acceptance-test surfaces changed; no V10/V11 Agent/adapter/data-stack/warehouse/planner SUT changed. Historical V10/V11 regressions were therefore not rerun again for confidence.
+From `ccf11433362ac79030fa971e29250b417d1aef29` through final `65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95`, no Agent, adapter base, queue/data stack, warehouse, analysis, or planner SUT changed after those already-green affected runs. The final correction changes only lifecycle plus its V12 acceptance tests. Per `TESTING_CADENCE_POLICY.md`, V10/V11 were therefore not rerun again merely for confidence.
 
-## Safety / source invariants
+## Machine-readable repository acceptance facts
+
+The final CI-bound repository bundle proves nine repository facts, all PASS:
+
+- one canonical Windows lifecycle entrypoint;
+- compatibility wrappers delegate correctly;
+- stale-stop protection is instance-bound;
+- existing named mutex remains the single-instance authority;
+- status / health / readiness are distinct;
+- one Agent health surface exposes exactly the three maintained adapter namespaces;
+- one Git task/status/result plane remains intact;
+- legacy public paths remain retired/compatibility-only;
+- exact V11 terminal authority remains an ancestor of the final bridge candidate.
+
+The exact maintained source namespaces remain:
+
+- `browser-wasm`
+- `winkawaks`
+- `stable-retro-fbneo`
+
+## Safety / architecture invariants
 
 Preserved:
 
@@ -122,29 +156,33 @@ writesGameMemory=false
 inputInjection=false
 ```
 
-Exactly three maintained source namespaces remain:
+Also preserved:
 
-- `browser-wasm`
-- `winkawaks`
-- `stable-retro-fbneo`
-
-Collector has no Training Farm action selection, `reset` / `step` / `load_state`, worker launch/scale authority, cross-source RAM/semantic-equivalence promotion, or Alpha production mutation.
+- one Unified Collector product, not one Collector per RAM/source authority;
+- no Training Farm action selection;
+- no Collector `reset` / `step` / `load_state` authority;
+- no Collector worker launch/scale authority;
+- no cross-source RAM/semantic-equivalence promotion;
+- no Alpha production mutation;
+- no real 10-worker fleet launch during repository terminal integration.
 
 ## Real-runtime acceptance — explicitly not fabricated
 
-Repository/CI acceptance is terminal green. Unavailable real-runtime facts remain external:
+Repository/CI acceptance is terminal green. Unavailable real-runtime facts remain external and are recorded in the durable terminal bundle:
 
-1. **Real Windows/WOF acceptance** — `BLOCKED`, reason `REAL_WINDOWS_WOF_ENVIRONMENT_REQUIRED`. No repository or Linux CI evidence is labeled as real Windows/Page/Worker/WASM/WOF proof.
-2. **Live bounded Training Farm 10-worker acceptance** — `DEFERRED`, reason `TRAINING_FARM_LIVE_FLEET_AUTHORITY_GATED`. Existing ROM-free ten-worker isolation evidence is retained, but it is not relabeled live-fleet proof.
+1. **Real Windows/WOF acceptance** — `BLOCKED`, reason `REAL_WINDOWS_WOF_ENVIRONMENT_REQUIRED`. Repository/Linux CI does not claim a real Windows Page -> Worker -> WASM / WOF session occurred. This becomes executable only with an Owner-authorized bounded Windows/WOF acceptance session.
+2. **Live bounded Training Farm 10-worker acceptance** — `DEFERRED`, reason `TRAINING_FARM_LIVE_FLEET_AUTHORITY_GATED`. Current Training Farm StageGuard must first permit bounded live 10-worker execution. Existing ROM-free isolation evidence is retained but is not relabeled live-fleet proof.
 
-These external facts do not invalidate the authorized repository terminal closeout because the parent authority explicitly permits precise external/runtime gating and forbids fabricated PASS.
+These facts are not relabeled PASS and do not invalidate the authorized repository terminal closeout: the parent contract explicitly requires precise external/runtime gating instead of fabricated proof.
 
 ## Terminal conclusion
 
-V12 is terminal COMPLETE at bridge `9b7c6897149cc7de615dd372e072d7b21e9de8f7` / tree `9da51bd18af28c5093095cc2684e74c669f3eebe`.
+V12 is terminal COMPLETE at bridge `65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95` / tree `6102471dde9c4f8b6b6f85fed3d1c7cc54d41d55`.
 
 The maintained product is exactly:
 
 **one Git-controlled Unified Collector + one Windows lifecycle entrypoint + three adapters + one queue/status/result/data stack.**
+
+W1, the original V12 umbrella canonical authority, and the V12 stage remain COMPLETE under their existing claim lineage; terminal evidence bindings are updated to this final candidate rather than reopening or re-claiming them.
 
 Collector feature work is now **FROZEN**. Reopen only for a materially demonstrated defect, supported-runtime/data-integrity/security fix, measured bottleneck, explicitly approved new source adapter, or an authorized external real-runtime acceptance session.
