@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.render-authority-v3.w6-semantic-evidence-producer",
+  "effectiveDedupKey": "alpha.v1.render-authority-v3.w6-semantic-evidence-producer",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_RENDER_AUTHORITY_V3_W6_SEMANTIC_EVIDENCE_PRODUCER",
+  "promptPath": "parallel/PM/ALPHA_V1_RENDER_AUTHORITY_V3_FINAL_ZERO_CLICK_PRODUCER_PARALLEL_ACCELERATION_DISPATCH.md",
+  "owner": "alpha-v3-w6-semantic-evidence-producer",
+  "claimToken": "b80a5241753db7ea56a2afca4fbcf159",
+  "state": "ACTIVE",
+  "startCommit": "d902a5e0ce082b2267cd44f2163f830f7cb130d2"
+}
