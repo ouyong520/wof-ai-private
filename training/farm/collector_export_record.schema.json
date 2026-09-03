@@ -18,15 +18,34 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
+    "actionResultMetadata": {"anyOf": [{"type": "object"}, {"type": "null"}]},
     "active": {"type": "boolean"},
     "artifactBytes": {"minimum": 1, "type": "integer"},
     "artifactRelativePath": {"minLength": 1, "type": "string"},
     "artifactSha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
     "branchId": {"anyOf": [{"pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", "type": "string"}, {"type": "null"}]},
+    "branchIdentity": {"anyOf": [{"type": "object"}, {"type": "null"}]},
     "captureBindingSha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "complete": {"type": "boolean"},
     "completeness": {"enum": ["COMPLETE", "PARTIAL"]},
     "episodeGeneration": {"anyOf": [{"pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", "type": "string"}, {"type": "null"}]},
     "episodeId": {"anyOf": [{"pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", "type": "string"}, {"type": "null"}]},
+    "episodeIdentity": {"anyOf": [{"type": "object"}, {"type": "null"}]},
+    "evidence": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "artifactPath": {"minLength": 1, "type": "string"},
+          "bytes": {"minimum": 1, "type": "integer"},
+          "sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+          "sourceArtifactSchema": {"const": "wof-training-farm-collector-export-artifact-v1"}
+        },
+        "required": ["artifactPath", "sha256", "bytes", "sourceArtifactSchema"],
+        "type": "object"
+      },
+      "minProperties": 1,
+      "type": "object"
+    },
     "evidenceKinds": {"items": {"minLength": 1, "type": "string"}, "minItems": 1, "type": "array", "uniqueItems": true},
     "exporterSourceIdentitySha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
     "exporterVersion": {"const": "wof-training-farm-read-only-exporter-v1"},
@@ -35,23 +54,59 @@
     "generationStartedUnixMs": {"maximum": 9223372036854775807, "minimum": 0, "type": "integer"},
     "health": {"enum": ["ACTIVE", "DEGRADED", "STOPPED"]},
     "logicalFrame": {"anyOf": [{"maximum": 9223372036854775807, "minimum": 0, "type": "integer"}, {"type": "null"}]},
+    "memoryLayoutIdentity": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "addressKind": {"const": "stable-retro-memory-block-key-plus-byte-offset"},
+            "blocks": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "baseAddress": {"minimum": 0, "type": "integer"},
+                  "index": {"minimum": 0, "type": "integer"},
+                  "length": {"minimum": 1, "type": "integer"}
+                },
+                "required": ["index", "baseAddress", "length"],
+                "type": "object"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            "layoutIdentitySha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+            "schema": {"const": "wof-training-farm-fork-memory-layout-v1"},
+            "sourceNamespace": {"const": "stable-retro-fbneo"}
+          },
+          "required": ["schema", "sourceNamespace", "addressKind", "blocks", "layoutIdentitySha256"],
+          "type": "object"
+        },
+        {"type": "null"}
+      ]
+    },
     "memoryLayoutIdentitySha256": {"anyOf": [{"pattern": "^[0-9a-f]{64}$", "type": "string"}, {"type": "null"}]},
     "monotonicSequence": {"maximum": 9223372036854775807, "minimum": 1, "type": "integer"},
     "previousRecordIdentitySha256": {"anyOf": [{"pattern": "^[0-9a-f]{64}$", "type": "string"}, {"type": "null"}]},
     "processId": {"maximum": 9223372036854775807, "minimum": 1, "type": "integer"},
     "publishedAtUnixMs": {"maximum": 9223372036854775807, "minimum": 0, "type": "integer"},
     "recordIdentitySha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "resourceTimingMetadata": {"anyOf": [{"type": "object"}, {"type": "null"}]},
     "romSha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
     "rootId": {"anyOf": [{"pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", "type": "string"}, {"type": "null"}]},
+    "rootIdentity": {"anyOf": [{"type": "object"}, {"type": "null"}]},
+    "runtimeIdentity": {"type": "object"},
     "runtimeIdentitySha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
     "safety": {"$ref": "#/$defs/safety"},
     "schema": {"const": "wof-training-farm-collector-export-record-v1"},
+    "schemaVersion": {"const": "wof-training-farm-collector-export-record-v1"},
+    "sequence": {"maximum": 9223372036854775807, "minimum": 1, "type": "integer"},
     "sourceNamespace": {"const": "stable-retro-fbneo"},
     "stepCounter": {"anyOf": [{"maximum": 9223372036854775807, "minimum": 0, "type": "integer"}, {"type": "null"}]},
+    "updatedAtUtc": {"minLength": 20, "type": "string"},
     "workerGeneration": {"pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", "type": "string"},
     "workerId": {"pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$", "type": "string"}
   },
-  "required": ["schema", "sourceNamespace", "exporterVersion", "exporterSourceIdentitySha256", "workerId", "workerGeneration", "generationStartedUnixMs", "processId", "monotonicSequence", "publishedAtUnixMs", "logicalFrame", "stepCounter", "episodeId", "episodeGeneration", "forkSetId", "rootId", "branchId", "runtimeIdentitySha256", "romSha256", "farmCandidateSha256", "memoryLayoutIdentitySha256", "captureBindingSha256", "active", "health", "completeness", "evidenceKinds", "artifactRelativePath", "artifactSha256", "artifactBytes", "previousRecordIdentitySha256", "safety", "recordIdentitySha256"],
+  "required": ["schema", "schemaVersion", "sourceNamespace", "exporterVersion", "exporterSourceIdentitySha256", "workerId", "workerGeneration", "generationStartedUnixMs", "processId", "sequence", "monotonicSequence", "publishedAtUnixMs", "updatedAtUtc", "logicalFrame", "stepCounter", "episodeId", "episodeIdentity", "episodeGeneration", "forkSetId", "rootId", "rootIdentity", "branchId", "branchIdentity", "runtimeIdentity", "runtimeIdentitySha256", "romSha256", "farmCandidateSha256", "memoryLayoutIdentity", "memoryLayoutIdentitySha256", "captureBindingSha256", "active", "complete", "health", "completeness", "evidenceKinds", "evidence", "actionResultMetadata", "resourceTimingMetadata", "artifactRelativePath", "artifactSha256", "artifactBytes", "previousRecordIdentitySha256", "safety", "recordIdentitySha256"],
   "title": "WOF Training Farm Collector Export Current Record v1",
   "type": "object"
 }
