@@ -5,6 +5,10 @@
   "effectiveDedupKey": "wof.unified-collector.v12.preflight.reuse-legacy-readiness-recovery-v2",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v12.preflight.reuse-legacy-readiness-recovery-v2.json",
   "claimToken": "v12-reuse-legacy-recovery-v2-6b57d318883e4c69bb8f96f141ad9ae4",
-  "state": "ACTIVE",
-  "startCommit": "a0c724c73c19c19da9ed9933d88bf2ff4fa45415"
+  "state": "COMPLETE",
+  "startCommit": "a0c724c73c19c19da9ed9933d88bf2ff4fa45415",
+  "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_REUSE_LEGACY_READINESS_PREFLIGHT_RECOVERY_V2_RESULT.md",
+  "resultCommit": "d0dee58146e4e4c5904cda7c38a64c39901ecf92",
+  "canonicalCompleteCommit": "7c6870fa49955c9c05e5b4d4507ebcc5db1aece7",
+  "decision": "READY_FOR_V12_IMPLEMENTATION_WITH_MVP"
 }
