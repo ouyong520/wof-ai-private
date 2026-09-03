@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "wof.unified-collector.v12.preflight.reuse-legacy-readiness-recovery-v2",
+  "effectiveDedupKey": "wof.unified-collector.v12.preflight.reuse-legacy-readiness-recovery-v2",
+  "dedupMode": "exclusive",
+  "stageId": "WOF_UNIFIED_COLLECTOR_V12_REUSE_LEGACY_READINESS_PREFLIGHT_RECOVERY_V2",
+  "promptPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_REUSE_LEGACY_READINESS_PREFLIGHT_RECOVERY_V2_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol-v12-reuse-legacy-readiness-recovery-v2",
+  "claimToken": "v12-reuse-legacy-recovery-v2-6b57d318883e4c69bb8f96f141ad9ae4",
+  "state": "ACTIVE",
+  "startCommit": "a0c724c73c19c19da9ed9933d88bf2ff4fa45415"
+}
