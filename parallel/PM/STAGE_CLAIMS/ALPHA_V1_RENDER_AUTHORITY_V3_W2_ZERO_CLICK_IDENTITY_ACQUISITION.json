@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_RENDER_AUTHORITY_V3_W2_ZERO_CLICK_IDENTITY_ACQUISITION",
+  "dedupKey": "alpha.v1.render-authority-v3.w2-zero-click-identity-acquisition",
+  "effectiveDedupKey": "alpha.v1.render-authority-v3.w2-zero-click-identity-acquisition",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.render-authority-v3.w2-zero-click-identity-acquisition.json",
+  "claimToken": "w2-7f7e3bcf63c142eda60ea2b1f051f3e4",
+  "state": "ACTIVE",
+  "startCommit": "78335c095af09f20af05e13e959d445d5c0017e5"
+}
