@@ -203,22 +203,25 @@ async function install(scope,binding){
       enemyWorldX:F16(a+0x04),enemyY:F16(a+0x08),enemyZ:F16(a+0x0C)};
   }
   function markerSnapshot(rows,sampleAt){
-    if(!labelApi||!projectionProfile)return null;
+    if(!labelApi)return null;
+    const markers=[];
+    for(const s of rows){
+      const target=core.TARGETS[s.target7E]||null;
+      if(!target||![s.enemyWorldX,s.enemyY,s.enemyZ].every(Number.isFinite))continue;
+      markers.push({slot:s.slot,sourceId:'enemy-slot-'+s.slot,type:s.type,target7E:s.target7E,target,
+        enemyX:s.enemyWorldX,enemyY:s.enemyY,enemyZ:s.enemyZ,sampleAt,confidence:1,epoch:binding.runtimeEpoch,projectionEpoch:binding.runtimeEpoch});
+    }
+    if(!projectionProfile){
+      return{projection:null,markers,projectionOk:false,error:markerSetupError||'ENEMY_HEAD_PROJECTION_UNPROVEN'};
+    }
     try{
       const cameraRaw=U16(projectionProfile.cameraAddress);
       const cameraX=cameraRaw*projectionProfile.cameraSign*projectionProfile.cameraScale;
       if(!Number.isFinite(cameraX))throw new Error('camera sample non-finite');
       const projection={...projectionProfile,epoch:binding.runtimeEpoch,sampleAt,confidence:1,cameraRaw,cameraX};
-      const markers=[];
-      for(const s of rows){
-        const target=core.TARGETS[s.target7E]||null;
-        if(!target||![s.enemyWorldX,s.enemyY,s.enemyZ].every(Number.isFinite)||!Number.isFinite(projectionProfile.enemyHeadClearanceByType?.[String(s.type)]))continue;
-        markers.push({slot:s.slot,sourceId:'enemy-slot-'+s.slot,type:s.type,target7E:s.target7E,target,
-          enemyX:s.enemyWorldX,enemyY:s.enemyY,enemyZ:s.enemyZ,sampleAt,confidence:1,epoch:binding.runtimeEpoch,projectionEpoch:binding.runtimeEpoch});
-      }
       return{projection,markers,projectionOk:true,error:null};
     }catch(error){
-      return{projection:null,markers:[],projectionOk:false,error:String(error?.message||error)};
+      return{projection:null,markers,projectionOk:false,error:String(error?.message||error)};
     }
   }
   function playerSpatialSnapshot(sampleAt){
@@ -280,7 +283,7 @@ async function install(scope,binding){
       }
 
       const spatialHeartbeat=lastPlayerSpatialPublishedAt===null||sampledAt-lastPlayerSpatialPublishedAt>=PLAYER_SPATIAL_PUBLISH_MS;
-      if(playerSpatial&&(statePublished||(warnings.length>0&&spatialHeartbeat))){
+      if(playerSpatial&&spatialHeartbeat){
         playerSpatialSeq++;
         lastPlayerSpatialError=playerSpatial.error;
         bc.postMessage(envelope('player-head-spatial',{playerSpatialSeq,sampleAt:sampleAtEpoch,players:playerSpatial.players,projection:playerSpatial.projection}));
@@ -295,7 +298,7 @@ async function install(scope,binding){
         const followHeartbeat=lastMarkerPublishedAt===null||sampledAt-lastMarkerPublishedAt>=50;
         if(retargetOrPresenceChange||followHeartbeat){
           markerSeq++;
-          bc.postMessage(envelope('enemy-target-markers',{markerSeq,markers:markerState.markers,projection:markerState.projection}));
+          bc.postMessage(envelope('enemy-target-markers',{markerSeq,markers:markerState.markers,projection:markerState.projection,projectionOk:markerState.projectionOk,error:markerState.error}));
           lastMarkerTargetHash=targetHash;lastMarkerPublishedAt=sampledAt;
         }
       }
@@ -316,7 +319,7 @@ async function install(scope,binding){
     status(){return{version:TRANSPORT,release:RELEASE,running:running&&gate.status().active,identitySignature:IDENTITY_SIGNATURE,identity,...SAFETY,polls,lastError,
       playerHeadWarning:{moduleReady:!!playerHeadApi,projectionReady:!!playerProjectionProfile,proofId:playerProjectionProfile?.proofId??null,playerSpatialSeq,lastError:lastPlayerSpatialError,
         holdMs:0,smoothing:false,maxPublishHz:1000/PLAYER_SPATIAL_PUBLISH_MS,maxSpatialAgeMs:playerHeadApi?.MAX_PLAYER_AGE_MS??80},
-      enemyTargetLabels:{moduleReady:!!labelApi,projectionReady:!!projectionProfile,proofId:projectionProfile?.proofId??null,markerSeq,lastError:lastMarkerError,holdMs:0,smoothing:false,maxPublishHz:20},...gate.status()};}
+      enemyTargetLabels:{moduleReady:!!labelApi,rawMarkersReady:!!labelApi,projectionReady:!!projectionProfile,proofId:projectionProfile?.proofId??null,markerSeq,lastError:lastMarkerError,holdMs:0,smoothing:false,maxPublishHz:20},...gate.status()};}
   };
   scope.__WOF_ALPHA_REAL_TRANSPORT=runtime;
   return runtime.status();
