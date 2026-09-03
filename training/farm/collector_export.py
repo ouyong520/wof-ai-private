@@ -17,6 +17,7 @@ import os
 import re
 import uuid
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -25,6 +26,7 @@ from .identity import SOURCE_NAMESPACE, runtime_identity_sha256, validate_runtim
 EXPORTER_VERSION = "wof-training-farm-read-only-exporter-v1"
 ARTIFACT_SCHEMA = "wof-training-farm-collector-export-artifact-v1"
 RECORD_SCHEMA = "wof-training-farm-collector-export-record-v1"
+REGISTRY_SCHEMA = "wof-training-farm-collector-export-registry-v1"
 MEMORY_LAYOUT_SCHEMA = "wof-training-farm-fork-memory-layout-v1"
 ADDRESS_KIND = "stable-retro-memory-block-key-plus-byte-offset"
 MAX_ACTIVE_WORKERS = 10
@@ -190,6 +192,14 @@ def _canonical_bytes(value: object) -> bytes:
 
 def _sha_json(value: object) -> str:
     return _sha_bytes(_canonical_bytes(value))
+
+
+def _utc_from_unix_ms(value: int) -> str:
+    _strict_int(value, "unix_ms", 0, 2**63 - 1)
+    try:
+        return datetime.fromtimestamp(value / 1000.0, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+    except (OverflowError, OSError, ValueError) as exc:
+        raise ExportContractError(f"unix_ms cannot be represented as UTC timestamp: {value}") from exc
 
 
 def _validate_json_tree(value: object, where: str = "metadata", depth: int = 0) -> None:
@@ -575,6 +585,30 @@ class TrainingFarmReadOnlyExporter:
             branch_id=context.branch_id,
         )
         binding_sha = _sha_json(binding_payload)
+        episode_identity = None if context.episode_id is None else {"episodeId": context.episode_id}
+        root_identity = None
+        if context.root_id is not None or context.fork_set_id is not None:
+            root_identity = {
+                "forkSetId": context.fork_set_id,
+                "rootId": context.root_id,
+                "rootMetadataSha256": (
+                    _sha_json(normalized_metadata["rootForkBranchSavestateMetadata"])
+                    if normalized_metadata["rootForkBranchSavestateMetadata"] is not None
+                    else None
+                ),
+            }
+        branch_identity = None
+        if context.branch_id is not None:
+            branch_identity = {
+                "forkSetId": context.fork_set_id,
+                "rootId": context.root_id,
+                "branchId": context.branch_id,
+                "branchMetadataSha256": (
+                    _sha_json(normalized_metadata["rootForkBranchSavestateMetadata"])
+                    if normalized_metadata["rootForkBranchSavestateMetadata"] is not None
+                    else None
+                ),
+            }
 
         artifact: dict[str, object] = {
             "schema": ARTIFACT_SCHEMA,
@@ -622,6 +656,15 @@ class TrainingFarmReadOnlyExporter:
         )
         artifact_path = self.root / artifact_rel
         current_path = worker_dir / "current.json"
+        evidence = {
+            kind: {
+                "artifactPath": artifact_rel.as_posix(),
+                "sha256": artifact_sha,
+                "bytes": len(artifact_bytes),
+                "sourceArtifactSchema": ARTIFACT_SCHEMA,
+            }
+            for kind in evidence_kinds
+        }
 
         artifact_dir.mkdir(parents=True, exist_ok=True)
 
@@ -635,45 +678,107 @@ class TrainingFarmReadOnlyExporter:
             _write_immutable(artifact_path, artifact_bytes)
 
             record: dict[str, object] = {
-            "schema": RECORD_SCHEMA,
-            "sourceNamespace": SOURCE_NAMESPACE,
-            "exporterVersion": EXPORTER_VERSION,
-            "exporterSourceIdentitySha256": exporter_sha,
-            "workerId": context.worker_id,
-            "workerGeneration": context.worker_generation,
-            "generationStartedUnixMs": context.generation_started_unix_ms,
-            "processId": process_id,
-            "monotonicSequence": context.monotonic_sequence,
-            "publishedAtUnixMs": context.published_at_unix_ms,
-            "logicalFrame": context.logical_frame,
-            "stepCounter": context.step_counter,
-            "episodeId": context.episode_id,
-            "episodeGeneration": context.episode_generation,
-            "forkSetId": context.fork_set_id,
-            "rootId": context.root_id,
-            "branchId": context.branch_id,
-            "runtimeIdentitySha256": runtime_sha,
-            "romSha256": identity["romSha256"],
-            "farmCandidateSha256": identity["farmCandidateSha256"],
-            "memoryLayoutIdentitySha256": memory_layout_sha,
-            "captureBindingSha256": binding_sha,
-            "active": context.active,
-            "health": context.health,
-            "completeness": context.completeness,
-            "evidenceKinds": evidence_kinds,
-            "artifactRelativePath": artifact_rel.as_posix(),
-            "artifactSha256": artifact_sha,
-            "artifactBytes": len(artifact_bytes),
-            "previousRecordIdentitySha256": previous_identity,
+                "schema": RECORD_SCHEMA,
+                "schemaVersion": RECORD_SCHEMA,
+                "sourceNamespace": SOURCE_NAMESPACE,
+                "exporterVersion": EXPORTER_VERSION,
+                "exporterSourceIdentitySha256": exporter_sha,
+                "workerId": context.worker_id,
+                "workerGeneration": context.worker_generation,
+                "generationStartedUnixMs": context.generation_started_unix_ms,
+                "processId": process_id,
+                "sequence": context.monotonic_sequence,
+                "monotonicSequence": context.monotonic_sequence,
+                "publishedAtUnixMs": context.published_at_unix_ms,
+                "updatedAtUtc": _utc_from_unix_ms(context.published_at_unix_ms),
+                "logicalFrame": context.logical_frame,
+                "stepCounter": context.step_counter,
+                "episodeId": context.episode_id,
+                "episodeIdentity": episode_identity,
+                "episodeGeneration": context.episode_generation,
+                "forkSetId": context.fork_set_id,
+                "rootId": context.root_id,
+                "rootIdentity": root_identity,
+                "branchId": context.branch_id,
+                "branchIdentity": branch_identity,
+                "runtimeIdentity": identity,
+                "runtimeIdentitySha256": runtime_sha,
+                "romSha256": identity["romSha256"],
+                "farmCandidateSha256": identity["farmCandidateSha256"],
+                "memoryLayoutIdentity": layout,
+                "memoryLayoutIdentitySha256": memory_layout_sha,
+                "captureBindingSha256": binding_sha,
+                "active": context.active,
+                "complete": context.completeness == "COMPLETE",
+                "health": context.health,
+                "completeness": context.completeness,
+                "evidenceKinds": evidence_kinds,
+                "evidence": evidence,
+                "actionResultMetadata": normalized_metadata["currentActionResultMetadata"],
+                "resourceTimingMetadata": normalized_metadata["runtimeResourceTimingMetadata"],
+                "artifactRelativePath": artifact_rel.as_posix(),
+                "artifactSha256": artifact_sha,
+                "artifactBytes": len(artifact_bytes),
+                "previousRecordIdentitySha256": previous_identity,
                 "safety": copy.deepcopy(SAFETY),
             }
             record["recordIdentitySha256"] = _record_identity_sha(record)
             validate_export_record(record)
-            _atomic_replace(current_path, _canonical_bytes(record))
+            record_bytes = _canonical_bytes(record)
+            record_file_sha = _sha_bytes(record_bytes)
+            record_rel = Path("workers") / context.worker_id / "records" / context.worker_generation / (
+                f"{context.monotonic_sequence:020d}-{record_file_sha}.json"
+            )
+            _write_immutable(self.root / record_rel, record_bytes)
+            _atomic_replace(current_path, record_bytes)
             published = validate_export_record(_load_json(current_path))
             if published["recordIdentitySha256"] != record["recordIdentitySha256"]:
                 raise ExportContractError("atomic current-record verification lost publication authority")
+            self._update_registry(
+                context=context,
+                record_relative_path=record_rel,
+                record_file_sha=record_file_sha,
+                exporter_sha=exporter_sha,
+            )
             return copy.deepcopy(record)
+
+    def _update_registry(
+        self,
+        *,
+        context: WorkerExportContext,
+        record_relative_path: Path,
+        record_file_sha: str,
+        exporter_sha: str,
+    ) -> None:
+        with _exclusive_registry_lock(self.root):
+            registry_path = self.root / "registry.json"
+            if registry_path.exists():
+                registry = validate_export_registry(_load_json(registry_path))
+                sequence = int(registry["sequence"]) + 1
+                rows = {str(row["workerId"]): copy.deepcopy(row) for row in registry["workers"]}
+            else:
+                sequence = 1
+                rows = {}
+            rows[context.worker_id] = {
+                "workerId": context.worker_id,
+                "workerGeneration": context.worker_generation,
+                "active": context.active,
+                "sequence": context.monotonic_sequence,
+                "recordPath": record_relative_path.as_posix(),
+                "recordSha256": record_file_sha,
+            }
+            registry_value: dict[str, object] = {
+                "schema": REGISTRY_SCHEMA,
+                "schemaVersion": REGISTRY_SCHEMA,
+                "sourceNamespace": SOURCE_NAMESPACE,
+                "sequence": sequence,
+                "updatedAtUtc": _utc_from_unix_ms(context.published_at_unix_ms),
+                "exporterVersion": EXPORTER_VERSION,
+                "exporterSourceIdentity": exporter_sha,
+                "workers": [rows[key] for key in sorted(rows)],
+            }
+            validate_export_registry(registry_value)
+            _atomic_replace(registry_path, _canonical_bytes(registry_value))
 
     @staticmethod
     def _validate_progression(previous: Mapping[str, Any], context: WorkerExportContext) -> None:
@@ -706,18 +811,19 @@ def _record_identity_sha(record: Mapping[str, Any]) -> str:
 
 def validate_export_record(value: object) -> dict[str, object]:
     keys = {
-        "schema", "sourceNamespace", "exporterVersion", "exporterSourceIdentitySha256",
+        "schema", "schemaVersion", "sourceNamespace", "exporterVersion", "exporterSourceIdentitySha256",
         "workerId", "workerGeneration", "generationStartedUnixMs", "processId",
-        "monotonicSequence", "publishedAtUnixMs", "logicalFrame", "stepCounter",
-        "episodeId", "episodeGeneration", "forkSetId", "rootId", "branchId",
-        "runtimeIdentitySha256", "romSha256", "farmCandidateSha256",
-        "memoryLayoutIdentitySha256", "captureBindingSha256", "active", "health",
-        "completeness", "evidenceKinds", "artifactRelativePath", "artifactSha256",
+        "sequence", "monotonicSequence", "publishedAtUnixMs", "updatedAtUtc", "logicalFrame", "stepCounter",
+        "episodeId", "episodeIdentity", "episodeGeneration", "forkSetId", "rootId", "rootIdentity",
+        "branchId", "branchIdentity", "runtimeIdentity", "runtimeIdentitySha256", "romSha256",
+        "farmCandidateSha256", "memoryLayoutIdentity", "memoryLayoutIdentitySha256", "captureBindingSha256",
+        "active", "complete", "health", "completeness", "evidenceKinds", "evidence",
+        "actionResultMetadata", "resourceTimingMetadata", "artifactRelativePath", "artifactSha256",
         "artifactBytes", "previousRecordIdentitySha256", "safety", "recordIdentitySha256",
     }
     if type(value) is not dict or set(value) != keys:
         raise ExportContractError("export record must exactly match the v1 record envelope")
-    if value["schema"] != RECORD_SCHEMA or value["sourceNamespace"] != SOURCE_NAMESPACE:
+    if value["schema"] != RECORD_SCHEMA or value["schemaVersion"] != RECORD_SCHEMA or value["sourceNamespace"] != SOURCE_NAMESPACE:
         raise ExportContractError("export record schema/source mismatch")
     if value["exporterVersion"] != EXPORTER_VERSION:
         raise ExportContractError("export record exporter version mismatch")
@@ -726,8 +832,13 @@ def validate_export_record(value: object) -> dict[str, object]:
     generation = _strict_id(value["workerGeneration"], "workerGeneration")
     started = _strict_int(value["generationStartedUnixMs"], "generationStartedUnixMs", 0, 2**63 - 1)
     _strict_int(value["processId"], "processId", 1, 2**63 - 1)
-    _strict_int(value["monotonicSequence"], "monotonicSequence", 1, 2**63 - 1)
+    sequence = _strict_int(value["sequence"], "sequence", 1, 2**63 - 1)
+    monotonic = _strict_int(value["monotonicSequence"], "monotonicSequence", 1, 2**63 - 1)
+    if sequence != monotonic:
+        raise ExportContractError("record sequence alias mismatch")
     published = _strict_int(value["publishedAtUnixMs"], "publishedAtUnixMs", 0, 2**63 - 1)
+    if value["updatedAtUtc"] != _utc_from_unix_ms(published):
+        raise ExportContractError("record UTC timestamp/publishedAtUnixMs mismatch")
     if published < started:
         raise ExportContractError("record publish timestamp precedes generation start")
     _optional_counter(value["logicalFrame"], "logicalFrame")
@@ -735,12 +846,20 @@ def validate_export_record(value: object) -> dict[str, object]:
     for field in ("episodeId", "episodeGeneration", "forkSetId", "rootId", "branchId"):
         if value[field] is not None:
             _strict_id(value[field], field)
+    identity, observed_runtime_sha = _runtime_identity(value["runtimeIdentity"])
     runtime_sha = _strict_sha(value["runtimeIdentitySha256"], "runtimeIdentitySha256")
+    if runtime_sha != observed_runtime_sha or value["processId"] != identity["processId"]:
+        raise ExportContractError("record runtime identity/process binding mismatch")
     _strict_sha(value["romSha256"], "romSha256")
     _strict_sha(value["farmCandidateSha256"], "farmCandidateSha256")
+    if value["romSha256"] != identity["romSha256"] or value["farmCandidateSha256"] != identity["farmCandidateSha256"]:
+        raise ExportContractError("record ROM/Farm identity mismatch")
+    layout = None if value["memoryLayoutIdentity"] is None else validate_memory_layout(value["memoryLayoutIdentity"])
     layout_sha = value["memoryLayoutIdentitySha256"]
     if layout_sha is not None:
         layout_sha = _strict_sha(layout_sha, "memoryLayoutIdentitySha256")
+    if (layout is None) != (layout_sha is None) or (layout is not None and layout["layoutIdentitySha256"] != layout_sha):
+        raise ExportContractError("record memory layout payload/hash mismatch")
     binding_sha = _strict_sha(value["captureBindingSha256"], "captureBindingSha256")
     expected_binding = _sha_json(_binding_payload(
         worker_id=worker_id,
@@ -756,12 +875,24 @@ def validate_export_record(value: object) -> dict[str, object]:
     ))
     if binding_sha != expected_binding:
         raise ExportContractError("capture binding SHA-256 mismatch")
-    if type(value["active"]) is not bool:
-        raise ExportContractError("record active must be strict boolean")
+    expected_episode_identity = None if value["episodeId"] is None else {"episodeId": value["episodeId"]}
+    if value["episodeIdentity"] != expected_episode_identity:
+        raise ExportContractError("record episodeIdentity does not match episodeId")
+    if value["rootIdentity"] is not None and type(value["rootIdentity"]) is not dict:
+        raise ExportContractError("record rootIdentity must be object/null")
+    if value["branchIdentity"] is not None and type(value["branchIdentity"]) is not dict:
+        raise ExportContractError("record branchIdentity must be object/null")
+    for field in ("actionResultMetadata", "resourceTimingMetadata"):
+        if value[field] is not None:
+            _bounded_json_copy(value[field], field)
+    if type(value["active"]) is not bool or type(value["complete"]) is not bool:
+        raise ExportContractError("record active/complete must be strict booleans")
     if value["health"] not in {"ACTIVE", "DEGRADED", "STOPPED"}:
         raise ExportContractError("record health invalid")
     if value["completeness"] not in {"COMPLETE", "PARTIAL"}:
         raise ExportContractError("record completeness invalid")
+    if value["complete"] is not (value["completeness"] == "COMPLETE"):
+        raise ExportContractError("record complete/completeness state inconsistent")
     if (value["active"] is False) != (value["health"] == "STOPPED"):
         raise ExportContractError("record active/health state inconsistent")
     kinds = value["evidenceKinds"]
@@ -769,6 +900,16 @@ def validate_export_record(value: object) -> dict[str, object]:
         raise ExportContractError("record evidenceKinds malformed")
     if any(type(kind) is not str or not kind for kind in kinds):
         raise ExportContractError("record evidenceKinds must contain non-empty strings")
+    evidence = value["evidence"]
+    if type(evidence) is not dict or set(evidence) != set(kinds):
+        raise ExportContractError("record evidence map/kinds mismatch")
+    for kind, descriptor in evidence.items():
+        if type(descriptor) is not dict or set(descriptor) != {"artifactPath", "sha256", "bytes", "sourceArtifactSchema"}:
+            raise ExportContractError(f"record evidence descriptor malformed for {kind}")
+        if descriptor["sourceArtifactSchema"] != ARTIFACT_SCHEMA:
+            raise ExportContractError("record evidence source artifact schema mismatch")
+        _strict_sha(descriptor["sha256"], f"evidence[{kind}].sha256")
+        _strict_int(descriptor["bytes"], f"evidence[{kind}].bytes", 1, 2**63 - 1)
     rel = value["artifactRelativePath"]
     if type(rel) is not str:
         raise ExportContractError("artifactRelativePath must be a string")
@@ -777,6 +918,9 @@ def validate_export_record(value: object) -> dict[str, object]:
         raise ExportContractError("artifactRelativePath escapes worker export namespace")
     _strict_sha(value["artifactSha256"], "artifactSha256")
     _strict_int(value["artifactBytes"], "artifactBytes", 1, MAX_RAW_BYTES_PER_ARTIFACT * 4 + MAX_METADATA_BYTES_PER_ARTIFACT * 2 + 8 * 1024 * 1024)
+    for descriptor in evidence.values():
+        if descriptor["artifactPath"] != rel or descriptor["sha256"] != value["artifactSha256"] or descriptor["bytes"] != value["artifactBytes"]:
+            raise ExportContractError("record evidence descriptor/artifact binding mismatch")
     previous = value["previousRecordIdentitySha256"]
     if previous is not None:
         _strict_sha(previous, "previousRecordIdentitySha256")
@@ -913,6 +1057,46 @@ def validate_export_artifact(value: object) -> dict[str, object]:
     return copy.deepcopy(value)
 
 
+def validate_export_registry(value: object) -> dict[str, object]:
+    keys = {
+        "schema", "schemaVersion", "sourceNamespace", "sequence", "updatedAtUtc",
+        "exporterVersion", "exporterSourceIdentity", "workers",
+    }
+    if type(value) is not dict or set(value) != keys:
+        raise ExportContractError("export registry must exactly match the v1 registry envelope")
+    if value["schema"] != REGISTRY_SCHEMA or value["schemaVersion"] != REGISTRY_SCHEMA:
+        raise ExportContractError("export registry schema mismatch")
+    if value["sourceNamespace"] != SOURCE_NAMESPACE or value["exporterVersion"] != EXPORTER_VERSION:
+        raise ExportContractError("export registry source/exporter version mismatch")
+    _strict_int(value["sequence"], "registry.sequence", 0, 2**63 - 1)
+    _strict_sha(value["exporterSourceIdentity"], "registry.exporterSourceIdentity")
+    if type(value["updatedAtUtc"]) is not str or not value["updatedAtUtc"].endswith("Z"):
+        raise ExportContractError("registry.updatedAtUtc must be canonical UTC text")
+    rows = value["workers"]
+    if type(rows) is not list or len(rows) > 64:
+        raise ExportContractError("registry workers must be a list with at most 64 entries")
+    seen: set[str] = set()
+    previous_id: str | None = None
+    for row in rows:
+        if type(row) is not dict or set(row) != {
+            "workerId", "workerGeneration", "active", "sequence", "recordPath", "recordSha256"
+        }:
+            raise ExportContractError("registry worker row malformed")
+        worker_id = _path_id(row["workerId"], "registry.workerId")
+        _strict_id(row["workerGeneration"], "registry.workerGeneration")
+        if type(row["active"]) is not bool:
+            raise ExportContractError("registry worker active must be strict boolean")
+        _strict_int(row["sequence"], "registry worker sequence", 1, 2**63 - 1)
+        if type(row["recordPath"]) is not str or Path(row["recordPath"]).is_absolute() or ".." in Path(row["recordPath"]).parts:
+            raise ExportContractError("registry worker recordPath must be safe relative path")
+        _strict_sha(row["recordSha256"], "registry worker recordSha256")
+        if worker_id in seen or (previous_id is not None and worker_id <= previous_id):
+            raise ExportContractError("registry worker IDs must be unique and strictly sorted")
+        seen.add(worker_id)
+        previous_id = worker_id
+    return copy.deepcopy(value)
+
+
 def read_current_record(export_root: str | os.PathLike[str], worker_id: str, *, verify_artifact: bool = True) -> dict[str, object]:
     worker = _path_id(worker_id, "worker_id")
     root = Path(export_root).expanduser().resolve()
@@ -964,6 +1148,36 @@ def _exclusive_worker_lock(worker_dir: Path):
     """Serialize publishers for one worker ID with an OS-released local file lock."""
     worker_dir.mkdir(parents=True, exist_ok=True)
     lock_path = worker_dir / ".publish.lock"
+    fh = lock_path.open("a+b")
+    try:
+        if os.name == "nt":
+            import msvcrt
+            fh.seek(0, os.SEEK_END)
+            if fh.tell() == 0:
+                fh.write(b"0")
+                fh.flush()
+            fh.seek(0)
+            msvcrt.locking(fh.fileno(), msvcrt.LK_LOCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+        yield
+    finally:
+        try:
+            if os.name == "nt":
+                import msvcrt
+                fh.seek(0)
+                msvcrt.locking(fh.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+        finally:
+            fh.close()
+
+
+@contextlib.contextmanager
+def _exclusive_registry_lock(root: Path):
+    lock_path = root / ".registry.lock"
     fh = lock_path.open("a+b")
     try:
         if os.name == "nt":
