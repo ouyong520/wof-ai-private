@@ -69,7 +69,8 @@ globalThis.WOFOWNERPROJECTION.stop();
         self.assertEqual(0, cp.returncode, cp.stderr or cp.stdout)
         top = (ROOT / "parallel/HUDANCHOR_PROOF/wof_owner_projection_top.js").read_text(encoding="utf-8")
         self.assertIn("cameraQuality:last?.cameraQuality", top)
-        self.assertIn("guidance:currentGuidance()", top)
+        self.assertIn("guidance:{actionZh:nextAction()", top)
+        self.assertIn("无需做数学选择", top)
         self.assertIn("不要重新运行工具", (ROOT / "parallel/HUDANCHOR_PROOF/wof_owner_projection_worker.js").read_text(encoding="utf-8"))
 
     def test_significant_live_state_survives_terminal_disconnect(self) -> None:
