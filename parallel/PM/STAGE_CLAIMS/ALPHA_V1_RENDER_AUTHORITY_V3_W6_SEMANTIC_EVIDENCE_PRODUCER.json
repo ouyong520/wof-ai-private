@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_RENDER_AUTHORITY_V3_W6_SEMANTIC_EVIDENCE_PRODUCER",
+  "dedupKey": "alpha.v1.render-authority-v3.w6-semantic-evidence-producer",
+  "effectiveDedupKey": "alpha.v1.render-authority-v3.w6-semantic-evidence-producer",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.render-authority-v3.w6-semantic-evidence-producer.json",
+  "claimToken": "b80a5241753db7ea56a2afca4fbcf159",
+  "state": "ACTIVE",
+  "startCommit": "d902a5e0ce082b2267cd44f2163f830f7cb130d2"
+}
