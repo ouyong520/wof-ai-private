@@ -15,7 +15,7 @@ DEFAULT_MANIFEST = Path(__file__).resolve().parent / "package_manifest.json"
 
 SCHEMA = "wof-owner-oneclick-package-v1"
 GENERATOR = "parallel/OWNER_ONECLICK/refresh_manifest.py"
-SELECTION_POLICY = "owner-oneclick-runtime-v5-render-authority-v3-owner-visible-head-visual"
+SELECTION_POLICY = "owner-oneclick-runtime-v6-render-authority-v3-zero-click-first-head-visual"
 RUNTIME_SUFFIXES = {".py", ".js", ".mjs", ".cmd", ".bat", ".ps1"}
 EXCLUDED_PARTS = {"tests", "__pycache__"}
 
@@ -71,10 +71,8 @@ RUNTIME_ROOTS = (
     "parallel/BROWSER_FLEET/",
 )
 
-
 class ManifestError(RuntimeError):
     pass
-
 
 def run_git(root: Path, *args: str) -> str:
     cp = subprocess.run(
@@ -85,13 +83,11 @@ def run_git(root: Path, *args: str) -> str:
         raise ManifestError(cp.stderr.strip() or cp.stdout.strip() or "git command failed")
     return cp.stdout
 
-
 def resolve_commit(root: Path, source: str) -> str:
     commit = run_git(root, "rev-parse", f"{source}^{{commit}}").strip().lower()
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
         raise ManifestError(f"无法解析固定 source commit：{source}")
     return commit
-
 
 def commit_generated_at_utc(root: Path, commit: str) -> str:
     raw = run_git(root, "show", "-s", "--format=%cI", commit).strip()
@@ -101,15 +97,12 @@ def commit_generated_at_utc(root: Path, commit: str) -> str:
         raise ManifestError(f"无法解析 source commit 时间：{raw}") from exc
     return dt.isoformat(timespec="seconds").replace("+00:00", "Z")
 
-
 def package_version(commit: str, generated_at_utc: str) -> str:
     dt = datetime.fromisoformat(generated_at_utc.replace("Z", "+00:00"))
     return f"{dt:%Y.%m.%d}.{commit[:12]}"
 
-
 def git_blob_sha(data: bytes) -> str:
     return hashlib.sha1(b"blob " + str(len(data)).encode("ascii") + b"\0" + data).hexdigest()
-
 
 def is_runtime_path(path: str) -> bool:
     p = Path(path)
@@ -124,7 +117,6 @@ def is_runtime_path(path: str) -> bool:
     if path.startswith(RUNTIME_ROOTS):
         return p.suffix.lower() in RUNTIME_SUFFIXES or p.name == "requirements.txt"
     return False
-
 
 def selected_paths_from_commit(root: Path, commit: str) -> dict[str, str]:
     out = run_git(
@@ -142,12 +134,10 @@ def selected_paths_from_commit(root: Path, commit: str) -> dict[str, str]:
         _mode, obj_type, sha = meta.split()
         if obj_type == "blob" and is_runtime_path(path):
             selected[path] = sha.lower()
-
     missing = sorted((FIXED_PATHS | PYLAUNCH_TOP | LIVE_PROOF_TOP | RENDER_AUTHORITY_V3_PATHS) - selected.keys())
     if missing:
         raise ManifestError("固定 package runtime 文件缺失：" + ", ".join(missing))
     return dict(sorted(selected.items()))
-
 
 def selected_worktree_paths(root: Path) -> list[str]:
     candidates: set[str] = set(FIXED_PATHS | PYLAUNCH_TOP | LIVE_PROOF_TOP | RENDER_AUTHORITY_V3_PATHS)
@@ -167,10 +157,8 @@ def selected_worktree_paths(root: Path) -> list[str]:
                 candidates.add(rel)
     return sorted(path for path in candidates if (root / path).is_file() and is_runtime_path(path))
 
-
 def component_paths(paths: Iterable[str], prefix: str) -> list[str]:
     return [p for p in paths if p.startswith(prefix)]
-
 
 def generate_manifest(root: Path, source: str) -> dict:
     commit = resolve_commit(root, source)
@@ -199,9 +187,9 @@ def generate_manifest(root: Path, source: str) -> dict:
         "components": {
             "ownerOneclick": {"sourceCommit": commit, "bootstrap": "parallel/OWNER_ONECLICK/bootstrap_v2.ps1", "files": [p for p in paths if p.startswith("parallel/OWNER_ONECLICK/") or p in {"WOF_一键工具.cmd", "WOF_TOOLKIT.cmd"}]},
             "alpha": {"sourceCommit": commit, "fieldAdapter": "product/alpha/wof_alpha_field_adapter.js", "files": component_paths(paths, "product/alpha/")},
-            "pylaunch": {"revision": "render-authority-v3-owner-visible-head-visual", "sourceCommit": commit, "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd", "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd", "files": component_paths(paths, "parallel/PYLAUNCH/")},
+            "pylaunch": {"revision": "render-authority-v3-zero-click-first-head-visual", "sourceCommit": commit, "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd", "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd", "files": component_paths(paths, "parallel/PYLAUNCH/")},
             "operatorToolkit": {"sourceCommit": commit, "ownerEntry": "parallel/OPTOOLKIT/owner_zh_cn.py", "files": component_paths(paths, "parallel/OPTOOLKIT/")},
-            "renderAuthorityV3": {"sourceCommit": commit, "mode": "owner-visible-exact-world-p1-multisample-head-visual", "entry": "parallel/PYLAUNCH/render_authority_measurement_entry.py", "ownerFlow": "menu6 -> normal game -> camera prepare -> one P1 head click maximum -> normal play -> auto complete", "ownerClickMaximumPerAuthorityGeneration": 1, "confidenceLossBehavior": "HIDE_AND_AUTO_RECOVER", "productionOverlayEnabled": False, "files": render_files},
+            "renderAuthorityV3": {"sourceCommit": commit, "mode": "owner-visible-exact-world-zero-click-first-p1-multisample-head-visual", "entry": "parallel/PYLAUNCH/render_authority_measurement_entry.py", "ownerFlow": "menu6 -> normal game -> auto P1 identity/HUD -> bounded live-scene P1 head auto seed -> normal play -> auto complete", "ownerClickExpectedNormal": 0, "ownerClickMaximumPerAuthorityGeneration": 1, "ownerClickFallbackMaximumPerAuthorityGeneration": 1, "automaticSeedRequiredBeforeFallback": True, "hudPortraitMayIdentifyButNeverSeedSceneHead": True, "confidenceLossBehavior": "HIDE_AND_AUTO_RECOVER", "productionOverlayEnabled": False, "files": render_files},
             "projectionProof": {"sourceCommit": commit, "mode": "package-selected-bounded-live-compatibility-only", "files": component_paths(paths, "parallel/HUDANCHOR_PROOF/")},
             "recorder": {"sourceCommit": commit, "ownerEntry": "parallel/WOF052L_RECORDER/owner_zh_cn.py", "files": component_paths(paths, "parallel/WOF052L_RECORDER/")},
             "browserFleet": {"sourceCommit": commit, "ownerEntry": "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py", "files": component_paths(paths, "parallel/BROWSER_FLEET/")},
@@ -210,7 +198,6 @@ def generate_manifest(root: Path, source: str) -> dict:
         "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False},
         "files": [{"path": path, "gitBlobSha": selected[path]} for path in paths],
     }
-
 
 def verify_worktree_payload(root: Path, manifest: dict) -> None:
     expected = {str(row["path"]): str(row["gitBlobSha"]).lower() for row in manifest.get("files", [])}
@@ -228,10 +215,8 @@ def verify_worktree_payload(root: Path, manifest: dict) -> None:
         if actual != wanted:
             raise ManifestError(f"文件完整性校验失败：{path} expected={wanted} actual={actual}")
 
-
 def render_manifest(manifest: dict) -> str:
     return json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
-
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="从一个明确 immutable git commit 确定性生成 Owner One-Click package manifest")
@@ -258,7 +243,6 @@ def main(argv: list[str] | None = None) -> int:
     except ManifestError as exc:
         print(f"PACKAGE MANIFEST BLOCKED：{exc}", file=sys.stderr)
         return 2
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
