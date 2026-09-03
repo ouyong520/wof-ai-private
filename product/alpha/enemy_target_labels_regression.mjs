@@ -6,6 +6,7 @@ const L=require('./wof_alpha_enemy_target_labels.js');
 const H=require('./wof_alpha_hud_model.js');
 const workerSource=fs.readFileSync(new URL('./wof_alpha_real_worker.js',import.meta.url),'utf8');
 const hudSource=fs.readFileSync(new URL('./wof_alpha_hud.js',import.meta.url),'utf8');
+const screenMapSource=fs.readFileSync(new URL('./wof_alpha_screen_space_map.js',import.meta.url),'utf8');
 const loaderSource=fs.readFileSync(new URL('./wof_alpha_loader.js',import.meta.url),'utf8');
 const profileJson=JSON.parse(fs.readFileSync(new URL('./wof_alpha_enemy_head_projection.json',import.meta.url),'utf8'));
 
@@ -113,13 +114,14 @@ test('12 invalid confidence/nonfinite XYZ fail closed',()=>{
   }
 });
 
-test('13 top-origin WebGL viewport mapping preserves letterbox offsets and scale',()=>{
+test('13 top-origin WebGL viewport mapping preserves letterbox offsets and scale through shared mapper',()=>{
   const a=plan([marker(0)]);
   const b=plan([marker(0)],projection(),db({width:800,height:488,contentRect:{x:16,y:20,width:768,height:448},mappingVersion:'800:488:16:20:768:448'}));
   assert.equal(b.labels.length,1);
   assert.equal(b.labels[0].anchorDb.x,16+a.labels[0].anchorDb.x*2);
   assert.equal(b.labels[0].anchorDb.y,20+a.labels[0].anchorDb.y*2);
-  assert.match(hudSource,/y=H-\(vp\[1\]\+vp\[3\]\)/,'HUD must convert GL bottom-origin viewport to top-origin content rect');
+  assert.match(screenMapSource,/viewportTop=height-\(vpY\+vpHeight\)/,'shared mapper must convert GL bottom-origin viewport to top-origin content rect exactly once');
+  assert.match(hudSource,/SCREEN_MAP\.stateFromViewport\(\{/,'HUD must source drawing-buffer content rect from shared mapper');
   assert.match(hudSource,/t=1-r\.y\/H\*2,b=1-\(r\.y\+r\.height\)\/H\*2/,'label draw must consume top-origin drawing-buffer Y exactly once');
 });
 
@@ -151,6 +153,7 @@ test('18 transport compatibility and bounded marker cadence remain intact',()=>{
   assert.match(workerSource,/const RELEASE='wof-alpha-rc3'/);assert.match(workerSource,/const SCHEMA='wof-alpha-v2'/);assert.match(workerSource,/const TRANSPORT='wof-alpha-safe-transport-v1'/);
   assert.match(workerSource,/envelope\('enemy-target-markers'/);assert.match(workerSource,/sampledAt-lastMarkerPublishedAt>=50/);
   assert.match(hudSource,/TRANSPORT\.matches\(m\)/);assert.match(hudSource,/m\.kind==='enemy-target-markers'/);assert.match(loaderSource,/wof_alpha_enemy_target_labels\.js/);
+  assert.match(loaderSource,/wof_alpha_screen_space_map\.js/,'shared screen-space mapper must load before HUD consumers');
   assert.equal(L.validateProofProfile(profileJson).ok,false,'repository profile must remain fail-closed until corrected live enemy-head geometry is bound');
 });
 

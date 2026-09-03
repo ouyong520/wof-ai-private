@@ -8,8 +8,10 @@ const SESSION=cfg.session,CHANNEL=cfg.channel;
 const TRANSPORT=window.__WOF_ALPHA_TRANSPORT_V1;
 if(!TRANSPORT||TRANSPORT.version!=='wof-alpha-safe-transport-v1'||typeof TRANSPORT.matches!=='function')throw new Error('WOF Alpha Safe Transport 配对接口缺失');
 if(!window.WOFAlphaHudModel?.summarizeWarnings)throw new Error('WOF Alpha HUD model missing');
+if(!window.WOFAlphaScreenSpaceMap?.stateFromViewport)throw new Error('WOF Alpha shared screen-space mapper missing');
 if(!window.WOFAlphaEnemyTargetLabels?.buildPlan)throw new Error('WOF Alpha enemy target-label model missing');
 if(!window.WOFAlphaPlayerHeadWarning?.buildPlan)throw new Error('WOF Alpha player-head warning model missing');
+const SCREEN_MAP=window.WOFAlphaScreenSpaceMap;
 const TARGET_LABELS=window.WOFAlphaEnemyTargetLabels;
 const PLAYER_WARNING=window.WOFAlphaPlayerHeadWarning;
 
@@ -178,11 +180,12 @@ function clearP1HeadTrackerAuthority(reason='AUTHORITY_REVOKED'){p1TrackerAuthor
 function drawingBufferState(now,projectionEpoch){
   const W=gl.drawingBufferWidth||canvas.width,H=gl.drawingBufferHeight||canvas.height;if(!(W>0&&H>0))return null;
   let vp;try{vp=Array.from(gl.getParameter(gl.VIEWPORT));}catch(_){return null;}
-  if(!Array.isArray(vp)||vp.length!==4||!vp.every(Number.isFinite)||vp[2]<=0||vp[3]<=0)return null;
-  const x=vp[0],y=H-(vp[1]+vp[3]),width=vp[2],height=vp[3];
-  if(x<0||y<0||x+width>W||y+height>H)return null;
-  return{width:W,height:H,contentRect:{x,y,width,height},sampleAt:now,confidence:1,epoch:projectionEpoch||null,projectionEpoch:projectionEpoch||null,
-    mappingVersion:[W,H,...vp].join(':'),fullscreen:!!document.fullscreenElement};
+  const mapped=SCREEN_MAP.stateFromViewport({
+    width:W,height:H,viewport:vp,sampleAt:now,confidence:1,
+    epoch:projectionEpoch||null,projectionEpoch:projectionEpoch||null,
+    mappingVersion:[W,H,...vp].join(':'),fullscreen:!!document.fullscreenElement
+  });
+  return mapped.ok?mapped.state:null;
 }
 function drawEnemyTargetLabels(now){
   if(!lastMarkerRx||now-lastMarkerRx>MARKER_STALE_MS){lastLabelPlan=null;return;}
