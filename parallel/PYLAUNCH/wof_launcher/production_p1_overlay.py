@@ -46,7 +46,7 @@ class ProductionP1Overlay:
 
     @staticmethod
     def _status_expr(authority_key: str, runtime_epoch: str, call: str) -> str:
-        return """(()=>{const h=window.WOFALPHAHUD;if(!h||typeof h.status!=='function')return null;const t=(CALL);const s=h.status();return {schema:SCHEMA,authorityKey:AUTH,runtimeEpoch:EPOCH,productionOverlayEnabled:true,visible:t?.visible===true,drawCount:Number(t?.drawCount||0),drawHooked:s?.drawHooked===true,hudVersion:String(s?.version||''),hudSource:'product/alpha/wof_alpha_hud.js',tracker:t||null,readOnly:true,ramWrites:0,inputInjection:false};})()""".replace("CALL", call).replace("SCHEMA", json.dumps(SCHEMA)).replace("AUTH", json.dumps(authority_key)).replace("EPOCH", json.dumps(runtime_epoch))
+        return """(()=>{const h=window.WOFALPHAHUD;if(!h||typeof h.status!=='function')return null;const t=(CALL);const s=h.status();const r=window.WOFALPHARELATIVEENEMY?.status?.()||null;return {schema:SCHEMA,authorityKey:AUTH,runtimeEpoch:EPOCH,productionOverlayEnabled:true,visible:t?.visible===true,drawCount:Number(t?.drawCount||0),drawHooked:s?.drawHooked===true,hudVersion:String(s?.version||''),hudSource:'product/alpha/wof_alpha_hud.js',tracker:t||null,relativeEnemy:r,readOnly:true,ramWrites:0,inputInjection:false};})()""".replace("CALL", call).replace("SCHEMA", json.dumps(SCHEMA)).replace("AUTH", json.dumps(authority_key)).replace("EPOCH", json.dumps(runtime_epoch))
 
     def bind(self, client: CdpClient, page_target_id: str, authority_key: str, runtime_epoch: str) -> dict[str, Any]:
         self.dispose()
@@ -75,12 +75,14 @@ class ProductionP1Overlay:
         self._last["installMode"] = self._install_mode
         return self.status()
 
-    def update(self, visual: dict[str, Any], layout: dict[str, Any] | None, frame_size: tuple[int, int]) -> dict[str, Any]:
+    def update(self, visual: dict[str, Any], layout: dict[str, Any] | None, frame_size: tuple[int, int], actor_snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
         if not self._session or not self._authority_key or not self._runtime_epoch:
             return self.status()
         center = visual.get("center") if isinstance(visual, dict) else None
         visible = bool(isinstance(center, list) and len(center) >= 2 and visual.get("state") == "HEAD_TRACKING" and int(visual.get("lostFrames") or 0) == 0 and isinstance(layout, dict))
         try:
+            if isinstance(actor_snapshot, dict):
+                self._session.evaluate(f"window.WOFALPHARELATIVEENEMY?.ingestActorSnapshot?.({json.dumps(actor_snapshot)});true", timeout=3.0)
             if visible:
                 fw, fh = max(1, int(frame_size[0])), max(1, int(frame_size[1]))
                 css_w, css_h = float(layout.get("width") or 0), float(layout.get("height") or 0)
