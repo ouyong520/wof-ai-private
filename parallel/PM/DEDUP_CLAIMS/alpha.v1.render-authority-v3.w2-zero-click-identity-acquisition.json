@@ -8,6 +8,14 @@
   "promptPath": "parallel/PM/ALPHA_V1_LIVE_ACCEPTANCE_RENDER_AUTHORITY_OWNER_VISIBLE_STARTUP_RECOVERY_V3_PARALLEL_ACCELERATION_DISPATCH.md",
   "owner": "gpt-5.6-sol-v3-w2-zero-click",
   "claimToken": "w2-7f7e3bcf63c142eda60ea2b1f051f3e4",
-  "state": "ACTIVE",
-  "startCommit": "78335c095af09f20af05e13e959d445d5c0017e5"
+  "state": "SUBCOMPLETE",
+  "startCommit": "78335c095af09f20af05e13e959d445d5c0017e5",
+  "resultPath": "parallel/PM/ALPHA_V1_RENDER_AUTHORITY_V3_W2_ZERO_CLICK_IDENTITY_ACQUISITION_SUBRESULT.md",
+  "resultCommit": "a15432a35f6a57d4702be55d7b39b357c482c923",
+  "modulePath": "parallel/PYLAUNCH/wof_launcher/zero_click_identity_acquisition.py",
+  "moduleCommit": "ad0657a137d6996e563a7c11c2d11a2b9037d80e",
+  "fixtureCommit": "73548ba7b66eae39eb827a939f8cb4b28f6273df",
+  "testCommit": "1deabd06bbf52d6d4a3153be3453eed6ed704029",
+  "focusedSelfCheck": "6 passed",
+  "subworkstreamVerdict": "W2_SUBCOMPLETE_HANDOFF_TO_V3_UMBRELLA"
 }
