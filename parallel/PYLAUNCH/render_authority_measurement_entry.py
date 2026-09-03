@@ -126,6 +126,15 @@ def _waiting_payload(diagnostic: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
+def _reusable_payload(diagnostic: dict[str, Any], entry_source: str | None) -> dict[str, Any]:
+    """Merge a reusable-WOF status payload without duplicate keyword arguments."""
+    payload = dict(diagnostic)
+    payload["browserConnected"] = True
+    if entry_source and not payload.get("browserEntrySource"):
+        payload["browserEntrySource"] = entry_source
+    return payload
+
+
 def parse_args()->argparse.Namespace:
     p=argparse.ArgumentParser(description="WOF Render Authority V3 owner-visible entry")
     p.add_argument("--root",required=True);p.add_argument("--output-root",required=True);p.add_argument("--host",default="127.0.0.1");p.add_argument("--port",type=int,default=9223);p.add_argument("--browser",choices=["auto","chrome","edge"],default="auto");p.add_argument("--browser-path");p.add_argument("--game-url");return p.parse_args()
@@ -147,7 +156,7 @@ def main()->int:
                 if endpoint is None:
                     publisher.publish("WAITING_FOR_WOF",**_waiting_payload(diagnostic))
                     stop.wait(0.8);continue
-                publisher.publish("WAITING_FOR_WOF",browserConnected=True,browserEntrySource=entry_source,**diagnostic)
+                publisher.publish("WAITING_FOR_WOF",**_reusable_payload(diagnostic,entry_source))
                 code=int(runner.run(root,output_root,endpoint.host,endpoint.port,args.browser,args.browser_path,None,lambda state,payload:publisher.publish(state,**payload),stop) or 0)
                 if code in {3,4,5,6} and not stop.is_set():
                     publisher.publish("WAITING_FOR_WOF",browserConnected=False,wofPageFound=False,workerFound=False,wasmFound=False,heapFound=False,browserEntrySource="attach-only-existing-wof",discoveryReason="REUSABLE_WOF_DISAPPEARED",browserLaunchAttempted=False,navigationAttempted=False,staleGameUrlIgnored=True)
