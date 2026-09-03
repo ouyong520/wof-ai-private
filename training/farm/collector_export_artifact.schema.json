@@ -1,0 +1,146 @@
+{
+  "$defs": {
+    "blockSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "blocks": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "baseAddress": {"minimum": 0, "type": "integer"},
+              "data": {"minLength": 1, "type": "string"},
+              "encoding": {"const": "base64"},
+              "index": {"minimum": 0, "type": "integer"},
+              "length": {"minimum": 1, "type": "integer"},
+              "sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"}
+            },
+            "required": ["index", "baseAddress", "length", "sha256", "encoding", "data"],
+            "type": "object"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "memoryLayoutIdentity": {"$ref": "#/$defs/memoryLayout"}
+      },
+      "required": ["memoryLayoutIdentity", "blocks"],
+      "type": "object"
+    },
+    "bytes": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {"minimum": 1, "type": "integer"},
+        "data": {"minLength": 1, "type": "string"},
+        "encoding": {"const": "base64"},
+        "sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"}
+      },
+      "required": ["encoding", "bytes", "sha256", "data"],
+      "type": "object"
+    },
+    "memoryLayout": {
+      "additionalProperties": false,
+      "properties": {
+        "addressKind": {"const": "stable-retro-memory-block-key-plus-byte-offset"},
+        "blocks": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "baseAddress": {"minimum": 0, "type": "integer"},
+              "index": {"minimum": 0, "type": "integer"},
+              "length": {"minimum": 1, "type": "integer"}
+            },
+            "required": ["index", "baseAddress", "length"],
+            "type": "object"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "layoutIdentitySha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+        "schema": {"const": "wof-training-farm-fork-memory-layout-v1"},
+        "sourceNamespace": {"const": "stable-retro-fbneo"}
+      },
+      "required": ["schema", "sourceNamespace", "addressKind", "blocks", "layoutIdentitySha256"],
+      "type": "object"
+    },
+    "safety": {
+      "additionalProperties": false,
+      "properties": {
+        "inputInjection": {"const": false},
+        "readOnlyExporter": {"const": true},
+        "trainingControlAuthority": {"const": false},
+        "workerLaunchAuthority": {"const": false},
+        "workerSchedulingAuthority": {"const": false},
+        "writesGameMemory": {"const": false}
+      },
+      "required": ["readOnlyExporter", "writesGameMemory", "inputInjection", "trainingControlAuthority", "workerLaunchAuthority", "workerSchedulingAuthority"],
+      "type": "object"
+    },
+    "sample": {
+      "additionalProperties": false,
+      "properties": {
+        "logicalFrame": {"anyOf": [{"maximum": 9223372036854775807, "minimum": 0, "type": "integer"}, {"type": "null"}]},
+        "metadata": {"anyOf": [{"type": "object"}, {"type": "null"}]},
+        "ram": {"anyOf": [{"$ref": "#/$defs/bytes"}, {"type": "null"}]},
+        "ramBlocks": {"anyOf": [{"$ref": "#/$defs/blockSnapshot"}, {"type": "null"}]},
+        "sampleSequence": {"minimum": 1, "type": "integer"},
+        "stepCounter": {"anyOf": [{"maximum": 9223372036854775807, "minimum": 0, "type": "integer"}, {"type": "null"}]}
+      },
+      "required": ["sampleSequence", "logicalFrame", "stepCounter", "ram", "ramBlocks", "metadata"],
+      "type": "object"
+    }
+  },
+  "$id": "wof-training-farm-collector-export-artifact-v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actionResultTrajectory": {"anyOf": [{"type": "array"}, {"type": "null"}]},
+    "active": {"type": "boolean"},
+    "branchId": {"anyOf": [{"pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", "type": "string"}, {"type": "null"}]},
+    "captureBindingSha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "completeness": {"enum": ["COMPLETE", "PARTIAL"]},
+    "currentActionResultMetadata": {"anyOf": [{"type": "object"}, {"type": "null"}]},
+    "episodeGeneration": {"anyOf": [{"pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", "type": "string"}, {"type": "null"}]},
+    "episodeId": {"anyOf": [{"pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", "type": "string"}, {"type": "null"}]},
+    "evidenceKinds": {"items": {"minLength": 1, "type": "string"}, "minItems": 1, "type": "array", "uniqueItems": true},
+    "exporterSourceFiles": {
+      "additionalProperties": false,
+      "properties": {
+        "collector_export.py": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+        "collector_export_artifact.schema.json": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+        "collector_export_record.schema.json": {"pattern": "^[0-9a-f]{64}$", "type": "string"}
+      },
+      "required": ["collector_export.py", "collector_export_record.schema.json", "collector_export_artifact.schema.json"],
+      "type": "object"
+    },
+    "exporterSourceIdentitySha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "exporterVersion": {"const": "wof-training-farm-read-only-exporter-v1"},
+    "farmCandidateSha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "forkSetId": {"anyOf": [{"pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", "type": "string"}, {"type": "null"}]},
+    "generationStartedUnixMs": {"maximum": 9223372036854775807, "minimum": 0, "type": "integer"},
+    "health": {"enum": ["ACTIVE", "DEGRADED", "STOPPED"]},
+    "logicalFrame": {"anyOf": [{"maximum": 9223372036854775807, "minimum": 0, "type": "integer"}, {"type": "null"}]},
+    "memoryLayoutIdentity": {"anyOf": [{"$ref": "#/$defs/memoryLayout"}, {"type": "null"}]},
+    "monotonicSequence": {"maximum": 9223372036854775807, "minimum": 1, "type": "integer"},
+    "observationStream": {"items": {"$ref": "#/$defs/sample"}, "maxItems": 4096, "type": "array"},
+    "processId": {"maximum": 9223372036854775807, "minimum": 1, "type": "integer"},
+    "publishedAtUnixMs": {"maximum": 9223372036854775807, "minimum": 0, "type": "integer"},
+    "ramBlocksSnapshot": {"anyOf": [{"$ref": "#/$defs/blockSnapshot"}, {"type": "null"}]},
+    "ramSnapshot": {"anyOf": [{"$ref": "#/$defs/bytes"}, {"type": "null"}]},
+    "rawBytes": {"maximum": 16777216, "minimum": 0, "type": "integer"},
+    "romSha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "rootForkBranchSavestateMetadata": {"anyOf": [{"type": "object"}, {"type": "null"}]},
+    "rootId": {"anyOf": [{"pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", "type": "string"}, {"type": "null"}]},
+    "runtimeIdentity": {"type": "object"},
+    "runtimeIdentitySha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "runtimeResourceTimingMetadata": {"anyOf": [{"type": "object"}, {"type": "null"}]},
+    "safety": {"$ref": "#/$defs/safety"},
+    "schema": {"const": "wof-training-farm-collector-export-artifact-v1"},
+    "sourceNamespace": {"const": "stable-retro-fbneo"},
+    "stepCounter": {"anyOf": [{"maximum": 9223372036854775807, "minimum": 0, "type": "integer"}, {"type": "null"}]},
+    "trajectoryMetadata": {"anyOf": [{"type": "object"}, {"type": "null"}]},
+    "workerGeneration": {"pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", "type": "string"},
+    "workerId": {"pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$", "type": "string"}
+  },
+  "required": ["schema", "sourceNamespace", "exporterVersion", "exporterSourceIdentitySha256", "exporterSourceFiles", "workerId", "workerGeneration", "generationStartedUnixMs", "processId", "monotonicSequence", "publishedAtUnixMs", "logicalFrame", "stepCounter", "episodeId", "episodeGeneration", "forkSetId", "rootId", "branchId", "runtimeIdentity", "runtimeIdentitySha256", "romSha256", "farmCandidateSha256", "memoryLayoutIdentity", "captureBindingSha256", "active", "health", "completeness", "evidenceKinds", "rawBytes", "ramSnapshot", "ramBlocksSnapshot", "observationStream", "trajectoryMetadata", "actionResultTrajectory", "rootForkBranchSavestateMetadata", "runtimeResourceTimingMetadata", "currentActionResultMetadata", "safety"],
+  "title": "WOF Training Farm Collector Export Immutable Artifact v1",
+  "type": "object"
+}
