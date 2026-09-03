@@ -1,0 +1,255 @@
+{
+  "schemaVersion": "wof-unified-collector-v12-terminal-acceptance-bundle-v1",
+  "bundleId": "collector-v12-terminal-9b7c6897149c",
+  "candidate": {
+    "repository": "ouyong520/wof-winkawaks-bridge",
+    "commitSha": "9b7c6897149cc7de615dd372e072d7b21e9de8f7",
+    "treeSha": "9da51bd18af28c5093095cc2684e74c669f3eebe"
+  },
+  "terminalAuthority": {
+    "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_FINAL_CONSOLIDATION_ONECLICK_LEGACY_RETIREMENT_RESULT.md",
+    "recoveryDedupKey": "wof.unified-collector.v12.terminal-integration-closeout-recovery-v2",
+    "recoveryState": "COMPLETE"
+  },
+  "ci": {
+    "workflow": "Collector V12 Focused Acceptance",
+    "runId": 33722396068,
+    "jobId": 100544061556,
+    "conclusion": "success",
+    "focusedTests": {
+      "passed": 19,
+      "total": 19
+    },
+    "repositorySummary": {
+      "deferred": 0,
+      "blocked": 0,
+      "pass": 9
+    },
+    "artifact": {
+      "id": 9880685207,
+      "name": "collector-v12-repository-acceptance-9b7c6897149cc7de615dd372e072d7b21e9de8f7",
+      "zipSha256": "90a0e3e21068cbd9b5a1ce4819917cdbfa0a5503eb5c1957b4195faccea407cf",
+      "jsonSha256": "3a264c01c77091c058be546eb3ba9896d85bbc08264e729bde19b97481f24c6f",
+      "retentionDays": 14
+    }
+  },
+  "repositoryAcceptance": {
+    "schemaVersion": "wof-unified-collector-v12-acceptance-bundle-v1",
+    "bundleId": "collector-v12-repository-9b7c6897149c",
+    "generatedAtUtc": "2026-09-03T06:15:35Z",
+    "candidate": {
+      "repository": "ouyong520/wof-winkawaks-bridge",
+      "commitSha": "9b7c6897149cc7de615dd372e072d7b21e9de8f7",
+      "treeSha": "9da51bd18af28c5093095cc2684e74c669f3eebe"
+    },
+    "authorities": {
+      "v11Terminal": {
+        "commitSha": "e80257d9486cd3129b115d4e1007bf24335b8852",
+        "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V11_TERMINAL_INTEGRATION_CLOSEOUT_RECOVERY_V2_RESULT.md",
+        "consumed": true
+      }
+    },
+    "sourceNamespaces": [
+      "browser-wasm",
+      "winkawaks",
+      "stable-retro-fbneo"
+    ],
+    "safety": {
+      "readOnly": true,
+      "writesGameMemory": false,
+      "inputInjection": false
+    },
+    "facts": [
+      {
+        "factId": "repo.entrypoint.canonical",
+        "scope": "repository",
+        "status": "PASS",
+        "evidence": [
+          {
+            "type": "repository-file",
+            "path": "START_WOF_UNIFIED_COLLECTOR.bat",
+            "sha256": "2050ed92d94fa8f3b6b9b154c29a2b6a6a5938a39e6e28de38aaec4c5d61ef64"
+          }
+        ]
+      },
+      {
+        "factId": "repo.entrypoint.compatibility-wrappers",
+        "scope": "repository",
+        "status": "PASS",
+        "evidence": [
+          {
+            "type": "repository-file",
+            "path": "START_WOF_COLLECTOR.bat",
+            "sha256": "de962720b998c98e08d7a9240dca6ef45fc8921bddb23840e0f49dceb79e813e"
+          },
+          {
+            "type": "repository-file",
+            "path": "STOP_WOF_UNIFIED_COLLECTOR.bat",
+            "sha256": "4ee82a249706f0417e72e4c7477571c33a491c408068b69a9a76d27959d1d2ed"
+          },
+          {
+            "type": "repository-file",
+            "path": "STOP_WOF_COLLECTOR.bat",
+            "sha256": "5c8736d2ed84b1cdf65411e6409b8d37a731873df297021e2ba0ad1d1492819a"
+          }
+        ]
+      },
+      {
+        "factId": "repo.lifecycle.instance-bound-stop",
+        "scope": "repository",
+        "status": "PASS",
+        "evidence": [
+          {
+            "type": "repository-file",
+            "path": "bridge/collector_lifecycle.py",
+            "sha256": "b5ae8f8197a9955d28a9936dc966d508433bcb0c212dcf159e740d594423e02d"
+          },
+          {
+            "type": "repository-file",
+            "path": "bridge/collector_single_instance.py",
+            "sha256": "a3b8318bf274a6a61307a721a1ecefd45380201fee83c9447ecd917f0f972f5b"
+          }
+        ]
+      },
+      {
+        "factId": "repo.lifecycle.single-instance",
+        "scope": "repository",
+        "status": "PASS",
+        "evidence": [
+          {
+            "type": "repository-file",
+            "path": "bridge/collector_lifecycle.py",
+            "sha256": "b5ae8f8197a9955d28a9936dc966d508433bcb0c212dcf159e740d594423e02d"
+          },
+          {
+            "type": "repository-file",
+            "path": "bridge/collector_single_instance.py",
+            "sha256": "a3b8318bf274a6a61307a721a1ecefd45380201fee83c9447ecd917f0f972f5b"
+          }
+        ]
+      },
+      {
+        "factId": "repo.lifecycle.status-health-readiness",
+        "scope": "repository",
+        "status": "PASS",
+        "evidence": [
+          {
+            "type": "repository-file",
+            "path": "bridge/collector_lifecycle.py",
+            "sha256": "b5ae8f8197a9955d28a9936dc966d508433bcb0c212dcf159e740d594423e02d"
+          },
+          {
+            "type": "repository-file",
+            "path": "bridge/collector_single_instance.py",
+            "sha256": "a3b8318bf274a6a61307a721a1ecefd45380201fee83c9447ecd917f0f972f5b"
+          }
+        ]
+      },
+      {
+        "factId": "repo.agent.three-adapter-health",
+        "scope": "repository",
+        "status": "PASS",
+        "evidence": [
+          {
+            "type": "repository-file",
+            "path": "bridge/unified_collector_agent.py",
+            "sha256": "cb1c948cc46d74e09f93af760760c5dc303d84959a33953562ee74618ca4b08f"
+          }
+        ]
+      },
+      {
+        "factId": "repo.git-plane.single",
+        "scope": "repository",
+        "status": "PASS",
+        "evidence": [
+          {
+            "type": "repository-file",
+            "path": "bridge/collector_queue_runner.py",
+            "sha256": "468d00bae9bb40f5be6ed95c55183e7bcdac1b58fc9dcc1bcfc570569506862b"
+          },
+          {
+            "type": "repository-file",
+            "path": "bridge/unified_collector_agent.py",
+            "sha256": "cb1c948cc46d74e09f93af760760c5dc303d84959a33953562ee74618ca4b08f"
+          },
+          {
+            "type": "repository-file",
+            "path": "bridge/collector_lifecycle.py",
+            "sha256": "b5ae8f8197a9955d28a9936dc966d508433bcb0c212dcf159e740d594423e02d"
+          }
+        ]
+      },
+      {
+        "factId": "repo.legacy.retirement",
+        "scope": "repository",
+        "status": "PASS",
+        "evidence": [
+          {
+            "type": "repository-file",
+            "path": "START_WOF_COLLECTOR.bat",
+            "sha256": "de962720b998c98e08d7a9240dca6ef45fc8921bddb23840e0f49dceb79e813e"
+          },
+          {
+            "type": "repository-file",
+            "path": "START_WOF_UNIFIED_COLLECTOR.bat",
+            "sha256": "2050ed92d94fa8f3b6b9b154c29a2b6a6a5938a39e6e28de38aaec4c5d61ef64"
+          },
+          {
+            "type": "repository-file",
+            "path": "STOP_WOF_COLLECTOR.bat",
+            "sha256": "5c8736d2ed84b1cdf65411e6409b8d37a731873df297021e2ba0ad1d1492819a"
+          },
+          {
+            "type": "repository-file",
+            "path": "STOP_WOF_UNIFIED_COLLECTOR.bat",
+            "sha256": "4ee82a249706f0417e72e4c7477571c33a491c408068b69a9a76d27959d1d2ed"
+          },
+          {
+            "type": "repository-file",
+            "path": "READY_WOF_TASK.bat",
+            "sha256": "aa734ba78e13cc2186a3a0d9e20ae06c04aa46e2a6f4e1d75872e8851b979e4f"
+          }
+        ]
+      },
+      {
+        "factId": "repo.authority.v11-terminal-consumed",
+        "scope": "repository",
+        "status": "PASS",
+        "evidence": [
+          {
+            "type": "git-ancestry",
+            "path": "e80257d9486cd3129b115d4e1007bf24335b8852",
+            "sha256": "69089916b8a0b9b79a6f7d2555a7afd0ad4c661154f2d23d6488315f5f43e452"
+          }
+        ]
+      }
+    ],
+    "summary": {
+      "deferred": 0,
+      "blocked": 0,
+      "pass": 9
+    }
+  },
+  "externalRuntimeAcceptance": [
+    {
+      "factId": "runtime.real-windows-wof-session",
+      "scope": "real-runtime",
+      "status": "BLOCKED",
+      "reasonCode": "REAL_WINDOWS_WOF_ENVIRONMENT_REQUIRED",
+      "statement": "No real Windows/WOF session was executed by repository CI or terminal recovery; live Windows/Browser/WOF proof must not be relabeled PASS without bounded runtime evidence."
+    },
+    {
+      "factId": "runtime.training-farm-live-10-worker",
+      "scope": "real-runtime",
+      "status": "DEFERRED",
+      "reasonCode": "TRAINING_FARM_LIVE_FLEET_AUTHORITY_GATED",
+      "statement": "Current Training Farm StageGuard authority must permit bounded live 10-worker execution before this fact can become PASS; existing ROM-free isolation evidence is retained but is not live-fleet proof."
+    }
+  ],
+  "safety": {
+    "readOnly": true,
+    "writesGameMemory": false,
+    "inputInjection": false
+  },
+  "terminalDisposition": "COMPLETE_REPOSITORY_AUTHORIZED_ACCEPTANCE_WITH_EXPLICIT_EXTERNAL_RUNTIME_GATES"
+}
