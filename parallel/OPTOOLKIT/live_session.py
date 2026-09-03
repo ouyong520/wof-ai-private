@@ -36,13 +36,21 @@ def _package_version(root: Path) -> str | None:
 
 
 def _extract_projection_result(status: dict[str, Any] | None) -> dict[str, Any] | None:
-    if not status: return None
+    if not status:
+        return None
     alpha = status.get("alphaStatus") or status.get("alpha_status")
-    if not isinstance(alpha, dict): return None
-    recovery = alpha.get("projectionRecovery")
-    if not isinstance(recovery, dict): return None
-    result = recovery.get("proofResult")
-    return result if isinstance(result, dict) else None
+    if isinstance(alpha, dict):
+        recovery = alpha.get("projectionRecovery")
+        if isinstance(recovery, dict):
+            result = recovery.get("proofResult")
+            if isinstance(result, dict):
+                return result
+    retained = status.get("lastCalibrationProgress") or status.get("last_calibration_progress")
+    if isinstance(retained, dict):
+        result = retained.get("proofResult")
+        if isinstance(result, dict):
+            return result
+    return None
 
 
 def _durable_live_evidence(status: dict[str, Any] | None) -> dict[str, Any]:
@@ -90,7 +98,21 @@ def run_session(root: Path, session_dir: Path) -> int:
         launch_error=str(exc); stderr_path.write_text((stderr_path.read_text(encoding="utf-8",errors="replace") if stderr_path.exists() else "")+"\n"+launch_error+"\n",encoding="utf-8")
     status=_read_json(proof_json); projection=_extract_projection_result(status); durable=_durable_live_evidence(status)
     if projection is not None: _write_json(session_dir/"PROJECTION_PROOF_RESULT.json",projection)
-    if durable["lastCalibrationProgress"] is not None: _write_json(session_dir/"CALIBRATION_PROGRESS.json",durable["lastCalibrationProgress"])
+    progress=durable["lastCalibrationProgress"]
+    if progress is not None:
+        _write_json(session_dir/"CALIBRATION_PROGRESS.json",progress)
+        runtime_evidence={
+            "schema":"wof-live-projection-runtime-evidence-v1",
+            "verdict":progress.get("verdict"),
+            "fit":progress.get("fit"),
+            "tracker":progress.get("tracker"),
+            "enemyEvidenceTypes":progress.get("enemyEvidenceTypes"),
+            "suppression":progress.get("suppression"),
+            "authorityTimeline":progress.get("authorityTimeline"),
+            "safety":SAFETY,
+        }
+        if any(runtime_evidence.get(k) not in (None, [], {}) for k in ("fit","tracker","enemyEvidenceTypes","suppression","authorityTimeline")):
+            _write_json(session_dir/"PROJECTION_RUNTIME_EVIDENCE.json",runtime_evidence)
     if durable["significantEvents"]: _write_json(session_dir/"SIGNIFICANT_EVENTS.json",{"schema":"wof-live-acceptance-significant-events-v1","events":durable["significantEvents"],"safety":SAFETY})
     final_state=str((status or {}).get("launcherState") or (status or {}).get("state") or "UNKNOWN")
     final_disconnected=final_state in {"ERROR","DISCONNECTED"} or not bool((status or {}).get("checks",{}).get("Browser")=="OK")
