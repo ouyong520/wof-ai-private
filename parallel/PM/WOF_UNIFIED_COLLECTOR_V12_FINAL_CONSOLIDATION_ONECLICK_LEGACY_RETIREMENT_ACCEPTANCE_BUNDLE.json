@@ -1,10 +1,10 @@
 {
   "schemaVersion": "wof-unified-collector-v12-terminal-acceptance-bundle-v1",
-  "bundleId": "collector-v12-terminal-9b7c6897149c",
+  "bundleId": "collector-v12-terminal-65831cb0cf3e",
   "candidate": {
     "repository": "ouyong520/wof-winkawaks-bridge",
-    "commitSha": "9b7c6897149cc7de615dd372e072d7b21e9de8f7",
-    "treeSha": "9da51bd18af28c5093095cc2684e74c669f3eebe"
+    "commitSha": "65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95",
+    "treeSha": "6102471dde9c4f8b6b6f85fed3d1c7cc54d41d55"
   },
   "terminalAuthority": {
     "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_FINAL_CONSOLIDATION_ONECLICK_LEGACY_RETIREMENT_RESULT.md",
@@ -13,8 +13,8 @@
   },
   "ci": {
     "workflow": "Collector V12 Focused Acceptance",
-    "runId": 33722396068,
-    "jobId": 100544061556,
+    "runId": 33723112765,
+    "jobId": 100546230865,
     "conclusion": "success",
     "focusedTests": {
       "passed": 19,
@@ -26,21 +26,21 @@
       "pass": 9
     },
     "artifact": {
-      "id": 9880685207,
-      "name": "collector-v12-repository-acceptance-9b7c6897149cc7de615dd372e072d7b21e9de8f7",
-      "zipSha256": "90a0e3e21068cbd9b5a1ce4819917cdbfa0a5503eb5c1957b4195faccea407cf",
-      "jsonSha256": "3a264c01c77091c058be546eb3ba9896d85bbc08264e729bde19b97481f24c6f",
+      "id": 9880942586,
+      "name": "collector-v12-repository-acceptance-65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95",
+      "zipSha256": "b2d8871036459d60b79b35a1f3de59874230fbdcba05f84fa4a0e4f8f04ef3f8",
+      "jsonSha256": "86b3439e58d1b31103c1ef35cc6176d582931b78042ba56f2136e9f406fa3f41",
       "retentionDays": 14
     }
   },
   "repositoryAcceptance": {
     "schemaVersion": "wof-unified-collector-v12-acceptance-bundle-v1",
-    "bundleId": "collector-v12-repository-9b7c6897149c",
-    "generatedAtUtc": "2026-09-03T06:15:35Z",
+    "bundleId": "collector-v12-repository-65831cb0cf3e",
+    "generatedAtUtc": "2026-09-03T06:25:12Z",
     "candidate": {
       "repository": "ouyong520/wof-winkawaks-bridge",
-      "commitSha": "9b7c6897149cc7de615dd372e072d7b21e9de8f7",
-      "treeSha": "9da51bd18af28c5093095cc2684e74c669f3eebe"
+      "commitSha": "65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95",
+      "treeSha": "6102471dde9c4f8b6b6f85fed3d1c7cc54d41d55"
     },
     "authorities": {
       "v11Terminal": {
@@ -102,7 +102,7 @@
           {
             "type": "repository-file",
             "path": "bridge/collector_lifecycle.py",
-            "sha256": "b5ae8f8197a9955d28a9936dc966d508433bcb0c212dcf159e740d594423e02d"
+            "sha256": "ea40b9533dc7a5f2c9aff685a97cc9c484dddefc42c6045325214fc9ab5306cf"
           },
           {
             "type": "repository-file",
@@ -119,7 +119,7 @@
           {
             "type": "repository-file",
             "path": "bridge/collector_lifecycle.py",
-            "sha256": "b5ae8f8197a9955d28a9936dc966d508433bcb0c212dcf159e740d594423e02d"
+            "sha256": "ea40b9533dc7a5f2c9aff685a97cc9c484dddefc42c6045325214fc9ab5306cf"
           },
           {
             "type": "repository-file",
@@ -136,7 +136,7 @@
           {
             "type": "repository-file",
             "path": "bridge/collector_lifecycle.py",
-            "sha256": "b5ae8f8197a9955d28a9936dc966d508433bcb0c212dcf159e740d594423e02d"
+            "sha256": "ea40b9533dc7a5f2c9aff685a97cc9c484dddefc42c6045325214fc9ab5306cf"
           },
           {
             "type": "repository-file",
@@ -175,7 +175,7 @@
           {
             "type": "repository-file",
             "path": "bridge/collector_lifecycle.py",
-            "sha256": "b5ae8f8197a9955d28a9936dc966d508433bcb0c212dcf159e740d594423e02d"
+            "sha256": "ea40b9533dc7a5f2c9aff685a97cc9c484dddefc42c6045325214fc9ab5306cf"
           }
         ]
       },
@@ -226,8 +226,8 @@
     ],
     "summary": {
       "deferred": 0,
-      "blocked": 0,
-      "pass": 9
+      "pass": 9,
+      "blocked": 0
     }
   },
   "externalRuntimeAcceptance": [
@@ -236,7 +236,7 @@
       "scope": "real-runtime",
       "status": "BLOCKED",
       "reasonCode": "REAL_WINDOWS_WOF_ENVIRONMENT_REQUIRED",
-      "statement": "No real Windows/WOF session was executed by repository CI or terminal recovery; live Windows/Browser/WOF proof must not be relabeled PASS without bounded runtime evidence."
+      "statement": "No real Windows/WOF session was executed by repository CI or terminal integration; live Windows/Browser/WOF proof must not be relabeled PASS without bounded runtime evidence."
     },
     {
       "factId": "runtime.training-farm-live-10-worker",
