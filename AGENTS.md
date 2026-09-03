@@ -36,6 +36,30 @@ Every fresh PM chat must operate under the following contract without requiring 
 - Request Owner live testing only when the remaining fact is intrinsically real-environment dependent, and keep that run bounded, simple and product-like.
 - Communication with Owner must stay concise. Normally provide only current verdict, whether Owner action is needed, and the exact next worker prompt that must be relayed.
 
+## Mandatory duplicate-task preflight — Owner may paste the wrong or repeated task
+
+The Owner may accidentally paste a task that is already ACTIVE, already COMPLETE, superseded, or logically equivalent to another task under a different stage name. Every PM and worker must protect the project from duplicate execution.
+
+Before any meaningful task work or implementation mutation:
+
+- Re-read current `main`, relevant durable RESULTs, canonical dedup claims, stage claims, recent equivalent commits and the authoritative START_PROMPT.
+- Apply `parallel/PM/STAGE_DEDUP_GUARD.md` and canonical dedup v2. Compare the logical work item, not only the pasted stage name.
+- If an equivalent task is already ACTIVE/claimed by another worker, do **not** execute it again and do not create a parallel replacement merely because the Owner pasted it again. Return a concise duplicate/claimed verdict to the Owner.
+- If an equivalent task is already COMPLETE/PASS with durable authority and no material drift requiring a new stage, do **not** execute it again. Tell the Owner that it is already completed and let PM continue to the next legitimate project step.
+- If the pasted task has been superseded by newer authority, do not revive the old work. Follow the current successor authority instead.
+- If only a genuinely unfinished closeout or concrete successor repair remains, route only that remaining work; do not redo completed implementation.
+- A duplicate paste is never permission to bypass canonical claims, invent a new dedup key, open an unnecessary recovery, or rerun already-passing QA.
+
+Preferred duplicate terminal behavior:
+
+`ALREADY ACTIVE / CLAIMED — NO EXECUTION`
+
+or
+
+`ALREADY COMPLETE — NO EXECUTION`
+
+followed by a concise note to the Owner stating that the pasted task is already in progress or already finished. PM then decides the actual next step from Git truth.
+
 ## Testing cadence — test by functional module, not step-by-step
 
 Testing exists to protect product correctness, not to consume development time after every small edit.
@@ -67,6 +91,8 @@ Default PM-to-worker handoff:
 - opening: roughly 100 Chinese characters covering task goal, expected outcome and key boundary;
 - middle: repository plus authoritative START_PROMPT path/link;
 - ending: sustained-execution instruction; do not repeat long background already stored in Git.
+
+Every worker handoff must preserve duplicate preflight behavior: **先检查该逻辑任务是否已经 ACTIVE / COMPLETE / superseded；如果已在做或已完成，不重复执行，直接告诉 Owner 已认领/已完成并 NO EXECUTION。**
 
 For implementation/setup/recovery work, handoffs should end with the equivalent of:
 
