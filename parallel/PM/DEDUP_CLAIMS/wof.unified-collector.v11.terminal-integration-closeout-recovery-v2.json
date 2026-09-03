@@ -8,6 +8,11 @@
   "promptPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V11_TERMINAL_INTEGRATION_CLOSEOUT_RECOVERY_V2_START_PROMPT.md",
   "owner": "gpt-5.6-sol-v11-terminal-recovery-v2",
   "claimToken": "7d2ccf6019672b2ee26df5e2ba53a302",
-  "state": "ACTIVE",
-  "startCommit": "d5b166bb129f47a9aac7023e901531b9ee5f11d6"
+  "state": "COMPLETE",
+  "startCommit": "d5b166bb129f47a9aac7023e901531b9ee5f11d6",
+  "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V11_TERMINAL_INTEGRATION_CLOSEOUT_RECOVERY_V2_RESULT.md",
+  "resultCommit": "b7961ff92573e8371177543aff4791790f8a8681",
+  "terminalBridgeCommit": "e80257d9486cd3129b115d4e1007bf24335b8852",
+  "terminalCiRunId": 33718216943,
+  "terminalCiJobId": 100531770680
 }
