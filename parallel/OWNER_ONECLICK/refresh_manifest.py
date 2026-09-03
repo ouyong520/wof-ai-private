@@ -196,7 +196,7 @@ def generate_manifest(root: Path, source: str) -> dict:
             "browserFleet": {"sourceCommit": commit, "ownerEntry": "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py", "files": component_paths(paths, "parallel/BROWSER_FLEET/")},
             "liveProof": {"sourceCommit": commit, "entry": "parallel/LIVE_PROOF_BUNDLE/RUN_WOF_UNIFIED_LIVE_PROOF.cmd", "files": component_paths(paths, "parallel/LIVE_PROOF_BUNDLE/")},
         },
-        "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False},
+        "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False, "manualCalibration": False, "legacyProjectionSelected": False, "ownerClickMaximumPerAuthorityGeneration": 1, "productionOverlayEnabled": False},
         "files": [{"path": path, "gitBlobSha": selected[path]} for path in paths],
     }
 
