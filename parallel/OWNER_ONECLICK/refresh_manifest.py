@@ -15,7 +15,7 @@ DEFAULT_MANIFEST = Path(__file__).resolve().parent / "package_manifest.json"
 
 SCHEMA = "wof-owner-oneclick-package-v1"
 GENERATOR = "parallel/OWNER_ONECLICK/refresh_manifest.py"
-SELECTION_POLICY = "owner-oneclick-runtime-v6-render-authority-v3-zero-click-first-head-visual"
+SELECTION_POLICY = "owner-oneclick-runtime-v7-render-authority-v3-w2-semantic-zero-click-first"
 RUNTIME_SUFFIXES = {".py", ".js", ".mjs", ".cmd", ".bat", ".ps1"}
 EXCLUDED_PARTS = {"tests", "__pycache__"}
 
@@ -168,6 +168,7 @@ def generate_manifest(root: Path, source: str) -> dict:
     render_files = [
         "parallel/PYLAUNCH/render_authority_measurement_entry.py",
         "parallel/PYLAUNCH/wof_launcher/render_authority_capture.py",
+        "parallel/PYLAUNCH/wof_launcher/zero_click_identity_acquisition.py",
         "parallel/PYLAUNCH/wof_launcher/head_visual_tracker.py",
         "parallel/PYLAUNCH/wof_launcher/render_measurement_ui.py",
         "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js",
@@ -187,9 +188,9 @@ def generate_manifest(root: Path, source: str) -> dict:
         "components": {
             "ownerOneclick": {"sourceCommit": commit, "bootstrap": "parallel/OWNER_ONECLICK/bootstrap_v2.ps1", "files": [p for p in paths if p.startswith("parallel/OWNER_ONECLICK/") or p in {"WOF_一键工具.cmd", "WOF_TOOLKIT.cmd"}]},
             "alpha": {"sourceCommit": commit, "fieldAdapter": "product/alpha/wof_alpha_field_adapter.js", "files": component_paths(paths, "product/alpha/")},
-            "pylaunch": {"revision": "render-authority-v3-zero-click-first-head-visual", "sourceCommit": commit, "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd", "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd", "files": component_paths(paths, "parallel/PYLAUNCH/")},
+            "pylaunch": {"revision": "render-authority-v3-w2-semantic-zero-click-first", "sourceCommit": commit, "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd", "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd", "files": component_paths(paths, "parallel/PYLAUNCH/")},
             "operatorToolkit": {"sourceCommit": commit, "ownerEntry": "parallel/OPTOOLKIT/owner_zh_cn.py", "files": component_paths(paths, "parallel/OPTOOLKIT/")},
-            "renderAuthorityV3": {"sourceCommit": commit, "mode": "owner-visible-exact-world-zero-click-first-p1-multisample-head-visual", "entry": "parallel/PYLAUNCH/render_authority_measurement_entry.py", "ownerFlow": "menu6 -> normal game -> auto P1 identity/HUD -> bounded live-scene P1 head auto seed -> normal play -> auto complete", "ownerClickExpectedNormal": 0, "ownerClickMaximumPerAuthorityGeneration": 1, "ownerClickFallbackMaximumPerAuthorityGeneration": 1, "automaticSeedRequiredBeforeFallback": True, "hudPortraitMayIdentifyButNeverSeedSceneHead": True, "confidenceLossBehavior": "HIDE_AND_AUTO_RECOVER", "productionOverlayEnabled": False, "files": render_files},
+            "renderAuthorityV3": {"sourceCommit": commit, "mode": "owner-visible-exact-world-w2-semantic-zero-click-first-p1-head-visual", "entry": "parallel/PYLAUNCH/render_authority_measurement_entry.py", "ownerFlow": "menu6 -> normal game -> W2 semantic HUD/scene evidence gate -> zero-click seed when SAFE_UNIQUE -> otherwise fail closed -> one-click fallback maximum -> normal play -> auto complete", "ownerClickExpectedNormal": 0, "ownerClickMaximumPerAuthorityGeneration": 1, "ownerClickFallbackMaximumPerAuthorityGeneration": 1, "automaticSeedRequiredBeforeFallback": True, "semanticIdentityGate": "W2_FAIL_CLOSED", "genericHudPaletteSemanticIdentityAllowed": False, "hudPortraitMayIdentifyButNeverSeedSceneHead": True, "confidenceLossBehavior": "HIDE_AND_AUTO_RECOVER", "productionOverlayEnabled": False, "files": render_files},
             "projectionProof": {"sourceCommit": commit, "mode": "package-selected-bounded-live-compatibility-only", "files": component_paths(paths, "parallel/HUDANCHOR_PROOF/")},
             "recorder": {"sourceCommit": commit, "ownerEntry": "parallel/WOF052L_RECORDER/owner_zh_cn.py", "files": component_paths(paths, "parallel/WOF052L_RECORDER/")},
             "browserFleet": {"sourceCommit": commit, "ownerEntry": "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py", "files": component_paths(paths, "parallel/BROWSER_FLEET/")},
