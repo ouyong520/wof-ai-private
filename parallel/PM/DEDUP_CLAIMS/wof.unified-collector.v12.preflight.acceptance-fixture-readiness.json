@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "wof.unified-collector.v12.preflight.acceptance-fixture-readiness",
+  "effectiveDedupKey": "wof.unified-collector.v12.preflight.acceptance-fixture-readiness",
+  "dedupMode": "exclusive",
+  "stageId": "WOF_UNIFIED_COLLECTOR_V12_ACCEPTANCE_FIXTURE_READINESS_PREFLIGHT_V1",
+  "promptPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_ACCEPTANCE_FIXTURE_READINESS_PREFLIGHT_START_PROMPT.md",
+  "owner": "ChatGPT GPT-5.6 Sol V12 acceptance-readiness preflight",
+  "claimToken": "efe8c23fda8f7a273ca582c4d643265d",
+  "state": "ACTIVE",
+  "startCommit": "fe3cc2a7890ae9afbf5b953026da25dbed3ef7d5"
+}
