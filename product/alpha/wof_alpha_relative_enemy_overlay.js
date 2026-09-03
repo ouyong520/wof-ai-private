@@ -7,10 +7,10 @@ try{window.WOFALPHARELATIVEENEMY?.dispose?.();}catch(_){}
 const canvas=window.I_GF1TC||document.getElementById('whathis'),gl=window.I_fdC8Q;
 if(!canvas||!gl)throw new Error('relative enemy overlay game canvas/context missing');
 
-const LABELS=Object.freeze({P1:'1P',P2:'2P',P3:'3P'}),MARKER_STALE_MS=300,PLAYER_STALE_MS=120,TRACKER_STALE_MS=650,MAX_SAMPLES=80;
+const LABELS=Object.freeze({P1:'1P',P2:'2P',P3:'3P'}),TARGET_BY_FIELD=Object.freeze({0:'P1',4:'P2',8:'P3'}),MARKER_STALE_MS=350,PLAYER_STALE_MS=350,TRACKER_STALE_MS=650,MAX_SAMPLES=80;
 const layer=document.createElement('canvas'),ctx=layer.getContext('2d');
 Object.assign(layer.style,{position:'fixed',pointerEvents:'none',zIndex:'2147483643',display:'block'});document.documentElement.appendChild(layer);
-let disposed=false,lastPlayerMsg=null,lastPlayerRx=0,lastMarkerMsg=null,lastMarkerRx=0,p1Tracker=null,p1TrackerRx=0,samples=[],fit=null,lastSampleAt=null,drawCount=0,suppressedReason='WAITING_P1_TRACKER';
+let disposed=false,lastPlayerMsg=null,lastPlayerRx=0,lastMarkerMsg=null,lastMarkerRx=0,p1Tracker=null,p1TrackerRx=0,samples=[],fit=null,lastSampleAt=null,drawCount=0,suppressedReason='WAITING_P1_TRACKER',inputSource='NONE';
 
 function drawingBufferState(now){
   const W=gl.drawingBufferWidth||canvas.width,H=gl.drawingBufferHeight||canvas.height;if(!(W>0&&H>0))return null;
@@ -42,6 +42,15 @@ function captureSample(now){
   fit=R.fitVertical(samples,{minSamples:6,minYRange:5,minZRange:5,maxResidual:3.5,minGap:.65});
   suppressedReason=fit?.ok?null:(fit?.reason||'GEOMETRY_NOT_READY');
 }
+function ingestActorSnapshot(snapshot){
+  if(!snapshot||!Array.isArray(snapshot.players)||!Array.isArray(snapshot.enemies))return false;
+  const now=Date.now(),sampleAt=Number(snapshot.sampleAt||now),players={};
+  for(const p of snapshot.players){if(!p||!['P1','P2','P3'].includes(p.name))continue;players[p.name]={present:true,x:Number(p.x),y:Number(p.y),z:Number(p.z),generation:Number(p.generation||0),type:Number(p.type),sampleAt};}
+  for(const name of ['P1','P2','P3'])if(!players[name])players[name]={present:false,sampleAt};
+  const markers=[];
+  for(const e of snapshot.enemies){const target=TARGET_BY_FIELD[e?.target7E];if(!target)continue;if(![e?.x,e?.y,e?.z].every(Number.isFinite))continue;markers.push({slot:Number(e.slot),type:Number(e.type),target7E:Number(e.target7E),target,enemyX:Number(e.x),enemyY:Number(e.y),enemyZ:Number(e.z),sampleAt});}
+  lastPlayerMsg={sampleAt,players};lastPlayerRx=now;lastMarkerMsg={sampleAt,markers};lastMarkerRx=now;inputSource='DIRECT_EXACT_RUNTIME_ACTORS';return true;
+}
 function drawLabel(x,y,text){
   ctx.font='700 14px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
   const w=34,h=22,px=Math.max(w/2,Math.min(layer.getBoundingClientRect().width-w/2,x)),py=Math.max(h/2,Math.min(layer.getBoundingClientRect().height-h/2,y-18));
@@ -68,8 +77,8 @@ let raf=0;function loop(){if(disposed)return;render(Date.now());raf=requestAnima
 
 const bc=new BroadcastChannel(cfg.channel);bc.onmessage=e=>{
   const m=e.data;if(!(m&&m.schema==='wof-alpha-v2'&&m.session===cfg.session&&TRANSPORT.matches(m)))return;
-  if(m.kind==='player-head-spatial'){lastPlayerMsg=m;lastPlayerRx=Date.now();}
-  else if(m.kind==='enemy-target-markers'){lastMarkerMsg=m;lastMarkerRx=Date.now();}
+  if(m.kind==='player-head-spatial'){lastPlayerMsg=m;lastPlayerRx=Date.now();inputSource='BROADCAST_RUNTIME';}
+  else if(m.kind==='enemy-target-markers'){lastMarkerMsg=m;lastMarkerRx=Date.now();inputSource='BROADCAST_RUNTIME';}
   else if(m.kind==='diag'){lastPlayerMsg=null;lastPlayerRx=0;lastMarkerMsg=null;lastMarkerRx=0;clearFit('RUNTIME_DIAG');}
 };
 
@@ -87,5 +96,5 @@ function disposeInternal(restore=true){
 function disposeWrapper(){disposeInternal(false);return original.dispose();}
 hud.bindP1HeadTrackerAuthority=bindWrapper;hud.setP1HeadTracker=setWrapper;hud.clearP1HeadTracker=clearWrapper;hud.clearP1HeadTrackerAuthority=clearAuthorityWrapper;hud.dispose=disposeWrapper;
 
-window.WOFALPHARELATIVEENEMY={version:VERSION,dispose:()=>disposeInternal(true),status:()=>({version:VERSION,fit:fit?{ok:fit.ok,reason:fit.reason,sign:fit.sign??null,model:fit.model??null,preferredModel:fit.preferredModel??null,residual:fit.residual??null,sampleCount:fit.sampleCount??samples.length}:null,sampleCount:samples.length,enemyFresh:!!lastMarkerRx&&Date.now()-lastMarkerRx<=MARKER_STALE_MS,playerFresh:!!lastPlayerRx&&Date.now()-lastPlayerRx<=PLAYER_STALE_MS,trackerFresh:!!p1TrackerRx&&Date.now()-p1TrackerRx<=TRACKER_STALE_MS,drawCount,suppressedReason,readOnly:true,ramWrites:0,inputInjection:false})};
+window.WOFALPHARELATIVEENEMY={version:VERSION,ingestActorSnapshot,dispose:()=>disposeInternal(true),status:()=>({version:VERSION,fit:fit?{ok:fit.ok,reason:fit.reason,sign:fit.sign??null,model:fit.model??null,preferredModel:fit.preferredModel??null,residual:fit.residual??null,sampleCount:fit.sampleCount??samples.length}:null,sampleCount:samples.length,inputSource,enemyFresh:!!lastMarkerRx&&Date.now()-lastMarkerRx<=MARKER_STALE_MS,playerFresh:!!lastPlayerRx&&Date.now()-lastPlayerRx<=PLAYER_STALE_MS,trackerFresh:!!p1TrackerRx&&Date.now()-p1TrackerRx<=TRACKER_STALE_MS,drawCount,suppressedReason,readOnly:true,ramWrites:0,inputInjection:false})};
 })();
