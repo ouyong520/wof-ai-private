@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "WOF_UNIFIED_COLLECTOR_V12_FINAL_CONSOLIDATION_ONECLICK_LEGACY_RETIREMENT_V1",
+  "dedupKey": "wof.unified-collector.v12.final-consolidation-oneclick-legacy-retirement",
+  "effectiveDedupKey": "wof.unified-collector.v12.final-consolidation-oneclick-legacy-retirement",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v12.final-consolidation-oneclick-legacy-retirement.json",
+  "claimToken": "v12-umbrella-96e154cdfc014245b565a4d323d23ea1",
+  "state": "ACTIVE",
+  "startCommit": "4f490518e6fad0606761daa8c587c55574882495"
+}
