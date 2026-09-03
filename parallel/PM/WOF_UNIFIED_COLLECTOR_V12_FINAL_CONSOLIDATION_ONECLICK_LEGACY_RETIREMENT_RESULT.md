@@ -6,13 +6,9 @@ Canonical terminal token:
 
 `COMPLETE — WOF UNIFIED COLLECTOR V12 FINAL CONSOLIDATION — ONE GIT-CONTROLLED COLLECTOR / ONECLICK WINDOWS UX / LEGACY RETIRED — FEATURE FROZEN`
 
-Recovery closeout verdict:
-
-`COMPLETE — WOF UNIFIED COLLECTOR V12 FINAL CONSOLIDATION / ONECLICK / LEGACY RETIREMENT — ONE COLLECTOR + THREE ADAPTERS TERMINAL COMPLETE`
-
 Date: 2026-09-03
 
-## 1. Final candidate authority
+## Final candidate authority
 
 Final `ouyong520/wof-winkawaks-bridge` candidate:
 
@@ -20,49 +16,39 @@ Final `ouyong520/wof-winkawaks-bridge` candidate:
 - tree: `9da51bd18af28c5093095cc2684e74c669f3eebe`
 - final commit: `Collector V12: align stale-stop acceptance with observed target`
 
-Exact V11 terminal authority consumed without forking:
+Consumed exact V11 terminal authority without forking:
 
-- V11 terminal bridge head: `e80257d9486cd3129b115d4e1007bf24335b8852`
-- durable authority: `parallel/PM/WOF_UNIFIED_COLLECTOR_V11_TERMINAL_INTEGRATION_CLOSEOUT_RECOVERY_V2_RESULT.md`
+- bridge HEAD: `e80257d9486cd3129b115d4e1007bf24335b8852`
+- RESULT: `parallel/PM/WOF_UNIFIED_COLLECTOR_V11_TERMINAL_INTEGRATION_CLOSEOUT_RECOVERY_V2_RESULT.md`
 
 Consumed V12 preflight authorities:
 
 - `parallel/PM/WOF_UNIFIED_COLLECTOR_V12_REUSE_LEGACY_READINESS_PREFLIGHT_RECOVERY_V2_RESULT.md`
-  - status: `READY_FOR_V12_IMPLEMENTATION_WITH_MVP`
-  - selected reuse: existing named mutex + existing Unified Agent health/task surfaces + Python stdlib atomic state/logging primitives
 - `parallel/PM/WOF_UNIFIED_COLLECTOR_V12_ACCEPTANCE_FIXTURE_READINESS_PREFLIGHT_RESULT.md`
-  - status: `COMPLETE — V12 ACCEPTANCE / FIXTURE READINESS PREFLIGHT — MINIMAL FINAL EVIDENCE PLAN DURABLE`
 
-Consumed completed parallel subworkstreams without redoing them:
+Consumed completed subworkstreams without redoing them:
 
-- W2: `parallel/PM/WOF_UNIFIED_COLLECTOR_V12_W2_WINDOWS_ENTRYPOINTS_LEGACY_RETIREMENT_SUBRESULT.md`
-  - durable bridge candidate: `e7a4cffefe72c45c0f902512b23ac9c0efccd0d6`
-  - disposition: `SUBCOMPLETE`, consumed by terminal coordinator
-- W3: `parallel/PM/WOF_UNIFIED_COLLECTOR_V12_W3_ACCEPTANCE_HARNESS_CI_SUBRESULT.md`
-  - durable bridge candidate: `b5540d9678d572fc1a6a09cb5bbcf4e3014defd2`
-  - disposition: `SUBCOMPLETE`, consumed by terminal coordinator
+- W2 public entrypoint / legacy retirement: `parallel/PM/WOF_UNIFIED_COLLECTOR_V12_W2_WINDOWS_ENTRYPOINTS_LEGACY_RETIREMENT_SUBRESULT.md`, bridge candidate `e7a4cffefe72c45c0f902512b23ac9c0efccd0d6`, `SUBCOMPLETE`.
+- W3 acceptance harness / focused CI: `parallel/PM/WOF_UNIFIED_COLLECTOR_V12_W3_ACCEPTANCE_HARNESS_CI_SUBRESULT.md`, bridge candidate `b5540d9678d572fc1a6a09cb5bbcf4e3014defd2`, `SUBCOMPLETE`.
+- W1 lifecycle core: `8725c7063a8a6817bb40cb9edcff04bdf63e75b1`.
+- W1 Unified Agent lifecycle binding: `ccf11433362ac79030fa971e29250b417d1aef29`.
 
-Original W1 implementation authority consumed:
+PM-authorized terminal reconciliation authority `wof.unified-collector.v12.terminal-integration-closeout-recovery-v2` is COMPLETE and did not create a second Collector product.
 
-- lifecycle core: `8725c7063a8a6817bb40cb9edcff04bdf63e75b1`
-- Unified Agent lifecycle binding: `ccf11433362ac79030fa971e29250b417d1aef29`
+## Terminal architecture
 
-During terminal execution PM authorized `WOF_UNIFIED_COLLECTOR_V12_TERMINAL_INTEGRATION_CLOSEOUT_RECOVERY_V2`; that recovery only reconciles the stopped W1 terminal responsibility. It does not create another product or repeat W2/W3 implementation.
-
-## 2. Terminal architecture
-
-V12 leaves exactly one maintained operational Collector product:
+Exactly one maintained operational Collector remains:
 
 ```text
 START_WOF_UNIFIED_COLLECTOR.bat
   -> bridge.collector_lifecycle
      -> bridge.unified_collector_agent
-        -> browser-wasm adapter
-        -> winkawaks adapter
-        -> stable-retro-fbneo adapter
+        -> browser-wasm
+        -> winkawaks
+        -> stable-retro-fbneo
 ```
 
-There is still exactly one established Git control/result plane:
+The established Git control/result plane remains singular:
 
 ```text
 tasks/queue
@@ -70,133 +56,65 @@ status/by_task
 results/by_task
 ```
 
-The existing source-aware dataset/provenance, retention/storage, analysis, DuckDB warehouse/query, and reuse-first planner authorities are reused in place. V12 introduced no second queue, catalog, warehouse, analysis engine, planner, or source-specific Collector service.
+Existing source-aware dataset/provenance, retention/storage, analysis, DuckDB warehouse/query and reuse-first planner authorities are reused in place. V12 adds no second queue, catalog, warehouse, planner, normal collector daemon, or source-specific control plane.
 
-The three maintained source namespaces remain exactly:
+## Lifecycle integration and terminal defect closure
 
-- `browser-wasm`
-- `winkawaks`
-- `stable-retro-fbneo`
+Lifecycle state is under `runtime/collector-v12/` with atomic `instance.json`, `heartbeat.json`, `stop-request.json` and lifecycle-owned `tmp/`. Existing Windows named mutex `Global\\WOF_WINKAWAKS_COLLECTOR_V1` remains the single-instance authority.
 
-## 3. Windows public entrypoint / legacy disposition
+`status`, heartbeat/process health, and Unified Agent readiness are distinct. `runtime/unified_collector_health.json` remains the one domain health surface and continues to expose all three adapter states.
+
+Terminal integration found and fixed a real stale-stop rollover race. Commit `a89fe3754282181069f26f368ff6494977821029` binds a stop request to the initially observed `instanceId` + PID, rather than re-reading replacement instance metadata. Commit `459c79d66e01d484411e0e49bb73de70a4fbc74f` adds the A -> B rollover regression. Final commit `9b7c6897149cc7de615dd372e072d7b21e9de8f7` aligns the W3 static acceptance detector with the stronger observed-target contract.
+
+Cooperative stop remains idempotent and never force-kills a process.
+
+## Windows public entrypoint / legacy disposition
 
 | Surface | V12 final disposition |
 |---|---|
-| `START_WOF_UNIFIED_COLLECTOR.bat` | sole canonical public `start` / `stop` / `status` / `health` entrypoint; no argument = `start`; repo-root normalized; repo `.venv\\Scripts\\python.exe` only; no PATH/`py` fallback |
-| `START_WOF_COLLECTOR.bat` | compatibility wrapper only; forwards `%*` to canonical entrypoint |
-| `STOP_WOF_UNIFIED_COLLECTOR.bat` | compatibility wrapper only; delegates canonical `stop`; no independent sentinel write |
-| `STOP_WOF_COLLECTOR.bat` | compatibility wrapper only; delegates canonical `stop`; no independent sentinel write |
-| `READY_WOF_TASK.bat` | remains retired/blocked |
+| `START_WOF_UNIFIED_COLLECTOR.bat` | sole canonical `start` / `stop` / `status` / `health` entrypoint; no argument = `start`; repo `.venv\\Scripts\\python.exe` only; no PATH/`py` fallback |
+| `START_WOF_COLLECTOR.bat` | warning compatibility wrapper forwarding `%*` |
+| `STOP_WOF_UNIFIED_COLLECTOR.bat` | compatibility wrapper to canonical `stop`; no sentinel write |
+| `STOP_WOF_COLLECTOR.bat` | compatibility wrapper to canonical `stop`; no sentinel write |
+| `READY_WOF_TASK.bat` | retired/blocked |
 | historical `START_WOF_AI.bat`, `START_WOF_ALL*.bat`, `START_WOF_V1.bat` | remain retired; not resurrected |
-| old Python runner/service/daemon helpers | internal compatibility/reuse surfaces only, not a second normal operator entrypoint |
+| old Python runner/service/daemon helpers | internal compatibility/reuse only, not normal public operator paths |
 
-## 4. Lifecycle / Agent integration facts
+## Final affected verification / CI
 
-V12 lifecycle state remains local under `runtime/collector-v12/`:
-
-- `instance.json`
-- `heartbeat.json`
-- `stop-request.json`
-- lifecycle-owned `tmp/`
-
-Writes use temporary files plus `os.replace`.
-
-Single-instance authority reuses the existing Windows named mutex `Global\\WOF_WINKAWAKS_COLLECTOR_V1`; duplicate start remains fail-closed and is mapped to V12 exit code 4.
-
-`status`, process health, and Agent readiness remain distinct. Lifecycle status exposes `RUNNING`, `STOP_REQUESTED`, `STALE_STATE`, or `STOPPED`; health includes heartbeat freshness/fatal lifecycle state; readiness additionally requires Agent initialization and current-instance-bound domain health. `runtime/unified_collector_health.json` remains the one Agent/domain health surface and exposes all three adapter states.
-
-Cooperative stop is idempotent and does not force-kill a process.
-
-## 5. Real terminal integration defect fixed
-
-Terminal review found a real stale-stop TOCTOU in the initial W1 lifecycle implementation:
-
-1. `request_stop()` first observed RUNNING instance A via `status_snapshot()`;
-2. it then independently re-read `instance.json` to construct the stop request;
-3. if A exited and replacement B acquired the mutex/wrote new instance metadata between those reads, the old operator stop could accidentally bind to B.
-
-Production fix:
-
-- commit `a89fe3754282181069f26f368ff6494977821029`
-- `request_stop()` now freezes `target_instance_id` and `target_pid` from the first lifecycle status observation;
-- the stop request is always bound to that observed target;
-- if a different current `instanceId` appears while waiting, V12 reports `TARGET_INSTANCE_EXITED_NEW_INSTANCE_LEFT_RUNNING` with `staleStopProtected=true` and leaves the replacement running;
-- the replacement instance ignores/removes the stale old-instance request fail-closed.
-
-Focused regression was strengthened at commit `459c79d66e01d484411e0e49bb73de70a4fbc74f` to exercise an explicit A -> B rollover and prove the emitted request still targets A/PID A, never B.
-
-The first post-fix V12 focused CI exposed only a W3 static-detector mismatch: the detector still searched for the old implementation spelling `instance["instanceId"]`. The new rollover regression itself was PASS. The detector was corrected, not weakened, at final commit `9b7c6897149cc7de615dd372e072d7b21e9de8f7` to require the stronger observed-target semantics (`target_instance_id`, `target_pid`, replacement-instance branch, and `staleStopProtected`).
-
-## 6. Final affected verification / CI
-
-### 6.1 V12 final focused acceptance — exact final candidate
-
-Workflow: `Collector V12 Focused Acceptance`
+Final focused workflow: `Collector V12 Focused Acceptance`.
 
 - run: `33722396068`
 - job: `100544061556`
 - exact checkout: `9b7c6897149cc7de615dd372e072d7b21e9de8f7`
 - compile gate: PASS
-- focused unittest count: `19/19 PASS`
+- focused tests: `19/19 PASS`
 - machine repository acceptance: `PASS:9 BLOCKED:0 DEFERRED:0`
-- acceptance bundle: `runtime/v12-acceptance/collector-v12-repository-acceptance.json`
-- uploaded artifact id: `9880645917`
-- artifact name: `collector-v12-repository-acceptance-9b7c6897149c`
-- artifact ZIP digest: `sha256:dc3fa07806df45c431aaf7abf1bc9b3baad936fda05750117663341d63286ca0`
+- generated JSON bundle ID: `collector-v12-repository-9b7c6897149c`
+- generated JSON SHA-256: `3a264c01c77091c058be546eb3ba9896d85bbc08264e729bde19b97481f24c6f`
+- uploaded artifact id: `9880685207`
+- artifact name: `collector-v12-repository-acceptance-9b7c6897149cc7de615dd372e072d7b21e9de8f7`
+- artifact ZIP SHA-256: `90a0e3e21068cbd9b5a1ce4819917cdbfa0a5503eb5c1957b4195faccea407cf`
+- artifact retention: 14 days
 
-The nine repository facts cover canonical entrypoint, wrapper delegation, legacy retirement, instance-bound stale-stop protection, single-instance authority, status/health/readiness separation, all-three-adapter health visibility, one Git queue/status/result plane, and exact V11 terminal ancestry.
+Durable terminal machine-readable bundle:
 
-### 6.2 Affected V10/V11 compatibility — reused exact material-SUT run
+`parallel/PM/WOF_UNIFIED_COLLECTOR_V12_FINAL_CONSOLIDATION_ONECLICK_LEGACY_RETIREMENT_ACCEPTANCE_BUNDLE.json`
 
-`bridge/unified_collector_agent.py` was materially changed by W1 at `ccf11433362ac79030fa971e29250b417d1aef29`, so the existing push-triggered affected suites ran once on that exact Agent candidate after W2 launcher work was already present:
+The durable bundle preserves the exact CI artifact metadata and repository acceptance facts, and separately records external runtime facts as `BLOCKED` / `DEFERRED` rather than manufacturing PASS.
 
-V10 affected regression:
+### Affected V10/V11 compatibility reuse
 
-- workflow job: `v3-v10-regression`
-- run: `33720816956`
-- job: `100539399338`
-- V3-V9 maintained: `151/151 PASS`
-- V10 Unified Agent/fake-CDP compatibility: `36/36 PASS`
-- combined: `187/187 PASS`
-- V10 schema/examples/source/safety/launcher compatibility gate: PASS
+`bridge/unified_collector_agent.py` was materially changed at `ccf11433362ac79030fa971e29250b417d1aef29`, so the directly affected suites already ran once on that material Agent candidate after W2 launcher work was present:
 
-V11 terminal affected regression:
+- V10 affected regression: run `33720816956`, job `100539399338`, `187/187 PASS` including `36/36` V10 Unified Agent/fake-CDP compatibility.
+- V11 terminal affected regression: run `33720816923`, job `100539399267`, `189/189 PASS` including `2/2` V11 terminal integration.
 
-- workflow job: `v3-v11-terminal`
-- run: `33720816923`
-- job: `100539399267`
-- V3-V9 maintained: `151/151 PASS`
-- V10 compatibility: `36/36 PASS`
-- V11 terminal integration: `2/2 PASS`
-- combined: `189/189 PASS`
-- V11 three-source provenance/safety gate: PASS
+After `ccf11433362ac79030fa971e29250b417d1aef29`, only V12 workflow/lifecycle/acceptance-test surfaces changed; no V10/V11 Agent/adapter/data-stack/warehouse/planner SUT changed. Historical V10/V11 regressions were therefore not rerun again for confidence.
 
-From `ccf11433362ac79030fa971e29250b417d1aef29` to final `9b7c6897149cc7de615dd372e072d7b21e9de8f7`, the changed files are only:
+## Safety / source invariants
 
-- `.github/workflows/collector-v12-focused-acceptance.yml`
-- `bridge/collector_lifecycle.py`
-- `tests/test_unified_collector_v12_acceptance.py`
-- `tests/v12_acceptance_harness.py`
-
-No V10/V11 Agent, adapter, queue/data-stack, warehouse, or planner SUT changed after the already-green affected run. Therefore V10/V11 historical suites were not rerun merely for confidence; their exact affected PASS evidence is reused according to `TESTING_CADENCE_POLICY.md`.
-
-## 7. Machine-readable acceptance authority
-
-The final repository acceptance bundle is bound to the final bridge candidate and validates:
-
-- final bridge commit/tree identity;
-- exact V11 terminal ancestor consumption;
-- exactly three source namespaces;
-- `readOnly=true`;
-- `writesGameMemory=false`;
-- `inputInjection=false`;
-- all nine repository acceptance facts PASS.
-
-The bundle validator explicitly refuses to convert a real-runtime fact into PASS without runtime evidence containing session identity, SHA-256 evidence binding, and provenance.
-
-## 8. Safety invariants
-
-Preserved at terminal closeout:
+Preserved:
 
 ```text
 readOnly=true
@@ -204,37 +122,29 @@ writesGameMemory=false
 inputInjection=false
 ```
 
-Also preserved:
+Exactly three maintained source namespaces remain:
 
-- exact World/source identity boundaries;
-- no Training Farm action selection;
-- no Collector `reset`, `step`, `load_state` authority;
-- no Collector launch/scale authority over the Training Farm fleet;
-- no cross-source RAM/semantic-equivalence promotion;
-- no Alpha production modification;
-- no real 10-worker fleet launch during V12 terminal integration.
+- `browser-wasm`
+- `winkawaks`
+- `stable-retro-fbneo`
 
-## 9. Real-runtime acceptance status — explicitly not fabricated
+Collector has no Training Farm action selection, `reset` / `step` / `load_state`, worker launch/scale authority, cross-source RAM/semantic-equivalence promotion, or Alpha production mutation.
 
-Repository/CI terminal acceptance is complete and green. Real-runtime facts that repository fixtures cannot legitimately manufacture remain explicitly external:
+## Real-runtime acceptance — explicitly not fabricated
 
-1. **Real Windows Browser/WOF acceptance** — `BLOCKED` as an external runtime fact with reason code `REAL_WINDOWS_WOF_ENVIRONMENT_REQUIRED`.
-   - required only when Owner authorizes/provides one bounded Windows/WOF acceptance session;
-   - repository CI does not claim real Page -> Worker -> WASM discovery occurred.
-2. **Live bounded Training Farm 10-worker acceptance** — `DEFERRED` with reason code `TRAINING_FARM_LIVE_FLEET_AUTHORITY_GATED`.
-   - current Training Farm StageGuard authority must first permit bounded 10-worker execution;
-   - V12 retains the already-green ROM-free ten-worker isolation evidence and does not bypass the gate.
+Repository/CI acceptance is terminal green. Unavailable real-runtime facts remain external:
 
-These facts are recorded exactly because the V12 acceptance contract explicitly prohibits fabricating unavailable live proof and permits external/runtime acceptance conditions to remain recorded after the repository candidate is frozen and its authorized repository gates are satisfied. They are not relabeled PASS.
+1. **Real Windows/WOF acceptance** — `BLOCKED`, reason `REAL_WINDOWS_WOF_ENVIRONMENT_REQUIRED`. No repository or Linux CI evidence is labeled as real Windows/Page/Worker/WASM/WOF proof.
+2. **Live bounded Training Farm 10-worker acceptance** — `DEFERRED`, reason `TRAINING_FARM_LIVE_FLEET_AUTHORITY_GATED`. Existing ROM-free ten-worker isolation evidence is retained, but it is not relabeled live-fleet proof.
 
-## 10. Terminal conclusion
+These external facts do not invalidate the authorized repository terminal closeout because the parent authority explicitly permits precise external/runtime gating and forbids fabricated PASS.
 
-V12 terminal consolidation is complete at bridge `9b7c6897149cc7de615dd372e072d7b21e9de8f7` / tree `9da51bd18af28c5093095cc2684e74c669f3eebe`.
+## Terminal conclusion
 
-The resulting maintained product is exactly:
+V12 is terminal COMPLETE at bridge `9b7c6897149cc7de615dd372e072d7b21e9de8f7` / tree `9da51bd18af28c5093095cc2684e74c669f3eebe`.
+
+The maintained product is exactly:
 
 **one Git-controlled Unified Collector + one Windows lifecycle entrypoint + three adapters + one queue/status/result/data stack.**
 
-Legacy overlapping public launch paths are retired or compatibility-only. Stale stop requests are replacement-safe. Single-instance, lifecycle status, heartbeat health, readiness, adapter state visibility, and final machine acceptance are all bound to the integrated candidate.
-
-Collector feature work is now **FROZEN**. Do not create V13/V14 for activity; only reopen for a materially demonstrated defect or an explicitly authorized external real-runtime acceptance session.
+Collector feature work is now **FROZEN**. Reopen only for a materially demonstrated defect, supported-runtime/data-integrity/security fix, measured bottleneck, explicitly approved new source adapter, or an authorized external real-runtime acceptance session.
