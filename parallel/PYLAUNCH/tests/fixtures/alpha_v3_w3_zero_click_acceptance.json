@@ -75,7 +75,7 @@
       "invalidation": "runtime",
       "browser": {"entryMode": "reuse-existing", "wofIntent": true, "aboutBlank": false},
       "steps": [
-        {"state": "HEAD_TRACKING", "trayVisible": true, "autoAttempted": true, "autoResult": "SAFE_UNIQUE", "clickArmed": false, "ownerClickCount": 0, "markerVisible": true, "authorityGeneration": "runtime-A", "authorityRevoked": false},
+        {"state": "HEAD_TRACKING", "trayVisible": true, "autoAttempted": true, "autoResult": "SAFE_UNIQUE", "boundActor": "P1", "clickArmed": false, "ownerClickCount": 0, "markerVisible": true, "authorityGeneration": "runtime-A", "authorityRevoked": false},
         {"state": "RUNTIME_REDISCOVERY", "trayVisible": true, "autoAttempted": true, "autoResult": "INVALIDATED", "clickArmed": false, "ownerClickCount": 0, "markerVisible": false, "authorityGeneration": "runtime-B", "authorityRevoked": true}
       ]
     },
@@ -85,7 +85,7 @@
       "invalidation": "lifecycle",
       "browser": {"entryMode": "reuse-existing", "wofIntent": true, "aboutBlank": false},
       "steps": [
-        {"state": "HEAD_TRACKING", "trayVisible": true, "autoAttempted": true, "autoResult": "SAFE_UNIQUE", "clickArmed": false, "ownerClickCount": 0, "markerVisible": true, "p1Generation": 4, "authorityRevoked": false},
+        {"state": "HEAD_TRACKING", "trayVisible": true, "autoAttempted": true, "autoResult": "SAFE_UNIQUE", "boundActor": "P1", "clickArmed": false, "ownerClickCount": 0, "markerVisible": true, "p1Generation": 4, "authorityRevoked": false},
         {"state": "HEAD_ACQUIRING", "trayVisible": true, "autoAttempted": true, "autoResult": "INVALIDATED", "clickArmed": false, "ownerClickCount": 0, "markerVisible": false, "p1Generation": 5, "authorityRevoked": true}
       ]
     },
@@ -95,7 +95,7 @@
       "invalidation": "layout",
       "browser": {"entryMode": "reuse-existing", "wofIntent": true, "aboutBlank": false},
       "steps": [
-        {"state": "HEAD_TRACKING", "trayVisible": true, "autoAttempted": true, "autoResult": "SAFE_UNIQUE", "clickArmed": false, "ownerClickCount": 0, "markerVisible": true, "layoutKey": "0:0:960:600:384:224", "authorityRevoked": false},
+        {"state": "HEAD_TRACKING", "trayVisible": true, "autoAttempted": true, "autoResult": "SAFE_UNIQUE", "boundActor": "P1", "clickArmed": false, "ownerClickCount": 0, "markerVisible": true, "layoutKey": "0:0:960:600:384:224", "authorityRevoked": false},
         {"state": "HEAD_ACQUIRING", "trayVisible": true, "autoAttempted": true, "autoResult": "INVALIDATED", "clickArmed": false, "ownerClickCount": 0, "markerVisible": false, "layoutKey": "0:0:1280:720:384:224", "authorityRevoked": true}
       ]
     }
