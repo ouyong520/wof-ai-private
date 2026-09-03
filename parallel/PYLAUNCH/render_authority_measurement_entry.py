@@ -145,7 +145,20 @@ def main()->int:
     store=StatusStore();stop=threading.Event();publisher=MeasurementPublisher(store)
     def request_stop()->None: stop.set()
     tray=MeasurementTrayApp(store,quit_app=request_stop);publisher.on_change=tray.refresh
-    publisher.publish("STARTING",browserConnected=False,wofPageFound=False,workerFound=False,wasmFound=False,heapFound=False,browserLaunchAttempted=False,navigationAttempted=False,staleGameUrlIgnored=True)
+    source_commit=str(os.environ.get("WOF_ALPHA_ACCEPTANCE_COMMIT") or "").strip()
+    source_label=source_commit[:8] if source_commit else "runtime"
+    def notify_blocked(reason: object)->None:
+        text=str(reason or "当前路径已 BLOCKED").strip()
+        if len(text)>240:text=text[:237]+"..."
+        try:
+            if tray.icon:
+                tray.icon.notify(text,f"WOF Alpha {source_label} BLOCKED")
+        except Exception:
+            pass
+    def forward_status(state:str,payload:dict[str,Any])->None:
+        publisher.publish(state,**payload)
+        if state=="BLOCKED":notify_blocked(payload.get("blockedReason"))
+    publisher.publish("STARTING",browserConnected=False,wofPageFound=False,workerFound=False,wasmFound=False,heapFound=False,browserLaunchAttempted=False,navigationAttempted=False,staleGameUrlIgnored=True,sourceCommit=source_commit or None)
     result={"code":None}
     def worker()->None:
         previous_attach_only=os.environ.get(ATTACH_ONLY_ENV);os.environ[ATTACH_ONLY_ENV]="1"
@@ -157,14 +170,16 @@ def main()->int:
                     publisher.publish("WAITING_FOR_WOF",**_waiting_payload(diagnostic))
                     stop.wait(0.8);continue
                 publisher.publish("WAITING_FOR_WOF",**_reusable_payload(diagnostic,entry_source))
-                code=int(runner.run(root,output_root,endpoint.host,endpoint.port,args.browser,args.browser_path,None,lambda state,payload:publisher.publish(state,**payload),stop) or 0)
+                code=int(runner.run(root,output_root,endpoint.host,endpoint.port,args.browser,args.browser_path,None,forward_status,stop) or 0)
                 if code in {3,4,5,6} and not stop.is_set():
                     publisher.publish("WAITING_FOR_WOF",browserConnected=False,wofPageFound=False,workerFound=False,wasmFound=False,heapFound=False,browserEntrySource="attach-only-existing-wof",discoveryReason="REUSABLE_WOF_DISAPPEARED",browserLaunchAttempted=False,navigationAttempted=False,staleGameUrlIgnored=True)
                     stop.wait(0.8);continue
                 result["code"]=code;return
             result["code"]=0
         except Exception as exc:
-            publisher.publish("BLOCKED",blockedReason=f"V3 启动失败：{type(exc).__name__}: {exc}")
+            reason=f"V3 启动失败：{type(exc).__name__}: {exc}"
+            publisher.publish("BLOCKED",blockedReason=reason)
+            notify_blocked(reason)
             result["code"]=12
         finally:
             if previous_attach_only is None:
