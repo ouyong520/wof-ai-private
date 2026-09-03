@@ -23,7 +23,7 @@ class RenderAuthorityCapture:
         try:session.request("Runtime.enable");return session.evaluate(expression,timeout=timeout)
         finally:session.close()
     def status(self)->dict[str,Any]:
-        return {"schema":SCHEMA,"state":self._state,"authorityKey":self._authority_key,"runtimeEpoch":self._runtime_epoch,"terminal":self._result is not None,"error":self._error,"ownerActionZh":"正常玩；Camera 自动准备，必要时最多点一次 P1 头顶。","measurementRequired":"exact runtime renderer/object authority plus bounded P1 head visual authority",**SAFETY}
+        return {"schema":SCHEMA,"state":self._state,"authorityKey":self._authority_key,"runtimeEpoch":self._runtime_epoch,"terminal":self._result is not None,"error":self._error,"ownerActionZh":"正常玩；Camera 会先自动识别 P1 身份并尝试零点击定位场景 P1 头部；只有自动定位无法安全唯一确认时才允许最多一次实际头部点击。","measurementRequired":"exact runtime renderer/object authority plus bounded zero-click-first P1 head visual authority",**SAFETY}
     def result(self)->dict[str,Any]|None:return None if self._result is None else json.loads(json.dumps(self._result))
     @staticmethod
     def _validate_remote(remote:Any,*,authority_key:str,runtime_epoch:str)->dict[str,Any]:
