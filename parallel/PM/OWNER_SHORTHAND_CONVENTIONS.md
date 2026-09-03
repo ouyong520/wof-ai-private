@@ -30,6 +30,47 @@ In short:
 
 `Owner 发 1 -> PM 检查 worker 的 Git 进度 -> 判断完成/阻塞/未收口 -> 生成下一条正确需求 -> 继续推进项目`
 
+## `1 N` means continue project + N currently idle workers available
+
+When the Owner sends a shorthand message matching:
+
+`1 <N>`
+
+where `N` is a non-negative integer, interpret it as two simultaneous facts/instructions:
+
+1. **`1` = continue the current project from authoritative Git state** using the same checkpoint/review behavior defined above.
+2. **`N` = there are currently N idle worker slots available for immediate assignment** if useful independent work exists.
+
+Examples:
+
+- `1 1` = continue project progression and there is 1 idle worker available.
+- `1 2` = continue project progression and there are 2 idle workers available.
+- `1 3` = continue project progression and there are 3 idle workers available.
+
+Mandatory PM execution order for `1 N`:
+
+`READ LATEST GIT -> REVIEW CURRENT MAINLINE/WORKERS -> CONTINUE THE REAL CRITICAL PATH -> IDENTIFY SAFE INDEPENDENT PARALLEL WORK -> ASSIGN UP TO N IDLE WORKERS`
+
+Rules:
+
+- Always inspect latest authoritative Git first. `1 N` does not authorize guessing worker state from chat memory.
+- First continue or repair the real mainline. Worker-capacity allocation comes after current-state review, not before it.
+- Treat `N` as **available capacity, not a requirement to fill every slot**.
+- Assign only work that is genuinely independent, non-duplicative, authority-safe, file/runtime non-conflicting, and likely to shorten the product critical path.
+- If only one useful independent task exists while `N=3`, assign one worker and leave two idle.
+- Never manufacture QA, recovery, audit, cross-check, speculative refactor, documentation-only work, or low-value side work merely to consume idle capacity.
+- Every dispatched worker still performs canonical dedup/current-state preflight before substantive work.
+- If equivalent work is already ACTIVE/CLAIMED, do not duplicate it; report `ALREADY ACTIVE / CLAIMED — NO EXECUTION` for that worker slot and redirect only if another legitimate independent task exists.
+- If equivalent work is already COMPLETE, do not repeat it; report `ALREADY COMPLETE — NO EXECUTION` and use capacity only for the next legitimate task.
+- Respect umbrella/subworkstream ownership. Idle workers do not get permission to steal an existing canonical claim.
+- PM must define explicit file/runtime/authority boundaries before parallel implementation when multiple workers touch the same project.
+- Owner does not need to decide which worker gets which technical subtask; PM owns that allocation.
+- Do not interpret `1 N` as numbered-option selection unless the Owner explicitly says they are choosing options.
+
+In short:
+
+`Owner 发 1 N -> PM 查最新 Git -> 审核当前主线 -> 继续真正下一步 -> 最多把 N 个空闲 worker 分给最能加速且互不冲突的独立任务`
+
 ## PM / worker handoff formatting
 
 Default handoff style should be compact and execution-oriented.
