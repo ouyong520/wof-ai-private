@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "TRAINING_FARM_R0_4_7_WINDOWS_PORTABLE_REAL_WOF_PROOF_BUNDLE_V1_CLOSEOUT_RECOVERY_V2",
+  "dedupKey": "training.farm.r0.4.7.windows-portable-real-wof-proof-bundle-v1.closeout-recovery-v2",
+  "effectiveDedupKey": "training.farm.r0.4.7.windows-portable-real-wof-proof-bundle-v1.closeout-recovery-v2",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/training.farm.r0.4.7.windows-portable-real-wof-proof-bundle-v1.closeout-recovery-v2.json",
+  "claimToken": "r047-closeout-v2-20260903-0815-2f7c9a63d4e1b8a5",
+  "state": "ACTIVE",
+  "startCommit": "53c3c4f0beb7a5e3008c378f3abd3cd6a540f6ef"
+}
