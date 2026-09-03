@@ -96,12 +96,12 @@ class ChineseToolkit(toolkit.Toolkit):
         print("位置 authority 不足、快速跳跃/纵深、Camera transition、resize/fullscreen 或 runtime generation 变化时，头顶生产提示会暂时隐藏，可靠后自动恢复；不会硬画错误坐标。")
         print("离开房间再进入时会自动撤销旧 runtime generation，并重新发现新 Worker/WASM/World 921031 后自动恢复流程。")
         print("本次 evidence 会自动保存和打包，不需要再运行菜单 7/8。")
-        print("权威真人验收 ZIP（不是普通 WOF_RESULTS 诊断包）："+str(final_zip))
+        print("权威真人验收 ZIP（不是普通 WOF_RESULTS_*.zip 诊断包）："+str(final_zip))
         print("最终 ZIP："+str(final_zip))
 
     def package(self):
         print("\n[自动整理并打包结果]")
-        print("提示：菜单 8 生成的是普通 WOF_RESULTS 诊断包，不等同于菜单 6 自动生成的 WOF_LIVE_ACCEPTANCE 真人验收包。")
+        print("提示：菜单 8 生成的是普通 WOF_RESULTS_*.zip 诊断包，不等同于菜单 6 自动生成的 WOF_LIVE_ACCEPTANCE_<session>.zip 真人验收包。")
         try: return super().package()
         except Exception as exc:
             print("结果打包没有完成。原始诊断/验证文件都仍然保留。"); print("游戏本身没有受到影响。"); print(f"技术详情：{exc}"); return None
