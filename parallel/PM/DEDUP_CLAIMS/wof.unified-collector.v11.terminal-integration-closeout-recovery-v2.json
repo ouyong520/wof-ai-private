@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "wof.unified-collector.v11.terminal-integration-closeout-recovery-v2",
+  "effectiveDedupKey": "wof.unified-collector.v11.terminal-integration-closeout-recovery-v2",
+  "dedupMode": "exclusive",
+  "stageId": "WOF_UNIFIED_COLLECTOR_V11_TERMINAL_INTEGRATION_CLOSEOUT_RECOVERY_V2",
+  "promptPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V11_TERMINAL_INTEGRATION_CLOSEOUT_RECOVERY_V2_START_PROMPT.md",
+  "owner": "gpt-5.6-sol-v11-terminal-recovery-v2",
+  "claimToken": "7d2ccf6019672b2ee26df5e2ba53a302",
+  "state": "ACTIVE",
+  "startCommit": "d5b166bb129f47a9aac7023e901531b9ee5f11d6"
+}
