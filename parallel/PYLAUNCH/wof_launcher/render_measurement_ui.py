@@ -73,13 +73,19 @@ class MeasurementTrayApp(TrayApp):
 
     @staticmethod
     def _overlay_proof(m: dict[str, Any], vis: dict[str, Any]) -> tuple[bool, bool, dict[str, Any]]:
+        del vis
         overlay = m.get("productionOverlay") if isinstance(m.get("productionOverlay"), dict) else {}
-        visible = bool(
-            m.get("productionOverlayVisible") is True
-            or vis.get("productionOverlayVisible") is True
-            or overlay.get("visible") is True
+        visible = overlay.get("visible") is True
+        drawn = bool(
+            visible
+            and int(overlay.get("drawCount") or 0) > 0
+            and overlay.get("drawHooked") is True
+            and overlay.get("drawnCurrentTracker") is True
+            and overlay.get("diagnosticMarkerSuppressed") is True
+            and overlay.get("readOnly") is True
+            and overlay.get("ramWrites") == 0
+            and overlay.get("inputInjection") is False
         )
-        drawn = bool(int(overlay.get("drawCount") or 0) > 0 and overlay.get("drawHooked") is True)
         return visible, drawn, overlay
 
     @staticmethod
@@ -95,26 +101,27 @@ class MeasurementTrayApp(TrayApp):
         m = cls._measurement(s)
         state = str(m.get("measurementState") or s.state)
         vis = m.get("visual") if isinstance(m.get("visual"), dict) else {}
+        visual_state = str(vis.get("state") or "")
         if state == "BLOCKED":
             return "BLOCKED"
         if state in {"STARTING", "WAITING_FOR_WOF"}:
             return "等待 WOF"
-        if state in {"EXACT_WORLD_LOCKED", "CAMERA_PREPARING", "HEAD_ACQUIRING"}:
-            return "正在自动找 P1"
-        if state == "ONE_CLICK_REQUIRED":
+        if state == "ONE_CLICK_REQUIRED" or visual_state == "ONE_CLICK_REQUIRED":
             return "需要一次点击 P1 真实头部"
-        if state == "RUNTIME_REDISCOVERY" or int(vis.get("lostFrames") or 0) > 0:
+        if (
+            state == "RUNTIME_REDISCOVERY"
+            or visual_state in {"REACQUIRING", "LOST_TIMEOUT"}
+            or int(vis.get("lostFrames") or 0) > 0
+        ):
             return "暂时丢失，恢复中"
-        if m.get("liveAcceptancePhase") == LIVE_ACCEPTANCE_PHASE and m.get("p1LiveGateReady") is True:
-            return "P1 已绘制 / 检查怪物头顶"
         overlay_visible, overlay_drawn, _overlay = cls._overlay_proof(m, vis)
         if overlay_visible and overlay_drawn:
             return "头顶已显示"
-        if state in {"HEAD_TRACKING", "MEASURING", "RUNNING"}:
-            return "正在建立头顶显示"
-        if state == "COMPLETE":
-            return "本次运行完成"
-        return MEASUREMENT_STATE_ZH.get(state, state)
+        if state in {"EXACT_WORLD_LOCKED", "CAMERA_PREPARING", "HEAD_ACQUIRING", "HEAD_TRACKING", "MEASURING", "RUNNING"}:
+            return "正在自动找 P1"
+        if visual_state in {"CAMERA_PREPARING", "HEAD_ACQUIRING", "HEAD_TRACKING"}:
+            return "正在自动找 P1"
+        return "BLOCKED"
 
     @classmethod
     def _format_status(cls, s) -> str:
@@ -156,6 +163,10 @@ class MeasurementTrayApp(TrayApp):
         if overlay:
             lines.append("正式头顶可见：" + ("是" if overlay_visible else "否"))
             lines.append("正式头顶实际 draw：" + ("已确认" if overlay_drawn else "等待中"))
+            if overlay.get("trackerGeneration") is not None:
+                lines.append("P1 draw generation：" + str(overlay.get("trackerGeneration")) + " · baseline=" + str(overlay.get("drawBaseline")))
+            if overlay.get("diagnosticMarkerSuppressed") is not None:
+                lines.append("diagnostic 白点：" + ("已强制隐藏" if overlay.get("diagnosticMarkerSuppressed") is True else "未确认隐藏"))
             if overlay.get("hudSource"):
                 lines.append("正式 renderer：" + str(overlay.get("hudSource")))
         relative_enemy = cls._relative_enemy(m, overlay)
@@ -205,19 +216,13 @@ class MeasurementTrayApp(TrayApp):
             return str(vis.get("actionZh") or "正在自动识别 P1 身份并定位真实场景头部；安全唯一时无需点击。")
         if owner_state == "需要一次点击 P1 真实头部":
             return str(vis.get("actionZh") or "自动定位无法安全唯一确认；请只点一次场景中 P1 人物真实头部。")
-        if owner_state == "正在建立头顶显示":
-            return "P1 authority 已建立，正在等待 maintained Alpha HUD 的 production overlay 实际 draw；不会把 tracker-only 当作头顶已显示。"
         if owner_state == "暂时丢失，恢复中":
             return "头顶标记已隐藏；保持正常游戏，恢复后会自动重新出现。"
-        if m.get("liveAcceptancePhase") == LIVE_ACCEPTANCE_PHASE and m.get("p1LiveGateReady") is True:
-            return "先确认游戏里 P1 的 1P 标记确实贴在真实头顶；P1 正确后再看怪物白色圆点。依次测试左右移动、纵深、跳跃/卷屏和短暂丢失恢复。状态中的 drawCount 只证明画过，不能替代肉眼位置验收。"
         if owner_state == "头顶已显示":
-            return str(vis.get("actionZh") or "maintained Alpha HUD 已确认实际 draw；正常玩即可，丢失时会隐藏并自动恢复。")
-        if state == "COMPLETE":
-            return "本次运行已完成。"
+            return str(vis.get("actionZh") or "maintained Alpha HUD 已确认当前 P1 可见周期发生真实 draw；正常玩即可，丢失时会隐藏并自动恢复。")
         if state == "BLOCKED":
             return str(m.get("blockedReason") or "当前路径已 BLOCKED；不会回退到 diagnostic-only 或 overlay-suppressed 路径。")
-        return MEASUREMENT_STATE_ZH.get(state, state)
+        return owner_state
 
     def _make_image(self, state: str):
         from PIL import Image, ImageDraw
