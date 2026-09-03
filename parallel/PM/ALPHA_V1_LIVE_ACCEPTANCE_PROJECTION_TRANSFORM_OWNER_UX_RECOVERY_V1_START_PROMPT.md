@@ -72,16 +72,52 @@ Required behavior:
 
 Do not continue showing every `Y-Z / Y+Z / Y` marker for P1 plus all enemies at the same time.
 
-Redesign the bounded visual confirmation so a novice Owner is never asked to interpret a screen full of overlapping black labels. Acceptable approaches include one candidate/model at a time, automatic quantitative elimination followed by one minimal visual confirmation, or another simpler bounded flow, but preserve fail-closed semantics.
+Redesign the bounded visual confirmation so a novice Owner is never asked to interpret a screen full of overlapping black labels. Prefer automatic quantitative fitting/elimination and automatic confidence/residual checks. If one human confirmation is intrinsically required, show only one candidate at a time and ask one plain-language yes/no question.
 
 Owner-facing requirements:
 
-- explicit current step and one next action;
+- explicit current step and **exactly one next action**;
 - visually distinguish P1 vs enemy evidence without clutter;
-- never require the Owner to understand coordinate math or model names to proceed;
-- do not enable a success button until the candidate is actually eligible;
+- never require the Owner to understand coordinate math, `Y-Z`, `Y+Z`, `Y`, sign, scale, bias, offsets or model names;
+- never ask the Owner to choose among multiple mathematical models;
+- do not enable a success action until the candidate is actually eligible;
 - if no candidate is authoritative, surface one clear failure result and stop instead of inviting guesswork;
 - no repeated P1 clicks unless the current authority was explicitly revoked and the UI clearly says a new click is required.
+
+### B1. Mandatory simplicity budget — this is a product requirement
+
+The current live-acceptance flow is rejected as too complicated. The successor normal path must target:
+
+**`菜单 6 -> 正常进入 WOF -> Camera 自动准备 -> 最多点击一次 P1 头顶 -> 正常玩 -> 自动完成或给出一个明确结果`**
+
+For the normal successful path:
+
+- after menu 6, do not require the Owner to run another menu item;
+- at most **one deliberate calibration click** per valid runtime/Camera authority generation;
+- no manual selection among projection models;
+- no manual interpretation of multiple debug labels;
+- no simultaneous multi-model marker flood;
+- no checklist that asks the Owner to remember a sequence of left/right, depth, jump, resize, fullscreen and enemy appearance;
+- collect horizontal/depth/jump/enemy/layout evidence opportunistically from normal gameplay wherever technically possible;
+- if a specific additional motion is genuinely required because evidence is still insufficient, request **one action at a time**, in plain Chinese, only when needed, and automatically advance once observed;
+- do not require resize/fullscreen merely because the historical proof script did so; keep it only if it is still technically necessary for current transform authority, and justify that necessity in the durable RESULT;
+- do not require the Owner to click a "success model" button. The tool must decide eligibility from evidence. If a final human visual confirmation is unavoidable, it must be a single plain-language `位置正确 / 位置不正确` decision for one already-selected candidate, not a mathematical choice;
+- after success, automatically activate the production head overlay; after failure, automatically preserve evidence and show one clear failure reason;
+- authoritative menu-6 live ZIP must be created automatically and its exact path shown prominently;
+- menu 7/8 remain fallback diagnostics only and must not be part of the ordinary Owner instructions.
+
+Target Owner-facing steady-state text should be conceptually as simple as:
+
+- `正在自动校准，请正常玩。`
+- `请点击一次 P1 头顶上方希望提示出现的位置。`
+- `正在自动验证头顶位置，请继续正常玩。`
+- `校准完成，头顶提示已启用。`
+
+or, on fail-closed inability:
+
+- `本次无法可靠确定头顶位置，已自动保存结果；请结束本次验证。`
+
+Do not expose internal candidate names or engineering diagnostics in the primary game overlay. Detailed diagnostics may remain in evidence/tray advanced detail.
 
 ### C. Production activation boundary
 
@@ -128,19 +164,22 @@ Complete the coherent module end-to-end before stopping:
 
 1. identify the precise transform/projection authority deficiency from current source and available durable/live evidence;
 2. implement the minimal authoritative transform discovery/fitting/validation path without guessed constants;
-3. replace the simultaneous multi-model clutter with a bounded novice-safe confirmation flow;
+3. replace the simultaneous multi-model clutter with the mandatory simplified Owner flow above;
 4. preserve exact Camera authority binding from READY through click through transform proof;
 5. ensure transform authority is versioned, lifecycle/session bound, revocable and evidence-visible;
 6. preserve production fail-closed activation;
 7. preserve / improve automatic live evidence and final ZIP clarity;
 8. add deterministic implementation-owned tests for the actual defect class, including depth-direction/sign mistakes, jump/Z model separation, stale-authority rejection, model ambiguity/failure, and novice UI state progression;
-9. run only the needed implementation-source self-check/regression/safety gates;
-10. freeze a new immutable successor source/package; do not reuse `2026.09.02.52c942085c99` for the next Owner retest;
-11. validate Windows portable / Chinese+spaces path / last-known-good behavior as applicable;
-12. write a durable RESULT with exact sourceCommit, packageVersion, manifestPublicationCommit and workflow run IDs;
-13. close both canonical and stage claims COMPLETE with the matching claimToken.
+9. add self-checks enforcing the simplicity budget: no model-choice buttons in normal path, no simultaneous multi-model flood, at most one calibration click per valid authority generation, one-next-action guidance, and menu-6 automatic ZIP;
+10. run only the needed implementation-source self-check/regression/safety gates;
+11. freeze a new immutable successor source/package; do not reuse `2026.09.02.52c942085c99` for the next Owner retest;
+12. validate Windows portable / Chinese+spaces path / last-known-good behavior as applicable;
+13. write a durable RESULT with exact sourceCommit, packageVersion, manifestPublicationCommit and workflow run IDs, and explicitly state the final Owner interaction count/sequence;
+14. close both canonical and stage claims COMPLETE with the matching claimToken.
 
-If authoritative transform semantics cannot be established without another bounded real Owner measurement, do not guess and do not spin indefinitely. Implement the minimal safe measurement/UX/evidence path needed for that one measurement, package it as an immutable successor, and state exactly what one Owner action remains. However, do not stop at a partial code patch, a workflow draft, or an unpublished candidate.
+If authoritative transform semantics cannot be established without another bounded real Owner measurement, do not guess and do not spin indefinitely. Implement the minimal safe measurement/UX/evidence path needed for that one measurement, package it as an immutable successor, and state exactly what one Owner action remains. Even in that case, the measurement flow must honor the simplicity budget: one instruction at a time, no math/model choice, no full checklist memorization, automatic evidence packaging.
+
+Do not stop at a partial code patch, a workflow draft, or an unpublished candidate.
 
 ## 5. Exit condition
 
