@@ -1,8 +1,10 @@
 (function(root){
 'use strict';
 const VERSION='wof-alpha-enemy-target-labels-v1';
-const PROJECTION_SCHEMA='wof-alpha-enemy-head-projection-v1';
+const GEOMETRY_VERSION='wof-alpha-enemy-head-geometry-v2';
+const PROJECTION_SCHEMA='wof-alpha-enemy-head-projection-v2';
 const PROJECTION_VERDICT='IMPLEMENTATION_READY';
+const PROJECTION_KIND='world-camera-y-sign-z-head-clearance-v2';
 const SUPPORTED_ROM_SHA='5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62';
 const TARGETS_BY_FIELD=Object.freeze({0:'P1',4:'P2',8:'P3'});
 const TARGET_LABELS=Object.freeze({P1:'1P',P2:'2P',P3:'3P'});
@@ -35,6 +37,7 @@ function contentRectOf(state){
 function fail(reason,extra={}){return{ok:false,reason,...extra};}
 function validateProofProfile(profile){
   if(!profile||profile.schema!==PROJECTION_SCHEMA||profile.verdict!==PROJECTION_VERDICT)return fail('PROJECTION_UNPROVEN');
+  if(profile.projectionKind!==PROJECTION_KIND)return fail('INVALID_PROJECTION_KIND');
   if(typeof profile.proofId!=='string'||!profile.proofId)return fail('PROJECTION_PROOF_ID_MISSING');
   if(profile.romSha256!==SUPPORTED_ROM_SHA)return fail('PROJECTION_ROM_MISMATCH');
   if(profile.nativeWidth!==384||profile.nativeHeight!==224)return fail('INVALID_NATIVE_VIEWPORT');
@@ -42,12 +45,14 @@ function validateProofProfile(profile){
   if(profile.cameraRead!=='u16be')return fail('INVALID_CAMERA_READ');
   if(profile.cameraSign!==1&&profile.cameraSign!==-1)return fail('INVALID_CAMERA_SIGN');
   if(!finite(profile.cameraScale)||profile.cameraScale<=0)return fail('INVALID_CAMERA_SCALE');
-  if(!finite(profile.xBias))return fail('INVALID_PROJECTION_CONSTANTS');
+  if(!finite(profile.xBias)||!finite(profile.yBias))return fail('INVALID_PROJECTION_CONSTANTS');
+  if(profile.yAxisSign!==1&&profile.yAxisSign!==-1)return fail('INVALID_Y_AXIS_SIGN');
   if(!Y_MODELS.has(profile.yModel))return fail('INVALID_Y_MODEL');
-  const offsets=profile.enemyHeadOffsetsByType;
-  if(!offsets||typeof offsets!=='object'||Array.isArray(offsets))return fail('ENEMY_HEAD_OFFSETS_MISSING');
-  const entries=Object.entries(offsets);if(!entries.length)return fail('ENEMY_HEAD_OFFSETS_MISSING');
-  for(const [key,value] of entries){const type=Number(key);if(!Number.isInteger(type)||type<0||type>=47||!finite(value))return fail('INVALID_ENEMY_HEAD_OFFSET');}
+  if(Object.prototype.hasOwnProperty.call(profile,'enemyHeadOffsetsByType'))return fail('LEGACY_ENEMY_HEAD_OFFSETS_UNSUPPORTED');
+  const clearances=profile.enemyHeadClearanceByType;
+  if(!clearances||typeof clearances!=='object'||Array.isArray(clearances))return fail('ENEMY_HEAD_CLEARANCE_MISSING');
+  const entries=Object.entries(clearances);if(!entries.length)return fail('ENEMY_HEAD_CLEARANCE_MISSING');
+  for(const [key,value] of entries){const type=Number(key);if(!Number.isInteger(type)||type<0||type>=47||!finite(value)||value<0)return fail('INVALID_ENEMY_HEAD_CLEARANCE');}
   return{ok:true};
 }
 function validateProjection(projection,nowMs,maxAgeMs=DEFAULT_PROJECTION_MAX_AGE_MS){
@@ -70,6 +75,11 @@ function validateDrawingBuffer(state,nowMs,projectionEpoch,maxAgeMs=DEFAULT_DRAW
   if(state.epoch!==state.projectionEpoch||state.epoch!==projectionEpoch)return fail('DRAWING_BUFFER_EPOCH_MISMATCH');
   return{ok:true,rect,ageMs:age};
 }
+function baseYForModel(marker,yModel){
+  if(yModel==='Y-Z')return marker.enemyY-marker.enemyZ;
+  if(yModel==='Y+Z')return marker.enemyY+marker.enemyZ;
+  return marker.enemyY;
+}
 function projectMarkerNative(marker,projection){
   if(!marker||!Number.isInteger(marker.slot)||marker.slot<0||marker.slot>=20)return fail('INVALID_MARKER_SLOT');
   const expectedTarget=targetForField(marker.target7E);
@@ -77,17 +87,15 @@ function projectMarkerNative(marker,projection){
   const label=labelForTarget(expectedTarget);if(!label)return fail('INVALID_TARGET');
   if(![marker.enemyX,marker.enemyY,marker.enemyZ].every(finite))return fail('INVALID_ENEMY_XYZ');
   if(typeof marker.epoch!=='string'||!marker.epoch||marker.projectionEpoch!==projection.epoch||marker.epoch!==projection.epoch)return fail('EPOCH_MISMATCH');
-  let baseY;
-  if(projection.yModel==='Y-Z')baseY=marker.enemyY-marker.enemyZ;
-  else if(projection.yModel==='Y+Z')baseY=marker.enemyY+marker.enemyZ;
-  else baseY=marker.enemyY;
+  const baseY=baseYForModel(marker,projection.yModel);
+  const bodyYNative=projection.yAxisSign*baseY+projection.yBias;
   const anchorXNative=marker.enemyX-projection.cameraX+projection.xBias;
-  const headOffset=projection.enemyHeadOffsetsByType?.[String(marker.type)];
-  if(!finite(headOffset))return fail('UNSUPPORTED_ENEMY_TYPE');
-  const anchorYNative=baseY+headOffset;
-  if(![anchorXNative,anchorYNative].every(finite))return fail('PROJECTION_NONFINITE');
+  const headClearanceNative=projection.enemyHeadClearanceByType?.[String(marker.type)];
+  if(!finite(headClearanceNative)||headClearanceNative<0)return fail('UNSUPPORTED_ENEMY_TYPE');
+  const anchorYNative=bodyYNative-headClearanceNative;
+  if(![anchorXNative,bodyYNative,anchorYNative].every(finite))return fail('PROJECTION_NONFINITE');
   if(anchorXNative<0||anchorXNative>=projection.nativeWidth||anchorYNative<0||anchorYNative>=projection.nativeHeight)return fail('PROJECTION_OUT_OF_BOUNDS');
-  return{ok:true,anchorXNative,anchorYNative,label,target:expectedTarget};
+  return{ok:true,anchorXNative,anchorYNative,bodyYNative,headClearanceNative,label,target:expectedTarget};
 }
 function buildPlan({markers=[],projection,drawingBufferState,nowMs,markerMaxAgeMs=DEFAULT_MARKER_MAX_AGE_MS,projectionMaxAgeMs=DEFAULT_PROJECTION_MAX_AGE_MS,drawingBufferMaxAgeMs=DEFAULT_DRAWING_BUFFER_MAX_AGE_MS,labelWidth=30,labelHeight=18}={}){
   const now=finite(nowMs)?nowMs:Date.now();
@@ -117,12 +125,12 @@ function buildPlan({markers=[],projection,drawingBufferState,nowMs,markerMaxAgeM
       y:clamp(yDb-height/2,rect.y,rect.y+Math.max(0,rect.height-height)),
       width,height
     };
-    labels.push({slot:marker.slot,sourceId:marker.sourceId||('enemy-slot-'+marker.slot),target:native.target,label:native.label,anchorDb:{x:xDb,y:yDb},drawRectDb,mappingKey,proofId:projection.proofId,epoch:projection.epoch});
+    labels.push({slot:marker.slot,sourceId:marker.sourceId||('enemy-slot-'+marker.slot),target:native.target,label:native.label,anchorDb:{x:xDb,y:yDb},bodyYNative:native.bodyYNative,headClearanceNative:native.headClearanceNative,drawRectDb,mappingKey,proofId:projection.proofId,epoch:projection.epoch});
   }
   return{coordinateSpace:'webgl-drawing-buffer',labels,suppressed,reason:null,mappingKey};
 }
 
-const api={VERSION,PROJECTION_SCHEMA,PROJECTION_VERDICT,SUPPORTED_ROM_SHA,TARGETS_BY_FIELD,TARGET_LABELS,DEFAULT_MARKER_MAX_AGE_MS,DEFAULT_PROJECTION_MAX_AGE_MS,targetForField,labelForTarget,contentRectOf,validateProofProfile,validateProjection,projectMarkerNative,buildPlan};
+const api={VERSION,GEOMETRY_VERSION,PROJECTION_SCHEMA,PROJECTION_VERDICT,PROJECTION_KIND,SUPPORTED_ROM_SHA,TARGETS_BY_FIELD,TARGET_LABELS,DEFAULT_MARKER_MAX_AGE_MS,DEFAULT_PROJECTION_MAX_AGE_MS,targetForField,labelForTarget,contentRectOf,validateProofProfile,validateProjection,projectMarkerNative,buildPlan};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 root.WOFAlphaEnemyTargetLabels=api;
 })(typeof self!=='undefined'?self:globalThis);
