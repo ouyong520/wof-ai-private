@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_LIVE_ACCEPTANCE_RENDER_AUTHORITY_OWNER_VISIBLE_STARTUP_RECOVERY_V3",
+  "dedupKey": "alpha.v1.live-acceptance.render-authority-owner-visible-startup-recovery-v3",
+  "effectiveDedupKey": "alpha.v1.live-acceptance.render-authority-owner-visible-startup-recovery-v3",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.live-acceptance.render-authority-owner-visible-startup-recovery-v3.json",
+  "claimToken": "v3-9f0a6d41d50d4c4cb5f53a6ce7bf3c22",
+  "state": "ACTIVE",
+  "startCommit": "a562e2d15c227e14a7f222e1e06a2bd67a65042d"
+}
