@@ -11,8 +11,12 @@
       "parallel/PYLAUNCH/wof_launcher/tray.py",
       "parallel/RENDER_AUTHORITY_V3/measurement_runner.py"
     ],
-    "zeroClickModuleDirectory": "parallel/PYLAUNCH/wof_launcher/",
-    "zeroClickNameTokens": ["zero", "click"],
+    "optionalZeroClickModuleDirectory": "parallel/PYLAUNCH/wof_launcher/",
+    "staleBaselineBlobs": {
+      "parallel/PYLAUNCH/wof_launcher/head_visual_tracker.py": "c58b2805b8dc5ac248702ef69bcfb998d6cd10dc",
+      "parallel/RENDER_AUTHORITY_V3/measurement_runner.py": "1f7292345529a8d5ee2b948f16d9adb030abf20e"
+    },
+    "requireAnyCorrectedIntegrationBlobChange": true,
     "requireManifestBlobPins": true,
     "requireImmutableDescriptorSafety": true
   },
