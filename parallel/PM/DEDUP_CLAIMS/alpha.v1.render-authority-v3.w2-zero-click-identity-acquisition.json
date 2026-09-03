@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.render-authority-v3.w2-zero-click-identity-acquisition",
+  "effectiveDedupKey": "alpha.v1.render-authority-v3.w2-zero-click-identity-acquisition",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_RENDER_AUTHORITY_V3_W2_ZERO_CLICK_IDENTITY_ACQUISITION",
+  "promptPath": "parallel/PM/ALPHA_V1_LIVE_ACCEPTANCE_RENDER_AUTHORITY_OWNER_VISIBLE_STARTUP_RECOVERY_V3_PARALLEL_ACCELERATION_DISPATCH.md",
+  "owner": "gpt-5.6-sol-v3-w2-zero-click",
+  "claimToken": "w2-7f7e3bcf63c142eda60ea2b1f051f3e4",
+  "state": "ACTIVE",
+  "startCommit": "78335c095af09f20af05e13e959d445d5c0017e5"
+}
