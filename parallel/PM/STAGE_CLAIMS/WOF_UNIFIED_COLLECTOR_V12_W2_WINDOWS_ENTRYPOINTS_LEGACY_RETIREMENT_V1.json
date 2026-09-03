@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "WOF_UNIFIED_COLLECTOR_V12_W2_WINDOWS_ENTRYPOINTS_LEGACY_RETIREMENT_V1",
+  "dedupKey": "wof.unified-collector.v12.workstream.windows-entrypoints-legacy-retirement",
+  "effectiveDedupKey": "wof.unified-collector.v12.workstream.windows-entrypoints-legacy-retirement",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v12.workstream.windows-entrypoints-legacy-retirement.json",
+  "claimToken": "ad30249c-2bb6-4378-83b9-0c55095dccb6",
+  "state": "ACTIVE",
+  "startCommit": "484e35a617d68d8ebbf957ca1845d6b17590c909"
+}
