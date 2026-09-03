@@ -36,6 +36,40 @@ On every standalone `1`, PM must:
 
 The objective of `1` is: **Owner presses one key -> PM checks worker progress -> PM decides and issues the next correct requirement -> project keeps moving.**
 
+### 1.1 Owner shorthand: `1 N` means continue + N idle workers available
+
+When the Owner sends `1 N`, with `N` a non-negative integer, interpret it as:
+
+- `1` = perform the full Git-state checkpoint/continue behavior above;
+- `N` = the Owner reports that N worker slots are currently idle and may be assigned immediately when useful.
+
+Examples:
+
+- `1 1` = continue project progression + 1 idle worker available;
+- `1 2` = continue project progression + 2 idle workers available;
+- `1 3` = continue project progression + 3 idle workers available.
+
+Required PM order:
+
+`inspect latest Git -> judge/continue current mainline -> identify independent acceleration work -> allocate up to N idle workers`
+
+Hard rules:
+
+1. Git durable state is still authoritative. Never infer that an old worker is finished solely from earlier chat state; inspect current HEAD/RESULT/claims first.
+2. Mainline correctness and closeout come first. Do not divert the critical-path owner merely because idle capacity exists.
+3. `N` is a capacity ceiling, not an occupancy target. Leaving worker slots idle is correct when no high-value independent task exists.
+4. Parallelize only tasks that are genuinely independent, non-duplicative, file/runtime/authority non-conflicting, and likely to shorten the path to usable product value.
+5. Do not create QA, recovery, audit, cross-check, speculative refactor, documentation-only work, or low-value side tasks merely to fill slots.
+6. Every assigned worker must still perform current-state + canonical-dedup preflight before substantive execution.
+7. If equivalent work is already ACTIVE/CLAIMED, no duplicate execution is allowed. Use `ALREADY ACTIVE / CLAIMED — NO EXECUTION` and redirect the slot only if a different legitimate task exists.
+8. If equivalent work is COMPLETE, use `ALREADY COMPLETE — NO EXECUTION`; do not repeat implementation or tests for confidence.
+9. Parallel implementation must have explicit workstream/file/runtime/authority boundaries and a clear integration owner when workers share a project.
+10. Idle capacity never authorizes stealing an occupied umbrella/canonical claim or bypassing a successor/recovery authority.
+11. PM, not Owner, decides the technical allocation of the reported idle workers.
+12. Do not treat `1 N` as numbered-option selection unless the Owner explicitly says that is what they mean.
+
+The objective of `1 N` is: **Owner reports available worker capacity in the same minimal command that asks PM to continue; PM first checks Git truth, then uses only the useful portion of that capacity.**
+
 ## 2. All PM-to-worker handoffs must stay short
 
 Default Owner-facing handoff format:
@@ -109,7 +143,7 @@ Therefore:
 2. PM must decide whether a worker result is accepted, incomplete, defective, superseded, blocked, or needs a focused successor stage.
 3. PM must give the Owner only the concise next handoff that actually needs relaying, plus any genuinely important strategic decision that needs Owner leadership.
 4. Routine implementation details, test logs, worker self-assessments and recovery mechanics should remain PM responsibility unless they materially affect product strategy or require Owner action.
-5. `1` remains the Owner's minimal “continue” signal: PM checks current Git truth and keeps the project moving without making the Owner review worker quality.
+5. `1` remains the Owner's minimal “continue” signal; `1 N` extends it with N idle-worker capacity. In both cases PM checks current Git truth first and keeps the project moving without making the Owner review worker quality.
 
 The operating model is:
 
