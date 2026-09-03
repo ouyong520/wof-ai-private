@@ -13,5 +13,7 @@
   "finalImplementationHead": "9b7c6897149cc7de615dd372e072d7b21e9de8f7",
   "terminalCloseoutAuthority": "wof.unified-collector.v12.terminal-integration-closeout-recovery-v2",
   "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_FINAL_CONSOLIDATION_ONECLICK_LEGACY_RETIREMENT_RESULT.md",
-  "resultCommit": "da801b29c86c93f630343d556721aa2cd2315c84"
+  "resultCommit": "bccb57985e4eb917e3588cc10eff2c6a401e4a42",
+  "acceptanceBundlePath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_FINAL_CONSOLIDATION_ONECLICK_LEGACY_RETIREMENT_ACCEPTANCE_BUNDLE.json",
+  "acceptanceBundleCommit": "88625b0bf78d5b1d14fdf0bda0e758f76dcedc97"
 }
