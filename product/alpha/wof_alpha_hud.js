@@ -13,7 +13,6 @@ if(!window.WOFAlphaPlayerHeadWarning?.buildPlan)throw new Error('WOF Alpha playe
 const TARGET_LABELS=window.WOFAlphaEnemyTargetLabels;
 const PLAYER_WARNING=window.WOFAlphaPlayerHeadWarning;
 
-// Product takeover is allowed only after legacy research resources are actually released.
 try{
   const legacy=window.WOFHUD;
   if(legacy){
@@ -63,10 +62,11 @@ const labelHud=document.createElement('canvas');labelHud.width=96;labelHud.heigh
 const warningHud=document.createElement('canvas');warningHud.width=84;warningHud.height=26;const wc=warningHud.getContext('2d');
 const LABEL_ORDER=['1P','2P','3P'],LABEL_TILE_W=32,LABEL_TILE_H=24,MAX_LABELS=20,labelVertices=new Float32Array(MAX_LABELS*6*4);
 
-const STARTUP_MS=15000,STALE_MS=1500,MARKER_STALE_MS=300,PLAYER_SPATIAL_RX_STALE_MS=120,loadedAt=Date.now();
+const STARTUP_MS=15000,STALE_MS=1500,MARKER_STALE_MS=300,PLAYER_SPATIAL_RX_STALE_MS=120,P1_TRACKER_STALE_MS=650,loadedAt=Date.now();
 let disposed=false,visible=true,lastMsg=null,lastRx=0,lastDiag=null,lastKey='',drawCount=0,callbackCount=0;
 let lastMarkerMsg=null,lastMarkerRx=0,lastLabelPlan=null,labelDrawCount=0;
 let lastPlayerMsg=null,lastPlayerRx=0,lastPlayerPlan=null,playerWarningDrawCount=0;
+let p1TrackerAuthority=null,p1Tracker=null,p1TrackerRx=0,p1TrackerDrawCount=0,p1TrackerHideReason='NOT_BOUND';
 
 function snapGL(){
   const active=gl.getParameter(gl.ACTIVE_TEXTURE),activeTex=gl.getParameter(gl.TEXTURE_BINDING_2D);
@@ -153,6 +153,28 @@ function drawLabelPlan(plan){
     bridge.nativeDraw.call(gl,gl.TRIANGLES,0,count*6);labelDrawCount+=count;drawCount++;
   }finally{restoreGL(s);}
 }
+function p1TrackerStatus(now=Date.now()){
+  const fresh=!!p1Tracker&&!!p1TrackerRx&&now-p1TrackerRx<=P1_TRACKER_STALE_MS;
+  return{schema:'wof-alpha-direct-p1-tracker-v1',bound:!!p1TrackerAuthority,authorityKey:p1TrackerAuthority?.authorityKey||null,runtimeEpoch:p1TrackerAuthority?.runtimeEpoch||null,visible:fresh,ageMs:p1TrackerRx?now-p1TrackerRx:null,staleMs:P1_TRACKER_STALE_MS,hideReason:fresh?null:p1TrackerHideReason,drawCount:p1TrackerDrawCount,readOnly:true,ramWrites:0,inputInjection:false};
+}
+function drawP1Tracker(now){
+  const st=p1TrackerStatus(now);if(!st.visible)return false;
+  const r=canvas.getBoundingClientRect(),W=gl.drawingBufferWidth||canvas.width,H=gl.drawingBufferHeight||canvas.height;if(!(r.width>0&&r.height>0&&W>0&&H>0))return false;
+  const x=p1Tracker.x/r.width*W,y=p1Tracker.y/r.height*H,w=Math.max(32,Math.min(44,W*.075)),h=w*LABEL_TILE_H/LABEL_TILE_W;
+  drawLabelPlan({labels:[{label:'1P',drawRectDb:{x:x-w/2,y:y-h-4,width:w,height:h}}]});p1TrackerDrawCount++;return true;
+}
+function bindP1HeadTrackerAuthority(binding){
+  if(!binding||typeof binding.authorityKey!=='string'||!binding.authorityKey||typeof binding.runtimeEpoch!=='string'||!binding.runtimeEpoch)throw new Error('direct P1 tracker authority binding missing');
+  p1TrackerAuthority={authorityKey:binding.authorityKey,runtimeEpoch:binding.runtimeEpoch};p1Tracker=null;p1TrackerRx=0;p1TrackerHideReason='BOUND_WAITING_FOR_TRACKER';return p1TrackerStatus();
+}
+function setP1HeadTracker(payload){
+  try{window.WOFHEADVISUALV3?.showMarker?.(0,0,false);}catch(_){}
+  if(!p1TrackerAuthority||!payload||payload.authorityKey!==p1TrackerAuthority.authorityKey||payload.runtimeEpoch!==p1TrackerAuthority.runtimeEpoch){p1Tracker=null;p1TrackerRx=Date.now();p1TrackerHideReason='STALE_OR_MISMATCHED_AUTHORITY';return p1TrackerStatus();}
+  const x=+payload.x,y=+payload.y;if(payload.visible!==true||!Number.isFinite(x)||!Number.isFinite(y)){p1Tracker=null;p1TrackerRx=Date.now();p1TrackerHideReason=String(payload.reason||'TRACKER_NOT_VISIBLE');return p1TrackerStatus();}
+  p1Tracker={x,y,seedSource:payload.seedSource||null};p1TrackerRx=Date.now();p1TrackerHideReason=null;return p1TrackerStatus();
+}
+function clearP1HeadTracker(reason='TRACKER_HIDDEN'){try{window.WOFHEADVISUALV3?.showMarker?.(0,0,false);}catch(_){}p1Tracker=null;p1TrackerRx=Date.now();p1TrackerHideReason=String(reason);return p1TrackerStatus();}
+function clearP1HeadTrackerAuthority(reason='AUTHORITY_REVOKED'){p1TrackerAuthority=null;return clearP1HeadTracker(reason);}
 function drawingBufferState(now,projectionEpoch){
   const W=gl.drawingBufferWidth||canvas.width,H=gl.drawingBufferHeight||canvas.height;if(!(W>0&&H>0))return null;
   let vp;try{vp=Array.from(gl.getParameter(gl.VIEWPORT));}catch(_){return null;}
@@ -210,7 +232,7 @@ function drawFixedWarnings(warnings){
 }
 function drawHud(){
   callbackCount++;if(disposed||!visible)return;
-  const now=Date.now();drawEnemyTargetLabels(now);
+  const now=Date.now();drawEnemyTargetLabels(now);const trackerVisible=drawP1Tracker(now);
   const fresh=!!lastRx&&now-lastRx<=STALE_MS;
   if(fresh){
     const warnings=Array.isArray(lastMsg?.warnings)?lastMsg.warnings:[];
@@ -231,7 +253,7 @@ function drawHud(){
     const h=paintBox('Alpha 已禁用',[String(lastDiag.reason||'运行环境未通过身份校验')]);
     const W=gl.drawingBufferWidth||canvas.width,w=Math.min(520,W-8);drawTexture(Math.max(4,(W-w)/2),8,w,h);return;
   }
-  if(now-loadedAt<STARTUP_MS){
+  if(!trackerVisible&&now-loadedAt<STARTUP_MS){
     const h=paintBox('WOF Alpha RC5 已加载',[fresh?'检测器已连接 · 当前无生产危险':'等待 921031 身份校验/检测器连接']);
     const W=gl.drawingBufferWidth||canvas.width,w=Math.min(520,W-8);drawTexture(Math.max(4,(W-w)/2),8,w,h);
   }
@@ -253,13 +275,14 @@ bc.onmessage=e=>{
 
 function transportReset(){lastMsg=null;lastRx=0;lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;lastPlayerMsg=null;lastPlayerRx=0;lastPlayerPlan=null;lastDiag=null;lastKey='';}
 function dispose(){
-  if(disposed)return;disposed=true;
+  if(disposed)return;disposed=true;clearP1HeadTrackerAuthority('HUD_DISPOSED');
   if(bridge.callback===drawHud)bridge.callback=null;
   try{bc.close();}catch(_){}
   try{gl.deleteTexture(tex);gl.deleteTexture(labelTex);gl.deleteTexture(warningTex);gl.deleteBuffer(buf);gl.deleteProgram(prog);}catch(_){}
 }
 window.WOFALPHAHUD={
   version:VERSION,session:SESSION,show(){visible=true;lastKey='';},hide(){visible=false;lastKey='';},transportReset,dispose,
+  bindP1HeadTrackerAuthority,setP1HeadTracker,clearP1HeadTracker,clearP1HeadTrackerAuthority,p1HeadTrackerStatus:p1TrackerStatus,
   status(){
     const now=Date.now(),fresh=!!lastRx&&now-lastRx<=STALE_MS;
     const markerFresh=!!lastMarkerRx&&now-lastMarkerRx<=MARKER_STALE_MS;
@@ -268,6 +291,7 @@ window.WOFALPHAHUD={
     const fixedReasons=Array.isArray(lastPlayerPlan?.fixed)?lastPlayerPlan.fixed.map(x=>x.reason):[];
     return{version:VERSION,release:'wof-alpha-rc3',session:SESSION,connected:fresh,ageMs:lastRx?now-lastRx:null,warningCount:summary.count,
       groups:summary.groups,drawHooked:gl.drawArrays===bridge.wrapper,drawCount,callbackCount,lastError:bridge.lastError||null,researchHudDisposed:true,
+      p1HeadTracker:p1TrackerStatus(now),
       playerHeadWarning:{connected:playerFresh,ageMs:lastPlayerRx?now-lastPlayerRx:null,anchored:lastPlayerPlan?.anchored?.length||0,fixed:lastPlayerPlan?.fixed?.length||0,
         fixedReasons,drawCount:playerWarningDrawCount,holdMs:0,smoothing:false,maxSpatialAgeMs:PLAYER_WARNING.MAX_PLAYER_AGE_MS},
       enemyTargetLabels:{connected:markerFresh,ageMs:lastMarkerRx?now-lastMarkerRx:null,count:markerFresh?(lastLabelPlan?.labels?.length||0):0,suppressed:markerFresh?(lastLabelPlan?.suppressed?.length||0):0,
