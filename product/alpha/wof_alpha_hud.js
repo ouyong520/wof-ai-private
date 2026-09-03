@@ -65,7 +65,7 @@ const LABEL_ORDER=['1P','2P','3P'],LABEL_TILE_W=32,LABEL_TILE_H=24,MAX_LABELS=20
 const STARTUP_MS=15000,STALE_MS=1500,MARKER_STALE_MS=300,PLAYER_SPATIAL_RX_STALE_MS=120,P1_TRACKER_STALE_MS=650,loadedAt=Date.now();
 let disposed=false,visible=true,lastMsg=null,lastRx=0,lastDiag=null,lastKey='',drawCount=0,callbackCount=0;
 let lastMarkerMsg=null,lastMarkerRx=0,lastLabelPlan=null,labelDrawCount=0;
-let lastPlayerMsg=null,lastPlayerRx=0,lastPlayerPlan=null,playerWarningDrawCount=0;
+let lastPlayerMsg=null,lastPlayerRx=0,lastPlayerPlan=null,playerWarningDrawCount=0,lastDirectP1WarningCount=0,p1TrackerWarningDrawCount=0;
 let p1TrackerAuthority=null,p1Tracker=null,p1TrackerRx=0,p1TrackerDrawCount=0,p1TrackerHideReason='NOT_BOUND';
 
 function snapGL(){
@@ -149,7 +149,7 @@ function drawLabelPlan(plan){
     gl.viewport(0,0,W,H);gl.disable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.disable(gl.SCISSOR_TEST);gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.colorMask(true,true,true,true);gl.useProgram(prog);
     gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,labelVertices,gl.STREAM_DRAW);gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0,4,gl.FLOAT,false,0,0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,labelTex);gl.uniform1i(uTex,0);
+    gl.vertexAttribPointer(0,4,gl.FLOAT,false,0,gl.FLOAT,false,0,0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,labelTex);gl.uniform1i(uTex,0);
     bridge.nativeDraw.call(gl,gl.TRIANGLES,0,count*6);labelDrawCount+=count;drawCount++;
   }finally{restoreGL(s);}
 }
@@ -191,6 +191,18 @@ function drawEnemyTargetLabels(now){
   const plan=TARGET_LABELS.buildPlan({markers:Array.isArray(lastMarkerMsg?.markers)?lastMarkerMsg.markers:[],projection,drawingBufferState:db,nowMs:now});
   lastLabelPlan=plan;
   if(plan.labels.length)drawLabelPlan(plan);
+}
+function drawP1HeadWarningFromTracker(now,warnings){
+  const rows=Array.isArray(warnings)?warnings.filter(w=>w?.target==='P1'):[];
+  const remaining=Array.isArray(warnings)?warnings.filter(w=>w?.target!=='P1'):[];
+  lastDirectP1WarningCount=0;
+  if(!rows.length)return{handled:0,remaining};
+  const st=p1TrackerStatus(now);if(!st.visible)return{handled:0,remaining:Array.isArray(warnings)?warnings:[]};
+  const r=canvas.getBoundingClientRect(),W=gl.drawingBufferWidth||canvas.width,H=gl.drawingBufferHeight||canvas.height;if(!(r.width>0&&r.height>0&&W>0&&H>0))return{handled:0,remaining:Array.isArray(warnings)?warnings:[]};
+  const x=p1Tracker.x/r.width*W,y=p1Tracker.y/r.height*H,w=Math.max(68,Math.min(104,W*.18)),h=w*warningHud.height/warningHud.width;
+  const dx=Math.max(0,Math.min(W-w,x-w/2)),dy=Math.max(0,Math.min(H-h,y-h*2-8));
+  drawTexture(dx,dy,w,h,warningTex);playerWarningDrawCount++;p1TrackerWarningDrawCount++;lastDirectP1WarningCount=rows.length;
+  return{handled:rows.length,remaining};
 }
 function drawPlayerHeadWarnings(now,warnings){
   const spatialFresh=!!lastPlayerRx&&now-lastPlayerRx<=PLAYER_SPATIAL_RX_STALE_MS;
@@ -238,7 +250,8 @@ function drawHud(){
     const warnings=Array.isArray(lastMsg?.warnings)?lastMsg.warnings:[];
     const model=window.WOFAlphaHudModel.summarizeWarnings(warnings);
     if(model.count){
-      const plan=drawPlayerHeadWarnings(now,warnings);
+      const direct=drawP1HeadWarningFromTracker(now,warnings);
+      const plan=drawPlayerHeadWarnings(now,direct.remaining);
       const fixedWarnings=[];
       for(const row of plan.fixed||[]){
         if(Array.isArray(row.warnings))fixedWarnings.push(...row.warnings);
@@ -248,7 +261,7 @@ function drawHud(){
       return;
     }
   }
-  lastPlayerPlan=null;
+  lastDirectP1WarningCount=0;lastPlayerPlan=null;
   if(lastDiag&&now-lastDiag.at<5000){
     const h=paintBox('Alpha 已禁用',[String(lastDiag.reason||'运行环境未通过身份校验')]);
     const W=gl.drawingBufferWidth||canvas.width,w=Math.min(520,W-8);drawTexture(Math.max(4,(W-w)/2),8,w,h);return;
@@ -266,14 +279,14 @@ const bc=new BroadcastChannel(CHANNEL);
 bc.onmessage=e=>{
   const m=e.data;
   if(!(m&&m.schema===SCHEMA&&m.session===SESSION&&TRANSPORT.matches(m)))return;
-  if(m.kind==='state'){lastMsg=m;lastRx=Date.now();lastDiag=null;lastKey='';lastPlayerPlan=null;}
+  if(m.kind==='state'){lastMsg=m;lastRx=Date.now();lastDiag=null;lastKey='';lastPlayerPlan=null;lastDirectP1WarningCount=0;}
   else if(m.kind==='player-head-spatial'){lastPlayerMsg=m;lastPlayerRx=Date.now();}
   else if(m.kind==='enemy-target-markers'){lastMarkerMsg=m;lastMarkerRx=Date.now();}
   else if(m.kind==='diag'){lastMsg=null;lastRx=0;lastDiag={at:Date.now(),reason:m.reason||m.status||'diagnostic'};lastKey='';}
-  if(m.kind==='diag'){lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;lastPlayerMsg=null;lastPlayerRx=0;lastPlayerPlan=null;}
+  if(m.kind==='diag'){lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;lastPlayerMsg=null;lastPlayerRx=0;lastPlayerPlan=null;lastDirectP1WarningCount=0;}
 };
 
-function transportReset(){lastMsg=null;lastRx=0;lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;lastPlayerMsg=null;lastPlayerRx=0;lastPlayerPlan=null;lastDiag=null;lastKey='';}
+function transportReset(){lastMsg=null;lastRx=0;lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;lastPlayerMsg=null;lastPlayerRx=0;lastPlayerPlan=null;lastDirectP1WarningCount=0;lastDiag=null;lastKey='';}
 function dispose(){
   if(disposed)return;disposed=true;clearP1HeadTrackerAuthority('HUD_DISPOSED');
   if(bridge.callback===drawHud)bridge.callback=null;
@@ -292,8 +305,8 @@ window.WOFALPHAHUD={
     return{version:VERSION,release:'wof-alpha-rc3',session:SESSION,connected:fresh,ageMs:lastRx?now-lastRx:null,warningCount:summary.count,
       groups:summary.groups,drawHooked:gl.drawArrays===bridge.wrapper,drawCount,callbackCount,lastError:bridge.lastError||null,researchHudDisposed:true,
       p1HeadTracker:p1TrackerStatus(now),
-      playerHeadWarning:{connected:playerFresh,ageMs:lastPlayerRx?now-lastPlayerRx:null,anchored:lastPlayerPlan?.anchored?.length||0,fixed:lastPlayerPlan?.fixed?.length||0,
-        fixedReasons,drawCount:playerWarningDrawCount,holdMs:0,smoothing:false,maxSpatialAgeMs:PLAYER_WARNING.MAX_PLAYER_AGE_MS},
+      playerHeadWarning:{connected:playerFresh||lastDirectP1WarningCount>0,ageMs:lastPlayerRx?now-lastPlayerRx:null,anchored:(lastPlayerPlan?.anchored?.length||0)+(lastDirectP1WarningCount>0?1:0),fixed:lastPlayerPlan?.fixed?.length||0,
+        directP1WarningCount:lastDirectP1WarningCount,directP1TrackerDrawCount:p1TrackerWarningDrawCount,fixedReasons,drawCount:playerWarningDrawCount,holdMs:0,smoothing:false,maxSpatialAgeMs:PLAYER_WARNING.MAX_PLAYER_AGE_MS},
       enemyTargetLabels:{connected:markerFresh,ageMs:lastMarkerRx?now-lastMarkerRx:null,count:markerFresh?(lastLabelPlan?.labels?.length||0):0,suppressed:markerFresh?(lastLabelPlan?.suppressed?.length||0):0,
         reason:markerFresh?(lastLabelPlan?.reason||null):'STALE_OR_MISSING_MARKERS',drawCount:labelDrawCount,holdMs:0,smoothing:false}};
   }
