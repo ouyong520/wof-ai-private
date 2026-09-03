@@ -8,11 +8,20 @@
   "promptPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_POST_FREEZE_CROSSLINE_REVALIDATION_V1_PARALLEL_2_WORKER_DISPATCH.md",
   "owner": "chatgpt-gpt-5.6-sol-v12-post-freeze-w2-authority-evidence-audit",
   "claimToken": "v12-postfreeze-w2-4445a5da0c0573900da570cea46b1622",
-  "state": "ACTIVE",
+  "state": "COMPLETE",
+  "disposition": "SUPERSEDED",
   "startCommit": "d280e6a7524132534cf162ff9a8406986211b26b",
   "workstream": "W2",
   "scope": "PM authority/evidence audit only; no parent terminal authority; no bridge production/tests mutation",
   "parentDedupKey": "wof.unified-collector.v12.post-freeze-crossline-revalidation-v1",
   "parentAuthorityClaimed": false,
-  "terminalAuthorityClaimed": false
+  "terminalAuthorityClaimed": false,
+  "implementationRepo": "ouyong520/wof-winkawaks-bridge",
+  "finalImplementationHead": "65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95",
+  "finalImplementationTree": "6102471dde9c4f8b6b6f85fed3d1c7cc54d41d55",
+  "reconciledByDedupKey": "wof.unified-collector.v12.post-freeze-crossline-revalidation-v1.closeout-recovery-v2",
+  "reconciledByStageId": "WOF_UNIFIED_COLLECTOR_V12_POST_FREEZE_CROSSLINE_REVALIDATION_V1_CLOSEOUT_RECOVERY_V2",
+  "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_POST_FREEZE_CROSSLINE_REVALIDATION_V1_CLOSEOUT_RECOVERY_V2_RESULT.md",
+  "resultCommit": "22d4b0e4c5c0f7bd3f726f3e998548d14c4416c3",
+  "completionReason": "Original W2 authority/evidence audit worker stopped without sub-result; Recovery V2 independently completed the authority audit and supersedes this stale ACTIVE authority."
 }
