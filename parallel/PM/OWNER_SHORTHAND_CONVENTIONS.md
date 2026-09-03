@@ -94,13 +94,22 @@ In short:
 
 `Owner 发 1 N -> N 个 worker 已做完/空闲 -> PM 查最新 Git 审核它们 -> 继续/并线真正主线 -> 最多把这 N 个释放出来的 worker 重新分给最能加速且互不冲突的任务`
 
-## PM / worker handoff formatting
+## PM / worker handoff formatting — 100 / middle-link / tail-note rule
 
-Default handoff style should be compact and execution-oriented.
+Every PM-to-worker handoff must use this three-part order unless the Owner explicitly overrides it:
 
-- Keep the opening request concise, generally around 100 Chinese characters unless the task genuinely needs more context.
-- Put the authoritative Git path/link or START_PROMPT reference in the middle of the handoff instead of burying it at the end.
-- Avoid long background restatements when the repository already contains the durable specification.
+1. **Front ~100 Chinese characters: task first.** The opening should usually stay around 100 Chinese characters and immediately state who the worker is, the exact workstream/goal, what is already complete and must not be redone, and the main file/scope boundary. Do not begin with a long background explanation or with a Git path.
+2. **Middle: authoritative Git path/link.** Put the START_PROMPT / dispatch / correction / RESULT authority path in the middle of the handoff, after the worker already understands the task. One concise authoritative path is preferred over a stack of links.
+3. **Tail: execution/closeout note.** End with the important execution constraints and terminal condition: dedup/claim rule, files that must not be touched, focused-test cadence, SUBCOMPLETE/COMPLETE/BLOCKED handoff, and “少汇报，直接执行/持续做到终态”. Do not bury the actual task in the tail.
+
+Mandatory shape:
+
+`前约100字直接任务 -> 中间 Git 权威路径 -> 尾部边界 + 测试/RESULT/claim + COMPLETE/SUBCOMPLETE/BLOCKED 说明`
+
+Formatting rules:
+- The first paragraph should be understandable without opening the linked MD.
+- The Git authority reference must not be the first thing the worker sees unless the Owner explicitly asks for link-first formatting.
+- Do not duplicate the full durable specification in chat; summarize only the delta/critical path and let the middle Git path carry detailed requirements.
 - Prefer one coherent worker instruction over multiple verbose sections.
 - Report sparingly and execute directly.
 
