@@ -3,7 +3,7 @@
 Updated: 2026-09-03
 Authority: Owner interaction convention
 
-## `1` means PM checkpoint + continue project
+## `1` means PM checkpoint + continue project + one idle worker
 
 When the Owner sends a message whose trimmed content is exactly:
 
@@ -11,12 +11,18 @@ When the Owner sends a message whose trimmed content is exactly:
 
 interpret it as:
 
-**The current worker may already be finished. Re-read the latest authoritative Git state, inspect what the worker actually changed/completed, judge the real terminal status, then continue advancing the project through the shortest legitimate next step.**
+**Equivalent to `1 1`: re-read the latest authoritative Git state, inspect what the worker actually changed/completed, continue advancing the project through the shortest legitimate next step, and treat exactly one worker slot as currently idle/available for the next useful assignment.**
+
+Idle-worker context semantics:
+
+- If the project is already running in parallel/multi-worker mode, standalone `1` means **one worker slot is idle now** while other workers may still be ACTIVE. Check the whole current Git/claim state, continue the critical path, then assign that one idle slot only if a useful independent task exists.
+- If the project is not running in parallel and there is only one worker, standalone `1` means **the sole/current worker has become idle or finished its previous instruction**. Check that worker's durable Git result first; if project work remains, immediately give that same sole worker the shortest legitimate next task.
+- In either mode, `1` does not itself prove the previous worker succeeded. Git RESULT/claims/commits remain authoritative.
 
 Operational rules:
 - Do **not** interpret standalone `1` as “choose option 1” unless the Owner explicitly says they are selecting a numbered option.
 - Do **not** ask what `1` means when there is an active project/execution chain in context.
-- Treat `1` as a PM checkpoint trigger, not as an automatic instruction to tell the same worker to continue.
+- Treat `1` as a PM checkpoint trigger plus one-idle-worker capacity signal, not as an automatic instruction to repeat the same task.
 - Re-read current `main` / relevant HEAD plus durable RESULT, canonical claim and stage claim as needed.
 - Inspect actual committed progress rather than trusting the worker chat summary alone.
 - If the current stage is COMPLETE/PASS, review/accept it and immediately identify the next legitimate product step.
@@ -25,10 +31,11 @@ Operational rules:
 - If BLOCKED, route only the concrete blocker.
 - Preserve dedup, stage, safety, testing-cadence, and no-duplicate-work rules.
 - Never merely repeat the previous status after `1`; the project should move forward whenever Git truth permits it.
+- The one idle slot is capacity, not a requirement to invent work. If no useful independent/next task exists, leave it idle.
 
 In short:
 
-`Owner 发 1 -> PM 检查 worker 的 Git 进度 -> 判断完成/阻塞/未收口 -> 生成下一条正确需求 -> 继续推进项目`
+`Owner 发 1 == 1 1 -> PM 检查最新 Git -> 判断当前 worker 完成/阻塞/未收口 -> 继续真正下一步 -> 把 1 个空闲 worker 用在最有效且不冲突的任务上`
 
 ## `1 N` means continue project + N currently idle workers available
 
@@ -43,7 +50,7 @@ where `N` is a non-negative integer, interpret it as two simultaneous facts/inst
 
 Examples:
 
-- `1 1` = continue project progression and there is 1 idle worker available.
+- `1 1` = continue project progression and there is 1 idle worker available. This is semantically the same as standalone `1`.
 - `1 2` = continue project progression and there are 2 idle workers available.
 - `1 3` = continue project progression and there are 3 idle workers available.
 
