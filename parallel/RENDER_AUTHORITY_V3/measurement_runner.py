@@ -23,6 +23,7 @@ from wof_launcher.runtime_authority import RuntimeAuthorityGuard
 SAFETY={"readOnly":True,"ramWrites":0,"inputInjection":False,"manualCalibration":False,"legacyProjectionSelected":False,"productionOverlayEnabled":False}
 SCHEMA="wof-render-authority-owner-visible-session-v3"
 VISUAL_GRACE_SECONDS=12.0
+OWNER_FLOW="MENU6_NORMAL_GAME_AUTO_P1_IDENTITY_BOUNDED_SCENE_HEAD_ZERO_CLICK_FIRST_FALLBACK_ONE_CLICK_MAX_NORMAL_PLAY_AUTO_COMPLETE"
 
 def _write(path:Path,value:object)->None:
     path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(value,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
@@ -61,8 +62,8 @@ def run(root:Path,output_root:Path,host:str="127.0.0.1",port:int=9223,browser:st
             try:status_callback(state,dict(snap))
             except Exception:pass
     def blocked(reason:str,code:int,**extra:Any)->int:
-        event("BLOCKED",reason=reason,**extra);summary={"schema":SCHEMA,"startedAt":started,"endedAt":datetime.now().astimezone().isoformat(timespec="seconds"),"verdict":"BLOCKED","blockedReason":reason,"safety":SAFETY,"zipPath":str(zip_path),**extra};_write(session_dir/"SESSION_SUMMARY.json",summary);_zip_dir(session_dir,zip_path);publish("BLOCKED",blockedReason=reason,zipPath=str(zip_path),**extra);return code
-    publish("STARTING");event("SESSION_STARTED",ownerFlow="MENU6_NORMAL_GAME_CAMERA_ONE_CLICK_MAX_NORMAL_PLAY_AUTO_COMPLETE")
+        event("BLOCKED",reason=reason,**extra);summary={"schema":SCHEMA,"startedAt":started,"endedAt":datetime.now().astimezone().isoformat(timespec="seconds"),"verdict":"BLOCKED","blockedReason":reason,"ownerFlow":OWNER_FLOW,"safety":SAFETY,"zipPath":str(zip_path),**extra};_write(session_dir/"SESSION_SUMMARY.json",summary);_zip_dir(session_dir,zip_path);publish("BLOCKED",blockedReason=reason,zipPath=str(zip_path),**extra);return code
+    publish("STARTING");event("SESSION_STARTED",ownerFlow=OWNER_FLOW,ownerClickExpectedNormal=0,ownerClickFallbackMaximumPerAuthorityGeneration=1)
     endpoint,rejection=probe_endpoint_diagnostic(host,port);browser_proc=None;entry_source="existing-pylaunch-cdp" if endpoint else None
     if endpoint is None:
         fleet=select_fleet_instance(None,live_only=True)
@@ -118,7 +119,7 @@ def run(root:Path,output_root:Path,host:str="127.0.0.1",port:int=9223,browser:st
                     result=terminal_capture
                     if not isinstance(result,dict):return blocked("terminal capture result missing",8,visual=v)
                     result["pageSurface"]=page_surface;result["sessionSafety"]=SAFETY;_write(session_dir/"RENDER_AUTHORITY_CAPTURE_RESULT.json",result);_write(session_dir/"P1_HEAD_VISUAL_RESULT.json",visual.result())
-                    summary={"schema":SCHEMA,"startedAt":started,"endedAt":datetime.now().astimezone().isoformat(timespec="seconds"),"verdict":"BOUNDED_CAPTURE_AND_P1_HEAD_VISUAL_AUTHORITY_READY","ownerFlow":"MENU6_NORMAL_GAME_CAMERA_ONE_CLICK_MAX_NORMAL_PLAY_AUTO_COMPLETE","worldSha256":result.get("worldSha256"),"runtimeEpoch":result.get("runtimeEpoch"),"authorityKey":result.get("authorityKey"),"sampleCount":result.get("sampleCount"),"candidateCount":len(result.get("candidateRegions") or []),"visual":visual.result(),"legacyProjectionUsed":False,"manualProjectionCalibrationUsed":False,"productionOverlaySuppressed":True,"automaticPackaging":True,"safety":SAFETY,"zipPath":str(zip_path)}
+                    summary={"schema":SCHEMA,"startedAt":started,"endedAt":datetime.now().astimezone().isoformat(timespec="seconds"),"verdict":"BOUNDED_CAPTURE_AND_P1_HEAD_VISUAL_AUTHORITY_READY","ownerFlow":OWNER_FLOW,"ownerClickExpectedNormal":0,"ownerClickFallbackMaximumPerAuthorityGeneration":1,"worldSha256":result.get("worldSha256"),"runtimeEpoch":result.get("runtimeEpoch"),"authorityKey":result.get("authorityKey"),"sampleCount":result.get("sampleCount"),"candidateCount":len(result.get("candidateRegions") or []),"visual":visual.result(),"legacyProjectionUsed":False,"manualProjectionCalibrationUsed":False,"productionOverlaySuppressed":True,"automaticPackaging":True,"safety":SAFETY,"zipPath":str(zip_path)}
                     _write(session_dir/"SESSION_SUMMARY.json",summary);event("COMPLETE",zipPath=str(zip_path));_zip_dir(session_dir,zip_path);(session_dir/"FINAL_ZIP.txt").write_text(str(zip_path)+"\n",encoding="utf-8");publish("COMPLETE",visual=visual.result(),zipPath=str(zip_path),sampleCount=sample_count,candidateCount=candidate_count);return 0
                 if terminal_seen_at is not None and time.monotonic()-terminal_seen_at>=VISUAL_GRACE_SECONDS:
                     reason="P1 头部视觉 authority 在有界窗口内未达到安全多样本/连续跟踪门槛；未启用不可信 overlay。"
