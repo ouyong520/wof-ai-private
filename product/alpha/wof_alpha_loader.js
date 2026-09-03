@@ -16,12 +16,15 @@ const load=async name=>{
 };
 
 if(typeof window!=='undefined'&&window===globalThis){
+  try{window.WOFALPHARELATIVEENEMY?.dispose?.();}catch(_){}
   try{window.WOFALPHAHUD?.dispose?.();}catch(_){}
   await load('wof_alpha_hud_model.js');
   await load('wof_alpha_enemy_target_labels.js');
   await load('wof_alpha_player_head_warning.js');
+  await load('wof_alpha_relative_head_anchor.js');
   await load('wof_alpha_hud.js');
-  window.WOFALPHA={release:RELEASE,schema:SCHEMA,session:SESSION,mode:'page',status:()=>window.WOFALPHAHUD?.status?.()||null};
+  await load('wof_alpha_relative_enemy_overlay.js');
+  window.WOFALPHA={release:RELEASE,schema:SCHEMA,session:SESSION,mode:'page',status:()=>({hud:window.WOFALPHAHUD?.status?.()||null,relativeEnemy:window.WOFALPHARELATIVEENEMY?.status?.()||null})};
   return window.WOFALPHA;
 }
 
@@ -30,7 +33,7 @@ await load('wof_alpha_core.js');
 const C=self.WOFAlphaCore;
 if(!C||C.VERSION!=='wof-alpha-core-rc3'||C.SCHEMA!==SCHEMA)throw new Error('RC3 core identity mismatch');
 
-const good=v=>!!(v&&v.HEAPU8 instanceof Uint8Array&&v.HEAPU32 instanceof Uint32Array&&v.HEAPU8.buffer===v.HEAPU32.buffer);
+const good=v=>!!(v&&v.HEAPU8 instanceof Uint8Array&&v.HEAPU32 instanceof Uint32Array&&v.HEAPU8.buffer===v.HEAPU32.buffer); 
 async function moduleFind(){
   if(good(self._0x515056))return self._0x515056;
   const until=performance.now()+8000;
