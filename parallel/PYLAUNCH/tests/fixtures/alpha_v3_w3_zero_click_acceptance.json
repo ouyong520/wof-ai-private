@@ -1,0 +1,99 @@
+{
+  "schema": "alpha-v3-w3-zero-click-acceptance-fixture-v1",
+  "description": "Deterministic owner-path traces for Alpha V3 W3. These are acceptance oracles, not production implementation.",
+  "safety": {"readOnly": true, "ramWrites": 0, "inputInjection": false},
+  "package": {
+    "requiredRuntimePaths": [
+      "parallel/PYLAUNCH/render_authority_measurement_entry.py",
+      "parallel/PYLAUNCH/wof_launcher/browser.py",
+      "parallel/PYLAUNCH/wof_launcher/head_visual_tracker.py",
+      "parallel/PYLAUNCH/wof_launcher/render_measurement_ui.py",
+      "parallel/PYLAUNCH/wof_launcher/tray.py",
+      "parallel/RENDER_AUTHORITY_V3/measurement_runner.py"
+    ],
+    "zeroClickModuleDirectory": "parallel/PYLAUNCH/wof_launcher/",
+    "zeroClickNameTokens": ["zero", "click"],
+    "requireManifestBlobPins": true,
+    "requireImmutableDescriptorSafety": true
+  },
+  "scenarios": [
+    {
+      "name": "safe_unique_zero_click",
+      "kind": "safe_unique",
+      "browser": {"entryMode": "reuse-existing", "wofIntent": true, "aboutBlank": false},
+      "steps": [
+        {"state": "CAMERA_PREPARING", "trayVisible": true, "autoAttempted": false, "clickArmed": false, "ownerClickCount": 0, "markerVisible": false},
+        {"state": "HEAD_ACQUIRING", "trayVisible": true, "autoAttempted": true, "autoResult": "SAFE_UNIQUE", "clickArmed": false, "ownerClickCount": 0, "markerVisible": false},
+        {"state": "HEAD_TRACKING", "trayVisible": true, "autoAttempted": true, "autoResult": "SAFE_UNIQUE", "boundActor": "P1", "clickArmed": false, "ownerClickCount": 0, "markerVisible": true}
+      ]
+    },
+    {
+      "name": "ambiguous_auto_fails_closed",
+      "kind": "ambiguous",
+      "browser": {"entryMode": "configured-url", "wofIntent": true, "aboutBlank": false},
+      "steps": [
+        {"state": "HEAD_ACQUIRING", "trayVisible": true, "autoAttempted": true, "autoResult": "AMBIGUOUS", "clickArmed": false, "ownerClickCount": 0, "markerVisible": false, "boundActor": null},
+        {"state": "ONE_CLICK_REQUIRED", "trayVisible": true, "autoAttempted": true, "autoResult": "AMBIGUOUS", "clickArmed": true, "ownerClickCount": 0, "markerVisible": false, "boundActor": null}
+      ]
+    },
+    {
+      "name": "wrong_actor_candidate_rejected",
+      "kind": "ambiguous",
+      "browser": {"entryMode": "restore-last-session", "wofIntent": true, "aboutBlank": false},
+      "steps": [
+        {"state": "HEAD_ACQUIRING", "trayVisible": true, "autoAttempted": true, "autoResult": "REJECTED_WRONG_ACTOR", "clickArmed": false, "ownerClickCount": 0, "markerVisible": false, "boundActor": null},
+        {"state": "ONE_CLICK_REQUIRED", "trayVisible": true, "autoAttempted": true, "autoResult": "REJECTED_WRONG_ACTOR", "clickArmed": true, "ownerClickCount": 0, "markerVisible": false, "boundActor": null}
+      ]
+    },
+    {
+      "name": "auto_failure_then_single_click",
+      "kind": "fallback_click",
+      "browser": {"entryMode": "reuse-existing", "wofIntent": true, "aboutBlank": false},
+      "steps": [
+        {"state": "HEAD_ACQUIRING", "trayVisible": true, "autoAttempted": true, "autoResult": "NO_SAFE_SEED", "clickArmed": false, "ownerClickCount": 0, "markerVisible": false},
+        {"state": "ONE_CLICK_REQUIRED", "trayVisible": true, "autoAttempted": true, "autoResult": "NO_SAFE_SEED", "clickArmed": true, "ownerClickCount": 0, "markerVisible": false},
+        {"state": "HEAD_TRACKING", "trayVisible": true, "autoAttempted": true, "autoResult": "NO_SAFE_SEED", "clickArmed": false, "ownerClickCount": 1, "boundActor": "P1", "markerVisible": true}
+      ]
+    },
+    {
+      "name": "confidence_loss_hide_and_recover",
+      "kind": "loss_recovery",
+      "browser": {"entryMode": "reuse-existing", "wofIntent": true, "aboutBlank": false},
+      "steps": [
+        {"state": "HEAD_TRACKING", "trayVisible": true, "autoAttempted": true, "autoResult": "SAFE_UNIQUE", "clickArmed": false, "ownerClickCount": 0, "boundActor": "P1", "markerVisible": true, "confidence": 0.94},
+        {"state": "HEAD_ACQUIRING", "trayVisible": true, "autoAttempted": true, "autoResult": "TRACKING_LOST", "clickArmed": false, "ownerClickCount": 0, "boundActor": "P1", "markerVisible": false, "confidence": 0.31},
+        {"state": "HEAD_TRACKING", "trayVisible": true, "autoAttempted": true, "autoResult": "RECOVERED", "clickArmed": false, "ownerClickCount": 0, "boundActor": "P1", "markerVisible": true, "confidence": 0.91}
+      ]
+    },
+    {
+      "name": "runtime_generation_revokes_authority",
+      "kind": "invalidation",
+      "invalidation": "runtime",
+      "browser": {"entryMode": "reuse-existing", "wofIntent": true, "aboutBlank": false},
+      "steps": [
+        {"state": "HEAD_TRACKING", "trayVisible": true, "autoAttempted": true, "autoResult": "SAFE_UNIQUE", "clickArmed": false, "ownerClickCount": 0, "markerVisible": true, "authorityGeneration": "runtime-A", "authorityRevoked": false},
+        {"state": "RUNTIME_REDISCOVERY", "trayVisible": true, "autoAttempted": true, "autoResult": "INVALIDATED", "clickArmed": false, "ownerClickCount": 0, "markerVisible": false, "authorityGeneration": "runtime-B", "authorityRevoked": true}
+      ]
+    },
+    {
+      "name": "p1_lifecycle_generation_revokes_authority",
+      "kind": "invalidation",
+      "invalidation": "lifecycle",
+      "browser": {"entryMode": "reuse-existing", "wofIntent": true, "aboutBlank": false},
+      "steps": [
+        {"state": "HEAD_TRACKING", "trayVisible": true, "autoAttempted": true, "autoResult": "SAFE_UNIQUE", "clickArmed": false, "ownerClickCount": 0, "markerVisible": true, "p1Generation": 4, "authorityRevoked": false},
+        {"state": "HEAD_ACQUIRING", "trayVisible": true, "autoAttempted": true, "autoResult": "INVALIDATED", "clickArmed": false, "ownerClickCount": 0, "markerVisible": false, "p1Generation": 5, "authorityRevoked": true}
+      ]
+    },
+    {
+      "name": "layout_change_revokes_stale_marker",
+      "kind": "invalidation",
+      "invalidation": "layout",
+      "browser": {"entryMode": "reuse-existing", "wofIntent": true, "aboutBlank": false},
+      "steps": [
+        {"state": "HEAD_TRACKING", "trayVisible": true, "autoAttempted": true, "autoResult": "SAFE_UNIQUE", "clickArmed": false, "ownerClickCount": 0, "markerVisible": true, "layoutKey": "0:0:960:600:384:224", "authorityRevoked": false},
+        {"state": "HEAD_ACQUIRING", "trayVisible": true, "autoAttempted": true, "autoResult": "INVALIDATED", "clickArmed": false, "ownerClickCount": 0, "markerVisible": false, "layoutKey": "0:0:1280:720:384:224", "authorityRevoked": true}
+      ]
+    }
+  ]
+}
