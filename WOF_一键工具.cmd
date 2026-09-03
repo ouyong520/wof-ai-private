@@ -46,7 +46,7 @@ rem official package manifest only on first install or explicit menu-1 repair/up
 if defined WOF_BOOTSTRAP_URL (
   set "BOOT_URL=%WOF_BOOTSTRAP_URL%"
 ) else (
-  set "BOOT_URL=https://raw.githubusercontent.com/ouyong520/wof-ai-private/887f8dcc50cd09ecce1133f9255375f6008a2d4d/parallel/OWNER_ONECLICK/bootstrap_v2.ps1"
+  set "BOOT_URL=https://raw.githubusercontent.com/ouyong520/wof-ai-private/e4bada0109dadff96e1847199b334aa718f5d7be/parallel/OWNER_ONECLICK/bootstrap_v2.ps1"
 )
 set "BOOT_PS1=%TEMP%\WOF_owner_bootstrap_%RANDOM%_%RANDOM%.ps1"
 echo.
