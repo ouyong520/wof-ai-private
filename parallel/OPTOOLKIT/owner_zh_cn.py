@@ -92,8 +92,9 @@ class ChineseToolkit(toolkit.Toolkit):
         except Exception as exc:
             print("Render Authority V3 启动失败。"); print("游戏本身没有受到影响。"); print("技术详情："+str(exc)); return
         print("Render Authority V3 已启动。请看 Windows 右下角 WOF 托盘状态。")
-        print("正常进入 WOF；工具会先自动识别 P1 角色/头像并定位场景 P1 头部，正常路径无需点击。")
-        print("只有自动定位确实无法安全唯一确认时，托盘才会允许最多一次场景 P1 人物实际头部点击。")
+        print("正常进入 WOF；工具会先确认 exact World / P1 lifecycle，再尝试真实 HUD/portrait/tile/render 语义身份与场景头部证据。")
+        print("只有语义证据安全唯一时才会零点击进入头部跟踪；generic HUD 颜色不会被当成人物身份。")
+        print("如果当前 runtime 没有足够真实语义证据、证据不足或存在歧义，会安全 fail closed，随后才允许最多一次场景 P1 人物实际头部点击。")
         print("工具会自动积累多头部样本并连续跟踪；识别不稳会立刻隐藏，恢复后自动重新显示。")
         print("如果确实缺一个动作，托盘一次只提示一件事；不需要 Y/Y-Z/Y+Z、旧校准清单或手工打包。")
         print("采集始终绑定 exact World 921031 和当前 Worker/runtime generation；runtime 更换会撤销旧位置并自动重发现。")
