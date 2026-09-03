@@ -3,7 +3,7 @@
 Updated: 2026-09-03
 Authority: Owner interaction convention
 
-## `1` means PM checkpoint + continue project + one idle worker
+## `1` means PM checkpoint + continue project + one worker has finished/become idle
 
 When the Owner sends a message whose trimmed content is exactly:
 
@@ -11,33 +11,46 @@ When the Owner sends a message whose trimmed content is exactly:
 
 interpret it as:
 
-**Equivalent to `1 1`: re-read the latest authoritative Git state, inspect what the worker actually changed/completed, continue advancing the project through the shortest legitimate next step, and treat exactly one worker slot as currently idle/available for the next useful assignment.**
+**Equivalent to `1 1`: continue the project from latest authoritative Git state, and understand that one worker has just finished its previous work / become idle and now needs PM review and reassignment if appropriate.**
 
-Idle-worker context semantics:
+This is stronger than a generic capacity hint. In an active parallel/multi-worker project, standalone `1` means:
 
-- If the project is already running in parallel/multi-worker mode, standalone `1` means **one worker slot is idle now** while other workers may still be ACTIVE. Check the whole current Git/claim state, continue the critical path, then assign that one idle slot only if a useful independent task exists.
-- If the project is not running in parallel and there is only one worker, standalone `1` means **the sole/current worker has become idle or finished its previous instruction**. Check that worker's durable Git result first; if project work remains, immediately give that same sole worker the shortest legitimate next task.
-- In either mode, `1` does not itself prove the previous worker succeeded. Git RESULT/claims/commits remain authoritative.
+1. **continue the current project;**
+2. **one of the currently assigned workers has finished or become idle;**
+3. PM must inspect current Git/RESULT/claims/commits to determine which workstream actually finished and whether its result is acceptable;
+4. after that review, decide whether the freed worker should rejoin the mainline/integration path, receive the next independent acceleration task, or remain idle.
+
+The Owner does not need to identify which worker finished. PM determines that from durable Git state.
+
+Parallel / merge context semantics:
+
+- If the project is already running in parallel/multi-worker mode, standalone `1` means **at least one previously occupied worker slot has become free because that worker finished/stopped its assigned work**, while other workers may still be ACTIVE. PM must inspect all current workstreams and find the newly completed/idle one before assigning anything.
+- If the finished worker produced a sub-result that must now be consumed by an umbrella/integration owner, treat that as a merge/integration event first. Do not automatically invent a new parallel task for the freed slot.
+- If the current critical path needs a continuation/recovery and the freed worker is the appropriate executor, give that worker the next mainline task.
+- If another ACTIVE mainline worker owns integration and a genuinely independent accelerator exists, the freed worker may take that task.
+- If no useful non-conflicting task exists, leave the worker idle.
+- If the project is not running in parallel and there is only one worker, standalone `1` means **the sole/current worker has finished or become idle**. Check its durable Git result first; if project work remains, immediately give that same worker the shortest legitimate next task.
+- In all modes, `1` does not prove the worker succeeded. Git RESULT/claims/commits remain authoritative.
 
 Operational rules:
 - Do **not** interpret standalone `1` as “choose option 1” unless the Owner explicitly says they are selecting a numbered option.
 - Do **not** ask what `1` means when there is an active project/execution chain in context.
-- Treat `1` as a PM checkpoint trigger plus one-idle-worker capacity signal, not as an automatic instruction to repeat the same task.
+- Treat `1` as a PM checkpoint trigger plus a **worker-finished / worker-now-idle signal**, not as an automatic instruction to repeat the same task.
 - Re-read current `main` / relevant HEAD plus durable RESULT, canonical claim and stage claim as needed.
 - Inspect actual committed progress rather than trusting the worker chat summary alone.
-- If the current stage is COMPLETE/PASS, review/accept it and immediately identify the next legitimate product step.
+- If the finished stage is COMPLETE/PASS, review/accept it and immediately identify the legitimate next product step.
 - If a fresh implementation/recovery/QA stage is genuinely required, create or surface the proper durable START_PROMPT under canonical dedup and give the Owner the new concise worker requirement.
 - If unfinished authorized work only needs closeout/recovery, continue that shortest path without redoing completed implementation.
 - If BLOCKED, route only the concrete blocker.
 - Preserve dedup, stage, safety, testing-cadence, and no-duplicate-work rules.
 - Never merely repeat the previous status after `1`; the project should move forward whenever Git truth permits it.
-- The one idle slot is capacity, not a requirement to invent work. If no useful independent/next task exists, leave it idle.
+- The newly freed worker is available capacity after PM review, not a requirement to invent work.
 
 In short:
 
-`Owner 发 1 == 1 1 -> PM 检查最新 Git -> 判断当前 worker 完成/阻塞/未收口 -> 继续真正下一步 -> 把 1 个空闲 worker 用在最有效且不冲突的任务上`
+`Owner 发 1 == 1 1 -> 有一个 worker 刚做完/空闲 -> PM 查最新 Git 找出是谁和做得怎样 -> 继续主线/并线 -> 再决定这个空闲 worker 的下一任务`
 
-## `1 N` means continue project + N currently idle workers available
+## `1 N` means continue project + N workers have finished/become idle
 
 When the Owner sends a shorthand message matching:
 
@@ -46,37 +59,40 @@ When the Owner sends a shorthand message matching:
 where `N` is a non-negative integer, interpret it as two simultaneous facts/instructions:
 
 1. **`1` = continue the current project from authoritative Git state** using the same checkpoint/review behavior defined above.
-2. **`N` = there are currently N idle worker slots available for immediate assignment** if useful independent work exists.
+2. **`N` = N previously occupied/current worker slots have finished their assigned work or are now idle and available for PM review/reassignment.**
 
 Examples:
 
-- `1 1` = continue project progression and there is 1 idle worker available. This is semantically the same as standalone `1`.
-- `1 2` = continue project progression and there are 2 idle workers available.
-- `1 3` = continue project progression and there are 3 idle workers available.
+- `1` = exactly the same as `1 1`: continue + one worker has finished/become idle;
+- `1 1` = continue + one worker has finished/become idle;
+- `1 2` = continue + two workers have finished/become idle;
+- `1 3` = continue + three workers have finished/become idle.
 
 Mandatory PM execution order for `1 N`:
 
-`READ LATEST GIT -> REVIEW CURRENT MAINLINE/WORKERS -> CONTINUE THE REAL CRITICAL PATH -> IDENTIFY SAFE INDEPENDENT PARALLEL WORK -> ASSIGN UP TO N IDLE WORKERS`
+`READ LATEST GIT -> IDENTIFY WHICH N WORKERS/WORKSTREAMS FINISHED OR BECAME IDLE -> REVIEW THEIR DURABLE RESULTS -> CONTINUE / MERGE THE REAL CRITICAL PATH -> IDENTIFY SAFE INDEPENDENT PARALLEL WORK -> REASSIGN UP TO N FREED WORKERS`
 
 Rules:
 
-- Always inspect latest authoritative Git first. `1 N` does not authorize guessing worker state from chat memory.
-- First continue or repair the real mainline. Worker-capacity allocation comes after current-state review, not before it.
-- Treat `N` as **available capacity, not a requirement to fill every slot**.
+- Always inspect latest authoritative Git first. `1 N` does not authorize guessing which workers finished from chat memory.
+- The Owner does not need to name the finished workers; PM derives them from current claims/results/commits.
+- First continue, merge, close, or repair the real mainline. Reassignment comes after current-state review.
+- Treat `N` as **newly available worker capacity after completion/idle**, not a requirement to fill every slot.
+- Do not double-count the same freed worker as both a mainline continuation worker and an additional parallel worker.
 - Assign only work that is genuinely independent, non-duplicative, authority-safe, file/runtime non-conflicting, and likely to shorten the product critical path.
 - If only one useful independent task exists while `N=3`, assign one worker and leave two idle.
-- Never manufacture QA, recovery, audit, cross-check, speculative refactor, documentation-only work, or low-value side work merely to consume idle capacity.
-- Every dispatched worker still performs canonical dedup/current-state preflight before substantive work.
-- If equivalent work is already ACTIVE/CLAIMED, do not duplicate it; report `ALREADY ACTIVE / CLAIMED — NO EXECUTION` for that worker slot and redirect only if another legitimate independent task exists.
+- Never manufacture QA, recovery, audit, cross-check, speculative refactor, documentation-only work, or low-value side work merely to consume freed workers.
+- Every reassigned worker still performs canonical dedup/current-state preflight before substantive work.
+- If equivalent work is already ACTIVE/CLAIMED, do not duplicate it; report `ALREADY ACTIVE / CLAIMED — NO EXECUTION` for that slot and redirect only if another legitimate independent task exists.
 - If equivalent work is already COMPLETE, do not repeat it; report `ALREADY COMPLETE — NO EXECUTION` and use capacity only for the next legitimate task.
-- Respect umbrella/subworkstream ownership. Idle workers do not get permission to steal an existing canonical claim.
+- Respect umbrella/subworkstream ownership. Freed workers do not get permission to steal an existing canonical claim.
 - PM must define explicit file/runtime/authority boundaries before parallel implementation when multiple workers touch the same project.
 - Owner does not need to decide which worker gets which technical subtask; PM owns that allocation.
 - Do not interpret `1 N` as numbered-option selection unless the Owner explicitly says they are choosing options.
 
 In short:
 
-`Owner 发 1 N -> PM 查最新 Git -> 审核当前主线 -> 继续真正下一步 -> 最多把 N 个空闲 worker 分给最能加速且互不冲突的独立任务`
+`Owner 发 1 N -> N 个 worker 已做完/空闲 -> PM 查最新 Git 审核它们 -> 继续/并线真正主线 -> 最多把这 N 个释放出来的 worker 重新分给最能加速且互不冲突的任务`
 
 ## PM / worker handoff formatting
 
