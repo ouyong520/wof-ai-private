@@ -1,0 +1,18 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "wof.unified-collector.v12.workstream.lifecycle-agent-coordinator",
+  "effectiveDedupKey": "wof.unified-collector.v12.workstream.lifecycle-agent-coordinator",
+  "dedupMode": "exclusive",
+  "stageId": "WOF_UNIFIED_COLLECTOR_V12_FINAL_CONSOLIDATION_ONECLICK_LEGACY_RETIREMENT_V1",
+  "promptPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_PARALLEL_3_WORKER_DISPATCH.md",
+  "owner": "chatgpt-gpt-5.6-sol-v12-worker-w1-terminal-coordinator",
+  "claimToken": "v12-w1-5d1d2e728be54af1b3e552593c10ed8c",
+  "state": "ACTIVE",
+  "startCommit": "0e4e72f877dd78f634fa5bf8b22672f4d440d70a",
+  "workstream": "W1",
+  "parentCanonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v12.final-consolidation-oneclick-legacy-retirement.json",
+  "parentClaimToken": "v12-umbrella-96e154cdfc014245b565a4d323d23ea1",
+  "implementationRepo": "ouyong520/wof-winkawaks-bridge",
+  "implementationStartHead": "e80257d9486cd3129b115d4e1007bf24335b8852"
+}
