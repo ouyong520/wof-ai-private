@@ -102,13 +102,17 @@ If the answer is only more tests, more documents, more authority, more recovery,
 
 Testing is not a separate product line and must not self-expand.
 
-Use three levels only:
+Default testing boundary is a **major version candidate or a coherent completed feature batch**, not each small patch.
 
-1. **implementation self-check** — smallest affected verification after a change;
-2. **focused regression** — once the target capability is integrated;
-3. **final acceptance** — once a real candidate is ready for delivery.
+Use only the minimum justified layers:
+
+1. **implementation self-check** — cheap checks needed by the worker while implementing; do not stop the product flow for these;
+2. **batched functional regression** — once a coherent feature set / major capability is integrated;
+3. **final acceptance** — once a real Owner-testable candidate is ready.
 
 Do not create QA-of-QA chains, repeated confidence-only full regressions, fresh QA successors, or recovery layers unless a real new defect or authority break justifies them.
+
+Do not run broad CI, full regression, package acceptance, or Owner live testing after every commit. Batch related implementation first, then test the whole functional unit once.
 
 A real Owner-observed failure immediately becomes higher priority than speculative additional testing.
 
@@ -124,6 +128,15 @@ Do not open a recovery if the existing active authority can simply continue.
 
 ## 8. Worker dispatch rules
 
+Each product normally runs with:
+
+- **1 Product Manager** for that product line;
+- **1 to 3 implementation workers** depending on genuinely independent work available.
+
+The PM is not counted as an implementation worker.
+
+Do not create workers merely to fill capacity. Use 2 or 3 workers only when their scopes are truly independent and can be integrated without mutual waiting or file/authority conflict.
+
 Workers receive narrow executable requirements with:
 
 - one product line only;
@@ -136,6 +149,8 @@ Workers receive narrow executable requirements with:
 Workers should commit implementation and evidence to GitHub. Chat replies are secondary.
 
 PM acceptance consumes exact commits from GitHub rather than depending on thread-to-thread conversation handoff.
+
+When a worker finishes, that worker slot becomes available immediately after PM GitHub acceptance. The PM should reuse free slots only for the next highest-value independent product work.
 
 ## 9. Analysis stop condition
 
@@ -177,3 +192,42 @@ After bounded takeover, PM reports only:
 6. when the Owner should next receive a testable candidate.
 
 Keep this concise. The purpose of PM analysis is to accelerate product delivery, not to create more project process.
+
+## 12. Owner shorthand control protocol
+
+Owner shorthand is part of the durable operating contract:
+
+- **`1`** = continue this product's progression. PM must inspect current GitHub state, accept/reject completed worker work, then issue the next highest-value requirement. It does not mean blindly tell the same worker to keep going.
+- **`1 2`** = continue progression **and two implementation workers have finished / two worker slots are now free**. PM must first verify both finished workers from GitHub, then may dispatch up to two new independent worker tasks if useful.
+- More generally, when the Owner explicitly reports N workers finished, treat that as N potentially free implementation slots after GitHub acceptance; never assume completion without checking the commits/results.
+
+Do not ask the Owner to manually review worker quality before continuing. PM owns that GitHub-based acceptance.
+
+## 13. Development must not become endless
+
+A product line must not remain in continuous internal development while delaying Owner testing indefinitely.
+
+Once a coherent capability is safe and materially changed, the PM should converge toward an Owner-testable candidate instead of continuing to add polish, abstractions, QA layers or unrelated features.
+
+Prefer:
+
+`1-3 workers implement coherent product capability -> integrate -> one batched regression -> Owner-testable candidate -> real feedback`
+
+Avoid:
+
+`worker after worker -> more internal features -> more QA -> more refactors -> no Owner test`
+
+If the PM cannot explain why another implementation task is required before Owner testing, stop development and prepare the candidate.
+
+## 14. Major-version / feature-batch testing policy
+
+Full or expensive testing is normally run only when one of these boundaries is reached:
+
+- a major version / release candidate is materially ready;
+- a coherent multi-file functional capability has finished integration;
+- a real defect fix materially changes the affected runtime path and needs one focused successor regression;
+- final Owner delivery candidate is being prepared.
+
+Small intermediate commits should use only cheap implementation self-checks when needed. Do not create a separate test worker for every small feature and do not rerun broad historical suites unless their material SUT changed.
+
+Testing exists to validate the product batch, not to become the batch.
