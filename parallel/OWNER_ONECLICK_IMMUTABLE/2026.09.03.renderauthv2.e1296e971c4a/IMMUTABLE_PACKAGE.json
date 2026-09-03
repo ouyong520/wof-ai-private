@@ -1,0 +1,15 @@
+{
+  "schema": "wof-owner-oneclick-immutable-publication-v1",
+  "packageVersion": "2026.09.03.renderauthv2.e1296e971c4a",
+  "mode": "BOUNDED_AUTOMATIC_RENDER_AUTHORITY_MEASUREMENT",
+  "sourceCommit": "e1296e971c4aca305ddcfe269ffab3b1021f4aa9",
+  "manifestPublicationCommit": "612b81cf6628a3b07e19813564e66fcc1112a9ab",
+  "manifestPath": "parallel/OWNER_ONECLICK/package_manifest.json",
+  "manifestBlobSha": "1fef7910c41447df6046291d43abc84926701242",
+  "ownerEntry": "WOF_一键工具.cmd -> menu 6",
+  "ownerAction": "NORMAL_PLAY_ONLY_20_30_SECONDS",
+  "legacyProjectionSelected": false,
+  "manualCalibration": false,
+  "productionOverlay": "SUPPRESSED_UNTIL_EXACT_RENDER_AUTHORITY_VERIFIED",
+  "safety": {"readOnly": true, "ramWrites": 0, "inputInjection": false}
+}
