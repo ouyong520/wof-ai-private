@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 import math
 import tempfile
@@ -17,6 +18,7 @@ from training.farm.collector_export import (
     discover_current_records,
     read_current_record,
     record_is_stale,
+    validate_export_registry,
 )
 from training.farm.fake_backend import DeterministicFakeBackend
 from training.farm.identity import build_fixture_runtime_identity
@@ -52,6 +54,9 @@ class CollectorExportTests(unittest.TestCase):
             **kwargs,
         )
 
+    def registry(self) -> dict[str, object]:
+        return validate_export_registry(json.loads((self.root / "registry.json").read_text(encoding="ascii")))
+
     def test_publish_roundtrip_binds_identity_layout_and_all_supported_evidence(self) -> None:
         blocks = (ExportRamBlock(0x1000, b"\x01\x02"), ExportRamBlock(0x2000, b"\x03\x04\x05"))
         stream = (
@@ -81,6 +86,15 @@ class CollectorExportTests(unittest.TestCase):
         current = read_current_record(self.root, "worker-01")
         self.assertEqual(current, record)
         self.assertEqual(current["sourceNamespace"], "stable-retro-fbneo")
+        self.assertEqual(current["sequence"], current["monotonicSequence"])
+        self.assertTrue(current["complete"])
+        self.assertEqual(current["schemaVersion"], current["schema"])
+        self.assertEqual(current["runtimeIdentity"], self.identity)
+        self.assertEqual(current["episodeIdentity"], {"episodeId": "episode-1"})
+        self.assertEqual(current["rootIdentity"]["rootId"], "root-1")
+        self.assertEqual(current["branchIdentity"]["branchId"], "branch-1")
+        self.assertEqual(current["actionResultMetadata"], {"actionWasChosenByCollector": False})
+        self.assertEqual(current["resourceTimingMetadata"]["sampleNs"], 50)
         self.assertEqual(
             current["evidenceKinds"],
             [
@@ -90,21 +104,44 @@ class CollectorExportTests(unittest.TestCase):
                 "CURRENT_ACTION_RESULT_METADATA",
             ],
         )
+        self.assertEqual(set(current["evidence"]), set(current["evidenceKinds"]))
         self.assertIsNotNone(current["memoryLayoutIdentitySha256"])
         self.assertEqual(current["safety"]["trainingControlAuthority"], False)
+
+        registry = self.registry()
+        self.assertEqual(registry["sourceNamespace"], "stable-retro-fbneo")
+        self.assertEqual(registry["exporterVersion"], "wof-training-farm-read-only-exporter-v1")
+        self.assertEqual(len(registry["workers"]), 1)
+        row = registry["workers"][0]
+        self.assertNotEqual(row["recordPath"], "workers/worker-01/current.json")
+        self.assertIn("/records/gen-0001/", row["recordPath"])
+        record_path = self.root / row["recordPath"]
+        raw = record_path.read_bytes()
+        self.assertEqual(hashlib.sha256(raw).hexdigest(), row["recordSha256"])
+        self.assertEqual(json.loads(raw.decode("ascii")), record)
+        descriptor = current["evidence"]["RAM_SNAPSHOT"]
+        self.assertEqual(descriptor["artifactPath"], current["artifactRelativePath"])
+        self.assertEqual(descriptor["sha256"], current["artifactSha256"])
 
     def test_same_generation_sequence_is_strictly_monotonic(self) -> None:
         first = self.exporter.publish(self.context())
         second = self.exporter.publish(self.context(sequence=2, published=1_002))
         self.assertEqual(second["previousRecordIdentitySha256"], first["recordIdentitySha256"])
+        registry = self.registry()
+        self.assertEqual(registry["workers"][0]["sequence"], 2)
+        self.assertEqual(registry["sequence"], 2)
         with self.assertRaisesRegex(ExportContractError, "strictly increase"):
             self.exporter.publish(self.context(sequence=2, published=1_003))
+        self.assertEqual(self.registry(), registry)
 
     def test_new_generation_must_have_newer_generation_start_and_old_writer_cannot_return(self) -> None:
         self.exporter.publish(self.context(generation="gen-old", started=1_000, published=1_001))
         self.exporter.publish(self.context(generation="gen-new", started=2_000, sequence=1, published=2_001))
+        before = self.registry()
         with self.assertRaisesRegex(ExportContractError, "conflicting/older"):
             self.exporter.publish(self.context(generation="gen-old", started=1_000, sequence=2, published=3_000))
+        self.assertEqual(self.registry(), before)
+        self.assertEqual(before["workers"][0]["workerGeneration"], "gen-new")
 
     def test_memory_layout_change_inside_one_artifact_fails_closed(self) -> None:
         base = (ExportRamBlock(0x1000, b"aa"),)
@@ -145,11 +182,12 @@ class CollectorExportTests(unittest.TestCase):
         with self.assertRaises(ExportContractError):
             self.context(generation="bad generation")
 
-    def test_inactive_worker_requires_stopped_health(self) -> None:
+    def test_inactive_worker_requires_stopped_health_and_registry_marks_inactive(self) -> None:
         with self.assertRaises(ExportContractError):
             self.context(active=False, health="ACTIVE")
         record = self.exporter.publish(self.context(active=False, health="STOPPED"))
         self.assertFalse(record["active"])
+        self.assertFalse(self.registry()["workers"][0]["active"])
 
     def test_ten_worker_fixture_is_identity_isolated_without_launching_workers(self) -> None:
         for index in range(10):
@@ -161,10 +199,17 @@ class CollectorExportTests(unittest.TestCase):
                 trajectory_metadata={"workerIndex": index},
             )
         records = discover_current_records(self.root)
+        registry = self.registry()
         self.assertEqual(len(records), 10)
+        self.assertEqual(len(registry["workers"]), 10)
         self.assertEqual(len({row["workerId"] for row in records}), 10)
         self.assertEqual(len({row["workerGeneration"] for row in records}), 10)
         self.assertEqual(len({row["artifactSha256"] for row in records}), 10)
+        self.assertEqual(len({row["recordSha256"] for row in registry["workers"]}), 10)
+        for row in registry["workers"]:
+            immutable = self.root / row["recordPath"]
+            self.assertTrue(immutable.is_file())
+            self.assertEqual(hashlib.sha256(immutable.read_bytes()).hexdigest(), row["recordSha256"])
 
     def test_empty_registry_is_safe(self) -> None:
         empty = Path(tempfile.mkdtemp())
