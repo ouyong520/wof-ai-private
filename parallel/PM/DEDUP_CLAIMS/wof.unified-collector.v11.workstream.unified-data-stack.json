@@ -8,9 +8,22 @@
   "promptPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V11_PARALLEL_3_WORKER_DISPATCH.md",
   "owner": "chatgpt-gpt-5.6-sol-v11-worker-w3",
   "claimToken": "v11-w3-9dda02ab40864fedb9b90e2059c62b97",
-  "state": "ACTIVE",
+  "state": "SUBCOMPLETE",
   "startCommit": "39ce85be8bf80519521754f3bcd2bcc039dbf3b4",
   "workstream": "W3",
   "parentCanonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v11.training-farm-adapter-unified-task-data-stack.json",
-  "parentClaimToken": "v11-8ae06246ff6533ce7ba6df8d37fc5f93"
+  "parentClaimToken": "v11-8ae06246ff6533ce7ba6df8d37fc5f93",
+  "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V11_W3_UNIFIED_DATA_STACK_SUBRESULT.md",
+  "resultCommit": "e50f5672af898328b765103517e21390cfaaa216",
+  "bridgeStartCommit": "1e8cc821e9baa1399c53a303f467dbc546a98fc2",
+  "bridgeResultCommit": "8468c2fed5efeef068bd980c437384885d4f07d4",
+  "focusedRegression": {
+    "workflowRunId": 33714040635,
+    "jobId": 100519361741,
+    "newW3Tests": "8/8 PASS",
+    "legacyV4V9Tests": "136/136 PASS",
+    "total": "144/144 PASS",
+    "ownershipSourceDuckdbGuard": "PASS"
+  },
+  "terminalV11AuthorityClaimed": false
 }
