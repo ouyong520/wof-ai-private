@@ -5,6 +5,11 @@
   "effectiveDedupKey": "wof.unified-collector.v10.agent-foundation-browser-wasm-multi-page-adapter",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v10.agent-foundation-browser-wasm-multi-page-adapter.json",
   "claimToken": "v10-1de0957eaa9dbecd1f80e7fadcd9145d",
-  "state": "ACTIVE",
-  "startCommit": "fe4b2ede9fa78710418e2f23ae265dd2afdca264"
+  "state": "COMPLETE",
+  "startCommit": "fe4b2ede9fa78710418e2f23ae265dd2afdca264",
+  "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V10_AGENT_FOUNDATION_BROWSER_WASM_MULTI_PAGE_ADAPTER_RESULT.md",
+  "resultCommit": "21fec94b7c132920500e6709d3c76db3fc49be5d",
+  "implementationHead": "31ec55650ccce29fad60dcab2ca099425a1ecc0b",
+  "workflowRunId": 33710701482,
+  "workflowJobId": 100509341864
 }
