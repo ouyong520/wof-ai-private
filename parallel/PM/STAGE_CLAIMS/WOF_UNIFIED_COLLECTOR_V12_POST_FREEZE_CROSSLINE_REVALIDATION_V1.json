@@ -5,6 +5,14 @@
   "effectiveDedupKey": "wof.unified-collector.v12.post-freeze-crossline-revalidation-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v12.post-freeze-crossline-revalidation-v1.json",
   "claimToken": "v12-postfreeze-parent-8b9e6f0d4b7c4a5d91733bcb52bdb9ef",
-  "state": "ACTIVE",
-  "startCommit": "ea8efbc651140cd07032c097a99b81ab4d43a81f"
+  "state": "COMPLETE",
+  "disposition": "SUPERSEDED",
+  "startCommit": "ea8efbc651140cd07032c097a99b81ab4d43a81f",
+  "finalImplementationHead": "65831cb0cf3ec3fcfdfe0f20bade5ee24deafc95",
+  "finalImplementationTree": "6102471dde9c4f8b6b6f85fed3d1c7cc54d41d55",
+  "reconciledByDedupKey": "wof.unified-collector.v12.post-freeze-crossline-revalidation-v1.closeout-recovery-v2",
+  "reconciledByStageId": "WOF_UNIFIED_COLLECTOR_V12_POST_FREEZE_CROSSLINE_REVALIDATION_V1_CLOSEOUT_RECOVERY_V2",
+  "resultPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V12_POST_FREEZE_CROSSLINE_REVALIDATION_V1_CLOSEOUT_RECOVERY_V2_RESULT.md",
+  "resultCommit": "22d4b0e4c5c0f7bd3f726f3e998548d14c4416c3",
+  "completionReason": "Original post-freeze stage was left ACTIVE by stopped workers; Recovery V2 PASS/COMPLETE is the terminal reconciliation authority and supersedes the stale stage."
 }
