@@ -1,0 +1,16 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "wof.unified-collector.v11.workstream.training-farm-exporter-coordinator",
+  "effectiveDedupKey": "wof.unified-collector.v11.workstream.training-farm-exporter-coordinator",
+  "dedupMode": "exclusive",
+  "stageId": "WOF_UNIFIED_COLLECTOR_V11_TRAINING_FARM_ADAPTER_UNIFIED_TASK_DATA_STACK_V1",
+  "promptPath": "parallel/PM/WOF_UNIFIED_COLLECTOR_V11_PARALLEL_3_WORKER_DISPATCH.md",
+  "owner": "chatgpt-gpt-5.6-sol-v11-worker-w1",
+  "claimToken": "v11-w1-0ebd0227c26d15fe56d341ed7ee236ac",
+  "state": "ACTIVE",
+  "startCommit": "6ecf2fa824dd1a45adccf75e46761ec481d44cad",
+  "workstream": "W1",
+  "parentCanonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/wof.unified-collector.v11.training-farm-adapter-unified-task-data-stack.json",
+  "parentClaimToken": "v11-8ae06246ff6533ce7ba6df8d37fc5f93"
+}
