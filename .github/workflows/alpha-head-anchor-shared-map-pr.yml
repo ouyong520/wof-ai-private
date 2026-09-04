@@ -1,0 +1,38 @@
+name: Alpha head-anchor shared mapping PR
+
+on:
+  push:
+    branches: [alpha-head-anchor-shared-screen-map-worker-c]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'product/alpha/wof_alpha_screen_space_map.js'
+      - 'product/alpha/screen_space_map_regression.mjs'
+      - 'product/alpha/wof_alpha_enemy_target_labels.js'
+      - 'product/alpha/enemy_target_labels_regression.mjs'
+      - 'product/alpha/wof_alpha_player_head_warning.js'
+      - 'product/alpha/player_head_warning_regression.mjs'
+      - 'product/alpha/wof_alpha_hud.js'
+      - 'product/alpha/wof_alpha_loader.js'
+      - '.github/workflows/alpha-head-anchor-shared-map-pr.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  focused-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Keep the shared contract first so a common mapping defect is isolated from geometry-worker regressions.
+      - name: Shared screen-space contract
+        run: node product/alpha/screen_space_map_regression.mjs
+      - name: Enemy head-anchor regression
+        run: node product/alpha/enemy_target_labels_regression.mjs
+      - name: Player head-anchor regression
+        if: always()
+        run: node product/alpha/player_head_warning_regression.mjs

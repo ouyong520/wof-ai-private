@@ -19,6 +19,7 @@ if(typeof window!=='undefined'&&window===globalThis){
   try{window.WOFALPHARELATIVEENEMY?.dispose?.();}catch(_){}
   try{window.WOFALPHAHUD?.dispose?.();}catch(_){}
   await load('wof_alpha_hud_model.js');
+  await load('wof_alpha_screen_space_map.js');
   await load('wof_alpha_enemy_target_labels.js');
   await load('wof_alpha_player_head_warning.js');
   await load('wof_alpha_relative_head_anchor.js');
