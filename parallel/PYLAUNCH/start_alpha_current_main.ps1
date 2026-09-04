@@ -45,53 +45,21 @@ function Find-WofRepo {
     foreach ($candidate in ($candidates | Select-Object -Unique)) {
         if (Test-WofRepo $candidate) { return (Resolve-Path $candidate).Path }
     }
-
-    $searchRoots = @()
-    if ($env:USERPROFILE -and (Test-Path $env:USERPROFILE)) { $searchRoots += $env:USERPROFILE }
-    foreach ($drive in 'D','E','F','G') {
-        $root = $drive + ':\'
-        if (Test-Path $root) { $searchRoots += $root }
-    }
-    foreach ($root in $searchRoots) {
-        try {
-            $queue = New-Object System.Collections.Queue
-            $queue.Enqueue(@($root,0))
-            while ($queue.Count -gt 0) {
-                $item = $queue.Dequeue()
-                $dir = [string]$item[0]
-                $depth = [int]$item[1]
-                if ($depth -gt 4) { continue }
-                try {
-                    foreach ($child in Get-ChildItem -LiteralPath $dir -Directory -ErrorAction SilentlyContinue) {
-                        if ($child.Name -eq 'wof-ai-private' -and (Test-WofRepo $child.FullName)) {
-                            return $child.FullName
-                        }
-                        if ($depth -lt 4 -and $child.Name -notin @('Windows','$Recycle.Bin','System Volume Information','Program Files','Program Files (x86)','ProgramData','.git','node_modules')) {
-                            $queue.Enqueue(@($child.FullName,$depth+1))
-                        }
-                    }
-                } catch {}
-            }
-        } catch {}
-    }
     return $null
 }
 
+if (-not $Repo) { $Repo = Find-WofRepo }
 if (-not $Repo) {
-    $Repo = Find-WofRepo
-}
-if (-not $Repo) {
-    Stop-Wof 'Could not find the wof-ai-private Git checkout. Open GitHub Desktop once, select wof-ai-private, then run this launcher again.' 20
+    Stop-Wof 'Could not find the wof-ai-private Git checkout.' 20
 }
 $Repo = (Resolve-Path $Repo).Path
-
 if (-not (Test-WofRepo $Repo)) {
     Stop-Wof 'The located folder is not a valid wof-ai-private Git checkout.' 21
 }
 
 Write-Host ''
 Write-Host '=================================================='
-Write-Host '             WOF Alpha Current Main'
+Write-Host '             WOF Alpha Fast Retest'
 Write-Host '=================================================='
 Write-Host "Repo: $Repo"
 Write-Host 'The game may stay open.'
@@ -99,9 +67,7 @@ Write-Host ''
 
 $gitExe = $null
 $git = Get-Command git.exe -ErrorAction SilentlyContinue
-if ($git) {
-    $gitExe = $git.Source
-}
+if ($git) { $gitExe = $git.Source }
 if (-not $gitExe) {
     $ghRoot = Join-Path $env:LOCALAPPDATA 'GitHubDesktop'
     if (Test-Path $ghRoot) {
@@ -111,41 +77,39 @@ if (-not $gitExe) {
         if ($candidate) { $gitExe = $candidate.FullName }
     }
 }
-if (-not $gitExe) {
-    Stop-Wof 'Git was not found. Open GitHub Desktop first.' 22
-}
+if (-not $gitExe) { Stop-Wof 'Git was not found.' 22 }
 
 $dirty = & $gitExe -C $Repo status --porcelain --untracked-files=all 2>$null
-if ($LASTEXITCODE -ne 0) {
-    Stop-Wof 'Could not read Git status.' 23
-}
-if ($dirty) {
-    Write-Host 'Local uncommitted changes were found.'
-    Stop-Wof 'Open GitHub Desktop and send a screenshot of the Changes tab.' 24
+if ($LASTEXITCODE -ne 0) { Stop-Wof 'Could not read Git status.' 23 }
+if ($dirty) { Stop-Wof 'Local uncommitted changes were found.' 24 }
+
+$managedRepo = $null
+if ($env:LOCALAPPDATA) { $managedRepo = Join-Path $env:LOCALAPPDATA 'WOF_ALPHA_CURRENT_MAIN\repo' }
+$isManagedRepo = $false
+if ($managedRepo) {
+    try { $isManagedRepo = ((Resolve-Path $Repo).Path -ieq (Resolve-Path $managedRepo -ErrorAction Stop).Path) } catch {}
 }
 
-Write-Host '[1/4] Fetching latest main...'
-& $gitExe -C $Repo fetch --quiet 'https://github.com/ouyong520/wof-ai-private.git' '+refs/heads/main:refs/remotes/wof-alpha-authority/main'
-if ($LASTEXITCODE -ne 0) {
-    Stop-Wof 'Could not fetch latest main from GitHub.' 25
-}
-
-$headSha = (& $gitExe -C $Repo rev-parse HEAD).Trim()
-$mainSha = (& $gitExe -C $Repo rev-parse refs/remotes/wof-alpha-authority/main).Trim()
-if (-not $headSha -or -not $mainSha) {
-    Stop-Wof 'Could not resolve Git SHA.' 26
-}
-
-if ($headSha -ne $mainSha) {
-    Write-Host 'Updating local checkout with fast-forward only...'
-    & $gitExe -C $Repo merge --ff-only refs/remotes/wof-alpha-authority/main
-    if ($LASTEXITCODE -ne 0) {
-        Stop-Wof 'Fast-forward failed. Use Pull origin in GitHub Desktop, then run again.' 27
-    }
+if ($isManagedRepo) {
+    Write-Host '[1/4] V4 already updated the managed repo; skipping duplicate network fetch.'
     $headSha = (& $gitExe -C $Repo rev-parse HEAD).Trim()
-}
-if ($headSha -ne $mainSha) {
-    Stop-Wof 'Local checkout is still not exact current main.' 28
+    $originSha = (& $gitExe -C $Repo rev-parse origin/main 2>$null).Trim()
+    if (-not $headSha -or -not $originSha -or $headSha -ne $originSha) {
+        Stop-Wof 'Managed repo is not exact origin/main. Run WOF_ALPHA_RUN_V4.cmd again.' 28
+    }
+} else {
+    Write-Host '[1/4] Fetching latest main...'
+    & $gitExe -C $Repo fetch --quiet 'https://github.com/ouyong520/wof-ai-private.git' '+refs/heads/main:refs/remotes/wof-alpha-authority/main'
+    if ($LASTEXITCODE -ne 0) { Stop-Wof 'Could not fetch latest main from GitHub.' 25 }
+    $headSha = (& $gitExe -C $Repo rev-parse HEAD).Trim()
+    $mainSha = (& $gitExe -C $Repo rev-parse refs/remotes/wof-alpha-authority/main).Trim()
+    if (-not $headSha -or -not $mainSha) { Stop-Wof 'Could not resolve Git SHA.' 26 }
+    if ($headSha -ne $mainSha) {
+        & $gitExe -C $Repo merge --ff-only refs/remotes/wof-alpha-authority/main
+        if ($LASTEXITCODE -ne 0) { Stop-Wof 'Fast-forward failed.' 27 }
+        $headSha = (& $gitExe -C $Repo rev-parse HEAD).Trim()
+    }
+    if ($headSha -ne $mainSha) { Stop-Wof 'Local checkout is still not exact current main.' 28 }
 }
 
 Write-Host "Exact main: $headSha"
@@ -154,38 +118,36 @@ Write-Host ''
 Write-Host '[2/4] Closing old WOF Alpha processes...'
 try {
     Get-CimInstance Win32_Process |
-        Where-Object {
-            $_.Name -match '^pythonw?\.exe$' -and
-            $_.CommandLine -like '*render_authority_measurement_entry.py*'
-        } |
-        ForEach-Object {
-            Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
-        }
+        Where-Object { $_.Name -match '^pythonw?\.exe$' -and $_.CommandLine -like '*render_authority_measurement_entry.py*' } |
+        ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 } catch {}
 
 $venv = Join-Path $env:LOCALAPPDATA 'WOF Alpha Current Main\venv'
 $py = Join-Path $venv 'Scripts\python.exe'
-
+$venvCreated = $false
 if (-not (Test-Path $py)) {
-    Write-Host '[3/4] Creating Python environment...'
+    Write-Host '[3/4] First setup: creating Python environment...'
     $pyLauncher = Get-Command py.exe -ErrorAction SilentlyContinue
     $pythonExe = Get-Command python.exe -ErrorAction SilentlyContinue
-    if ($pyLauncher) {
-        & $pyLauncher.Source -3 -m venv $venv
-    } elseif ($pythonExe) {
-        & $pythonExe.Source -m venv $venv
-    } else {
-        Stop-Wof 'Python 3 was not found.' 29
-    }
-    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $py)) {
-        Stop-Wof 'Could not create the Python environment.' 30
-    }
+    if ($pyLauncher) { & $pyLauncher.Source -3 -m venv $venv }
+    elseif ($pythonExe) { & $pythonExe.Source -m venv $venv }
+    else { Stop-Wof 'Python 3 was not found.' 29 }
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $py)) { Stop-Wof 'Could not create the Python environment.' 30 }
+    $venvCreated = $true
 }
 
-Write-Host '[3/4] Checking Alpha dependencies...'
-& $py -m pip install --disable-pip-version-check -q -r (Join-Path $Repo 'parallel\PYLAUNCH\requirements.txt')
-if ($LASTEXITCODE -ne 0) {
-    Stop-Wof 'Could not install Alpha dependencies.' 31
+$requirements = Join-Path $Repo 'parallel\PYLAUNCH\requirements.txt'
+$reqStamp = Join-Path $venv '.wof_alpha_requirements.sha256'
+$reqHash = (Get-FileHash -LiteralPath $requirements -Algorithm SHA256).Hash
+$installedHash = ''
+if (Test-Path $reqStamp) { $installedHash = (Get-Content -LiteralPath $reqStamp -Raw -ErrorAction SilentlyContinue).Trim() }
+if ($venvCreated -or $installedHash -ne $reqHash) {
+    Write-Host '[3/4] Dependencies changed; installing once...'
+    & $py -m pip install --disable-pip-version-check -q -r $requirements
+    if ($LASTEXITCODE -ne 0) { Stop-Wof 'Could not install Alpha dependencies.' 31 }
+    Set-Content -LiteralPath $reqStamp -Value $reqHash -Encoding ASCII
+} else {
+    Write-Host '[3/4] Dependencies unchanged; using cached environment.'
 }
 
 $results = Join-Path $env:USERPROFILE 'Documents\WOF_RESULTS'
@@ -194,13 +156,13 @@ New-Item -ItemType Directory -Path $results -Force | Out-Null
 $env:WOF_ALPHA_CURRENT_MAIN_SOURCE = '1'
 $env:WOF_ALPHA_ACCEPTANCE_COMMIT = $headSha
 $env:WOF_ALPHA_LIVE_ACCEPTANCE_HOLD = '1'
-$env:WOF_ALPHA_MENU6_ATTACH_ONLY = '1'
+Remove-Item Env:WOF_ALPHA_MENU6_ATTACH_ONLY -ErrorAction SilentlyContinue
 
 $entry = Join-Path $Repo 'parallel\PYLAUNCH\render_authority_measurement_entry.py'
 $workdir = Join-Path $Repo 'parallel\PYLAUNCH'
 
 Write-Host '[4/4] Starting WOF Alpha...'
-Write-Host 'No menu selection is needed.'
+Write-Host 'No reinstall or redownload is needed for later retests.'
 Write-Host 'If one-click fallback is requested, click the real P1 head once.'
 Write-Host ''
 
@@ -215,11 +177,20 @@ try {
     Pop-Location
 }
 
+$feedback = Join-Path $results 'WOF_SEND_ME.zip'
+$packages = Join-Path $results 'packages'
+if (Test-Path $packages) {
+    $latest = Get-ChildItem -LiteralPath $packages -Filter 'WOF_LIVE_ACCEPTANCE_*.zip' -File -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    if ($latest) {
+        Copy-Item -LiteralPath $latest.FullName -Destination $feedback -Force
+    }
+}
+
 Write-Host ''
 Write-Host "WOF Alpha exited with code: $rc"
 Write-Host "Results: $results"
-if ($rc -ne 0) {
-    Write-Host 'Send a screenshot of this window or the BLOCKED notification to ChatGPT.'
-}
+if (Test-Path $feedback) { Write-Host "Feedback bundle: $feedback" }
+if ($rc -ne 0) { Write-Host 'Send the BLOCKED screenshot, or upload WOF_SEND_ME.zip if requested.' }
 Read-Host 'Press Enter to close'
 exit $rc
