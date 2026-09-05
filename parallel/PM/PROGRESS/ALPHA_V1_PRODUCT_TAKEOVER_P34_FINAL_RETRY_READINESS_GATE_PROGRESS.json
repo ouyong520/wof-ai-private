@@ -4,16 +4,18 @@
   "dedupKey": "alpha.v1.product-takeover.final-retry-readiness-gate-v1",
   "claimToken": "-Q3KGRVDrKFWdG2wPly3SJN4FuySDrUztftzIqDWK8Y",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "IMPLEMENTING",
-  "overallPercent": 38,
-  "implementationState": "IN_PROGRESS",
-  "selfCheckState": "PRE_DURABLE_DRAFT_PASS_10_OF_10",
+  "workState": "SELF_CHECK",
+  "overallPercent": 74,
+  "implementationState": "DONE",
+  "selfCheckState": "READY_FOR_FRESH_EXACT_CANDIDATE_TESTS",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "dd0c1d494e01ee9b0bab8526bbcc265600d10267",
-  "lastKnownGoodCommit": "9bfb62f95f6c0583fd4994d7c7a350dfbe9faa1f",
+  "lastKnownGoodCommit": "dbea3c222d58b393d0b8f2895356457d0c17d887",
   "implementationCommits": [
-    "9bfb62f95f6c0583fd4994d7c7a350dfbe9faa1f"
+    "9bfb62f95f6c0583fd4994d7c7a350dfbe9faa1f",
+    "48dd524b2718938ed129457674b9dc9a10ed1cea",
+    "dbea3c222d58b393d0b8f2895356457d0c17d887"
   ],
   "completed": [
     "read P34 START prompt, dispatch, root AGENTS, dedup/progress/result protocols and current final live gate",
@@ -23,26 +25,38 @@
     "read authoritative P32 terminal BLOCKED RESULT and matching BLOCKED claims without rewriting live dependency to PASS",
     "read historical latest final-canonical pointer sourceCommit 0752796369f1687435a1b1647e66ea0b5ab07688 and confirmed it is pre-repair provenance",
     "created and re-read P34 canonical and stage claims with the exact matching claimToken",
-    "implemented isolated final_retry_readiness.py fail-closed gate on durable main commit 9bfb62f95f6c0583fd4994d7c7a350dfbe9faa1f",
-    "draft focused fixture suite passed 10/10 before durable publication; this checkpoint does not treat draft tests as terminal provenance"
+    "implemented isolated deterministic gate, focused regressions, and provenance contract under parallel/OWNER_RETRY_READINESS",
+    "published final durable P34 implementation candidate dbea3c222d58b393d0b8f2895356457d0c17d887 with tree de1cc0427a9ad0ca66951a83d8076c4caf1abc2d",
+    "fresh GitHub readback matched exact implementation blob 4df4becabe7eb43307367c5f08793caf38ada651, test blob 918fafde812f3aa94276c228d240163b125bd34d, and README blob e0fa2f6189d3ab638e17727395452a0ac2826ec9"
   ],
   "remaining": [
-    "durably publish focused deterministic tests and readiness contract documentation",
-    "bind PROGRESS to the final durable candidate commit/blob identities",
-    "fresh-read exact candidate bytes and rerun terminal-significant focused self-check",
-    "evaluate current repository truth and confirm it remains BLOCKED for truthful reasons",
+    "run terminal-significant focused 10-test regression on byte-identical durable candidate files",
+    "evaluate current repository truth and confirm the gate remains BLOCKED for P32/current candidate provenance reasons",
+    "publish READY_TO_PUBLISH checkpoint",
     "publish terminal RESULT, close canonical/stage claims, and publish terminal PROGRESS"
   ],
   "tests": [
     {
       "name": "P34 draft focused deterministic readiness regression",
       "result": "PASS",
-      "detail": "10/10 passed on local draft bytes before durable candidate publication; nonterminal evidence only."
+      "detail": "10/10 passed on pre-durable draft bytes; nonterminal evidence only."
+    },
+    {
+      "name": "P34 exact durable candidate blob identity readback",
+      "result": "PASS",
+      "detail": "Candidate dbea3c222d58b393d0b8f2895356457d0c17d887 tree de1cc0427a9ad0ca66951a83d8076c4caf1abc2d exactly exposes blobs 4df4becabe7eb43307367c5f08793caf38ada651 / 918fafde812f3aa94276c228d240163b125bd34d / e0fa2f6189d3ab638e17727395452a0ac2826ec9 for the three owned files."
     }
   ],
   "blocker": null,
-  "nextAction": "Publish tests/docs, record final durable candidate commit and exact blobs, then rerun focused tests on byte-identical readback.",
+  "nextAction": "Run fresh focused tests against byte-identical candidate dbea3c222d58b393d0b8f2895356457d0c17d887.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:08:49Z"
+  "candidateCommit": "dbea3c222d58b393d0b8f2895356457d0c17d887",
+  "candidateTree": "de1cc0427a9ad0ca66951a83d8076c4caf1abc2d",
+  "candidateFileBlobs": {
+    "parallel/OWNER_RETRY_READINESS/final_retry_readiness.py": "4df4becabe7eb43307367c5f08793caf38ada651",
+    "parallel/OWNER_RETRY_READINESS/test_final_retry_readiness.py": "918fafde812f3aa94276c228d240163b125bd34d",
+    "parallel/OWNER_RETRY_READINESS/README.md": "e0fa2f6189d3ab638e17727395452a0ac2826ec9"
+  },
+  "updatedAtUtc": "2026-09-05T16:10:14Z"
 }
