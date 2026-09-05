@@ -4,11 +4,11 @@
   "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-submit-source-trace-v1",
   "claimToken": "222df9c7af3d836a06c928105d5d3419",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "SELF_CHECK",
-  "overallPercent": 82,
-  "implementationState": "DONE_DURABLE_CANDIDATE_BOUND",
-  "selfCheckState": "READY_FOR_FRESH_EXACT_CANDIDATE_TESTS",
-  "resultPublicationState": "NOT_STARTED",
+  "workState": "READY_TO_PUBLISH",
+  "overallPercent": 96,
+  "implementationState": "DONE_DURABLE_CANDIDATE_READBACK_BOUND",
+  "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
+  "resultPublicationState": "PENDING",
   "claimCloseState": "PENDING",
   "startCommit": "6af80330fbf5eed3c62e82b8ebf4a3e5257d1cba",
   "lastKnownGoodCommit": "162e50b6c65fd1d3901ad694854563b686b2ce22",
@@ -25,25 +25,33 @@
     "parallel/RENDER_AUTHORITY_V2/NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE.md": "7eeb87540a4823f1fb386109904af4f1683ca700"
   },
   "completed": [
-    "Fresh main and all required P36/P29/P32 governance/authority inputs read",
-    "Canonical/stage claims acquired and exact-token readback verified",
-    "Checked-in renderer/runtime surfaces reverse-traced; structural W3 explicitly not promoted",
-    "Bounded zero-click read-only source observer implemented with exact source-surface discovery and ambiguity rejection",
-    "Producer adapter implemented to emit the existing P32 evidence schema and call the unchanged P32 qualifier",
-    "Focused Python and Node tests added for P1/P2/P3 direct source, zero-click, structural/visual rejection, stale binding, ambiguity and bounded teardown",
-    "Five implementation/test/doc blobs created with exact local tested blob SHA equality",
-    "Durable candidate commit/tree created"
+    "All P36 governance/authority inputs and P29/P32 contracts fresh-read",
+    "Bounded zero-click read-only source observer implemented; exact source absence/ambiguity remains fail-closed",
+    "Producer adapter emits unchanged P32 direct evidence contract and invokes exact P32 qualifier",
+    "Direct P1/P2/P3, zero-click, structural/visual rejection, stale/mixed binding, ambiguity and native-boundary coverage implemented",
+    "Durable implementation candidate 162e50b6c65fd1d3901ad694854563b686b2ce22 created",
+    "Fresh Python producer + exact P32 qualifier regression: 15 tests PASS",
+    "Fresh Node bounded source-observer self-test: PASS",
+    "Fresh Python py_compile: PASS",
+    "Exact P32 qualifier local test byte SHA dd1cf633193312d65bc241b86eb23dace0656508 matched repo blob",
+    "Exact P32 test byte SHA 1131c5c24b5558d5419b90cec24fa82b34219fef matched repo blob",
+    "All five candidate blob SHAs fresh-read from candidate and matched tested bytes",
+    "Candidate commit is an ancestor of current main"
   ],
   "remaining": [
-    "Run fresh exact-candidate Python tests against exact P32 qualifier bytes",
-    "Run fresh exact-candidate Node source-observer tests",
-    "Fresh-read candidate files/blob SHAs and confirm no post-test implementation byte changes",
-    "Publish terminal RESULT then terminal PROGRESS and close stage/canonical claims"
+    "Publish terminal RESULT while claim is ACTIVE",
+    "Publish terminal PROGRESS",
+    "Close stage claim then canonical claim"
   ],
-  "tests": [],
+  "tests": [
+    "python -m unittest -v test_native_marker_renderer_submit_source_trace.py test_native_player_marker_anchor_qualification.py => PASS (15/15)",
+    "node test_native_marker_renderer_submit_source_trace_worker.mjs => PASS",
+    "python -m py_compile native_marker_renderer_submit_source_trace.py test_native_marker_renderer_submit_source_trace.py native_player_marker_anchor_qualification.py => PASS",
+    "candidate blob readback => PASS"
+  ],
   "blocker": null,
-  "nextAction": "Run fresh terminal-significant tests against candidate 162e50b6c65fd1d3901ad694854563b686b2ce22, using exact P32 qualifier blob dd1cf633193312d65bc241b86eb23dace0656508.",
+  "nextAction": "Publish PASS RESULT without claiming real live marker authority; one bounded zero-click live verification remains outside this no-real-game task.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T17:04:00Z"
+  "updatedAtUtc": "2026-09-05T17:09:00Z"
 }
