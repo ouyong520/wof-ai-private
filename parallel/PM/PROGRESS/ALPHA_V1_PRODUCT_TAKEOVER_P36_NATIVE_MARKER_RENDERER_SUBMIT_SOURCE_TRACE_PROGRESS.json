@@ -4,9 +4,9 @@
   "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-submit-source-trace-v1",
   "claimToken": "222df9c7af3d836a06c928105d5d3419",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 5,
-  "implementationState": "NOT_STARTED",
+  "workState": "IMPLEMENTING",
+  "overallPercent": 28,
+  "implementationState": "SOURCE_TRACE_CONTRACT_IDENTIFIED",
   "selfCheckState": "NOT_RUN",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
@@ -15,20 +15,23 @@
   "implementationCommits": [],
   "completed": [
     "Fresh main read and P36 START_PROMPT read",
-    "Canonical dedup claim created and exact-token readback verified",
-    "Stage claim created and exact-token readback verified"
+    "Canonical/stage claims acquired and exact-token readback verified",
+    "P29 terminal evidence contract and P32 terminal blocker read",
+    "P32 qualifier implementation and focused tests read",
+    "Checked-in renderer capture/launcher surfaces inspected",
+    "Confirmed no existing checked-in direct displayed renderer submit causal edge may be promoted from structural HEAP"
   ],
   "remaining": [
-    "Read P29/P32 authority and renderer/source-trace runtime code",
-    "Identify strongest checked-in displayed renderer submit causal hook",
-    "Implement bounded read-only source-trace proof producer and focused tests if source path exists",
+    "Implement bounded zero-click read-only displayed renderer submit source-trace producer",
+    "Implement strict producer-side contract adapter into existing P32 qualifier",
+    "Add focused fail-closed tests including P1/P2/P3, epoch/authority mismatch, no structural fallback and bounded teardown",
     "Create durable tested candidate and run terminal-significant focused self-check",
     "Publish RESULT and close claims"
   ],
   "tests": [],
   "blocker": null,
-  "nextAction": "Inspect P29/P32 contracts and the checked-in renderer submit/runtime source path, then implement only the narrowest truthful source-trace producer.",
+  "nextAction": "Implement the narrow producer so only an explicit source-traced renderer submit hook/export can mint P32 direct evidence; absence or ambiguity remains fail-closed without visual/HEAP fallback.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:47:45Z"
+  "updatedAtUtc": "2026-09-05T16:55:00Z"
 }
