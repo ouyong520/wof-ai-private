@@ -2,11 +2,17 @@
   "schema": "wof-alpha-current-dispatch-v1",
   "pmOwned": true,
   "repository": "ouyong520/wof-ai-private",
-  "dispatchId": "ALPHA_PM_WORKER_COMMUNICATION_C7_C8_2_WORKER_V1",
-  "manifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_PM_WORKER_COMMUNICATION_C7_C8_2_WORKER_V1.json",
-  "manifestAuthorityCommit": "9f095bd4aba552e43c536ad49cf49c9f7752938d",
-  "manifestSha256": "4cdd7ec6fa45546a1ca18615fff5c6adfb722c0f2366770918cfc8e2fb7d88f5",
-  "updatedAtUtc": "2026-09-05T05:29:00Z",
-  "revision": 1,
-  "previousDispatch": null
+  "dispatchId": "ALPHA_V1_CANONICAL_RENDER_ANCHOR_PARALLEL_3_WORKER_V1",
+  "manifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_RENDER_ANCHOR_PARALLEL_3_WORKER_V1.json",
+  "manifestAuthorityCommit": "b4c70a81fe0d6481e09e910c7b648acddfa4f7b3",
+  "manifestSha256": "e9bb7f6c5c6a8d644a5f875e59ae0917878c0021e59fc7198427e6ee6b50dbf3",
+  "updatedAtUtc": "2026-09-05T05:58:00Z",
+  "revision": 2,
+  "previousDispatch": {
+    "dispatchId": "ALPHA_PM_WORKER_COMMUNICATION_C7_C8_2_WORKER_V1",
+    "manifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_PM_WORKER_COMMUNICATION_C7_C8_2_WORKER_V1.json",
+    "manifestAuthorityCommit": "9f095bd4aba552e43c536ad49cf49c9f7752938d",
+    "manifestSha256": "4cdd7ec6fa45546a1ca18615fff5c6adfb722c0f2366770918cfc8e2fb7d88f5",
+    "revision": 1
+  }
 }
