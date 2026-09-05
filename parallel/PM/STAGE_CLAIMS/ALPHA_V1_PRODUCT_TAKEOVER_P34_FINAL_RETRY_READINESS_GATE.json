@@ -5,6 +5,21 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.final-retry-readiness-gate-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.final-retry-readiness-gate-v1.json",
   "claimToken": "-Q3KGRVDrKFWdG2wPly3SJN4FuySDrUztftzIqDWK8Y",
-  "state": "ACTIVE",
-  "startCommit": "dd0c1d494e01ee9b0bab8526bbcc265600d10267"
+  "state": "COMPLETE",
+  "startCommit": "dd0c1d494e01ee9b0bab8526bbcc265600d10267",
+  "result": "COMPLETE — deterministic P34 retry-readiness gate exact-candidate tested; current repo readiness remains BLOCKED",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P34_FINAL_RETRY_READINESS_GATE_RESULT.json",
+  "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P34_FINAL_RETRY_READINESS_GATE_RESULT.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P34_FINAL_RETRY_READINESS_GATE_RESULT.md",
+  "resultCommit": "4428089d2735984599468249cbd12ff78e89b035",
+  "resultJsonCommit": "9a8038868937f0ee4121d9d3cdb7268a115674b9",
+  "testedCommit": "dbea3c222d58b393d0b8f2895356457d0c17d887",
+  "testedTree": "de1cc0427a9ad0ca66951a83d8076c4caf1abc2d",
+  "implementationCommits": [
+    "9bfb62f95f6c0583fd4994d7c7a350dfbe9faa1f",
+    "48dd524b2718938ed129457674b9dc9a10ed1cea",
+    "dbea3c222d58b393d0b8f2895356457d0c17d887"
+  ],
+  "currentReadiness": "BLOCKED",
+  "closedAtUtc": "2026-09-05T16:16:00Z"
 }
