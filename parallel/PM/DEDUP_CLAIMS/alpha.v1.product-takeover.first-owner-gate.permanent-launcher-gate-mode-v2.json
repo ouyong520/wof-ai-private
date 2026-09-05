@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.product-takeover.first-owner-gate.permanent-launcher-gate-mode-v2",
+  "effectiveDedupKey": "alpha.v1.product-takeover.first-owner-gate.permanent-launcher-gate-mode-v2",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P2_PERMANENT_LAUNCHER_GATE_MODE",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P2_PERMANENT_LAUNCHER_GATE_MODE_START_PROMPT.md",
+  "owner": "chatgpt-p2-permanent-launcher-gate-mode",
+  "claimToken": "9923cadcc689bfde33a0b4f5474a3461981e4b98eee49be9",
+  "state": "ACTIVE",
+  "startCommit": "0c107d5f9b70ff813fa9155394b49d8dd2cfaa0c"
+}
