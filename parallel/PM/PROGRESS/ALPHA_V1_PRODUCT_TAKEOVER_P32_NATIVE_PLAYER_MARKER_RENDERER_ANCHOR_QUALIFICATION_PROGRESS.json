@@ -3,13 +3,13 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION",
   "dedupKey": "alpha.v1.product-takeover.native-player-marker-renderer-anchor-qualification-v1",
   "claimToken": "e4269802dd6ed3ea1c9854d05108494f",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "BLOCKED_PENDING_RESULT",
-  "overallPercent": 94,
+  "claimStateAtCheckpoint": "BLOCKED",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
   "implementationState": "DONE_DURABLE_CANDIDATE",
   "selfCheckState": "PASS_EXACT_DURABLE_CANDIDATE",
-  "resultPublicationState": "PENDING",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "DONE",
+  "claimCloseState": "DONE",
   "startCommit": "54826e0bf1f45f93007665914ccef981fa808123",
   "lastKnownGoodCommit": "bd75c3b5f7fd20fe004fae21142a0fa19942e076",
   "implementationCommits": [
@@ -23,24 +23,24 @@
     "Confirmed checked-in W3 capture has only UNVERIFIED_CANDIDATE_ONLY structural HEAP evidence and no direct native-marker submit hook/exported pointer/source-traced pointer.",
     "Added fail-closed native marker qualification seam for exact P1/P2/P3 generation, native 384x224 coordinates, exact runtimeEpoch/rendererEpoch/authorityKey, explicit deterministic single/multi-object cluster identity, and direct-source-only proof emission.",
     "Added focused regressions covering exact-generation direct contract, all P1/P2/P3 slots, single-object and row-order-independent multi-object clusters, duplicate ambiguity, stale/mixed authority, visual/structural-only rejection, and no-proof without displayed-frame causality.",
-    "Re-read candidate bd75c3b5f7fd20fe004fae21142a0fa19942e076 and verified exact Git blob map: module dd1cf633193312d65bc241b86eb23dace0656508; test 1131c5c24b5558d5419b90cec24fa82b34219fef; qualification doc 1ebbf944bdede60406da839e327ab6227b2dd72f.",
-    "Ran terminal-significant exact-byte checks: py_compile PASS and unittest 7/7 PASS.",
-    "Re-read P29 qualification_analyzer.py at exact candidate and confirmed blob a412faa31ac8d946e25f72868a57ae234d92b4b2 remains unchanged; PASS/INCONCLUSIVE/REJECTED criteria were not weakened."
+    "Bound terminal self-check to tested candidate bd75c3b5f7fd20fe004fae21142a0fa19942e076 with exact blob map: qualifier dd1cf633193312d65bc241b86eb23dace0656508; test 1131c5c24b5558d5419b90cec24fa82b34219fef; qualification doc 1ebbf944bdede60406da839e327ab6227b2dd72f.",
+    "Exact-byte py_compile PASS and focused unittest 7/7 PASS.",
+    "P29 qualification_analyzer.py remained unchanged at blob a412faa31ac8d946e25f72868a57ae234d92b4b2.",
+    "Published terminal BLOCKED RESULT JSON and Markdown; commit c60d6b6697b6f757c69bc0fd7bec46b6f01f3b48 contains both result artifacts.",
+    "Closed stage claim BLOCKED at 6cd8c227d954d0815494d89e08b11418570977a4 and canonical claim BLOCKED at 97b22a380ea99319ae5d0fa6206cdfe316319cdd with exact matching claimToken."
   ],
-  "remaining": [
-    "Publish BLOCKED RESULT.json and RESULT.md using tested candidate bd75c3b5f7fd20fe004fae21142a0fa19942e076.",
-    "Close stage and canonical claims as BLOCKED with the exact result path/commit.",
-    "Write terminal PROGRESS matching durable RESULT and closed claims."
-  ],
+  "remaining": [],
   "tests": [
-    "Exact candidate blob readback/hash comparison => PASS (3/3 blobs match bd75c3b5f7fd20fe004fae21142a0fa19942e076).",
-    "python -m py_compile native_player_marker_anchor_qualification.py test_native_player_marker_anchor_qualification.py => PASS on byte-identical candidate files.",
-    "python -m unittest -v test_native_player_marker_anchor_qualification.py => 7/7 PASS on byte-identical candidate files.",
-    "P29 analyzer immutability check => PASS; qualification_analyzer.py blob remains a412faa31ac8d946e25f72868a57ae234d92b4b2."
+    "Exact candidate blob readback/hash comparison => PASS (3/3 blobs).",
+    "python -m py_compile native_player_marker_anchor_qualification.py test_native_player_marker_anchor_qualification.py => PASS.",
+    "python -m unittest -v test_native_player_marker_anchor_qualification.py => 7/7 PASS.",
+    "P29 analyzer immutability check => PASS; blob a412faa31ac8d946e25f72868a57ae234d92b4b2 unchanged.",
+    "Real WOF native marker displayed-frame proof => NOT_RUN by scope.",
+    "Owner visual acceptance => NOT_RUN."
   ],
-  "blocker": "NATIVE_PLAYER_MARKER_DIRECT_RENDERER_CAUSAL_EDGE_NOT_CHECKED_IN: displayed CPS1 renderer/object submission is not source-traced to an exact native 1P/2P/3P marker object/cluster with explicit actor generation. Fixtures cannot satisfy this live authority edge.",
-  "nextAction": "Publish truthful terminal BLOCKED result and close both P32 claims; PM may later schedule a successor once an exact source-traced native-marker renderer submit hook/exported pointer is available.",
+  "blocker": "NATIVE_PLAYER_MARKER_DIRECT_RENDERER_CAUSAL_EDGE_NOT_CHECKED_IN: no checked-in source-traced pointer, direct renderer hook, or exported renderer pointer proves displayed CPS1 renderer/object submission -> exact native 1P/2P/3P marker object/cluster identity + explicit actor generation association.",
+  "nextAction": "PM should schedule a successor only after an exact source-traced native-marker renderer submit hook/exported pointer is available; then run one bounded live verification through the P32 fail-closed seam.",
   "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:02:00Z"
+  "updatedAtUtc": "2026-09-05T16:07:00Z"
 }
