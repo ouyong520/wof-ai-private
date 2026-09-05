@@ -19,6 +19,23 @@ function Stop-Wof([string]$Message, [int]$Code = 1) {
     exit $Code
 }
 
+function Stop-OldAlphaRuntime {
+    try {
+        Get-CimInstance Win32_Process | Where-Object {
+            ($_.Name -match '^pythonw?\.exe$' -and $_.CommandLine -like '*render_authority_measurement_entry.py*') -or
+            ($_.Name -match '^powershell\.exe$' -and (
+                $_.CommandLine -like '*wof_alpha_run_forever.ps1*' -or
+                $_.CommandLine -like '*start_alpha_current_main.ps1*' -or
+                $_.CommandLine -like '*owner_live_retest_loop.ps1*'
+            ))
+        } | ForEach-Object {
+            if ($_.ProcessId -ne $PID) {
+                Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+            }
+        }
+    } catch {}
+}
+
 if (-not (Test-Path (Join-Path $Repo '.git'))) {
     Stop-Wof "Managed Alpha repo was not found: $Repo" 20
 }
@@ -104,7 +121,8 @@ if (-not (Test-RepoAccess)) {
 }
 Write-Host 'SSH22_AUTO_UPDATE_READY'
 
-Write-Host '[2/4] Updating the managed Alpha source once...'
+Write-Host '[2/4] Replacing the old Alpha test chain with latest main...'
+Stop-OldAlphaRuntime
 & $GitExe -C $Repo fetch --quiet $Remote '+refs/heads/main:refs/remotes/origin/main'
 if ($LASTEXITCODE -ne 0) { Stop-Wof 'Could not fetch latest Alpha over SSH 22.' 24 }
 & $GitExe -C $Repo reset --hard origin/main | Out-Null
@@ -138,7 +156,7 @@ Write-Host '  Alpha restarts automatically and reuses the Alpha Chrome/WOF when 
 Write-Host '  No new launcher download. No V5/V6/V7 files.'
 Write-Host ''
 
-Start-Process -FilePath $DesktopEntry
+Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', ('"' + $DesktopEntry + '"')) | Out-Null
 Write-Host 'Permanent workflow installed successfully.'
 Write-Host 'Only use Desktop\WOF_ALPHA_TEST.cmd from now on.'
 Start-Sleep -Seconds 3
