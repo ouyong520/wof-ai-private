@@ -6,6 +6,7 @@ $Key = Join-Path $env:USERPROFILE '.ssh\wof_alpha_github_ed25519'
 $Pub = $Key + '.pub'
 $SshConfig = Join-Path $env:USERPROFILE '.ssh\config'
 $Remote = 'git@wof-alpha-github:ouyong520/wof-ai-private.git'
+$LiveBranch = 'alpha-live'
 $Desktop = [Environment]::GetFolderPath('Desktop')
 $DesktopEntry = Join-Path $Desktop 'WOF_ALPHA_TEST.cmd'
 
@@ -37,14 +38,14 @@ function Stop-OldAlphaRuntime {
 }
 
 if (-not (Test-Path (Join-Path $Repo '.git'))) {
-    Stop-Wof "Managed Alpha repo was not found: $Repo" 20
+    Stop-Wof "Managed Alpha repo was not found: $Repo. Run WOF_ALPHA_SETUP_ONCE.cmd once." 20
 }
 if (-not (Test-Path $Key) -or -not (Test-Path $Pub)) {
-    Stop-Wof 'Dedicated SSH key was not created by the setup wrapper.' 21
+    Stop-Wof 'Dedicated Alpha SSH key is missing. Run WOF_ALPHA_SETUP_ONCE.cmd once.' 21
 }
 
 $git = Get-Command git.exe -ErrorAction SilentlyContinue
-if (-not $git) { Stop-Wof 'Git was not found.' 22 }
+if (-not $git) { Stop-Wof 'Git for Windows was not found.' 22 }
 $GitExe = $git.Source
 
 Write-Host ''
@@ -55,10 +56,13 @@ Write-Host 'After this setup there is only ONE entry:'
 Write-Host '  Desktop\WOF_ALPHA_TEST.cmd'
 Write-Host ''
 
-Write-Host '[1/4] Configuring GitHub SSH 22 update channel...'
+Write-Host '[1/4] Configuring the dedicated GitHub SSH port 22 host...'
 New-Item -ItemType Directory -Path (Split-Path $SshConfig -Parent) -Force | Out-Null
 $configText = ''
-if (Test-Path $SshConfig) { $configText = Get-Content -LiteralPath $SshConfig -Raw -ErrorAction SilentlyContinue }
+if (Test-Path $SshConfig) {
+    $configText = Get-Content -LiteralPath $SshConfig -Raw -ErrorAction SilentlyContinue
+    if ($null -eq $configText) { $configText = '' }
+}
 $begin = '# WOF_ALPHA_BEGIN'
 $end = '# WOF_ALPHA_END'
 $start = $configText.IndexOf($begin)
@@ -78,6 +82,7 @@ Host wof-alpha-github
     User git
     IdentityFile $keyForward
     IdentitiesOnly yes
+    BatchMode yes
     StrictHostKeyChecking accept-new
     ConnectTimeout 8
 # WOF_ALPHA_END
@@ -92,50 +97,26 @@ function Test-RepoAccess {
 }
 
 if (-not (Test-RepoAccess)) {
-    Write-Host ''
-    Write-Host 'ONE-TIME GitHub authorization is required.'
-    $pubText = (Get-Content -LiteralPath $Pub -Raw).Trim()
-    try { Set-Clipboard -Value $pubText } catch {}
-    Write-Host 'The SSH public key is already copied to the clipboard.'
-    Write-Host ''
-    Write-Host 'On the GitHub page:'
-    Write-Host '  Title: WOF Alpha updater'
-    Write-Host '  Key type: Authentication Key'
-    Write-Host '  Key: Ctrl+V'
-    Write-Host '  Click: Add SSH key'
-    Write-Host ''
-    Write-Host 'You do NOT need to come back and press anything.'
-    Write-Host 'This window will detect the authorization automatically.'
-    try { Start-Process 'https://github.com/settings/ssh/new' } catch {}
-
-    $deadline = (Get-Date).AddMinutes(10)
-    while ((Get-Date) -lt $deadline) {
-        Start-Sleep -Seconds 3
-        if (Test-RepoAccess) { break }
-        Write-Host -NoNewline '.'
-    }
-    Write-Host ''
-    if (-not (Test-RepoAccess)) {
-        Stop-Wof 'SSH authorization was not detected. The setup is still safe to run again later.' 23
-    }
+    Stop-Wof 'GitHub SSH port 22 is not authorized. Run WOF_ALPHA_SETUP_ONCE.cmd again to complete the one-time key authorization.' 23
 }
 Write-Host 'SSH22_AUTO_UPDATE_READY'
 
-Write-Host '[2/4] Replacing the old Alpha test chain with latest main...'
-Stop-OldAlphaRuntime
-& $GitExe -C $Repo fetch --quiet $Remote '+refs/heads/main:refs/remotes/origin/main'
-if ($LASTEXITCODE -ne 0) { Stop-Wof 'Could not fetch latest Alpha over SSH 22.' 24 }
-& $GitExe -C $Repo reset --hard origin/main | Out-Null
-if ($LASTEXITCODE -ne 0) { Stop-Wof 'Could not apply latest Alpha.' 25 }
+Write-Host '[2/4] Pinning this managed repo to the controlled alpha-live release...'
+& $GitExe -C $Repo remote set-url origin $Remote
+if ($LASTEXITCODE -ne 0) { Stop-Wof 'Could not configure the managed Alpha remote.' 24 }
+& $GitExe -C $Repo fetch --quiet origin '+refs/heads/alpha-live:refs/remotes/origin/alpha-live'
+if ($LASTEXITCODE -ne 0) { Stop-Wof 'Could not fetch alpha-live over GitHub SSH port 22.' 25 }
+& $GitExe -C $Repo reset --hard 'origin/alpha-live' | Out-Null
+if ($LASTEXITCODE -ne 0) { Stop-Wof 'Could not apply the controlled alpha-live release.' 26 }
 & $GitExe -C $Repo clean -fd | Out-Null
 
 $canonicalEntry = Join-Path $Repo 'WOF_ALPHA_TEST.cmd'
 $loop = Join-Path $Repo 'parallel\PYLAUNCH\owner_live_retest_loop.ps1'
 if (-not (Test-Path $canonicalEntry) -or -not (Test-Path $loop)) {
-    Stop-Wof 'Latest main does not contain the permanent live retest workflow.' 26
+    Stop-Wof 'The controlled alpha-live release is missing the permanent test workflow.' 27
 }
 
-Write-Host '[3/4] Installing the single Desktop test entry...'
+Write-Host '[3/4] Installing the single permanent Desktop test entry...'
 $oldDir = Join-Path $Base 'old_launchers_backup'
 New-Item -ItemType Directory -Path $oldDir -Force | Out-Null
 foreach ($name in @('WOF_ALPHA_RUN.cmd','WOF_ALPHA_RUN_V2.cmd','WOF_ALPHA_RUN_V3.cmd','WOF_ALPHA_RUN_V4.cmd','WOF_ALPHA_RUN_V4_FIXED.cmd')) {
@@ -147,17 +128,18 @@ foreach ($name in @('WOF_ALPHA_RUN.cmd','WOF_ALPHA_RUN_V2.cmd','WOF_ALPHA_RUN_V3
 }
 Copy-Item -LiteralPath $canonicalEntry -Destination $DesktopEntry -Force
 
-Write-Host '[4/4] Starting permanent live retest mode...'
+Write-Host '[4/4] Starting the permanent alpha-live controller...'
+Stop-OldAlphaRuntime
 Write-Host ''
-Write-Host 'From now on the workflow is:'
-Write-Host '  You test -> send screenshot -> leave this running.'
-Write-Host '  A new main commit appears -> changed files download automatically.'
-Write-Host '  Alpha restarts automatically and reuses the Alpha Chrome/WOF when possible.'
-Write-Host '  No new launcher download. No V5/V6/V7 files.'
+Write-Host 'From now on:'
+Write-Host '  use the same Desktop\WOF_ALPHA_TEST.cmd forever;'
+Write-Host '  only controlled alpha-live releases trigger an update/restart;'
+Write-Host '  Git updates use GitHub SSH port 22, not Git HTTPS/443;'
+Write-Host '  the Alpha runtime restarts while the Browser/WOF is preserved when safe;'
+Write-Host '  latest feedback is always at Documents\WOF_RESULTS\LATEST_ALPHA_FEEDBACK.txt.'
 Write-Host ''
 
 Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', ('"' + $DesktopEntry + '"')) | Out-Null
 Write-Host 'Permanent workflow installed successfully.'
-Write-Host 'Only use Desktop\WOF_ALPHA_TEST.cmd from now on.'
-Start-Sleep -Seconds 3
+Start-Sleep -Seconds 2
 exit 0
