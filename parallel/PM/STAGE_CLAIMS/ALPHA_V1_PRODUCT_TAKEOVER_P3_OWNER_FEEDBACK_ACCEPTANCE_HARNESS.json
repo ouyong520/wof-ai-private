@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P3_OWNER_FEEDBACK_ACCEPTANCE_HARNESS",
+  "dedupKey": "alpha.v1.product-takeover.first-owner-gate.owner-feedback-acceptance-harness-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.first-owner-gate.owner-feedback-acceptance-harness-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.first-owner-gate.owner-feedback-acceptance-harness-v1.json",
+  "claimToken": "HvNCecAxtr4hSaBVmFoJB1KVsnYXnlDA395c7ZA-n9M",
+  "state": "ACTIVE",
+  "startCommit": "2b42df0821713c623f5e871de54bab929d04ea98"
+}
