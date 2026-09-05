@@ -95,9 +95,10 @@ SLICE_A_RUNTIME_PATHS = (
     "product/alpha/wof_alpha_hud.js",
 )
 
-# P15 candidates preserve the proven authority/tracker side of Slice A byte-for-byte,
-# while deliberately pinning the current maintained HUD and canonical P12/P10/P9/P8
-# stack from one new immutable source commit.
+# P15 candidates keep the accepted Slice-A commit as immutable ancestry/provenance.
+# The current candidate runtime itself is pinned from one new immutable source commit;
+# it is not required to remain byte-identical to the older Slice-A runtime because
+# P5/P10/P11/P12/P13 intentionally evolved those files after Slice A.
 SLICE_A_AUTHORITY_PATHS = (
     "parallel/RENDER_AUTHORITY_V3/measurement_runner.py",
     "parallel/PYLAUNCH/wof_launcher/render_authority_capture.py",
@@ -331,13 +332,19 @@ def validate_slice_a_pin(root: Path, source_commit: str, slice_a_source: str | N
     rows = []
     for path in pinned_paths:
         slice_blob = _blob_at(root, slice_a, path)
-        source_blob = _blob_at(root, source_commit, path)
-        if source_blob != slice_blob:
-            raise ManifestError(f"Slice A runtime 在 package source 中已漂移：{path}")
+        if not canonical_candidate:
+            source_blob = _blob_at(root, source_commit, path)
+            if source_blob != slice_blob:
+                raise ManifestError(f"Slice A runtime 在 package source 中已漂移：{path}")
         rows.append({"path": path, "gitBlobSha": slice_blob})
     validate_visible_overlay_text(_git_file_text(root, source_commit, "parallel/RENDER_AUTHORITY_V3/measurement_runner.py"))
     validate_overlay_adapter_text(_git_file_text(root, source_commit, "parallel/PYLAUNCH/wof_launcher/production_p1_overlay.py"))
-    return {"commit": slice_a, "files": rows, "pin": pin_meta}
+    return {
+        "commit": slice_a,
+        "files": rows,
+        "pin": pin_meta,
+        "provenanceOnly": bool(canonical_candidate),
+    }
 
 
 def verify_publishable_manifest(manifest: dict) -> None:
@@ -385,6 +392,8 @@ def verify_publishable_manifest(manifest: dict) -> None:
             (canonical.get("legacySpatialFallback") is False, "canonical candidate 禁止 legacy spatial fallback"),
             (canonical.get("alphaLivePromoted") is False, "P15 candidate 不得声明 alpha-live 已切换"),
             (canonical.get("realWofAcceptance") == "NOT_RUN", "P15 candidate 不得伪造真实 WOF 验收"),
+            (canonical.get("sliceAProvenanceCommit") == slice_a, "canonical candidate Slice-A provenance 不匹配"),
+            (render.get("sliceAProvenanceOnly") is True, "canonical candidate 必须明确 Slice-A 仅为 provenance"),
             (set(CANONICAL_STACK_PATHS).issubset(canonical_files), "canonical candidate runtime pin 不完整"),
             (safety.get("legacySpatialFallback") is False, "safety.legacySpatialFallback 必须为 false"),
         ]
@@ -445,6 +454,7 @@ def generate_manifest(root: Path, source: str, slice_a_commit: str | None = None
             "sourceCommit": commit,
             "sliceARuntimeCommit": slice_a["commit"],
             "sliceARuntimeFiles": slice_a["files"],
+            "sliceAProvenanceOnly": bool(slice_a.get("provenanceOnly")),
             "mode": "owner-visible-production-top-overlay-v1",
             "selectedNormalPath": "production-top-overlay",
             "productionOverlaySource": PRODUCTION_OVERLAY_SOURCE,
@@ -482,6 +492,7 @@ def generate_manifest(root: Path, source: str, slice_a_commit: str | None = None
             "alphaLivePromoted": False,
             "realWofAcceptance": "NOT_RUN",
             "initialState": "WAITING_FOR_W3_FRAME_SOURCE_QUALIFICATION",
+            "sliceAProvenanceCommit": slice_a["commit"],
             "files": list(CANONICAL_STACK_PATHS),
         }
     safety = {
@@ -557,7 +568,7 @@ def main(argv: list[str] | None = None) -> int:
             generated = generate_manifest(ROOT, args.source, str(pinned) if pinned else None, canonical_candidate=candidate_mode)
             verify_publishable_manifest(existing)
             if existing != generated:
-                raise ManifestError("package manifest 不是当前所选 immutable snapshot + Slice A exact pin 的确定性产物；请重新生成")
+                raise ManifestError("package manifest 不是当前所选 immutable snapshot + Slice A provenance pin 的确定性产物；请重新生成")
             verify_worktree_payload(ROOT, existing, canonical_candidate=candidate_mode)
             print("PACKAGE MANIFEST PASS：" f"{existing['packageVersion']} source={existing['sourceCommit']} sliceA={generated['components']['renderAuthorityV3']['sliceARuntimeCommit']} files={len(existing['files'])}")
             return 0
