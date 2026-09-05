@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.pm.worker-communication.dispatch-package-builder-v1",
+  "effectiveDedupKey": "alpha.pm.worker-communication.dispatch-package-builder-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C4_DISPATCH_PACKAGE_BUILDER",
+  "promptPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C4_DISPATCH_PACKAGE_BUILDER_START_PROMPT.md",
+  "owner": "gpt-5.6-sol-c4",
+  "claimToken": "bfbe7d8407010688672f988f8c8b6716bce982c3e1a7f674",
+  "state": "ACTIVE",
+  "startCommit": "10c778ce2337d913fda733da83c9a714db36f3dd"
+}
