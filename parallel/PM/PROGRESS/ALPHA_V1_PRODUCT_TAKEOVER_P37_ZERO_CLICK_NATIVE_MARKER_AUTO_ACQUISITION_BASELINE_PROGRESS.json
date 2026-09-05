@@ -4,41 +4,62 @@
   "dedupKey": "alpha.v1.product-takeover.zero-click-native-marker-auto-acquisition-baseline-v1",
   "claimToken": "57010fdf7998a29bdac7fa51194b9edc",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "IMPLEMENTING",
-  "overallPercent": 48,
-  "implementationState": "IN_PROGRESS",
-  "selfCheckState": "WORKSPACE_NONTERMINAL_PASS",
+  "workState": "SELF_CHECK",
+  "overallPercent": 86,
+  "implementationState": "DONE_CANDIDATE_READBACK_BOUND",
+  "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "64ce273207e647e769f462f07a2707f5089fd65f",
-  "lastKnownGoodCommit": "b19fd2f264badbc137f1ab5660a30b45a8e763a2",
+  "lastKnownGoodCommit": "64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530",
+  "testedCandidateCommit": "64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530",
+  "testedCandidateTree": "ea78cd46a7270f53804c22eef7b62d396a9a3956",
   "implementationCommits": [
-    "b19fd2f264badbc137f1ab5660a30b45a8e763a2"
+    "b19fd2f264badbc137f1ab5660a30b45a8e763a2",
+    "0f466dc9ac401a71ec923f4d9b7337ea529dc304",
+    "64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530"
   ],
+  "testedBlobMap": {
+    "parallel/AUTO_MARKER_BASELINE/native_marker_auto_acquisition_baseline.js": "2a0094b3588d4a27c8c7a6f9940b8a3b1941f8c4",
+    "parallel/AUTO_MARKER_BASELINE/test_native_marker_auto_acquisition_baseline.js": "ed0a4135d7f4ba00f8bad04f0112655aba7ff228",
+    "parallel/AUTO_MARKER_BASELINE/README.md": "092ddd78f12ffad359c054479ee3750115239de2"
+  },
   "completed": [
     "Read P37 START_PROMPT, dispatch, AGENTS.md, product governance, dedup-v2 guard, progress protocol and result protocol",
     "Created and exact-read verified canonical + stage claims with matching fresh claimToken",
-    "Recovered exact historical native-color label + down-arrow component scan, bounded velocity continuity and two-observation reacquisition mechanics from 6eeebf4a00ce7751ce9ba6008982e8136d1c4290 without restoring its F6/F7/manual click seed path",
-    "Confirmed current native coordinate contract is 384x224 and P37 must remain outside the P32/P36 renderer authority seam",
-    "Durably added isolated zero-click P1/P2/P3 auto-acquisition/reacquisition baseline at parallel/AUTO_MARKER_BASELINE/native_marker_auto_acquisition_baseline.js",
-    "Workspace deterministic suite currently passes 6/6; this is nonterminal until the final durable candidate/readback is bound and rerun"
+    "Recovered historical native-color label + down-arrow structural scan, bounded velocity continuity and two-observation automatic reacquisition from 6eeebf4a00ce7751ce9ba6008982e8136d1c4290 without restoring F6/F7/manual click seed behavior",
+    "Kept d30a071c668c716cd8d9b5d02932808c76c7a3a7 only as historical screen-space tracker consumption evidence; no P36/P29/P32 authority surface changed",
+    "Implemented isolated zero-click P1/P2/P3 acquisition/reacquisition baseline in native 384x224 with no click/focus/portrait/manual seed API",
+    "Implemented ambiguity fail-closed: multiple structural clusters expose AMBIGUOUS with no current x/y instead of choosing first/nearest/order/timing/history",
+    "Explicitly fixed and tested coordinate convention as TOP_LEFT_POSITIVE_DOWN: left lowers x, right raises x, up lowers native y, down raises native y, viewport mapping preserves y without inversion",
+    "Every output is UNVERIFIED_AUTO_BASELINE with rendererSourceProof=null and P29/P32/P36/P34/promotion eligibility permanently false",
+    "Exact GitHub readback matched all three tested blobs at durable candidate 64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530 / tree ea78cd46a7270f53804c22eef7b62d396a9a3956",
+    "Terminal-significant focused Node suite rerun on exact readback-matched bytes: 6/6 PASS"
   ],
   "remaining": [
-    "Durably add focused deterministic tests and authority/Y-axis boundary documentation",
-    "Bind PROGRESS to final durable candidate commit/tree and exact implementation blob identities",
-    "Rerun terminal-significant Node suite against exact durable bytes/readback",
-    "Publish terminal RESULT artifacts and close both claims"
+    "Publish terminal RESULT.json + RESULT.md with truthful UNVERIFIED_AUTO_BASELINE product-proof boundary",
+    "Close canonical and stage claims with exact token and set terminal PROGRESS"
   ],
   "tests": [
     {
-      "name": "workspace node parallel/AUTO_MARKER_BASELINE/test_native_marker_auto_acquisition_baseline.js",
+      "name": "node parallel/AUTO_MARKER_BASELINE/test_native_marker_auto_acquisition_baseline.js",
       "result": "PASS",
-      "detail": "6/6 nonterminal workspace checks pass; final durable-candidate rerun still required"
+      "detail": "6/6 PASS on exact durable candidate bytes: zero-click startup/P1-P3 distinction, L/R/U/D and no Y inversion, jump/short loss/automatic reacquire, ambiguity fail-closed, proof-boundary rejection, invalid-frame fail-closed"
+    },
+    {
+      "name": "GitHub exact candidate readback",
+      "result": "PASS",
+      "detail": "Candidate 64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530 tree ea78cd46a7270f53804c22eef7b62d396a9a3956; implementation/test/README blobs match 2a0094b3..., ed0a4135..., 092ddd78..."
+    },
+    {
+      "name": "real WOF / Owner visual run",
+      "result": "NOT_RUN",
+      "detail": "Forbidden by P37 scope; this stage is diagnostic baseline only"
     }
   ],
   "blocker": null,
-  "nextAction": "Add the deterministic test/document files, exact-read them back, bind the final durable candidate, then rerun the terminal-significant focused suite.",
+  "nextAction": "Publish terminal COMPLETE result and atomically close both exact-token claims without changing tested implementation bytes.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:54:10Z"
+  "updatedAtUtc": "2026-09-05T16:57:18Z"
 }
