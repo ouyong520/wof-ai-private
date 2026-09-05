@@ -1,0 +1,38 @@
+{
+  "state": "COMPLETE",
+  "verdict": "Replace with one short factual sentence describing what this worker actually achieved.",
+  "implementationCommits": [
+    "0000000000000000000000000000000000000000"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PM/path-owned-by-this-worker"
+  ],
+  "tests": [
+    {
+      "name": "minimum focused self-check",
+      "result": "PASS",
+      "detail": "Replace with the exact command or bounded check and factual outcome."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_APPLICABLE",
+    "classification": "NOT_APPLICABLE",
+    "detail": "Coordination-only work; no Owner-visible product behavior is claimed."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM reads the manifest-declared RESULT.json and continues from durable Git evidence.",
+  "evidencePaths": [
+    "parallel/PM/path-to-evidence"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
