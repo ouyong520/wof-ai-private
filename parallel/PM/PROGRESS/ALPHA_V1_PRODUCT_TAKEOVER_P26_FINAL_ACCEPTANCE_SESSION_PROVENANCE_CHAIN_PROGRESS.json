@@ -4,7 +4,7 @@
   "dedupKey": "alpha.v1.product-takeover.final-acceptance-session-provenance-chain-v1",
   "claimToken": "d60b10ee92743c2181969d475ac93164",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
+  "workState": "INTERRUPTED",
   "overallPercent": 95,
   "implementationState": "DONE",
   "selfCheckState": "PASS",
@@ -27,13 +27,17 @@
     "Python compile passed",
     "13/13 deterministic focused tests passed",
     "static scan found no Git ref mutation, input injection, or process-memory write path",
-    "implementation blobs were SHA readback-checked; an erroneous temporary blob was never referenced by any tree/commit"
+    "implementation blobs were SHA readback-checked; an erroneous temporary blob was never referenced by any tree/commit",
+    "worker re-read main through 4edda18550772767bdccefc2465453f4b1c5006d before its execution window ended",
+    "worker intentionally made no uncertain terminal write when the execution window ended"
   ],
   "remaining": [
+    "re-read latest main and both exact P26 claims; main has advanced beyond the worker's last observed 4edda185 checkpoint",
+    "reconcile the already-verified implementation/test blobs against current authority without redesigning provenance",
     "assemble the verified implementation/test blobs into the final tree",
     "integrate onto latest main with non-force semantics",
     "read back final file SHAs, changed-files, and ownership",
-    "publish the specified RESULT.json and RESULT.md with state=COMPLETE and integrationReady=true",
+    "publish the specified RESULT.json and RESULT.md with truthful 13/13 PASS, real WOF NOT_RUN, visibleProof NOT_PROVEN, alphaLiveMoved false, state COMPLETE, integrationReady true",
     "close matching canonical and stage claims using the same claimToken",
     "write WORKER_RESULT terminal commit"
   ],
@@ -55,13 +59,15 @@
     }
   ],
   "blocker": null,
-  "nextAction": "Reattach the same P26 claimToken in a fresh worker chat and complete Git terminal publication only; do not redesign provenance or add features.",
+  "nextAction": "Reattach the same P26 claimToken in a fresh worker chat, read the current progress checkpoint first, verify the exact ACTIVE claim, reconcile latest main, and perform Git terminal publication only.",
   "terminalResultPath": null,
   "writerRole": "PM_RECONSTRUCTION",
   "unpublishedImplementation": true,
+  "workerLastObservedMain": "4edda18550772767bdccefc2465453f4b1c5006d",
+  "pmObservedMainAfterStop": "717c776a5fb6c0177c91c0086c1c817f22948f7c",
   "realWofAcceptance": "NOT_RUN",
   "ownerVisualAcceptance": "NOT_RUN",
   "visibleProof": "NOT_PROVEN",
   "alphaLiveMoved": false,
-  "updatedAtUtc": "2026-09-05T10:23:30Z"
+  "updatedAtUtc": "2026-09-05T10:35:00Z"
 }
