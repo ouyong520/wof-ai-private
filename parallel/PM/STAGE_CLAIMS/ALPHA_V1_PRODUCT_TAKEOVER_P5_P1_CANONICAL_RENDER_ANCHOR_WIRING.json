@@ -5,6 +5,12 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.p1-canonical-render-anchor-wiring-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.p1-canonical-render-anchor-wiring-v1.json",
   "claimToken": "f4a00ab4765152053e7fc0309b9f9240",
-  "state": "ACTIVE",
-  "startCommit": "df1abb3809b1e00bcb7e3eac83917bb53429e2a8"
+  "state": "COMPLETE",
+  "startCommit": "df1abb3809b1e00bcb7e3eac83917bb53429e2a8",
+  "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P5_P1_CANONICAL_RENDER_ANCHOR_WIRING_RESULT.json",
+  "resultCommit": "9d7d57e3f264e4cbe61c349cffcf4a742b32776d",
+  "implementationCommits": [
+    "b4c9daf4ccf7ca1d0662db5dd0bd04e48d6aba31",
+    "6963da58227c8d6c6ebf93f53a263b60f2251225"
+  ]
 }
