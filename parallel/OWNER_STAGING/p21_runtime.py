@@ -16,6 +16,8 @@ from p21_candidate import StagingError, is_hex, load_json, run_git, sha256_file
 
 RUNTIME_REL = Path("parallel/PYLAUNCH/render_authority_measurement_entry.py")
 P18_MODULE = "wof_launcher.canonical_draw_evidence"
+STAGED_PACKAGE_MANIFEST_ENV = "WOF_ALPHA_PACKAGE_MANIFEST"
+STAGED_PACKAGE_MANIFEST_NAME = "PACKAGE_MANIFEST.json"
 
 
 def default_results_dir() -> Path:
@@ -89,7 +91,30 @@ def cleanup_staging_worktree(repo_root: Path, staging_root: Path, run_dir: Path,
     return {"state": "CLEAN", "idempotent": True}
 
 
-def runtime_environment(candidate: Mapping[str, Any], base: Mapping[str, str] | None = None) -> dict[str, str]:
+def stage_candidate_manifest(candidate: Mapping[str, Any], run_dir: Path) -> Path:
+    """Copy the already-verified exact P19 package manifest outside the detached checkout."""
+    source = Path(str(candidate.get("candidatePath") or "")).expanduser().resolve()
+    expected_sha = str(candidate.get("candidateSha256") or "").lower()
+    if not source.is_file() or not is_hex(expected_sha, 64):
+        raise StagingError("exact P19 candidate manifest source/hash unavailable")
+    if sha256_file(source) != expected_sha:
+        raise StagingError("exact P19 candidate manifest changed after candidate verification")
+
+    target = run_dir.expanduser().resolve() / STAGED_PACKAGE_MANIFEST_NAME
+    if target.exists():
+        raise StagingError(f"staged package manifest already exists: {target}")
+    shutil.copy2(source, target)
+    if sha256_file(target) != expected_sha:
+        target.unlink(missing_ok=True)
+        raise StagingError("staged exact P19 package manifest SHA-256 mismatch")
+    raw = load_json(target)
+    if raw.get("sourceCommit") != candidate.get("sourceCommit") or raw.get("packageVersion") != candidate.get("packageVersion"):
+        target.unlink(missing_ok=True)
+        raise StagingError("staged exact P19 package manifest identity mismatch")
+    return target
+
+
+def runtime_environment(candidate: Mapping[str, Any], base: Mapping[str, str] | None = None, package_manifest: Path | None = None) -> dict[str, str]:
     env = dict(base or os.environ)
     env.update({
         "WOF_ALPHA_ACCEPTANCE_COMMIT": str(candidate["sourceCommit"]),
@@ -98,6 +123,13 @@ def runtime_environment(candidate: Mapping[str, Any], base: Mapping[str, str] | 
         "WOF_ALPHA_STAGING_SOURCE": "1", "WOF_ALPHA_LIVE_ACCEPTANCE_HOLD": "1",
         "WOF_ALPHA_OWNER_NAVIGATES": "1",
     })
+    if package_manifest is not None:
+        manifest = package_manifest.expanduser().resolve()
+        if not manifest.is_file():
+            raise StagingError(f"staged exact package manifest missing: {manifest}")
+        env[STAGED_PACKAGE_MANIFEST_ENV] = str(manifest)
+    else:
+        env.pop(STAGED_PACKAGE_MANIFEST_ENV, None)
     for key in ("WOF_ALPHA_CURRENT_MAIN_SOURCE", "WOF_ALPHA_MENU6_ATTACH_ONLY", "WOF_ALPHA_FIXED_DRAW_SMOKE"):
         env.pop(key, None)
     return env
@@ -184,7 +216,7 @@ def restart_permanent_runtime(permanent_repo: Path, permanent_head: str, output_
     cmd = [str(py), str(entry), "--root", str(permanent_repo), "--output-root", str(output_root), "--browser", browser]
     env = dict(os.environ)
     env.update({"WOF_ALPHA_CURRENT_MAIN_SOURCE": "1", "WOF_ALPHA_ACCEPTANCE_COMMIT": permanent_head, "WOF_ALPHA_LIVE_ACCEPTANCE_HOLD": "1", "WOF_ALPHA_OWNER_NAVIGATES": "1"})
-    for key in ("WOF_ALPHA_STAGING_SOURCE", "WOF_ALPHA_ACCEPTANCE_MODE", "WOF_ALPHA_ACCEPTANCE_PACKAGE_VERSION", "WOF_ALPHA_MENU6_ATTACH_ONLY", "WOF_ALPHA_FIXED_DRAW_SMOKE"):
+    for key in ("WOF_ALPHA_STAGING_SOURCE", "WOF_ALPHA_ACCEPTANCE_MODE", "WOF_ALPHA_ACCEPTANCE_PACKAGE_VERSION", "WOF_ALPHA_MENU6_ATTACH_ONLY", "WOF_ALPHA_FIXED_DRAW_SMOKE", STAGED_PACKAGE_MANIFEST_ENV):
         env.pop(key, None)
     try:
         proc = start_runtime(cmd, env, output_root / "P21_PERMANENT_RUNTIME_RESTORE.log")
