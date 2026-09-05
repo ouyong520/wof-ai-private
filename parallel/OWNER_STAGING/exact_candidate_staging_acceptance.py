@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import tempfile
 import time
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 from p21_candidate import (
     ATTESTATION_SCHEMA, CANDIDATE_SCHEMA, POINTER_REL, POINTER_SCHEMA, REQUIRED_STAGES,
@@ -30,6 +30,7 @@ P18_NAME = "ALPHA_CANONICAL_DRAW_EVIDENCE.json"
 W3_LATEST_NAME = "LATEST_W3_RENDER_SOURCE_QUALIFICATION.json"
 RECEIPT_NAME = "ALPHA_P21_STAGING_RECEIPT.json"
 READY_FOR_OWNER_VISUAL_CONFIRMATION = "READY_FOR_OWNER_VISUAL_CONFIRMATION"
+P27_INTERPOSER_NAME = "p27_canonical_feed_interposer.py"
 
 
 def _utc_now() -> str:
@@ -46,6 +47,21 @@ def _atomic_json(path: Path, payload: Mapping[str, Any]) -> None:
         os.replace(temp_name, path)
     finally:
         Path(temp_name).unlink(missing_ok=True)
+
+
+def _wrap_staged_runtime_command(command: Sequence[str], checkout: Path) -> list[str]:
+    """Keep the exact candidate checkout immutable while adding the P27 P10-feed interposer.
+
+    P25 may replace build_runtime_command with its own tee builder, so wrapping happens
+    after the builder returns. The original script and arguments are preserved after `--`.
+    """
+    values = list(command)
+    if len(values) < 2:
+        raise StagingError("staged runtime command is incomplete")
+    interposer = Path(__file__).with_name(P27_INTERPOSER_NAME).resolve()
+    if not interposer.is_file():
+        raise StagingError(f"P27 canonical-feed interposer missing: {interposer}")
+    return [values[0], str(interposer), "--candidate-root", str(checkout.resolve()), "--", *values[1:]]
 
 
 def run_staged_acceptance(*, repo_root: Path, pointer_path: Path | None, staging_root: Path, output_root: Path, permanent_repo: Path | None, python_exe: str, browser: str, host: str, port: int, evidence_timeout: float, stop_permanent_runtime: bool) -> tuple[dict[str, Any], int]:
@@ -85,7 +101,9 @@ def run_staged_acceptance(*, repo_root: Path, pointer_path: Path | None, staging
         receipt["preexistingEvidence"] = {"p16": prior_p16, "p18": prior_p18}
 
         env = runtime_environment(candidate); runtime_log = output_root / "P21_STAGED_RUNTIME.log"
-        runtime_cmd = build_runtime_command(python_exe, checkout, owner_results, browser)
+        runtime_cmd = _wrap_staged_runtime_command(
+            build_runtime_command(python_exe, checkout, owner_results, browser), checkout
+        )
         runtime_started = time.time(); runtime = start_runtime(runtime_cmd, env, runtime_log)
         receipt["runtime"] = {"started": True, "pid": runtime.pid, "command": runtime_cmd, "logPath": str(runtime_log), "stagingMode": env["WOF_ALPHA_ACCEPTANCE_MODE"], "sourceCommit": env["WOF_ALPHA_ACCEPTANCE_COMMIT"], "packageVersion": env["WOF_ALPHA_ACCEPTANCE_PACKAGE_VERSION"], "browserPreserved": env["WOF_ALPHA_OWNER_NAVIGATES"] == "1", "inputInjection": False, "stopped": False}
 
