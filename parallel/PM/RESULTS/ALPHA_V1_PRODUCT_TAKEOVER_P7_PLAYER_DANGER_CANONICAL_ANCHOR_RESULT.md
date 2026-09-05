@@ -65,6 +65,15 @@ This RESULT does **not** claim machine-draw proof, real-WOF product PASS, or Own
 - integrationReady: **true**
 - nextAction: PM may wire `buildCanonicalPlan(...)` into the canonical runtime/HUD integration after W3 supplies proven READY P1/P2/P3 anchors, current player generations and the matching authority/runtime/renderer binding. No further player-danger geometry redesign should be needed.
 
+## Claim closeout
+
+- machine RESULT.json commit: `9e6598139586eb6df20b2c73101a3ed070e3828a`
+- initial RESULT.md commit: `c8e5b76406309bef71eb30137c1246a05518bca7`
+- canonical claim COMPLETE commit: `358c26a4408413b5b78196b11c6876d95806a9c1`
+- stage claim COMPLETE commit: `5af7c50b0046ced2a3f0164918ca477717723f91`
+
+Both canonical and stage claims were closed only after exact claim-token re-read verification.
+
 ## Safety
 
 - readOnly: `true`
