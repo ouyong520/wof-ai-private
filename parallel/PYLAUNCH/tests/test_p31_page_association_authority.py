@@ -95,11 +95,11 @@ class P31PageAssociationAuthorityTests(unittest.TestCase):
         worker = {"targetId": "w", "type": "worker", "parentFrameId": "f2"}
         self.assertEqual("p2", _direct_page(worker, [p1, p2])["targetId"])
 
-    def test_conflicting_parent_authorities_fail_closed(self):
+    def test_parent_id_outranks_parent_frame_without_order_guessing(self):
         p1 = {"targetId": "p1", "type": "page", "cdpFrameIds": ["f1"]}
         p2 = {"targetId": "p2", "type": "page", "cdpFrameIds": ["f2"]}
         worker = {"targetId": "w", "type": "worker", "parentId": "p1", "parentFrameId": "f2"}
-        self.assertIsNone(_direct_page(worker, [p1, p2]))
+        self.assertEqual("p1", _direct_page(worker, [p2, p1])["targetId"])
 
     def test_unique_runtime_game_surface_can_disambiguate_but_url_alone_cannot(self):
         p1 = {"targetId": "p1", "type": "page", "url": "https://host/wof", "wofPageProbe": {"gameSurface": True}}
