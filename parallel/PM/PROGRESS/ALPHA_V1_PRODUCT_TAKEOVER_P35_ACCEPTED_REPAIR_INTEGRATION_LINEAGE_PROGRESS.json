@@ -4,32 +4,98 @@
   "dedupKey": "alpha.v1.product-takeover.accepted-repair-integration-lineage-v1",
   "claimToken": "8097ec89dc1679df79aa5299942ef78e86b252b6d30666cb",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 8,
-  "implementationState": "NOT_STARTED",
-  "selfCheckState": "NOT_RUN",
+  "workState": "SELF_CHECK",
+  "overallPercent": 82,
+  "implementationState": "DONE_CANDIDATE_READBACK_BOUND",
+  "selfCheckState": "IN_PROGRESS",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "510516c569f5439ca567984cbf72e811815d3aab",
-  "lastKnownGoodCommit": null,
-  "implementationCommits": [],
+  "lastKnownGoodCommit": "82b0b09ecd902f502ae5509bcb3ee5a713f43fee",
+  "implementationCommits": [
+    "82b0b09ecd902f502ae5509bcb3ee5a713f43fee"
+  ],
+  "integrationCandidate": {
+    "branch": "worker/p35-accepted-repair-integration-lineage",
+    "latestMainBase": "cc0da35480b7b89c40525254d52601b18b001a92",
+    "latestMainBaseTree": "12a836a618c87206cf95a9dc19b021c4059bba8e",
+    "sourceCommit": "82b0b09ecd902f502ae5509bcb3ee5a713f43fee",
+    "sourceTree": "e5dba33a2cd579826704d3f78ec2587ee2305a5a",
+    "mergeParents": [
+      "cc0da35480b7b89c40525254d52601b18b001a92",
+      "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731"
+    ],
+    "requiredTestedCommits": {
+      "P29": "c02f7e108e73665f22eb950573622acb6f452732",
+      "P30": "90094a656ab311f18b0a758716dc97c3f8df092d",
+      "P31": "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731"
+    },
+    "ancestryChecks": {
+      "P29": "PASS_EXACT_ANCESTOR",
+      "P30": "PASS_EXACT_ANCESTOR",
+      "P31": "PASS_EXACT_ANCESTOR"
+    },
+    "p31ConflictCheck": {
+      "p31BranchBase": "433bb26b3804f927901a4f898a4d403e29694276",
+      "discoveryBlobAtP31Base": "210702e1be775c39381d77a3b815a10eaa34be6f",
+      "discoveryBlobAtLatestMainBase": "210702e1be775c39381d77a3b815a10eaa34be6f",
+      "p31TestAtLatestMainBase": "ABSENT",
+      "result": "PASS_NO_CONCURRENT_PATH_EDIT"
+    },
+    "acceptedBlobMap": {
+      "parallel/RENDER_AUTHORITY_V2/qualification_analyzer.py": "a412faa31ac8d946e25f72868a57ae234d92b4b2",
+      "parallel/RENDER_AUTHORITY_V2/test_qualification_analyzer.py": "d243efbc092dac9fe80c0cfa8c517d9685d5272e",
+      "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js": "fa3642388d7bf89d77334a86f8091858ff8ad2c2",
+      "parallel/RENDER_AUTHORITY_V2/selftest.mjs": "588a3781a37a9cc9e390e545328b4812c47cfa7f",
+      "parallel/OWNER_STAGING/p21_acceptance.py": "b14f0e8967093b8a35512321965e4b646573bef1",
+      "parallel/OWNER_STAGING/p21_runtime.py": "28a8f19f1b4bb27719c1e09f70fc91bf2ebdcce5",
+      "parallel/OWNER_STAGING/exact_candidate_staging_acceptance.py": "613caade29ab6cb7f35192f90a6a57aa53f2289c",
+      "parallel/PYLAUNCH/wof_launcher/alpha_runtime.py": "c90c5aeb631a3f4109d1132389a612379d17782d",
+      "parallel/PYLAUNCH/wof_launcher/production_p1_overlay.py": "32312651c983d23714b71018505e3e43fb1990ae",
+      "parallel/OWNER_STAGING/test_p30_p16_p9_binding_staging_readiness.py": "b0639a9dd602c57b63147a3ef28bd08d18f2d858",
+      "parallel/PYLAUNCH/tests/test_alpha_p30_p9_p1_binding.py": "288d77b0714f975638fd6071dd35bae13e201991",
+      "parallel/PYLAUNCH/wof_launcher/discovery_v2.py": "518c290aed5f1a06a4b981a11160ee1d95693a56",
+      "parallel/PYLAUNCH/tests/test_p31_page_association_authority.py": "6e898ae26e8eaff96c95de00b8e02b7634085d47"
+    },
+    "p32BlockedContext": {
+      "testedCommit": "bd75c3b5f7fd20fe004fae21142a0fa19942e076",
+      "terminalState": "BLOCKED",
+      "integrationReady": false,
+      "acceptedRepair": false,
+      "inheritedFromLatestMainBase": true,
+      "countedInRequiredAcceptedSet": false
+    },
+    "alphaLiveMoved": false,
+    "promotionPerformed": false
+  },
   "completed": [
-    "Read P35 START_PROMPT, dispatch, product governance, dedup/progress/result protocols.",
-    "Fresh-read terminal P29/P30/P31 COMPLETE and P32 BLOCKED RESULT authority.",
-    "Created and exact-token verified canonical dedup-v2 claim and stage claim."
+    "Created dedicated P35 integration branch from latest authoritative main base cc0da35480b7b89c40525254d52601b18b001a92.",
+    "Verified P29 and P30 exact tested commits are already true ancestors of that main base.",
+    "Verified P31 branch-base discovery blob is unchanged on latest-main base and its test path is absent, so exact P31 bytes can merge without semantic conflict.",
+    "Created durable merge candidate 82b0b09ecd902f502ae5509bcb3ee5a713f43fee with source tree e5dba33a2cd579826704d3f78ec2587ee2305a5a and exact P31 tested commit as second parent.",
+    "Fresh-read all 13 accepted P29/P30/P31 repair-owned file blobs from the candidate; every blob exactly matches terminal tested-candidate authority.",
+    "Confirmed latest-main -> candidate delta contains only the two exact P31-owned paths; no P33/P34/P36 ownership surface was modified.",
+    "Confirmed P32 remains terminal BLOCKED/integrationReady=false and is not counted as an accepted repair even though its earlier commit is inherited through the latest-main parent."
   ],
   "remaining": [
-    "Create dedicated integration candidate branch from latest authoritative main.",
-    "Inspect exact P29/P30/P31 tested commit diffs/trees and accepted blob evidence for overlap/conflict.",
-    "Construct conflict-free integration lineage with exact tested commits as Git ancestors, excluding P32.",
-    "Fresh-read accepted repair blobs from integration source and prove ancestry/source tree metadata.",
-    "Run focused deterministic integration regression on durable candidate.",
-    "Publish terminal RESULT and close exact-token claims."
+    "Run final candidate-bound focused integration lineage self-check.",
+    "Publish terminal RESULT JSON/MD and close canonical/stage claims with the exact token."
   ],
-  "tests": [],
+  "tests": [
+    {
+      "name": "accepted repair candidate blob pre-readback",
+      "result": "PASS",
+      "detail": "13/13 P29/P30/P31 accepted repair-owned paths at candidate 82b0b09e exactly match their terminal tested blob maps."
+    },
+    {
+      "name": "P31 semantic conflict precheck",
+      "result": "PASS",
+      "detail": "P31 branch-base discovery blob equals latest-main-base discovery blob and the P31 test path is absent on latest-main base; merge required no semantic hand-edit."
+    }
+  ],
   "blocker": null,
-  "nextAction": "Inspect exact accepted tested commits and construct the dedicated integration lineage fail-closed.",
+  "nextAction": "Run one final candidate-bound ancestry/tree/delta self-check, then publish COMPLETE result and exact-token closeout.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:17:12Z"
+  "updatedAtUtc": "2026-09-05T16:21:11Z"
 }
