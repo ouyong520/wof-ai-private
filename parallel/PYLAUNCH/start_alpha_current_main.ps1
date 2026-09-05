@@ -49,13 +49,9 @@ function Find-WofRepo {
 }
 
 if (-not $Repo) { $Repo = Find-WofRepo }
-if (-not $Repo) {
-    Stop-Wof 'Could not find the wof-ai-private Git checkout.' 20
-}
+if (-not $Repo) { Stop-Wof 'Could not find the wof-ai-private Git checkout.' 20 }
 $Repo = (Resolve-Path $Repo).Path
-if (-not (Test-WofRepo $Repo)) {
-    Stop-Wof 'The located folder is not a valid wof-ai-private Git checkout.' 21
-}
+if (-not (Test-WofRepo $Repo)) { Stop-Wof 'The located folder is not a valid wof-ai-private Git checkout.' 21 }
 
 Write-Host ''
 Write-Host '=================================================='
@@ -79,21 +75,25 @@ if (-not $gitExe) {
 }
 if (-not $gitExe) { Stop-Wof 'Git was not found.' 22 }
 
-$dirty = & $gitExe -C $Repo status --porcelain --untracked-files=all 2>$null
-if ($LASTEXITCODE -ne 0) { Stop-Wof 'Could not read Git status.' 23 }
-if ($dirty) { Stop-Wof 'Local uncommitted changes were found.' 24 }
-
 $managedRepo = $null
 if ($env:LOCALAPPDATA) { $managedRepo = Join-Path $env:LOCALAPPDATA 'WOF_ALPHA_CURRENT_MAIN\repo' }
 $isManagedRepo = $false
-if ($managedRepo) {
-    try { $isManagedRepo = ((Resolve-Path $Repo).Path -ieq (Resolve-Path $managedRepo -ErrorAction Stop).Path) } catch {}
+if ($managedRepo -and (Test-Path $managedRepo)) {
+    try { $isManagedRepo = ((Resolve-Path $Repo).Path -ieq (Resolve-Path $managedRepo).Path) } catch {}
+}
+
+# Only protect a real user checkout. The V4 managed repo is a disposable runtime cache;
+# untracked runtime/cache files there must never block an Owner retest.
+if (-not $isManagedRepo) {
+    $dirty = & $gitExe -C $Repo status --porcelain --untracked-files=all 2>$null
+    if ($LASTEXITCODE -ne 0) { Stop-Wof 'Could not read Git status.' 23 }
+    if ($dirty) { Stop-Wof 'Local uncommitted changes were found.' 24 }
 }
 
 if ($isManagedRepo) {
-    Write-Host '[1/4] V4 already updated the managed repo; skipping duplicate network fetch.'
-    $headSha = (& $gitExe -C $Repo rev-parse HEAD).Trim()
-    $originSha = (& $gitExe -C $Repo rev-parse origin/main 2>$null).Trim()
+    Write-Host '[1/4] Managed source is already updated by V4; no duplicate fetch.'
+    $headSha = (& $gitExe -C $Repo rev-parse --verify HEAD).Trim()
+    $originSha = (& $gitExe -C $Repo rev-parse --verify origin/main).Trim()
     if (-not $headSha -or -not $originSha -or $headSha -ne $originSha) {
         Stop-Wof 'Managed repo is not exact origin/main. Run WOF_ALPHA_RUN_V4.cmd again.' 28
     }
@@ -101,13 +101,13 @@ if ($isManagedRepo) {
     Write-Host '[1/4] Fetching latest main...'
     & $gitExe -C $Repo fetch --quiet 'https://github.com/ouyong520/wof-ai-private.git' '+refs/heads/main:refs/remotes/wof-alpha-authority/main'
     if ($LASTEXITCODE -ne 0) { Stop-Wof 'Could not fetch latest main from GitHub.' 25 }
-    $headSha = (& $gitExe -C $Repo rev-parse HEAD).Trim()
-    $mainSha = (& $gitExe -C $Repo rev-parse refs/remotes/wof-alpha-authority/main).Trim()
+    $headSha = (& $gitExe -C $Repo rev-parse --verify HEAD).Trim()
+    $mainSha = (& $gitExe -C $Repo rev-parse --verify refs/remotes/wof-alpha-authority/main).Trim()
     if (-not $headSha -or -not $mainSha) { Stop-Wof 'Could not resolve Git SHA.' 26 }
     if ($headSha -ne $mainSha) {
         & $gitExe -C $Repo merge --ff-only refs/remotes/wof-alpha-authority/main
         if ($LASTEXITCODE -ne 0) { Stop-Wof 'Fast-forward failed.' 27 }
-        $headSha = (& $gitExe -C $Repo rev-parse HEAD).Trim()
+        $headSha = (& $gitExe -C $Repo rev-parse --verify HEAD).Trim()
     }
     if ($headSha -ne $mainSha) { Stop-Wof 'Local checkout is still not exact current main.' 28 }
 }
@@ -162,7 +162,7 @@ $entry = Join-Path $Repo 'parallel\PYLAUNCH\render_authority_measurement_entry.p
 $workdir = Join-Path $Repo 'parallel\PYLAUNCH'
 
 Write-Host '[4/4] Starting WOF Alpha...'
-Write-Host 'No reinstall or redownload is needed for later retests.'
+Write-Host 'No reinstall or full redownload is needed for later retests.'
 Write-Host 'If one-click fallback is requested, click the real P1 head once.'
 Write-Host ''
 
@@ -182,9 +182,7 @@ $packages = Join-Path $results 'packages'
 if (Test-Path $packages) {
     $latest = Get-ChildItem -LiteralPath $packages -Filter 'WOF_LIVE_ACCEPTANCE_*.zip' -File -ErrorAction SilentlyContinue |
         Sort-Object LastWriteTime -Descending | Select-Object -First 1
-    if ($latest) {
-        Copy-Item -LiteralPath $latest.FullName -Destination $feedback -Force
-    }
+    if ($latest) { Copy-Item -LiteralPath $latest.FullName -Destination $feedback -Force }
 }
 
 Write-Host ''
