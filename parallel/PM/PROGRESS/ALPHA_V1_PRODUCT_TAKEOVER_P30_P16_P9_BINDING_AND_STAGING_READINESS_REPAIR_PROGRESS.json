@@ -4,36 +4,57 @@
   "dedupKey": "alpha.v1.product-takeover.p16-p9-binding-staging-readiness-repair-v1",
   "claimToken": "07c4ebfe2077a52b842c5c53d2f3cd05",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "IMPLEMENTING",
-  "overallPercent": 35,
-  "implementationState": "DIAGNOSED_READY_TO_PATCH",
-  "selfCheckState": "NOT_RUN",
+  "workState": "SELF_CHECK",
+  "overallPercent": 76,
+  "implementationState": "DONE",
+  "selfCheckState": "IN_PROGRESS",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "c97603ef0c217a859d0ae230ade62fcfee4844e8",
-  "lastKnownGoodCommit": "c97603ef0c217a859d0ae230ade62fcfee4844e8",
-  "implementationCommits": [],
+  "lastKnownGoodCommit": "90094a656ab311f18b0a758716dc97c3f8df092d",
+  "implementationCommits": [
+    "30515c69b4c6296bf2867bbd8a8a9634c9a9da4e",
+    "9aee7bdac52a64dc5b98a70781f100fde125d209",
+    "764583e4ef444c66d2247547ed8d04d718a2ca49",
+    "f351dc3f83f5850dc0b8b0ccc1c8d4385a607104",
+    "27e5e51bc975d050770e3d7ef7aae2606b7d2155",
+    "8b93701802a86c5d4a07779c96a3ba8f4bb590ec",
+    "90094a656ab311f18b0a758716dc97c3f8df092d"
+  ],
+  "testedCandidate": {
+    "commit": "90094a656ab311f18b0a758716dc97c3f8df092d",
+    "tree": "efcc1b3e517c488ea1e8aa6b6bddcf9efcfea2ed",
+    "state": "READY_FOR_FRESH_FOCUSED_TESTS",
+    "blobMap": {
+      "parallel/OWNER_STAGING/p21_acceptance.py": "b14f0e8967093b8a35512321965e4b646573bef1",
+      "parallel/OWNER_STAGING/p21_runtime.py": "28a8f19f1b4bb27719c1e09f70fc91bf2ebdcce5",
+      "parallel/OWNER_STAGING/exact_candidate_staging_acceptance.py": "613caade29ab6cb7f35192f90a6a57aa53f2289c",
+      "parallel/PYLAUNCH/wof_launcher/alpha_runtime.py": "c90c5aeb631a3f4109d1132389a612379d17782d",
+      "parallel/PYLAUNCH/wof_launcher/production_p1_overlay.py": "32312651c983d23714b71018505e3e43fb1990ae",
+      "parallel/OWNER_STAGING/test_p30_p16_p9_binding_staging_readiness.py": "b0639a9dd602c57b63147a3ef28bd08d18f2d858",
+      "parallel/PYLAUNCH/tests/test_alpha_p30_p9_p1_binding.py": "288d77b0714f975638fd6071dd35bae13e201991"
+    }
+  },
   "completed": [
-    "Read START_PROMPT, dispatch, product governance, AGENTS, dedup-v2, progress and result protocols",
-    "Created and read back canonical/stage claims with exact claimToken",
-    "Read current final live gate plus P16/P17/P18/P21/P25/P27/P28 authority/results and focused staging/runtime sources",
-    "Diagnosed exact staged P9 failure: staged runtime environment does not bind the exact P19 candidate manifest, so AlphaRuntimeManager falls back to stale committed OWNER_ONECLICK/package_manifest.json without P9/P8",
-    "Diagnosed P1 fallback failure: ProductionP1Overlay HUD_SOURCES injects maintained HUD without first injecting P9/P8 canonical dependencies, causing the maintained HUD hard guard to fail",
-    "Diagnosed P16 early-acceptance defect: wait_for_staged_p16 accepts fresh schema/package evidence even when world.accepted=false / canonical.state=VERIFYING_WORLD and runtime authority is incomplete"
+    "Diagnosed staged P9/P1/P16 blockers and reconciled P16/P17/P18/P21/P25/P27/P28 authority boundaries",
+    "Added staging-only exact P19 candidate manifest copy + SHA-256 readback + explicit WOF_ALPHA_PACKAGE_MANIFEST binding without mutating detached checkout or permanent manifest",
+    "Added AlphaRuntimeManager explicit staged manifest identity validation so exact candidate P9/P8 pins are available to runtime",
+    "Added P9 then P8 before maintained HUD in ProductionP1Overlay fallback source order; missing P9 remains fail-closed with exact path in binding error",
+    "Tightened staged P16 usability: exact accepted World SHA, page/worker targets, non-early canonical state, runtimeEpoch, authorityKey, rendererEpoch, rendererAuthority, and safety are all required",
+    "Added focused P30 staging and P9/P1 regression suites",
+    "Created durable implementation candidate 90094a656ab311f18b0a758716dc97c3f8df092d / tree efcc1b3e517c488ea1e8aa6b6bddcf9efcfea2ed and recorded seven-file blob map before terminal-significant tests"
   ],
   "remaining": [
-    "Implement staging-only exact candidate manifest binding without promotion or detached checkout mutation",
-    "Repair ProductionP1Overlay fallback source ordering and precise fail-closed P9/P8 diagnostics without HUD rewrite",
-    "Require exact World accepted/world SHA/runtime+renderer authority before staged P16 acceptance",
-    "Add focused deterministic regressions",
-    "Create durable tested candidate and bind PROGRESS",
-    "Run fresh focused self-checks against exact durable candidate",
-    "Publish RESULT artifacts, close canonical/stage claims, terminalize PROGRESS"
+    "Run fresh focused compile/unittest/static safety checks against exact durable candidate 90094a656ab311f18b0a758716dc97c3f8df092d",
+    "If PASS and implementation bytes remain unchanged, checkpoint test provenance",
+    "Publish RESULT JSON/MD, close canonical/stage claims, terminalize PROGRESS"
   ],
-  "tests": [],
+  "tests": [
+    {"name": "P30 exact durable candidate focused self-check", "result": "IN_PROGRESS", "detail": "Candidate commit/tree and changed-file blob map were durably recorded before test execution."}
+  ],
   "blocker": null,
-  "nextAction": "Patch only p21 staged manifest/readiness seams and ProductionP1Overlay fallback dependency binding, then add focused regressions.",
+  "nextAction": "Execute focused self-checks against exact durable candidate 90094a656ab311f18b0a758716dc97c3f8df092d only.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T15:20:00Z"
+  "updatedAtUtc": "2026-09-05T15:33:00Z"
 }
