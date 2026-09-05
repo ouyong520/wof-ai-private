@@ -2,6 +2,17 @@
 'use strict';
 const VERSION='wof-alpha-hud-rc5';
 const SCHEMA='wof-alpha-v2';
+const FIXED_SMOKE_SCHEMA='wof-alpha-fixed-draw-smoke-v1';
+const FIXED_SMOKE_STATUS_KEY='__WOF_ALPHA_FIXED_DRAW_SMOKE_STATUS_V1';
+const FIXED_NATIVE_W=384,FIXED_NATIVE_H=224,FIXED_NATIVE_X=192,FIXED_NATIVE_Y=112;
+const fixedSmoke={
+  schema:FIXED_SMOKE_SCHEMA,enabled:false,state:'DISABLED',hudInjected:true,gameCanvasContextPresent:false,drawHooked:false,
+  callbackCount:0,drawCount:0,nativeWidth:FIXED_NATIVE_W,nativeHeight:FIXED_NATIVE_H,nativeX:FIXED_NATIVE_X,nativeY:FIXED_NATIVE_Y,
+  drawingBuffer:null,lastError:null,lastCallbackAt:null,lastDrawAt:null,readOnly:true,ramWrites:0,inputInjection:false
+};
+window[FIXED_SMOKE_STATUS_KEY]=fixedSmoke;
+function fixedSmokeSet(state,patch){fixedSmoke.state=state;if(patch&&typeof patch==='object')Object.assign(fixedSmoke,patch);return {...fixedSmoke};}
+
 const cfg=window.__WOF_ALPHA_CONFIG;
 if(!cfg||cfg.release!=='wof-alpha-rc3'||typeof cfg.session!=='string'||cfg.session.length<16||typeof cfg.channel!=='string')throw new Error('WOF Alpha RC3 session config missing');
 const SESSION=cfg.session,CHANNEL=cfg.channel;
@@ -24,7 +35,11 @@ try{
 try{window.WOFALPHAHUD?.dispose?.();}catch(_){}
 
 const canvas=window.I_GF1TC||document.getElementById('whathis'),gl=window.I_fdC8Q;
-if(!canvas||!gl||typeof gl.drawArrays!=='function')throw new Error('game WebGL canvas/context not found');
+if(!canvas||!gl||typeof gl.drawArrays!=='function'){
+  fixedSmokeSet('GAME_CANVAS_CONTEXT_MISSING',{gameCanvasContextPresent:false});
+  throw new Error('game WebGL canvas/context not found');
+}
+fixedSmoke.gameCanvasContextPresent=true;
 const isGL2=typeof WebGL2RenderingContext!=='undefined'&&gl instanceof WebGL2RenderingContext;
 
 let bridge=window.__WOF_GL_HOOK;
@@ -56,10 +71,11 @@ const shader=(type,src)=>{const s=gl.createShader(type);gl.shaderSource(s,src);g
 const vs=shader(gl.VERTEX_SHADER,V),fs=shader(gl.FRAGMENT_SHADER,F),prog=gl.createProgram();
 gl.attachShader(prog,vs);gl.attachShader(prog,fs);gl.bindAttribLocation(prog,0,'a');gl.linkProgram(prog);gl.deleteShader(vs);gl.deleteShader(fs);
 if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){const m=gl.getProgramInfoLog(prog)||'link';gl.deleteProgram(prog);throw new Error(m);}
-const uTex=gl.getUniformLocation(prog,'t'),buf=gl.createBuffer(),tex=gl.createTexture(),labelTex=gl.createTexture(),warningTex=gl.createTexture(),hud=document.createElement('canvas');
+const uTex=gl.getUniformLocation(prog,'t'),buf=gl.createBuffer(),tex=gl.createTexture(),labelTex=gl.createTexture(),warningTex=gl.createTexture(),fixedSmokeTex=gl.createTexture(),hud=document.createElement('canvas');
 hud.width=520;hud.height=248;const c=hud.getContext('2d');
 const labelHud=document.createElement('canvas');labelHud.width=96;labelHud.height=24;const lc=labelHud.getContext('2d');
 const warningHud=document.createElement('canvas');warningHud.width=84;warningHud.height=26;const wc=warningHud.getContext('2d');
+const fixedSmokeHud=document.createElement('canvas');fixedSmokeHud.width=96;fixedSmokeHud.height=36;const fsc=fixedSmokeHud.getContext('2d');
 const LABEL_ORDER=['1P','2P','3P'],LABEL_TILE_W=32,LABEL_TILE_H=24,MAX_LABELS=20,labelVertices=new Float32Array(MAX_LABELS*6*4);
 
 const STARTUP_MS=15000,STALE_MS=1500,MARKER_STALE_MS=300,PLAYER_SPATIAL_RX_STALE_MS=120,P1_TRACKER_STALE_MS=650,loadedAt=Date.now();
@@ -104,7 +120,7 @@ function uploadCanvas(source,target){
 }
 function upload(){uploadCanvas(hud,tex);}
 function drawTexture(x,y,w,h,target=tex){
-  const W=gl.drawingBufferWidth||canvas.width,H=gl.drawingBufferHeight||canvas.height;if(!(W>0&&H>0))return;
+  const W=gl.drawingBufferWidth||canvas.width,H=gl.drawingBufferHeight||canvas.height;if(!(W>0&&H>0))return false;
   const l=x/W*2-1,r=(x+w)/W*2-1,t=1-y/H*2,b=1-(y+h)/H*2;
   const v=new Float32Array([l,t,0,1,l,b,0,0,r,b,1,0,l,t,0,1,r,b,1,0,r,t,1,1]),s=snapGL();
   try{
@@ -112,8 +128,56 @@ function drawTexture(x,y,w,h,target=tex){
     gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.colorMask(true,true,true,true);gl.useProgram(prog);
     gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,v,gl.STREAM_DRAW);gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0,4,gl.FLOAT,false,0,0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,target);gl.uniform1i(uTex,0);
-    bridge.nativeDraw.call(gl,gl.TRIANGLES,0,6);drawCount++;
+    bridge.nativeDraw.call(gl,gl.TRIANGLES,0,6);drawCount++;return true;
   }finally{restoreGL(s);}
+}
+function paintFixedSmoke(){
+  fsc.clearRect(0,0,fixedSmokeHud.width,fixedSmokeHud.height);
+  fsc.fillStyle='rgba(0,0,0,.92)';fsc.fillRect(1,1,fixedSmokeHud.width-2,fixedSmokeHud.height-2);
+  fsc.strokeStyle='rgba(255,255,255,.99)';fsc.lineWidth=2;fsc.strokeRect(2,2,fixedSmokeHud.width-4,fixedSmokeHud.height-4);
+  fsc.fillStyle='#fff';fsc.textBaseline='middle';fsc.textAlign='center';fsc.font='bold 22px sans-serif';fsc.fillText('TEST',fixedSmokeHud.width/2,fixedSmokeHud.height/2+.5);
+  uploadCanvas(fixedSmokeHud,fixedSmokeTex);
+}
+function mapFixedNativeRectToDrawingBuffer(W,H){
+  const nativeRect={x:FIXED_NATIVE_X-fixedSmokeHud.width/2,y:FIXED_NATIVE_Y-fixedSmokeHud.height/2,width:fixedSmokeHud.width,height:fixedSmokeHud.height};
+  const sx=W/FIXED_NATIVE_W,sy=H/FIXED_NATIVE_H;
+  return{x:nativeRect.x*sx,y:nativeRect.y*sy,width:nativeRect.width*sx,height:nativeRect.height*sy};
+}
+function fixedDrawSmokeStatus(){
+  const hooked=!disposed&&gl.drawArrays===bridge.wrapper&&bridge.callback===drawHud;
+  fixedSmoke.drawHooked=hooked;
+  if(fixedSmoke.enabled&&!hooked)fixedSmoke.state='DRAW_HOOK_NOT_FIRING';
+  return{...fixedSmoke,drawingBuffer:fixedSmoke.drawingBuffer?{...fixedSmoke.drawingBuffer}:null};
+}
+function setFixedDrawSmokeEnabled(enabled){
+  fixedSmoke.enabled=enabled===true;
+  fixedSmoke.lastError=null;
+  if(!fixedSmoke.enabled)return fixedSmokeSet('DISABLED',{drawingBuffer:null});
+  const hooked=!disposed&&gl.drawArrays===bridge.wrapper&&bridge.callback===drawHud;
+  return fixedSmokeSet('DRAW_HOOK_NOT_FIRING',{drawHooked:hooked});
+}
+function drawFixedSmoke(){
+  fixedSmoke.callbackCount++;fixedSmoke.lastCallbackAt=Date.now();
+  const W=Number(gl.drawingBufferWidth),H=Number(gl.drawingBufferHeight);
+  if(!(Number.isFinite(W)&&Number.isFinite(H)&&W>0&&H>0)){
+    fixedSmokeSet('DRAWING_BUFFER_INVALID',{drawingBuffer:{width:W,height:H},lastError:'invalid WebGL drawing buffer'});
+    return false;
+  }
+  const rect=mapFixedNativeRectToDrawingBuffer(W,H);
+  fixedSmoke.drawingBuffer={width:W,height:H,rect,nativeWidth:FIXED_NATIVE_W,nativeHeight:FIXED_NATIVE_H};
+  try{
+    const before=drawCount;
+    const ok=drawTexture(rect.x,rect.y,rect.width,rect.height,fixedSmokeTex);
+    if(ok===true&&drawCount===before+1){
+      fixedSmoke.drawCount++;fixedSmoke.lastDrawAt=Date.now();fixedSmoke.lastError=null;
+      fixedSmokeSet('FIXED_TEST_ACTUALLY_DRAWN');
+      return true;
+    }
+    fixedSmokeSet('DRAW_FAILED',{lastError:'maintained production renderer did not complete a native draw'});
+  }catch(e){
+    fixedSmokeSet('DRAW_FAILED',{lastError:String(e?.stack||e)});
+  }
+  return false;
 }
 function paintLabelAtlas(){
   lc.clearRect(0,0,labelHud.width,labelHud.height);lc.textBaseline='middle';lc.textAlign='center';lc.font='bold 15px sans-serif';
@@ -243,7 +307,10 @@ function drawFixedWarnings(warnings){
   drawTexture(Math.max(4,(W-w)/2),Math.max(4,H-hh-8),w,hh);
 }
 function drawHud(){
-  callbackCount++;if(disposed||!visible)return;
+  callbackCount++;
+  if(disposed)return;
+  if(fixedSmoke.enabled)drawFixedSmoke();
+  if(!visible)return;
   const now=Date.now();drawEnemyTargetLabels(now);const trackerVisible=drawP1Tracker(now);
   const fresh=!!lastRx&&now-lastRx<=STALE_MS;
   if(fresh){
@@ -273,6 +340,7 @@ function drawHud(){
 }
 paintLabelAtlas();
 paintWarningBadge();
+paintFixedSmoke();
 bridge.callback=drawHud;
 
 const bc=new BroadcastChannel(CHANNEL);
@@ -288,14 +356,15 @@ bc.onmessage=e=>{
 
 function transportReset(){lastMsg=null;lastRx=0;lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;lastPlayerMsg=null;lastPlayerRx=0;lastPlayerPlan=null;lastDirectP1WarningCount=0;lastDiag=null;lastKey='';}
 function dispose(){
-  if(disposed)return;disposed=true;clearP1HeadTrackerAuthority('HUD_DISPOSED');
+  if(disposed)return;disposed=true;clearP1HeadTrackerAuthority('HUD_DISPOSED');setFixedDrawSmokeEnabled(false);
   if(bridge.callback===drawHud)bridge.callback=null;
   try{bc.close();}catch(_){}
-  try{gl.deleteTexture(tex);gl.deleteTexture(labelTex);gl.deleteTexture(warningTex);gl.deleteBuffer(buf);gl.deleteProgram(prog);}catch(_){}
+  try{gl.deleteTexture(tex);gl.deleteTexture(labelTex);gl.deleteTexture(warningTex);gl.deleteTexture(fixedSmokeTex);gl.deleteBuffer(buf);gl.deleteProgram(prog);}catch(_){}
 }
 window.WOFALPHAHUD={
   version:VERSION,session:SESSION,show(){visible=true;lastKey='';},hide(){visible=false;lastKey='';},transportReset,dispose,
   bindP1HeadTrackerAuthority,setP1HeadTracker,clearP1HeadTracker,clearP1HeadTrackerAuthority,p1HeadTrackerStatus:p1TrackerStatus,
+  setFixedDrawSmokeEnabled,fixedDrawSmokeStatus,
   status(){
     const now=Date.now(),fresh=!!lastRx&&now-lastRx<=STALE_MS;
     const markerFresh=!!lastMarkerRx&&now-lastMarkerRx<=MARKER_STALE_MS;
@@ -304,6 +373,7 @@ window.WOFALPHAHUD={
     const fixedReasons=Array.isArray(lastPlayerPlan?.fixed)?lastPlayerPlan.fixed.map(x=>x.reason):[];
     return{version:VERSION,release:'wof-alpha-rc3',session:SESSION,connected:fresh,ageMs:lastRx?now-lastRx:null,warningCount:summary.count,
       groups:summary.groups,drawHooked:gl.drawArrays===bridge.wrapper,drawCount,callbackCount,lastError:bridge.lastError||null,researchHudDisposed:true,
+      fixedDrawSmoke:fixedDrawSmokeStatus(),
       p1HeadTracker:p1TrackerStatus(now),
       playerHeadWarning:{connected:playerFresh||lastDirectP1WarningCount>0,ageMs:lastPlayerRx?now-lastPlayerRx:null,anchored:(lastPlayerPlan?.anchored?.length||0)+(lastDirectP1WarningCount>0?1:0),fixed:lastPlayerPlan?.fixed?.length||0,
         directP1WarningCount:lastDirectP1WarningCount,directP1TrackerDrawCount:p1TrackerWarningDrawCount,fixedReasons,drawCount:playerWarningDrawCount,holdMs:0,smoothing:false,maxSpatialAgeMs:PLAYER_WARNING.MAX_PLAYER_AGE_MS},
@@ -311,5 +381,6 @@ window.WOFALPHAHUD={
         reason:markerFresh?(lastLabelPlan?.reason||null):'STALE_OR_MISSING_MARKERS',drawCount:labelDrawCount,holdMs:0,smoothing:false}};
   }
 };
+fixedSmoke.drawHooked=gl.drawArrays===bridge.wrapper&&bridge.callback===drawHud;
 console.log('✅ WOF Alpha RC5 HUD installed · session',SESSION.slice(0,8));
 })();
