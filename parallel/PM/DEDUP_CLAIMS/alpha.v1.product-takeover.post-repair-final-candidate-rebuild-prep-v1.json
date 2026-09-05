@@ -8,6 +8,9 @@
   "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP_START_PROMPT.md",
   "owner": "worker-ouyong520-p33",
   "claimToken": "9f07f3681dba3d6721ee23ff82df41fd",
-  "state": "ACTIVE",
-  "startCommit": "24cbf440a676c8b086c43b8bbb614a620409e88f"
+  "state": "COMPLETE",
+  "startCommit": "24cbf440a676c8b086c43b8bbb614a620409e88f",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP_RESULT.json",
+  "resultCommit": "f57f2bc9276551fd97f6d43f8429ab670d7e30a8",
+  "testedCommit": "c8c61112efbccdef5794ee68cd27767eacb72e96"
 }
