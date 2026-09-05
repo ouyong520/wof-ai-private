@@ -1,0 +1,39 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_CANONICAL_PRODUCT_CONVERGENCE_P15_W3_P16_LONG_3_WORKER_V1",
+  "createdAtUtc": "2026-09-05T07:20:00Z",
+  "authorityCommit": "645f1786a07d5179e0091e9ef127c676e9354131",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.canonical-product-convergence-package-candidate-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE"
+    },
+    {
+      "slot": 2,
+      "stageId": "ALPHA_V1_LIVE_ACCEPTANCE_RENDER_AUTHORITY_SPRITE_COORDINATE_RECOVERY_V2",
+      "promptPath": "parallel/PM/ALPHA_V1_W3_ACTIVE_CLAIM_LONG_QUALIFICATION_CONTINUATION.md",
+      "dedupKey": "alpha.v1.live-acceptance.render-authority-sprite-coordinate-recovery-v2",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_LIVE_ACCEPTANCE_RENDER_AUTHORITY_SPRITE_COORDINATE_RECOVERY_V2_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_LIVE_ACCEPTANCE_RENDER_AUTHORITY_SPRITE_COORDINATE_RECOVERY_V2_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_LIVE_ACCEPTANCE_RENDER_AUTHORITY_SPRITE_COORDINATE_RECOVERY_V2"
+    },
+    {
+      "slot": 3,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P16_OWNER_CANONICAL_STATUS_ACCEPTANCE_EVIDENCE",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P16_OWNER_CANONICAL_STATUS_ACCEPTANCE_EVIDENCE_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.owner-canonical-status-acceptance-evidence-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P16_OWNER_CANONICAL_STATUS_ACCEPTANCE_EVIDENCE_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P16_OWNER_CANONICAL_STATUS_ACCEPTANCE_EVIDENCE_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P16_OWNER_CANONICAL_STATUS_ACCEPTANCE_EVIDENCE"
+    }
+  ]
+}
