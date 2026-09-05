@@ -1,0 +1,176 @@
+name: P38 integrated candidate materialization
+
+on:
+  push:
+    branches:
+      - worker/p38-integrated-candidate-materialization
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: ${{ !contains(github.event.head_commit.message, '[P38_MATERIALIZED]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Materialize exact P35 source through P33 mechanism
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE=82b0b09ecd902f502ae5509bcb3ee5a713f43fee
+          TREE=e5dba33a2cd579826704d3f78ec2587ee2305a5a
+          P29=c02f7e108e73665f22eb950573622acb6f452732
+          P30=90094a656ab311f18b0a758716dc97c3f8df092d
+          P31=423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731
+          HIST=0752796369f1687435a1b1647e66ea0b5ab07688
+          OUT=parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED
+          PTR=parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED_POINTER.json
+          PROV=parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED_PROVENANCE.json
+
+          git cat-file -e "${SOURCE}^{commit}"
+          test "$(git rev-parse "${SOURCE}^{tree}")" = "$TREE"
+          for required in "$P29" "$P30" "$P31"; do
+            test "$(git rev-parse "${required}^{commit}")" = "$required"
+            git merge-base --is-ancestor "$required" "$SOURCE"
+          done
+
+          python - <<'PY'
+          import json, subprocess
+          source = "82b0b09ecd902f502ae5509bcb3ee5a713f43fee"
+          path = "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION_RESULT.json"
+          raw = subprocess.check_output(["git", "show", f"{source}:{path}"])
+          value = json.loads(raw)
+          assert value["state"] == "BLOCKED"
+          assert value["integrationReady"] is False
+          assert value["blocker"]["code"] == "NATIVE_PLAYER_MARKER_DIRECT_RENDERER_CAUSAL_EDGE_NOT_CHECKED_IN"
+          claim = json.load(open("parallel/PM/STAGE_CLAIMS/ALPHA_V1_PRODUCT_TAKEOVER_P36_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE.json", encoding="utf-8"))
+          assert claim["state"] == "ACTIVE"
+          assert not __import__("pathlib").Path("parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P36_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE_RESULT.json").exists()
+          PY
+
+          observe_alpha_live() {
+            git rev-parse --verify refs/remotes/origin/alpha-live 2>/dev/null || printf '%s\n' ABSENT
+          }
+          ALPHA_BEFORE="$(observe_alpha_live)"
+
+          rm -rf "$OUT" "$PTR" "$PROV"
+          python parallel/OWNER_ONECLICK/post_repair_final_candidate_rebuild.py build-verify \
+            --source "$SOURCE" --output-dir "$OUT" --pointer "$PTR" > /tmp/p38-build-1.json
+          python parallel/OWNER_ONECLICK/post_repair_final_candidate_rebuild.py verify --pointer "$PTR" > /tmp/p38-verify-1.json
+          find "$OUT" -maxdepth 1 -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/p38-sha-before.txt
+          sha256sum "$PTR" >> /tmp/p38-sha-before.txt
+
+          python parallel/OWNER_ONECLICK/post_repair_final_candidate_rebuild.py build-verify \
+            --source "$SOURCE" --output-dir "$OUT" --pointer "$PTR" > /tmp/p38-build-2.json
+          python parallel/OWNER_ONECLICK/post_repair_final_candidate_rebuild.py verify --pointer "$PTR" > /tmp/p38-verify-2.json
+          find "$OUT" -maxdepth 1 -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/p38-sha-after.txt
+          sha256sum "$PTR" >> /tmp/p38-sha-after.txt
+          diff -u /tmp/p38-sha-before.txt /tmp/p38-sha-after.txt
+
+          set +e
+          python parallel/OWNER_ONECLICK/post_repair_final_candidate_rebuild.py build-verify \
+            --source "$HIST" --output-dir /tmp/p38-stale --pointer /tmp/p38-stale-pointer.json \
+            > /tmp/p38-stale.out 2>&1
+          STALE_RC=$?
+          set -e
+          test "$STALE_RC" -eq 2
+          grep -q 'STALE_P19_SOURCE_COMMIT_REJECTED' /tmp/p38-stale.out
+
+          ALPHA_AFTER="$(observe_alpha_live)"
+          test "$ALPHA_BEFORE" = "$ALPHA_AFTER"
+
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+
+          source = "82b0b09ecd902f502ae5509bcb3ee5a713f43fee"
+          source_tree = "e5dba33a2cd579826704d3f78ec2587ee2305a5a"
+          p29 = "c02f7e108e73665f22eb950573622acb6f452732"
+          p30 = "90094a656ab311f18b0a758716dc97c3f8df092d"
+          p31 = "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731"
+          ptr_path = Path("parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED_POINTER.json")
+          ptr = json.loads(ptr_path.read_text(encoding="utf-8"))
+          manifest_path = Path(ptr["manifestPath"])
+          candidate_path = Path(ptr["candidatePath"])
+          attestation_path = Path(ptr["attestationPath"])
+          manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+          candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+          attestation = json.loads(attestation_path.read_text(encoding="utf-8"))
+          def sha(path):
+            return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+          assert ptr["sourceCommit"] == source
+          assert manifest["sourceCommit"] == source
+          assert candidate["sourceCommit"] == source
+          assert attestation["sourceCommit"] == source
+          assert ptr["candidateSha256"] == sha(candidate_path)
+          assert ptr["attestationSha256"] == sha(attestation_path)
+          assert ptr["manifestSha256"] == sha(manifest_path)
+          required = {
+            "ALPHA_V1_PRODUCT_TAKEOVER_P29_W3_LIVE_EVIDENCE_CONTRACT_REPAIR": p29,
+            "ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR": p30,
+            "ALPHA_V1_PRODUCT_TAKEOVER_P31_WOF_PAGE_ASSOCIATION_AMBIGUITY_REPAIR": p31,
+          }
+          assert ptr["requiredTestedCommits"] == required
+          assert manifest["requiredTestedCommits"] == required
+          final_release = candidate["components"]["finalCanonicalRelease"]
+          provenance = {
+            "schema": "wof-alpha-p38-accepted-repair-integrated-candidate-provenance-v1",
+            "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P38_ACCEPTED_REPAIR_INTEGRATED_CANDIDATE_MATERIALIZATION",
+            "state": "MATERIALIZED_VERIFIED",
+            "retryEligibility": "NOT_RETRY_ELIGIBLE_PENDING_P36",
+            "sourceCommit": source,
+            "sourceTree": source_tree,
+            "packageVersion": ptr["packageVersion"],
+            "candidatePath": ptr["candidatePath"],
+            "candidateSha256": ptr["candidateSha256"],
+            "attestationPath": ptr["attestationPath"],
+            "attestationSha256": ptr["attestationSha256"],
+            "manifestPath": ptr["manifestPath"],
+            "manifestSha256": ptr["manifestSha256"],
+            "pointerPath": ptr_path.as_posix(),
+            "pointerSha256": sha(ptr_path),
+            "requiredTestedCommits": required,
+            "requiredAncestry": {"P29": True, "P30": True, "P31": True},
+            "runtimePins": {
+              "selectedFileCount": ptr["selectedFileCount"],
+              "criticalRuntimeBlobs": final_release["criticalRuntimeBlobs"],
+              "candidateFiles": candidate["files"],
+              "stageResults": attestation["stageResults"],
+            },
+            "p32": {
+              "terminalState": "BLOCKED",
+              "integrationReady": False,
+              "blockerCode": "NATIVE_PLAYER_MARKER_DIRECT_RENDERER_CAUSAL_EDGE_NOT_CHECKED_IN",
+              "rewrittenToPass": False,
+            },
+            "p36": {"stateAtMaterialization": "ACTIVE", "terminalResultPresent": False},
+            "determinism": {"repeatedMaterializationIdentical": True, "staleP19Rejected": True},
+            "ownerVisualAcceptance": "NOT_RUN",
+            "realWofAcceptance": "NOT_RUN",
+            "promotionPerformed": False,
+            "alphaLiveMoved": False,
+            "safety": {"readOnly": True, "ramWrites": 0, "inputInjection": False, "realGameRun": False, "promotion": False, "alphaLiveMoved": False},
+          }
+          Path("parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED_PROVENANCE.json").write_text(
+              json.dumps(provenance, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          python - <<'PY'
+          import json
+          p = json.load(open("parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED_PROVENANCE.json", encoding="utf-8"))
+          assert p["retryEligibility"] == "NOT_RETRY_ELIGIBLE_PENDING_P36"
+          assert p["p32"]["terminalState"] == "BLOCKED" and p["p32"]["rewrittenToPass"] is False
+          assert p["promotionPerformed"] is False and p["alphaLiveMoved"] is False
+          PY
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add "$OUT" "$PTR" "$PROV"
+          git diff --cached --quiet && { echo 'no materialized changes'; exit 3; }
+          git commit -m '[P38_MATERIALIZED] P38 exact integrated candidate provenance'
+          git push origin HEAD:worker/p38-integrated-candidate-materialization
