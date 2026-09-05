@@ -1,0 +1,107 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE",
+  "dedupKey": "alpha.v1.product-takeover.canonical-product-convergence-package-candidate-v1",
+  "claimToken": "376b173f97ac542283845f9d79835fa69550b882f77134eb",
+  "state": "COMPLETE",
+  "verdict": "P15 is implementation/package integration-ready: canonical target/danger semantics are decoupled from legacy projection coordinates, P12->P10->P9/P8->P11 is owned by the normal AlphaRuntime lifecycle with fail-closed WAITING/SUPPRESSED states, and an immutable 82-file canonical package candidate is pinned without moving alpha-live or claiming real-WOF visibility.",
+  "startCommit": "a72b9ac225780ae34038def9538c4ef49d454f22",
+  "implementationCommits": [
+    "77c81b87aa68b9c54b7fc1523478f7c4fc826d15",
+    "c2d2df9d971d02704a9cecd0b8599e8c80bdcd17",
+    "0a976981ef670ce65fa349551e2c937829bf7a48",
+    "1de4a9c5e5498c29805e5d527f655b0bb90d1df5",
+    "7c6c7c2a889c3480b4298992429c8f2c3979d355",
+    "88122e3dca0d350023e9247f0f9aca6df4f132bc"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PYLAUNCH/wof_launcher/alpha_runtime.py",
+    "parallel/PYLAUNCH/wof_launcher/canonical_runtime_coordinator.py",
+    "product/alpha/wof_alpha_field_adapter.js",
+    "parallel/OWNER_ONECLICK/refresh_manifest.py",
+    "parallel/OWNER_ONECLICK/CANDIDATES/ALPHA_V1_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE.json",
+    "parallel/PYLAUNCH/tests/test_canonical_product_convergence_p15.py",
+    "product/alpha/canonical_semantic_spatial_decoupling_selfcheck.mjs",
+    "parallel/PYLAUNCH/tests/test_field_recovery.py",
+    "parallel/OWNER_ONECLICK/test_package.py",
+    ".github/workflows/alpha-p15-canonical-convergence.yml"
+  ],
+  "tests": [
+    {
+      "name": "P15 focused canonical convergence workflow",
+      "result": "PASS",
+      "detail": "GitHub Actions run 33955053485 / job 101276746487 passed: 4 controlled lifecycle/suppression tests, projection-unproved semantic-only fixture, touched Python/JS syntax, and immutable candidate source/blob/deterministic-regeneration integrity."
+    },
+    {
+      "name": "Owner package manifest integrity",
+      "result": "PASS",
+      "detail": "GitHub Actions run 33955053459 / integrity job 101276746727 passed both successor-manifest mutation/LKG validation and deterministic current-commit candidate emission. The checked-in P15 candidate remains pinned to its own immutable source instead of being silently repinned to later P17/P18 main changes."
+    },
+    {
+      "name": "Alpha field-recovery compatibility",
+      "result": "PASS",
+      "detail": "GitHub Actions run 33955053459 / field-recovery-self-check job 101276746486 passed exact identity/generation/Alpha activation, overlay recovery, discovery association, live-proof gate, Owner integration, frozen Alpha regression, and syntax checks."
+    },
+    {
+      "name": "Windows Owner one-click package path",
+      "result": "PASS",
+      "detail": "GitHub Actions run 33955053459 / windows-oneclick job 101276746570 passed immutable manifest load, fresh Chinese/space-path portable install, package-selected launcher smoke without Browser, last-known-good repair/update, and idempotent re-update."
+    },
+    {
+      "name": "real-WOF / Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Deliberately not run by P15. Missing W3 renderer/object source qualification remains a truthful WAITING/SUPPRESSED condition and no fake visible PASS is claimed."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Focused lifecycle, semantic-decoupling, syntax and immutable package checks prove the repository/runtime convergence contract and package candidate integrity. They do not prove a real WOF renderer source or on-screen overlay visibility."
+  },
+  "productProofBoundary": "accepted exact World authority -> explicit current W3-format frame seam -> P12 actor/generation registry -> P10 deterministic render-object anchor bridge -> P9 envelope -> P8 unified plan -> P11 maintained HUD. Without qualified W3 renderer/object evidence the normal runtime remains WAITING/SUPPRESSED; no legacy projection, screenshot coordinate, guessed address, stale descriptor, or old anchor may fill the gap.",
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM should consume this immutable P15 candidate/result together with completed P16/P17/P18 evidence, refresh/select the later final integration candidate without moving alpha-live, then use the single bounded W3/Owner final acceptance gate. If W3 remains INCONCLUSIVE, retain fail-closed WAITING/SUPPRESSED state and do not guess coordinates or addresses.",
+  "evidencePaths": [
+    "parallel/OWNER_ONECLICK/CANDIDATES/ALPHA_V1_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE.json",
+    "parallel/PYLAUNCH/wof_launcher/canonical_runtime_coordinator.py",
+    "parallel/PYLAUNCH/wof_launcher/alpha_runtime.py",
+    "product/alpha/wof_alpha_field_adapter.js",
+    "parallel/PYLAUNCH/tests/test_canonical_product_convergence_p15.py",
+    "product/alpha/canonical_semantic_spatial_decoupling_selfcheck.mjs",
+    ".github/workflows/alpha-p15-canonical-convergence.yml"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "legacySpatialFallback": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "guessedAddresses": false,
+    "alphaLiveMoved": false
+  },
+  "packageCandidate": {
+    "path": "parallel/OWNER_ONECLICK/CANDIDATES/ALPHA_V1_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE.json",
+    "packageVersion": "2026.09.05.c2d2df9d971d",
+    "sourceCommit": "c2d2df9d971d02704a9cecd0b8599e8c80bdcd17",
+    "selectionPolicy": "owner-oneclick-runtime-v9-canonical-product-convergence-candidate-pinned",
+    "pinnedFileCount": 82,
+    "chain": "P12->P10->P9/P8->P11",
+    "semanticSpatialDecoupled": true,
+    "legacySpatialFallback": false,
+    "alphaLivePromoted": false,
+    "realWofAcceptance": "NOT_RUN",
+    "initialState": "WAITING_FOR_W3_FRAME_SOURCE_QUALIFICATION"
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "alphaLiveCommitObserved": "d664618403b1ae83f6880ca4d3833202c299415f",
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_FINALIZATION_P15_P17_P18_LONG_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE_RESULT.md",
+  "completedAtUtc": "2026-09-05T08:24:00Z"
+}
