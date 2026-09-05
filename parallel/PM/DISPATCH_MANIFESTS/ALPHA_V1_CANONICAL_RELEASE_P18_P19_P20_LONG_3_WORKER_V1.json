@@ -1,0 +1,39 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_CANONICAL_RELEASE_P18_P19_P20_LONG_3_WORKER_V1",
+  "createdAtUtc": "2026-09-05T08:08:00Z",
+  "authorityCommit": "ff6dfa9587814fb36ae8beaf2ed79085e4c0a171",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P18_MAINTAINED_HUD_CANONICAL_DRAW_ACKNOWLEDGEMENT",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P18_MAINTAINED_HUD_CANONICAL_DRAW_ACKNOWLEDGEMENT_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.maintained-hud-canonical-draw-acknowledgement-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P18_MAINTAINED_HUD_CANONICAL_DRAW_ACKNOWLEDGEMENT_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P18_MAINTAINED_HUD_CANONICAL_DRAW_ACKNOWLEDGEMENT_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P18_MAINTAINED_HUD_CANONICAL_DRAW_ACKNOWLEDGEMENT"
+    },
+    {
+      "slot": 2,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P19_FINAL_CANONICAL_CANDIDATE_REBUILD_ATTESTATION",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P19_FINAL_CANONICAL_CANDIDATE_REBUILD_ATTESTATION_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.final-canonical-candidate-rebuild-attestation-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P19_FINAL_CANONICAL_CANDIDATE_REBUILD_ATTESTATION_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P19_FINAL_CANONICAL_CANDIDATE_REBUILD_ATTESTATION_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P19_FINAL_CANONICAL_CANDIDATE_REBUILD_ATTESTATION"
+    },
+    {
+      "slot": 3,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P20_OWNER_VISUAL_CONFIRMATION_ALPHA_LIVE_PROMOTION_GATE",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P20_OWNER_VISUAL_CONFIRMATION_ALPHA_LIVE_PROMOTION_GATE_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.owner-visual-confirmation-alpha-live-promotion-gate-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P20_OWNER_VISUAL_CONFIRMATION_ALPHA_LIVE_PROMOTION_GATE_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P20_OWNER_VISUAL_CONFIRMATION_ALPHA_LIVE_PROMOTION_GATE_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P20_OWNER_VISUAL_CONFIRMATION_ALPHA_LIVE_PROMOTION_GATE"
+    }
+  ]
+}
