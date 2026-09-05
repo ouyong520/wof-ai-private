@@ -3,37 +3,36 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P38_ACCEPTED_REPAIR_INTEGRATED_CANDIDATE_MATERIALIZATION",
   "dedupKey": "alpha.v1.product-takeover.accepted-repair-integrated-candidate-materialization-v1",
   "claimToken": "d8d6f273a87aadf9fc2e3e84a84824e8",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "PUBLISHING",
-  "overallPercent": 98,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
   "implementationState": "DONE",
   "selfCheckState": "PASS",
-  "resultPublicationState": "IN_PROGRESS",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "DONE",
+  "claimCloseState": "DONE",
   "startCommit": "a9eba304aaae591b14a9dbadb5c37453a9e53ae0",
   "lastKnownGoodCommit": "107850cb8409dd3f2f1135022375114f96469035",
   "implementationCommits": ["107850cb8409dd3f2f1135022375114f96469035"],
   "completed": [
-    "Durable tested materialization commit 3e9ae7e725e3dd32d1172866fef11d3ff89e163f/tree 2434e11c718741fae0c9186238d748df17c37abb passed workflow 33979187125/job 101341180297",
-    "Five exact tested P38 artifact blobs published to main in 107850cb8409dd3f2f1135022375114f96469035 and fresh-read byte-identical",
-    "sourceCommit/packageVersion/candidate/attestation/manifest/pointer/runtime pins exact-read verified",
-    "P29/P30/P31 exact ancestry independently reconfirmed",
-    "P32 remains BLOCKED; P36 remains ACTIVE with no terminal RESULT; retry eligibility remains NOT_RETRY_ELIGIBLE_PENDING_P36",
-    "Global latest-candidate pointer untouched; alpha-live unchanged; no promotion; no real game"
+    "P38 exact P35-source candidate/provenance materialization completed through the P33 tested deterministic mechanism",
+    "Durable tested commit 3e9ae7e725e3dd32d1172866fef11d3ff89e163f/tree 2434e11c718741fae0c9186238d748df17c37abb passed GitHub Actions 33979187125/job 101341180297",
+    "Five exact tested P38 artifact blobs were published to main in 107850cb8409dd3f2f1135022375114f96469035 and exact-read back",
+    "P29/P30/P31 exact ancestry, sourceCommit, packageVersion, candidate/attestation/manifest/pointer SHA256 and runtime pins were verified",
+    "P32 terminal BLOCKED truth was preserved; P36 remained ACTIVE without terminal RESULT; final retry state is NOT_RETRY_ELIGIBLE_PENDING_P36",
+    "Global latest-candidate pointer was not overwritten; alpha-live remained unchanged; no real game or promotion occurred",
+    "Terminal RESULT JSON/MD published and canonical/stage claims closed COMPLETE"
   ],
-  "remaining": [
-    "Atomically publish RESULT JSON/MD, close canonical/stage claims, and write terminal progress"
-  ],
+  "remaining": [],
   "tests": [
-    {"name": "P38 materialization + deterministic repeat", "result": "PASS", "detail": "GitHub Actions 33979187125/job 101341180297."},
-    {"name": "exact P38 main blob readback", "result": "PASS", "detail": "All five Git blob SHAs match worker-tested bytes."},
-    {"name": "exact P29/P30/P31 ancestry", "result": "PASS", "detail": "Each required tested commit has behind_by=0 and exact merge-base at P35 source."},
-    {"name": "P32/P36 fail-closed retry state", "result": "PASS", "detail": "NOT_RETRY_ELIGIBLE_PENDING_P36; P32 not rewritten."},
-    {"name": "promotion / alpha-live / real WOF", "result": "PASS_NOT_RUN", "detail": "No promotion or alpha-live movement; real WOF and Owner visual acceptance not run."}
+    {"name": "P38 deterministic materialization", "result": "PASS", "detail": "Exact source build-verify, deterministic repeat, stale-P19 rejection and safety checks passed in run 33979187125."},
+    {"name": "P38 exact main artifact readback", "result": "PASS", "detail": "All five materialized Git blobs exactly match the tested worker commit."},
+    {"name": "P29/P30/P31 exact source ancestry", "result": "PASS", "detail": "All three required tested commits are true source ancestors."},
+    {"name": "retry eligibility fail-closed", "result": "PASS", "detail": "NOT_RETRY_ELIGIBLE_PENDING_P36; P32 remains BLOCKED and P36 has no terminal RESULT."},
+    {"name": "real WOF / promotion / alpha-live movement", "result": "NOT_RUN_PASS", "detail": "No real WOF run or promotion was performed and alpha-live did not move."}
   ],
   "blocker": null,
-  "nextAction": "Publish terminal COMPLETE materialization truth while preserving NOT_RETRY_ELIGIBLE_PENDING_P36.",
-  "terminalResultPath": null,
+  "nextAction": "PM should wait for an accepted terminal P36 result, then rerun the final retry readiness gate against this fresh P38 candidate before any Owner retry or promotion.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P38_ACCEPTED_REPAIR_INTEGRATED_CANDIDATE_MATERIALIZATION_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:58:00Z"
+  "updatedAtUtc": "2026-09-05T16:59:00Z"
 }

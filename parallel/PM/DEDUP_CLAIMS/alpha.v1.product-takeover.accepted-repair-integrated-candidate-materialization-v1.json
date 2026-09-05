@@ -8,6 +8,11 @@
   "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P38_ACCEPTED_REPAIR_INTEGRATED_CANDIDATE_MATERIALIZATION_START_PROMPT.md",
   "owner": "codex-p38-worker",
   "claimToken": "d8d6f273a87aadf9fc2e3e84a84824e8",
-  "state": "ACTIVE",
-  "startCommit": "a9eba304aaae591b14a9dbadb5c37453a9e53ae0"
+  "state": "COMPLETE",
+  "startCommit": "a9eba304aaae591b14a9dbadb5c37453a9e53ae0",
+  "testedCommit": "3e9ae7e725e3dd32d1172866fef11d3ff89e163f",
+  "implementationCommit": "107850cb8409dd3f2f1135022375114f96469035",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P38_ACCEPTED_REPAIR_INTEGRATED_CANDIDATE_MATERIALIZATION_RESULT.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P38_ACCEPTED_REPAIR_INTEGRATED_CANDIDATE_MATERIALIZATION_RESULT.md",
+  "completedAtUtc": "2026-09-05T16:59:00Z"
 }

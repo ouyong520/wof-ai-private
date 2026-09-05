@@ -1,0 +1,176 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P38_ACCEPTED_REPAIR_INTEGRATED_CANDIDATE_MATERIALIZATION",
+  "dedupKey": "alpha.v1.product-takeover.accepted-repair-integrated-candidate-materialization-v1",
+  "claimToken": "d8d6f273a87aadf9fc2e3e84a84824e8",
+  "state": "COMPLETE",
+  "verdict": "P38 materialized and exact-read a fresh deterministic accepted-repair integrated candidate/provenance from P35 source 82b0b09ecd902f502ae5509bcb3ee5a713f43fee through the P33 tested rebuild mechanism. Exact P29/P30/P31 tested commits are ancestors, candidate/attestation/manifest/runtime pins are bound, P32 remains terminal BLOCKED, and the result is explicitly NOT_RETRY_ELIGIBLE_PENDING_P36.",
+  "startCommit": "a9eba304aaae591b14a9dbadb5c37453a9e53ae0",
+  "testedCommit": "3e9ae7e725e3dd32d1172866fef11d3ff89e163f",
+  "testedTree": "2434e11c718741fae0c9186238d748df17c37abb",
+  "implementationCommits": [
+    "107850cb8409dd3f2f1135022375114f96469035"
+  ],
+  "integrationReady": true,
+  "retryEligibility": "NOT_RETRY_ELIGIBLE_PENDING_P36",
+  "readyForOneBoundedOwnerRetry": false,
+  "ownerRetryBudget": 0,
+  "promotionAuthorized": false,
+  "alphaLiveMoveAuthorized": false,
+  "changedFiles": [
+    "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_82b0b09ecd90.json",
+    "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_82b0b09ecd90.attestation.json",
+    "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED/ALPHA_V1_POST_REPAIR_REBUILD_82b0b09ecd90.manifest.json",
+    "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED_POINTER.json",
+    "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED_PROVENANCE.json"
+  ],
+  "materializedCandidate": {
+    "sourceCommit": "82b0b09ecd902f502ae5509bcb3ee5a713f43fee",
+    "sourceTree": "e5dba33a2cd579826704d3f78ec2587ee2305a5a",
+    "packageVersion": "2026.09.05.82b0b09ecd90",
+    "candidatePath": "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_82b0b09ecd90.json",
+    "candidateSha256": "53e4e2f2ad4c6c697b64d628b21576f341b3839bea8e2409057c0372fac56449",
+    "candidateGitBlobSha": "ee00156eb0a3fd94349ef1344f7f7651aee91a83",
+    "attestationPath": "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_82b0b09ecd90.attestation.json",
+    "attestationSha256": "5fdb606ee2aeb747a8bcda64c8009bb8d704820bcfa0000d1fd099c20fa6b68e",
+    "attestationGitBlobSha": "d2102f3f2bf923c42a7d3fb7ff1d0ca7c459410c",
+    "manifestPath": "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED/ALPHA_V1_POST_REPAIR_REBUILD_82b0b09ecd90.manifest.json",
+    "manifestSha256": "1761fc613ccd84f2e7dc7bfe629113f2d2d07e4871996adc92260696d4cf906c",
+    "manifestGitBlobSha": "adb0611998e8da9fed78f675c156ecdc5d269a2a",
+    "pointerPath": "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED_POINTER.json",
+    "pointerSha256": "a2e676f8f08316ebbe50a6b032bde06159562615af66ad03c28f20d6a2ac7330",
+    "pointerGitBlobSha": "48c6ca920a1b2ed93314e01bcfcd4c005521b367",
+    "provenancePath": "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED_PROVENANCE.json",
+    "provenanceGitBlobSha": "3d1af5e3ba9d23472519d97e178f244fb4ea775a",
+    "selectedFileCount": 90,
+    "w3LiveQualification": "INCONCLUSIVE"
+  },
+  "requiredAcceptedRepairs": {
+    "P29": {
+      "testedCommit": "c02f7e108e73665f22eb950573622acb6f452732",
+      "isAncestor": true,
+      "compareBehindBy": 0,
+      "compareMergeBase": "c02f7e108e73665f22eb950573622acb6f452732"
+    },
+    "P30": {
+      "testedCommit": "90094a656ab311f18b0a758716dc97c3f8df092d",
+      "isAncestor": true,
+      "compareBehindBy": 0,
+      "compareMergeBase": "90094a656ab311f18b0a758716dc97c3f8df092d"
+    },
+    "P31": {
+      "testedCommit": "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731",
+      "isAncestor": true,
+      "compareBehindBy": 0,
+      "compareMergeBase": "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731"
+    }
+  },
+  "upstreamFailClosedState": {
+    "P32": {
+      "state": "BLOCKED",
+      "integrationReady": false,
+      "testedCommit": "bd75c3b5f7fd20fe004fae21142a0fa19942e076",
+      "blockerCode": "NATIVE_PLAYER_MARKER_DIRECT_RENDERER_CAUSAL_EDGE_NOT_CHECKED_IN",
+      "rewrittenToPass": false
+    },
+    "P36": {
+      "stateAtFinalReadback": "ACTIVE",
+      "terminalResultPresent": false,
+      "requiredBeforeRetryEligibility": true
+    }
+  },
+  "tests": [
+    {
+      "name": "P38 exact P33 materialization workflow",
+      "result": "PASS",
+      "detail": "GitHub Actions run 33979187125/job 101341180297 completed success on durable tested materialization commit 3e9ae7e725e3dd32d1172866fef11d3ff89e163f."
+    },
+    {
+      "name": "P38 deterministic repeated build-verify",
+      "result": "PASS",
+      "detail": "Two build-verify executions from exact source 82b0b09ecd902f502ae5509bcb3ee5a713f43fee produced an identical SHA256 artifact inventory."
+    },
+    {
+      "name": "historical P19 stale source rejection",
+      "result": "PASS",
+      "detail": "Exact historical source 0752796369f1687435a1b1647e66ea0b5ab07688 was rejected with STALE_P19_SOURCE_COMMIT_REJECTED."
+    },
+    {
+      "name": "P29/P30/P31 exact ancestry",
+      "result": "PASS",
+      "detail": "Independent GitHub compare readback for all three exact tested commits reports source ahead, behind_by=0, and merge-base equal to the exact required tested commit."
+    },
+    {
+      "name": "exact main five-blob identity readback",
+      "result": "PASS",
+      "detail": "Fresh main fetches match the exact worker-tested Git blob SHAs for candidate, attestation, rebuild manifest, P38 pointer, and P38 provenance."
+    },
+    {
+      "name": "source/package/manifest-attestation/runtime-pin binding",
+      "result": "PASS",
+      "detail": "Pointer/provenance exact-read sourceCommit 82b0b09ecd902f502ae5509bcb3ee5a713f43fee, packageVersion 2026.09.05.82b0b09ecd90, candidate/attestation/manifest SHA256 values, 90 selected file pins, and critical runtime blobs."
+    },
+    {
+      "name": "P32 BLOCKED and P36 pending truth preservation",
+      "result": "PASS",
+      "detail": "P32 remains terminal BLOCKED/integrationReady=false and was not rewritten; P36 remains ACTIVE without a terminal RESULT; retry eligibility remains NOT_RETRY_ELIGIBLE_PENDING_P36."
+    },
+    {
+      "name": "global latest-candidate pointer isolation",
+      "result": "PASS",
+      "detail": "P38 did not overwrite parallel/OWNER_ONECLICK/CANDIDATES/LATEST_FINAL_CANONICAL_CANDIDATE.json; it still points to historical source 0752796369f1687435a1b1647e66ea0b5ab07688."
+    },
+    {
+      "name": "alpha-live / promotion safety",
+      "result": "PASS",
+      "detail": "alpha-live remained d664618403b1ae83f6880ca4d3833202c299415f across materialization and final readback; no promotion was performed."
+    },
+    {
+      "name": "real WOF / Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "P38 authority forbids real-game execution and does not request Owner visual acceptance."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "MATERIALIZATION_PROVENANCE_PROOF",
+    "visibleProof": "NOT_PROVEN",
+    "detail": "This proves deterministic integrated candidate materialization/provenance only. It does not prove native marker renderer authority, real-WOF correctness, Owner-visible correctness, retry eligibility, or promotion eligibility."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": "P38 is complete but Owner retry remains blocked pending a separately authorized terminal P36 renderer-authority resolution and subsequent readiness evaluation."
+  },
+  "retryBlocker": {
+    "code": "NOT_RETRY_ELIGIBLE_PENDING_P36",
+    "detail": "P36 Native Marker Renderer Submit Source Trace is still ACTIVE without terminal RESULT at final P38 readback."
+  },
+  "blocker": null,
+  "nextAction": "PM must keep Owner retry blocked until P36 reaches an accepted terminal state, then rerun the deterministic final retry readiness gate against this fresh P38 candidate/provenance before any Owner retry or promotion.",
+  "evidencePaths": [
+    "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_82b0b09ecd90.json",
+    "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_82b0b09ecd90.attestation.json",
+    "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED/ALPHA_V1_POST_REPAIR_REBUILD_82b0b09ecd90.manifest.json",
+    "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED_POINTER.json",
+    "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED_PROVENANCE.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P35_ACCEPTED_REPAIR_INTEGRATION_LINEAGE_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P34_FINAL_RETRY_READINESS_GATE_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION_RESULT.json",
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P38_ACCEPTED_REPAIR_INTEGRATED_CANDIDATE_MATERIALIZATION_PROGRESS.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "realGameRun": false,
+    "promotion": false,
+    "alphaLiveMoved": false
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "completedAtUtc": "2026-09-05T16:59:00Z"
+}
