@@ -13,8 +13,9 @@ from typing import Any, Mapping
 
 HUD_EVIDENCE_SCHEMA = "wof-alpha-maintained-hud-canonical-draw-evidence-v1"
 HUD_EVIDENCE_VERSION = "wof-alpha-maintained-hud-canonical-draw-acknowledgement-v1"
-COLLECTOR_SCHEMA = "wof-alpha-canonical-draw-evidence-snapshot-v1"
-COLLECTOR_VERSION = "wof-alpha-canonical-draw-evidence-collector-v1"
+COLLECTOR_SCHEMA = "wof-alpha-canonical-draw-evidence-v1"
+COLLECTOR_VERSION = 1
+COLLECTOR_IMPLEMENTATION = "wof-alpha-canonical-draw-evidence-collector-v1"
 DEFAULT_OUTPUT_PATH = Path.home() / "Documents" / "WOF_RESULTS" / "ALPHA_CANONICAL_DRAW_EVIDENCE.json"
 MAX_ACKNOWLEDGEMENTS = 128
 ALLOWED_STATES = frozenset({
@@ -33,6 +34,12 @@ SAFETY = {
     "screenshotAuthority": False,
     "worldProjectionAuthority": False,
     "positionAuthority": False,
+}
+COLLECTOR_SAFETY = {
+    **SAFETY,
+    "screenshotProductionCoordinates": False,
+    "worldProjectionProductionCoordinates": False,
+    "guessedAddresses": False,
 }
 
 
@@ -101,21 +108,31 @@ def _base_snapshot(
     return {
         "schema": COLLECTOR_SCHEMA,
         "version": COLLECTOR_VERSION,
+        "collectorVersion": COLLECTOR_IMPLEMENTATION,
         "evidenceState": state,
         "reason": reason,
         "collectedAt": _utc_now(),
         "pageTarget": {
+            "id": page_target_id,
             "targetId": page_target_id,
             "type": page_target.get("type") if isinstance(page_target, Mapping) else None,
             "url": page_target.get("url") if isinstance(page_target, Mapping) else None,
         },
+        "identity": ({
+            "worldSha256": expected_authority.get("worldSha256"),
+            "pageTargetId": page_target_id,
+            "authorityKey": expected_authority.get("authorityKey"),
+            "runtimeEpoch": expected_authority.get("runtimeEpoch"),
+            "rendererEpoch": expected_authority.get("rendererEpoch"),
+            "rendererAuthority": None,
+        } if state in {"NO_CANONICAL_DRAW", "CANONICAL_DRAW_ACKNOWLEDGED"} else None),
         "authority": dict(expected_authority) if state in {"NO_CANONICAL_DRAW", "CANONICAL_DRAW_ACKNOWLEDGED"} else None,
         "expectedAuthority": dict(expected_authority),
         "observedAuthority": dict(observed_authority) if isinstance(observed_authority, Mapping) else None,
         "evidenceGeneration": evidence_generation,
         "acknowledgementCount": len(rows),
         "acknowledgements": copy.deepcopy(rows),
-        "safety": dict(SAFETY),
+        "safety": dict(COLLECTOR_SAFETY),
         "readOnly": True,
         "ramWrites": 0,
         "inputInjection": False,
