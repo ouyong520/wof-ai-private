@@ -1,0 +1,25 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_FINAL_ACCEPTANCE_POST_REPAIR_PREP_LONG_2_WORKER_V1",
+  "createdAtUtc": "2026-09-05T15:56:30Z",
+  "authorityCommit": "b87dbc88774619b30f6097cf5afff77494728792",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.post-repair-final-candidate-rebuild-prep-v1",
+      "claimMode": "CREATE_NEW_DEDUP_V2_IF_UNCLAIMED",
+      "resultProtocol": "wof-alpha-worker-result-v1"
+    },
+    {
+      "slot": 2,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P34_FINAL_RETRY_READINESS_GATE",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P34_FINAL_RETRY_READINESS_GATE_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.final-retry-readiness-gate-v1",
+      "claimMode": "CREATE_NEW_DEDUP_V2_IF_UNCLAIMED",
+      "resultProtocol": "wof-alpha-worker-result-v1"
+    }
+  ]
+}
