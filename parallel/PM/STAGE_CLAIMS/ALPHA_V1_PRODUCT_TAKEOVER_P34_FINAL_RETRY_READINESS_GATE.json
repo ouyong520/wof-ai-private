@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P34_FINAL_RETRY_READINESS_GATE",
+  "dedupKey": "alpha.v1.product-takeover.final-retry-readiness-gate-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.final-retry-readiness-gate-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.final-retry-readiness-gate-v1.json",
+  "claimToken": "-Q3KGRVDrKFWdG2wPly3SJN4FuySDrUztftzIqDWK8Y",
+  "state": "ACTIVE",
+  "startCommit": "dd0c1d494e01ee9b0bab8526bbcc265600d10267"
+}
