@@ -272,25 +272,18 @@ def _page_frame_ids(page: dict[str, Any]) -> set[str]:
 
 
 def _direct_page(worker: dict[str, Any], pages: list[dict[str, Any]]) -> dict[str, Any] | None:
-    explicit_links: list[dict[str, Any]] = []
-
+    # CDP target parentId is direct target authority and intentionally outranks
+    # frame ownership. This preserves the established authority hierarchy without
+    # using list order, timestamps, openerId, or URL guesses.
     parent_id = worker.get("parentId")
     if parent_id:
         linked = [p for p in pages if p.get("targetId") == parent_id]
-        if len(linked) != 1:
-            return None
-        explicit_links.append(linked[0])
+        return linked[0] if len(linked) == 1 else None
 
     parent_frame_id = worker.get("parentFrameId")
     if parent_frame_id:
         linked = [page for page in pages if parent_frame_id in _page_frame_ids(page)]
-        if len(linked) != 1:
-            return None
-        explicit_links.append(linked[0])
-
-    if explicit_links:
-        linked_ids = {str(page.get("targetId") or "") for page in explicit_links}
-        return explicit_links[0] if len(linked_ids) == 1 else None
+        return linked[0] if len(linked) == 1 else None
 
     # Browser context is runtime scoping evidence. It may narrow the candidate set,
     # but if more than one page remains only the gameSurface probe may select one.
