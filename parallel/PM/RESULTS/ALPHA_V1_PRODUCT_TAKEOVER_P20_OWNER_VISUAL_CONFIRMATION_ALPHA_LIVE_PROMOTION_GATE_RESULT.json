@@ -1,0 +1,127 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P20_OWNER_VISUAL_CONFIRMATION_ALPHA_LIVE_PROMOTION_GATE",
+  "dedupKey": "alpha.v1.product-takeover.owner-visual-confirmation-alpha-live-promotion-gate-v1",
+  "claimToken": "537e9a5df83747fba30be3d3aec4274b",
+  "state": "COMPLETE",
+  "verdict": "P20 is repository-ready: it implements a fail-closed single-question Owner visual YES/NO receipt, exact P19 candidate/attestation + P17 bundle + P20 receipt binding, deterministic promotion plans, W1 release-file validation, stale alpha-live CAS rejection, fast-forward/no-force guarded apply, and a local bare-repository apply path. No real Owner visual PASS was fabricated and no real alpha-live ref was moved.",
+  "startCommit": "d6d8a89d8eb36eaac75c7b04c9f0e98bd4975b3e",
+  "implementationCommits": [
+    "d3a5310a155a22e35cc8291fe77e70acfc6377e0",
+    "a0747e543ea7f563c070ccb63a3c09c42c722fc0",
+    "cc508079e3d6722b7a4c9aed46d11b31b9c16b01",
+    "1071f4f5386ce1ef741a65bee3a0c98b5fd0efd5"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/OWNER_RELEASE/owner_release_gate.py",
+    "parallel/OWNER_RELEASE/test_owner_release_gate.py",
+    "parallel/OWNER_RELEASE/WOF_ALPHA_FINAL_RELEASE_GATE.cmd",
+    "parallel/OWNER_RELEASE/README.md"
+  ],
+  "tests": [
+    {
+      "name": "Python compile",
+      "result": "PASS",
+      "detail": "python -m py_compile passed for owner_release_gate.py and test_owner_release_gate.py."
+    },
+    {
+      "name": "Focused P20 unittest module",
+      "result": "PASS",
+      "detail": "5 tests passed. Coverage includes PASS/FAIL/WAITING visual-receipt fixtures, promotion-ineligible fixture receipts, candidate/bundle/receipt mismatch rejection, deterministic plan hashes, exact W1 required-file validation, local bare-repo fast-forward apply, stale CAS rejection, non-fast-forward rejection, and no-force argument enforcement."
+    },
+    {
+      "name": "P19 latest-pointer compatibility",
+      "result": "PASS",
+      "detail": "Local focused fixture confirmed automatic discovery of parallel/OWNER_ONECLICK/CANDIDATES/LATEST_FINAL_CANONICAL_CANDIDATE.json with P19 candidatePath/attestationPath semantics. The live P19 implementation defines the same stable pointer contract."
+    },
+    {
+      "name": "Final CMD wrapper static contract",
+      "result": "PASS",
+      "detail": "Wrapper has balanced command grouping, selects py -3/python, invokes only owner_release_gate.py run, and contains no --execute path; therefore the one-command Owner flow stops before real promotion."
+    },
+    {
+      "name": "Real Owner visual confirmation",
+      "result": "NOT_RUN",
+      "detail": "Deliberately not run. P20 never infers visual PASS from P18 draw acknowledgement, screenshots, fixtures, or module load. A real PASS receipt is possible only after the exact final automatic gate asks the Owner one YES/NO question."
+    },
+    {
+      "name": "Real alpha-live promotion",
+      "result": "NOT_RUN",
+      "detail": "Deliberately not invoked. The real alpha-live ref was observed unchanged at d664618403b1ae83f6880ca4d3833202c299415f before and after P20 implementation."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Focused fixtures prove the P20 release-gate logic and local bare-repository CAS/fast-forward apply behavior. They do not claim real-WOF visual correctness or real remote promotion."
+  },
+  "ownerVisualGate": {
+    "question": "游戏里的提示是否稳定跟随正确的人物/怪物？请输入 YES 或 NO",
+    "automaticPrerequisite": "P17 must be exactly READY_FOR_OWNER_VISUAL_CONFIRMATION with W3 PASS/proven renderer source, P16 HUD_INGEST_ACCEPTED, P18 CANONICAL_DRAW_ACKNOWLEDGED, exact identity consistency, and unchanged safety.",
+    "yesEffect": "Writes a bounded real Owner PASS receipt bound to exact candidate/attestation/bundle hashes and identity; does not promote alpha-live.",
+    "noEffect": "Writes an immutable FAIL receipt for that candidate/bundle combination and permanently blocks that receipt from promotion.",
+    "notReadyEffect": "Writes WAITING/REJECTED status with questionAsked=false; never asks a misleading visual question.",
+    "fixturePolicy": "fixture-mode PASS/FAIL receipts are marked promotionEligible=false and cannot authorize a plan."
+  },
+  "promotionGate": {
+    "planState": "READY only after real Owner PASS",
+    "deterministicHash": "sha256(canonical-json(planCore))",
+    "cas": "fromAlphaLiveCommit is re-read immediately before apply; any observed drift is rejected.",
+    "fastForwardOnly": true,
+    "forcePushAllowed": false,
+    "defaultApply": "DRY_RUN",
+    "explicitApplyRequirements": [
+      "separate apply invocation",
+      "--execute",
+      "exact --confirm-plan-hash",
+      "all candidate/attestation/bundle/receipt hashes unchanged",
+      "current alpha-live exactly equals fromAlphaLiveCommit",
+      "target is a descendant of current alpha-live",
+      "target contains the W1 permanent release files"
+    ],
+    "w1RequiredFiles": [
+      "WOF_ALPHA_TEST.cmd",
+      "parallel/PYLAUNCH/owner_live_retest_loop.ps1",
+      "parallel/PYLAUNCH/render_authority_measurement_entry.py",
+      "parallel/PYLAUNCH/requirements.txt"
+    ],
+    "localBareRepoApplyTest": "PASS via object fetch + exact-old git update-ref CAS after explicit fast-forward validation",
+    "realRemotePolicy": "normal non-force push only after immediate CAS-style re-read; observed drift or normal push rejection fails closed; no force/force-with-lease/+refspec."
+  },
+  "p19Compatibility": {
+    "latestPointerPath": "parallel/OWNER_ONECLICK/CANDIDATES/LATEST_FINAL_CANONICAL_CANDIDATE.json",
+    "candidateField": "candidatePath",
+    "attestationField": "attestationPath",
+    "ownerVisualAcceptanceExpectedBeforeP20": "NOT_RUN",
+    "alphaLivePromotedExpectedBeforeP20": false
+  },
+  "ownerGate": {
+    "required": true,
+    "nextOwnerAction": "After P19 emits/verifies its final candidate pointer and P17 can reach READY_FOR_OWNER_VISUAL_CONFIRMATION, run parallel\\OWNER_RELEASE\\WOF_ALPHA_FINAL_RELEASE_GATE.cmd once and answer the single question from real WOF observation with YES or NO.",
+    "nextPmActionAfterYes": "Review the emitted immutable receipt and ALPHA_LIVE_PROMOTION_PLAN_<hash>.json. A later, separate PM release action may invoke owner_release_gate.py apply with --execute and the exact plan hash; P20 itself did not invoke it."
+  },
+  "blocker": null,
+  "nextAction": "Use WOF_ALPHA_FINAL_RELEASE_GATE.cmd only after P19/P17 live prerequisites are ready. Keep alpha-live unchanged until a real Owner YES receipt exists and a separate PM explicitly applies the exact hashed plan.",
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "guessedAddresses": false,
+    "legacySpatialFallback": false,
+    "forcePushUsed": false,
+    "alphaLiveMoved": false,
+    "p18OwnershipTouched": false,
+    "w3OwnershipTouched": false,
+    "visibleProof": "NOT_PROVEN"
+  },
+  "alphaLiveObservedBefore": "d664618403b1ae83f6880ca4d3833202c299415f",
+  "alphaLiveObservedAfter": "d664618403b1ae83f6880ca4d3833202c299415f",
+  "ownerVisualVerdict": "NOT_RUN",
+  "realWofAcceptance": "NOT_RUN",
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_RELEASE_P18_P19_P20_LONG_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P20_OWNER_VISUAL_CONFIRMATION_ALPHA_LIVE_PROMOTION_GATE_RESULT.md",
+  "completedAtUtc": "2026-09-05T08:43:29Z"
+}
