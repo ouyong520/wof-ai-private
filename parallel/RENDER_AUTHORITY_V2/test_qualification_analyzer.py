@@ -112,6 +112,31 @@ class QualificationAnalyzerTests(unittest.TestCase):
         self.assertEqual(report["status"], REJECTED)
         self.assertTrue(any("rendererEpoch mismatch" in reason for reason in report["rejections"]))
 
+    def test_runtime_and_authority_epoch_mismatch_rejected(self) -> None:
+        capture = candidate_capture()
+        capture["candidateTimeline"][1]["runtimeEpoch"] = "stale-runtime"
+        capture["candidateTimeline"][3]["authorityKey"] = "stale-authority"
+        report = analyze_capture(capture)
+        self.assertEqual(report["status"], REJECTED)
+        self.assertTrue(any("runtimeEpoch mismatch" in reason for reason in report["rejections"]))
+        self.assertTrue(any("authorityKey mismatch" in reason for reason in report["rejections"]))
+
+    def test_dual_byte_orders_same_offset_are_inconclusive_not_rejected(self) -> None:
+        capture = candidate_capture()
+        for frame in capture["candidateTimeline"]:
+            frame["regions"].append(
+                {
+                    "heapOffset": 0x910000,
+                    "byteOrder": "LE16",
+                    "entries": [{"xWord": 1, "yWord": 2, "tileWord": 3, "attrWord": 4}],
+                }
+            )
+        report = analyze_capture(capture)
+        self.assertEqual(report["status"], INCONCLUSIVE)
+        self.assertFalse(any("inconsistent byte order" in reason for reason in report["rejections"]))
+        self.assertTrue(any("both BE16/LE16" in gap for gap in report["evidenceGaps"]))
+        self.assertFalse(report["canonicalProducerReadiness"]["rendererSource"]["proven"])
+
     def test_ambiguous_stable_candidates_stay_inconclusive(self) -> None:
         capture = candidate_capture()
         for frame in capture["candidateTimeline"]:
