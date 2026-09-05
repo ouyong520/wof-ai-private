@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P21_PREPROMOTION_EXACT_CANDIDATE_STAGING_ACCEPTANCE_HARNESS",
+  "dedupKey": "alpha.v1.product-takeover.prepromotion-exact-candidate-staging-acceptance-harness-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.prepromotion-exact-candidate-staging-acceptance-harness-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.prepromotion-exact-candidate-staging-acceptance-harness-v1.json",
+  "claimToken": "6a6a9f08ed3a819c0c69a4d06c865be3",
+  "state": "ACTIVE",
+  "startCommit": "2bb1431d62d6ed5ab487fc8cda61c510284f766e"
+}
