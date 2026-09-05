@@ -8,6 +8,11 @@
   "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_W1_OWNER_PERMANENT_LIVE_TEST_BOOTSTRAP_DEDUP_RECOVERY_START_PROMPT.md",
   "owner": "chatgpt-w1-owner-permanent-live-test-bootstrap-recovery-v1",
   "claimToken": "3ff0c1d49f83901d85f1c49e1d4f07e878da3965a3fab20d",
-  "state": "ACTIVE",
-  "startCommit": "f30632429597fa2781ab98eb9d3b9524bd30d273"
+  "state": "COMPLETE",
+  "startCommit": "f30632429597fa2781ab98eb9d3b9524bd30d273",
+  "implementationCommit": "d664618403b1ae83f6880ca4d3833202c299415f",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_W1_OWNER_PERMANENT_LIVE_TEST_BOOTSTRAP_DEDUP_RECOVERY_V1_SUBRESULT.md",
+  "resultCommit": "b59a502e89609ef1073886446415888bf8966290",
+  "liveRef": "refs/heads/alpha-live",
+  "liveRefCommit": "d664618403b1ae83f6880ca4d3833202c299415f"
 }
