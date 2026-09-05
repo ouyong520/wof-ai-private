@@ -5,6 +5,13 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.maintained-hud-canonical-draw-acknowledgement-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.maintained-hud-canonical-draw-acknowledgement-v1.json",
   "claimToken": "d2244a0d1f358021e44b09011bfd3c90b593506e4a866f74",
-  "state": "ACTIVE",
-  "startCommit": "5b00a23c4347555eb236a05f295f3ab15bc1b6c3"
+  "state": "COMPLETE",
+  "startCommit": "5b00a23c4347555eb236a05f295f3ab15bc1b6c3",
+  "implementationCommits": [
+    "b018d27643d157d47a82ed54a0023770a727b600",
+    "519a27d6cf1e91545c6495812b1472c876d0e565"
+  ],
+  "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P18_MAINTAINED_HUD_CANONICAL_DRAW_ACKNOWLEDGEMENT_RESULT.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P18_MAINTAINED_HUD_CANONICAL_DRAW_ACKNOWLEDGEMENT_RESULT.md",
+  "completedAtUtc": "2026-09-05T08:27:47Z"
 }
