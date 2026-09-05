@@ -3,13 +3,13 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP",
   "dedupKey": "alpha.v1.product-takeover.post-repair-final-candidate-rebuild-prep-v1",
   "claimToken": "9f07f3681dba3d6721ee23ff82df41fd",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
-  "overallPercent": 96,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
   "implementationState": "DONE_CANDIDATE_READBACK_BOUND",
   "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
-  "resultPublicationState": "PENDING",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "DONE",
+  "claimCloseState": "DONE",
   "startCommit": "24cbf440a676c8b086c43b8bbb614a620409e88f",
   "lastKnownGoodCommit": "c8c61112efbccdef5794ee68cd27767eacb72e96",
   "implementationCommits": [
@@ -23,6 +23,9 @@
     "parallel/OWNER_ONECLICK/WOF_ALPHA_BUILD_FINAL_CANONICAL_CANDIDATE.cmd": "1855a97cc5bef3a842be992ff0ea259582a70188",
     ".github/workflows/alpha-p19-final-canonical-candidate.yml": "59a6700aa0f7e20bb66dea89c34b002b096f913b"
   },
+  "resultCommit": "f57f2bc9276551fd97f6d43f8429ab670d7e30a8",
+  "canonicalClaimCloseCommit": "1c27c8f7b25f804424b0627f66cfacc6b7df8898",
+  "stageClaimCloseCommit": "8b641b9cc63ebfb253cab7df9ea7ff2f7edf0135",
   "completed": [
     "read authoritative P33 START_PROMPT, dispatch, final live gate, root governance, dedup/progress/result protocols",
     "created and exact-token verified P33 canonical and stage claims before implementation",
@@ -39,14 +42,14 @@
     "ran exact-candidate GitHub Actions rebuild-contract run 33977914719/job 101337774061 to terminal SUCCESS",
     "exact-candidate Python compile passed and focused deterministic rebuild regression passed 14/14 tests",
     "exact-candidate CI confirmed no repository CANDIDATES bytes were emitted or changed by contract verification",
-    "did not generate/overwrite LATEST_FINAL_CANONICAL_CANDIDATE.json, did not promote, and did not move alpha-live",
+    "published terminal RESULT JSON and Markdown atomically in commit f57f2bc9276551fd97f6d43f8429ab670d7e30a8 with required WORKER_RESULT commit prefix",
+    "closed canonical claim COMPLETE in commit 1c27c8f7b25f804424b0627f66cfacc6b7df8898 with the original exact token and tested/result bindings",
+    "closed stage claim COMPLETE in commit 8b641b9cc63ebfb253cab7df9ea7ff2f7edf0135 with the original exact token and tested/result bindings",
+    "fresh-read both closed claims and confirmed exact token/state/resultCommit/testedCommit equality",
+    "did not generate/overwrite LATEST_FINAL_CANONICAL_CANDIDATE.json, did not run WOF/Owner retry, did not promote, and did not move alpha-live",
     "P35 independently terminalized its separate integration-lineage stream while P33 remained within rebuild-mechanism ownership"
   ],
-  "remaining": [
-    "publish terminal RESULT JSON+Markdown",
-    "close canonical and stage claims with the original exact token",
-    "publish terminal PROGRESS checkpoint"
-  ],
+  "remaining": [],
   "tests": [
     {
       "name": "P33 exact durable candidate blob identity readback",
@@ -69,14 +72,19 @@
       "detail": "Exact-candidate CI ran git diff --exit-code on parallel/OWNER_ONECLICK/CANDIDATES and passed; contract verification emitted no repository candidate changes."
     },
     {
+      "name": "P33 terminal claim/result readback",
+      "result": "PASS",
+      "detail": "Canonical and stage claims both read back COMPLETE with original token 9f07f3681dba3d6721ee23ff82df41fd, resultCommit f57f2bc9276551fd97f6d43f8429ab670d7e30a8, and testedCommit c8c61112efbccdef5794ee68cd27767eacb72e96."
+    },
+    {
       "name": "Real WOF / Owner retry / promotion",
       "result": "NOT_RUN",
       "detail": "Forbidden by P33 scope. No real game run, Owner retry, promotion, or alpha-live movement was performed."
     }
   ],
   "blocker": null,
-  "nextAction": "Publish terminal P33 RESULT and close the exact-token claims. P33 mechanism is ready for a separately authorized exact integrated source; it does not consume P34/P35/P36 ownership.",
+  "nextAction": "PM may review/accept P33. A separately authorized fresh integrated candidate rebuild may consume the separately owned P35 terminal lineage through this exact-source mechanism; P34 and P36 remain separate gates.",
   "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:31:00Z"
+  "updatedAtUtc": "2026-09-05T16:34:00Z"
 }
