@@ -3,15 +3,15 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P28_FINAL_ACCEPTANCE_SESSION_PROVENANCE_DURABLE_REBUILD",
   "dedupKey": "alpha.v1.product-takeover.final-acceptance-session-provenance-durable-rebuild-v1",
   "claimToken": "69884841cf571855163ab7db0ac663dc",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "PUBLISHING",
-  "overallPercent": 98,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
   "implementationState": "DONE",
   "implementationDetailState": "DONE_CANDIDATE_READBACK_BOUND",
   "selfCheckState": "PASS",
   "selfCheckDetailState": "PASS_FRESH_EXACT_CANDIDATE",
-  "resultPublicationState": "IN_PROGRESS",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "DONE",
+  "claimCloseState": "DONE",
   "startCommit": "5c4562b884ef76a934ef5ad26206cbca537c1f5e",
   "lastKnownGoodCommit": "5e373a21292f22be46ce8b311af9b1ec606b6874",
   "candidateCommit": "5e373a21292f22be46ce8b311af9b1ec606b6874",
@@ -68,14 +68,13 @@
     "fresh compile/syntax PASS; durable-session focused tests 16/16 PASS; compatibility provenance focused tests 20/20 PASS; safety/static scan PASS",
     "preserved all frozen acceptance gates: real WOF NOT_RUN, Owner visual acceptance NOT_RUN, visible proof NOT_PROVEN, alpha-live not moved",
     "re-read latest main at c862a9f8be4fca7386f480d1d29a550c5691d434 and live-read both Git-governed P28 claim files",
-    "confirmed canonical and stage claims both remain ACTIVE with exact claimToken 69884841cf571855163ab7db0ac663dc",
-    "resolved P28_LIVE_CLAIM_FILES_NOT_MOUNTED_IN_CURRENT_CONNECTED_EXECUTION_ENVIRONMENT under PM's Git-governed readback continuation authority; no Windows-local mount is required while these exact-token Git claim records remain authoritative"
+    "confirmed canonical and stage claims both remained ACTIVE with exact claimToken 69884841cf571855163ab7db0ac663dc before publication",
+    "resolved P28_LIVE_CLAIM_FILES_NOT_MOUNTED_IN_CURRENT_CONNECTED_EXECUTION_ENVIRONMENT under PM's Git-governed readback continuation authority; no Windows-local mount was required while these exact-token Git claim records remained authoritative",
+    "published RESULT.json and RESULT.md as COMPLETE / integrationReady=true at commit f35a9533cce3e820038cee5362c0eef987a34cf9, bound to testedCommit 5e373a21292f22be46ce8b311af9b1ec606b6874",
+    "closed canonical and stage claims as COMPLETE using the same exact claimToken 69884841cf571855163ab7db0ac663dc at commit 960bf1735c9c94d40a01befb1a0bab58702c1244",
+    "live-read both closed claims and confirmed exact-token COMPLETE before terminal progress publication"
   ],
-  "remaining": [
-    "publish RESULT.json and RESULT.md bound to testedCommit 5e373a21292f22be46ce8b311af9b1ec606b6874",
-    "close exact-token P28 canonical and stage claims as COMPLETE",
-    "after RESULT publication and both claim closes, publish PROGRESS TERMINAL/100 and finish with WORKER_RESULT terminal commit"
-  ],
+  "remaining": [],
   "tests": [
     {
       "name": "fresh exact candidate binding",
@@ -130,16 +129,18 @@
       "code": "P28_LIVE_CLAIM_FILES_NOT_MOUNTED_IN_CURRENT_CONNECTED_EXECUTION_ENVIRONMENT",
       "state": "RESOLVED",
       "authority": "parallel/PM/ALPHA_V1_P28_GIT_CLAIM_READBACK_RESOLVED_TERMINAL_CONTINUATION.md",
-      "detail": "PM fresh-read current Git-governed canonical/stage claim files on latest main; worker live-read them again and confirmed the exact token remains ACTIVE."
+      "detail": "PM fresh-read current Git-governed canonical/stage claim files on latest main; worker independently live-read them before publication, then later read back the same exact-token claims as COMPLETE after closeout."
     }
   ],
+  "resultCommit": "f35a9533cce3e820038cee5362c0eef987a34cf9",
+  "claimCloseCommit": "960bf1735c9c94d40a01befb1a0bab58702c1244",
   "blocker": null,
-  "nextAction": "Publish the P28 RESULT pair, close both exact-token claims as COMPLETE, then publish the terminal PROGRESS checkpoint in the final WORKER_RESULT commit. Do not rerun tests unless implementation bytes change.",
-  "terminalResultPath": null,
+  "nextAction": "No P28 worker action remains. PM may consume the terminal COMPLETE result; real WOF, Owner visual acceptance, promotion, and alpha-live movement remain separately governed and were not performed by P28.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P28_FINAL_ACCEPTANCE_SESSION_PROVENANCE_DURABLE_REBUILD_RESULT.json",
   "writerRole": "WORKER",
   "realWofAcceptance": "NOT_RUN",
   "ownerVisualAcceptance": "NOT_RUN",
   "visibleProof": "NOT_PROVEN",
   "alphaLiveMoved": false,
-  "updatedAtUtc": "2026-09-05T13:55:00Z"
+  "updatedAtUtc": "2026-09-05T13:59:00Z"
 }
