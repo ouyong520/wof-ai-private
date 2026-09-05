@@ -1,0 +1,33 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_FINAL_ACCEPTANCE_LIVE_REPAIR_LONG_3_WORKER_V1",
+  "createdAtUtc": "2026-09-05T15:10:00Z",
+  "authorityCommit": "03433ea8c1c1d136f1665c48f313294033cc78b6",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P29_W3_LIVE_EVIDENCE_CONTRACT_REPAIR",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P29_W3_LIVE_EVIDENCE_CONTRACT_REPAIR_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.w3-live-evidence-contract-repair-v1",
+      "claimMode": "CREATE_NEW_DEDUP_V2_IF_UNCLAIMED",
+      "resultProtocol": "wof-alpha-worker-result-v1"
+    },
+    {
+      "slot": 2,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.p16-p9-binding-staging-readiness-repair-v1",
+      "claimMode": "CREATE_NEW_DEDUP_V2_IF_UNCLAIMED",
+      "resultProtocol": "wof-alpha-worker-result-v1"
+    },
+    {
+      "slot": 3,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P31_WOF_PAGE_ASSOCIATION_AMBIGUITY_REPAIR",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P31_WOF_PAGE_ASSOCIATION_AMBIGUITY_REPAIR_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.wof-page-association-ambiguity-repair-v1",
+      "claimMode": "CREATE_NEW_DEDUP_V2_IF_UNCLAIMED",
+      "resultProtocol": "wof-alpha-worker-result-v1"
+    }
+  ]
+}
