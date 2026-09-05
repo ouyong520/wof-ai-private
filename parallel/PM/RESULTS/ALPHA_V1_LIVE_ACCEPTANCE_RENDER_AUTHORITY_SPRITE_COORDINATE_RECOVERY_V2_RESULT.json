@@ -1,0 +1,68 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_LIVE_ACCEPTANCE_RENDER_AUTHORITY_SPRITE_COORDINATE_RECOVERY_V2",
+  "dedupKey": "alpha.v1.live-acceptance.render-authority-sprite-coordinate-recovery-v2",
+  "claimToken": "d8496ca1-62a2-44a6-85f5-b782a16af2c7",
+  "state": "SUBCOMPLETE",
+  "verdict": "Repository-side W3 renderer/object qualification is exhausted: full maintained reverse trace is documented, deterministic fail-closed qualification is implemented, and one-command bounded normal-play capture now auto-analyzes and bundles evidence. The displayed CPS1 frame renderer/object submission -> exact source/pointer/object-row causal edge is still not proven by checked-in repository evidence, so rendererSource remains unproven and production output stays suppressed until one bounded Owner normal-play sample is analyzed.",
+  "startCommit": "b55c97342e24e98feaa91716eb0a6dd56c150be3",
+  "implementationCommits": [
+    "c491f24ac597fa59a39da30abf2b2efb55ea376d"
+  ],
+  "integrationReady": false,
+  "changedFiles": [
+    "parallel/RENDER_AUTHORITY_V2/qualification_analyzer.py",
+    "parallel/RENDER_AUTHORITY_V2/run_long_qualification.py",
+    "parallel/RENDER_AUTHORITY_V2/test_qualification_analyzer.py",
+    "parallel/RENDER_AUTHORITY_V2/test_long_qualification_runner.py",
+    "parallel/RENDER_AUTHORITY_V2/RENDER_OBJECT_SOURCE_LONG_QUALIFICATION.md"
+  ],
+  "tests": [
+    {
+      "name": "focused deterministic qualification tests",
+      "result": "PASS",
+      "detail": "9 tests passed: structural candidate never self-qualifies; direct causal proof is the only PASS path; screenshot/world-projection/guessed-address claims reject; stale renderer epoch rejects; ambiguous stable candidates remain INCONCLUSIVE; output is deterministic; offline runner writes JSON/MD/latest pointer/qualified ZIP."
+    },
+    {
+      "name": "python compile",
+      "result": "PASS",
+      "detail": "qualification_analyzer.py, run_long_qualification.py, test_qualification_analyzer.py, and test_long_qualification_runner.py compiled successfully."
+    },
+    {
+      "name": "concurrency-safe main integration",
+      "result": "PASS",
+      "detail": "Two stale fast-forward attempts were rejected without force; implementation was rebased onto latest concurrent main and then advanced main with force=false."
+    }
+  ],
+  "productProof": {
+    "status": "LIVE_EVIDENCE_REQUIRED",
+    "classification": "INCONCLUSIVE",
+    "detail": "Repository evidence proves exact World/Worker/WASM binding and structural candidate capture, but does not prove that any candidate is the object source actually submitted to the displayed CPS1 frame. Screenshot and world projection remain verification-only/forbidden production coordinate sources."
+  },
+  "ownerGate": {
+    "required": true,
+    "question": "Run exactly one bounded normal-play qualification sample on the Owner exact-World runtime.",
+    "reason": "The missing displayed-frame renderer/object causal edge cannot be manufactured from repository-only structural evidence.",
+    "command": "py parallel\\RENDER_AUTHORITY_V2\\run_long_qualification.py"
+  },
+  "blocker": "One bounded exact-World Owner normal-play observation is still required to determine whether a direct displayed-frame renderer/object source can be proven; until PASS, rendererSource.proven must remain false.",
+  "nextAction": "Owner runs `py parallel\\RENDER_AUTHORITY_V2\\run_long_qualification.py` once and simply plays normally for the bounded capture. The runner automatically produces RENDER_SOURCE_QUALIFICATION.json/.md and WOF_W3_QUALIFIED_*.zip. If the causal proof is still absent, retain INCONCLUSIVE and do not guess an address.",
+  "evidencePaths": [
+    "parallel/RENDER_AUTHORITY_V2/RENDER_OBJECT_SOURCE_LONG_QUALIFICATION.md",
+    "parallel/RENDER_AUTHORITY_V2/qualification_analyzer.py",
+    "parallel/RENDER_AUTHORITY_V2/run_long_qualification.py",
+    "parallel/RENDER_AUTHORITY_V2/test_qualification_analyzer.py",
+    "parallel/RENDER_AUTHORITY_V2/test_long_qualification_runner.py",
+    "parallel/RENDER_AUTHORITY_V2/measurement_runner.py",
+    "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js",
+    "parallel/PYLAUNCH/wof_launcher/render_authority_capture.py"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "guessedAddresses": false
+  }
+}
