@@ -65,3 +65,5 @@ The Owner then only keeps/starts WOF, plays normally during the bounded W3 sampl
 ## Recommended Next
 
 PM should refresh/integrate the final candidate with P15 + P16 + P17 + P18 without moving alpha-live, then run the single bounded W3/Owner acceptance round. If W3 remains `INCONCLUSIVE` or any evidence identity disagrees, retain fail-closed state and do not guess coordinates or addresses.
+
+Closeout: canonical and stage claims were re-read with the exact P17 claim token and are now `COMPLETE`; durable RESULT.json/RESULT.md are present.
