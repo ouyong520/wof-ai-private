@@ -1,0 +1,74 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P10_CANONICAL_ANCHOR_RUNTIME_TRANSPORT_BRIDGE",
+  "dedupKey": "alpha.v1.product-takeover.canonical-anchor-runtime-transport-bridge-v1",
+  "claimToken": "bcb33a85097d7fdc64c0ef40481d272e6061c95701f1b94a",
+  "state": "COMPLETE",
+  "verdict": "P10 now binds one exact World/runtime/renderer/page authority, converts explicit actor/generation descriptors from a W3-format frame through DeterministicRenderObjectAnchor into P9-compatible READY/SUPPRESSED transport records, and delivers them by CDP to the maintained HUD canonical bind/ingest/clear APIs with no legacy spatial fallback.",
+  "startCommit": "1c2de21594f0c43dae5d0722c7c8108baf77510c",
+  "implementationCommits": [
+    "7e408a2f5efd8fe6c62a7adc12e3827793d16c83"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PYLAUNCH/wof_launcher/canonical_overlay_runtime_bridge.py",
+    "parallel/RENDER_AUTHORITY_V2/canonical_overlay_runtime_bridge_selftest.py"
+  ],
+  "tests": [
+    {
+      "name": "Python parse/compile for the P10 runtime bridge and focused self-check",
+      "result": "PASS",
+      "detail": "The implementation candidate and focused self-check compiled successfully before submission; the committed bridge blob is e39c7ec2f30961aa9d51673b7a9390aa8b440d79."
+    },
+    {
+      "name": "focused fake-CDP READY canonical transport fixture",
+      "result": "PASS",
+      "detail": "One exact bound frame resolved P1 generation 7 to native anchor (108,86) and enemy-slot-4 generation 3 to (192,76); the fake CDP seam received the declared wof-alpha-canonical-anchor-runtime-envelope-input-v1 wrapper with explicit sampleAt and exact authority/runtime/renderer/world identity."
+    },
+    {
+      "name": "focused renderer-epoch mismatch suppression and revoke fixture",
+      "result": "PASS",
+      "detail": "A renderer-epoch mismatch resolved to STALE_AUTHORITY_OR_RENDERER_EPOCH, was transported as SUPPRESSED with no anchor coordinates, and explicit revoke invoked clearCanonicalOverlayAuthority before the local resolver/session were revoked."
+    },
+    {
+      "name": "canonical maintained-HUD source injection order",
+      "result": "PASS",
+      "detail": "The bridge derives the existing maintained HUD source stack and enforces P6 enemy planner -> P7 player planner -> P9 canonical envelope -> P8 unified plan -> maintained HUD, preserving the other existing source entries and fixed/P5 semantics."
+    },
+    {
+      "name": "real-WOF / Owner visual acceptance / W3 renderer-source qualification",
+      "result": "NOT_RUN",
+      "detail": "Explicitly outside P10 authority and dispatch cadence. P10 does not qualify W3 rendererSource and therefore makes no real-WOF or Owner-visible PASS claim."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Repository implementation plus the narrow fake-CDP seam prove the runtime/CDP transport contract, exact binding lifecycle, deterministic READY/SUPPRESSED forwarding, source order, and fail-closed clearing behavior only. They do not prove a qualified W3 renderer/object producer or an Owner-visible real-WOF draw."
+  },
+  "productProofBoundary": "explicit current W3-format frame + exact AuthorityBinding + explicit actor/generation descriptors + explicit sampleAt -> DeterministicRenderObjectAnchor -> P9-compatible transport wrapper -> maintained P11 canonical HUD APIs. P12 descriptor production and W3 renderer-source qualification remain separate authorities; unproven W3 input stays SUPPRESSED.",
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM should integrate P10 with the P12 actor/generation descriptor authority and the already-complete P11/P13 canonical HUD/bootstrap path; keep W3-unproven records SUPPRESSED until renderer/object source qualification is separately proven.",
+  "evidencePaths": [
+    "parallel/PYLAUNCH/wof_launcher/canonical_overlay_runtime_bridge.py",
+    "parallel/RENDER_AUTHORITY_V2/canonical_overlay_runtime_bridge_selftest.py",
+    "parallel/PYLAUNCH/wof_launcher/render_object_anchor.py",
+    "product/alpha/wof_alpha_canonical_anchor_envelope.js",
+    "product/alpha/wof_alpha_canonical_overlay_plan.js",
+    "product/alpha/wof_alpha_hud.js",
+    "parallel/PM/ALPHA_V1_CANONICAL_RUNTIME_P10_P12_P14_CONTINUATION_3_WORKER_DISPATCH.md",
+    "parallel/PM/ALPHA_V1_CANONICAL_OVERLAY_RUNTIME_HUD_PARALLEL_2_WORKER_DISPATCH.md"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_RUNTIME_P10_P12_P14_CONTINUATION_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P10_CANONICAL_ANCHOR_RUNTIME_TRANSPORT_BRIDGE_RESULT.md"
+}
