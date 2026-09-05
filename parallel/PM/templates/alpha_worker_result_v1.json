@@ -1,0 +1,31 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "EXAMPLE_ALPHA_STAGE",
+  "dedupKey": "example.alpha.stage",
+  "claimToken": "replace-me-claim-token",
+  "state": "SUBCOMPLETE",
+  "verdict": "Replace with one factual sentence describing what this worker actually achieved.",
+  "startCommit": "0000000000000000000000000000000000000000",
+  "implementationCommits": [],
+  "integrationReady": false,
+  "changedFiles": [],
+  "tests": [],
+  "productProof": {
+    "status": "NOT_APPLICABLE",
+    "classification": "NOT_APPLICABLE",
+    "detail": "Coordination-only example; replace with exact implementation, machine-draw, or Owner-visual proof classification when applicable."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "Replace with one concrete PM action.",
+  "evidencePaths": [],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
