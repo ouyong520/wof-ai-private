@@ -5,6 +5,8 @@ $Repo = Join-Path $Base 'repo'
 $Remote = 'git@wof-alpha-github:ouyong520/wof-ai-private.git'
 $Results = Join-Path $env:USERPROFILE 'Documents\WOF_RESULTS'
 $PollSeconds = 6
+$SelfPath = $MyInvocation.MyCommand.Path
+$script:MutexReleased = $false
 
 function Stop-Wof([string]$Message, [int]$Code = 1) {
     Write-Host ''
@@ -98,8 +100,29 @@ function Fetch-Latest {
     return ($LASTEXITCODE -eq 0)
 }
 
+function Current-SelfHash {
+    try { return (Get-FileHash -LiteralPath $SelfPath -Algorithm SHA256).Hash }
+    catch { return '' }
+}
+
+function Restart-SelfIfChanged([string]$BeforeHash) {
+    $afterHash = Current-SelfHash
+    if (-not $BeforeHash -or -not $afterHash -or $BeforeHash -eq $afterHash) { return }
+
+    Write-Host 'The live retest controller updated itself; restarting it automatically...'
+    Stop-AlphaRuntime
+    try {
+        $script:Mutex.ReleaseMutex()
+        $script:MutexReleased = $true
+    } catch {}
+    Start-Process -FilePath 'powershell.exe' `
+        -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $SelfPath) `
+        -WorkingDirectory (Split-Path $SelfPath -Parent) | Out-Null
+    exit 0
+}
+
 $createdNew = $false
-$mutex = New-Object System.Threading.Mutex($true, 'Local\WOF_ALPHA_LIVE_RETEST_LOOP', [ref]$createdNew)
+$script:Mutex = New-Object System.Threading.Mutex($true, 'Local\WOF_ALPHA_LIVE_RETEST_LOOP', [ref]$createdNew)
 if (-not $createdNew) {
     Write-Host 'WOF Alpha live retest is already running.'
     Start-Sleep -Seconds 2
@@ -133,10 +156,12 @@ try {
         $remoteSha = Git-Text @('-C', $Repo, 'rev-parse', '--verify', 'origin/main')
         if ($remoteSha -and $remoteSha -ne $current) {
             Write-Host "Applying latest main: $remoteSha"
+            $selfBefore = Current-SelfHash
             Stop-AlphaRuntime
             & $script:GitExe -C $Repo reset --hard origin/main | Out-Null
             if ($LASTEXITCODE -ne 0) { Stop-Wof 'Could not apply latest Alpha.' 23 }
             & $script:GitExe -C $Repo clean -fd | Out-Null
+            Restart-SelfIfChanged $selfBefore
             Ensure-PythonEnvironment
             $current = $remoteSha
         }
@@ -165,6 +190,7 @@ try {
         Write-Host "New Alpha detected: $remoteSha"
         Write-Host 'Downloading changed files and restarting automatically...'
 
+        $selfBefore = Current-SelfHash
         Stop-AlphaRuntime
         & $script:GitExe -C $Repo reset --hard origin/main | Out-Null
         if ($LASTEXITCODE -ne 0) {
@@ -172,6 +198,7 @@ try {
             continue
         }
         & $script:GitExe -C $Repo clean -fd | Out-Null
+        Restart-SelfIfChanged $selfBefore
         Ensure-PythonEnvironment
         $lastApplied = $remoteSha
         Start-AlphaRuntime $lastApplied
@@ -179,6 +206,8 @@ try {
     }
 }
 finally {
-    try { $mutex.ReleaseMutex() } catch {}
-    try { $mutex.Dispose() } catch {}
+    if (-not $script:MutexReleased) {
+        try { $script:Mutex.ReleaseMutex() } catch {}
+    }
+    try { $script:Mutex.Dispose() } catch {}
 }
