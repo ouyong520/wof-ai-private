@@ -1,0 +1,142 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP",
+  "dedupKey": "alpha.v1.product-takeover.post-repair-final-candidate-rebuild-prep-v1",
+  "claimToken": "9f07f3681dba3d6721ee23ff82df41fd",
+  "state": "COMPLETE",
+  "verdict": "P33 completed the post-repair final-candidate rebuild mechanism on one durable exact-tested implementation candidate: rebuild now requires an explicit exact source commit containing the PM-accepted P29/P30/P31 tested commits as true ancestors, rejects stale pre-repair P19 provenance, binds sourceCommit/packageVersion/candidate SHA/attestation SHA plus a deterministic rebuild manifest by exact readback, truthfully excludes terminal-BLOCKED P32 from the accepted repair set, and performs no promotion or alpha-live movement.",
+  "startCommit": "24cbf440a676c8b086c43b8bbb614a620409e88f",
+  "testedCommit": "c8c61112efbccdef5794ee68cd27767eacb72e96",
+  "testedTree": "70329cbceffa8b17bfc88fc753b28648f4cbf6fc",
+  "implementationCommits": [
+    "c8c61112efbccdef5794ee68cd27767eacb72e96"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/OWNER_ONECLICK/post_repair_final_candidate_rebuild.py",
+    "parallel/OWNER_ONECLICK/test_post_repair_final_candidate_rebuild.py",
+    "parallel/OWNER_ONECLICK/WOF_ALPHA_BUILD_FINAL_CANONICAL_CANDIDATE.cmd",
+    ".github/workflows/alpha-p19-final-canonical-candidate.yml"
+  ],
+  "requiredAcceptedRepairs": {
+    "ALPHA_V1_PRODUCT_TAKEOVER_P29_W3_LIVE_EVIDENCE_CONTRACT_REPAIR": "c02f7e108e73665f22eb950573622acb6f452732",
+    "ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR": "90094a656ab311f18b0a758716dc97c3f8df092d",
+    "ALPHA_V1_PRODUCT_TAKEOVER_P31_WOF_PAGE_ASSOCIATION_AMBIGUITY_REPAIR": "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731"
+  },
+  "excludedBlockedRepair": {
+    "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION",
+    "testedCommit": "bd75c3b5f7fd20fe004fae21142a0fa19942e076",
+    "terminalState": "BLOCKED",
+    "integrationReady": false,
+    "required": false
+  },
+  "historicalP19": {
+    "sourceCommit": "0752796369f1687435a1b1647e66ea0b5ab07688",
+    "acceptedAsPostRepairCandidate": false,
+    "reason": "Historical P19 provenance predates the required accepted P29/P30/P31 repair lineage and lacks the P33 rebuild manifest/requiredTestedCommits binding."
+  },
+  "candidateReadback": {
+    "state": "PASS",
+    "candidateCommit": "c8c61112efbccdef5794ee68cd27767eacb72e96",
+    "treeSha": "70329cbceffa8b17bfc88fc753b28648f4cbf6fc",
+    "candidateImplementationBytesChangedAfterTest": false,
+    "blobMap": {
+      "parallel/OWNER_ONECLICK/post_repair_final_candidate_rebuild.py": "77eab756a65b3ee1e2bae21f6f73e98400d87b8a",
+      "parallel/OWNER_ONECLICK/test_post_repair_final_candidate_rebuild.py": "f179dd0d8a6ed743948f586636d4f045594a7053",
+      "parallel/OWNER_ONECLICK/WOF_ALPHA_BUILD_FINAL_CANONICAL_CANDIDATE.cmd": "1855a97cc5bef3a842be992ff0ea259582a70188",
+      ".github/workflows/alpha-p19-final-canonical-candidate.yml": "59a6700aa0f7e20bb66dea89c34b002b096f913b"
+    }
+  },
+  "mechanism": {
+    "exactSourceCommitRequired": true,
+    "symbolicOrAbbreviatedSourceRejected": true,
+    "requiredTestedCommitAncestry": true,
+    "requiredAcceptedStages": ["P29", "P30", "P31"],
+    "p32CountedAsAcceptedRepair": false,
+    "sourceCommitExactReadback": true,
+    "packageVersionExactReadback": true,
+    "candidateSha256ExactReadback": true,
+    "attestationSha256ExactReadback": true,
+    "manifestSha256ExactReadback": true,
+    "deterministicRebuildMetadata": true,
+    "stalePreRepairPointerRejected": true,
+    "staleHistoricalP19SourceRejected": true,
+    "canonicalPointerPublishedOnlyAfterStagedVerify": true,
+    "canonicalPointerRollbackOnPostPublishVerifyFailure": true,
+    "implicitHeadBuildRemoved": true,
+    "automaticCandidatePublicationOnOrdinaryMainPushRemoved": true
+  },
+  "tests": [
+    {
+      "name": "P33 exact durable candidate blob identity readback",
+      "result": "PASS",
+      "detail": "4/4 implementation file Git blob identities at tested commit c8c61112efbccdef5794ee68cd27767eacb72e96 exactly matched the durable candidate map."
+    },
+    {
+      "name": "P33 exact-candidate Python compile",
+      "result": "PASS",
+      "detail": "GitHub Actions run 33977914719/job 101337774061 compiled the existing P19 builder/test plus the new P33 wrapper/test under Python 3.12.14."
+    },
+    {
+      "name": "P33 focused deterministic rebuild regression",
+      "result": "PASS",
+      "detail": "GitHub Actions run 33977914719/job 101337774061 passed 14/14 tests: 10 P33 post-repair cases plus 4 existing P19 final-candidate integrity regressions."
+    },
+    {
+      "name": "P33 no candidate side-effect assertion",
+      "result": "PASS",
+      "detail": "Exact-candidate workflow verified parallel/OWNER_ONECLICK/CANDIDATES remained unchanged; the mechanism test did not emit or overwrite a final candidate/pointer."
+    },
+    {
+      "name": "Real WOF / Owner retry",
+      "result": "NOT_RUN",
+      "detail": "Intentionally not run under P33 authority."
+    },
+    {
+      "name": "promotion / alpha-live movement",
+      "result": "NOT_RUN",
+      "detail": "P33 has no promotion authority and did not move alpha-live."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "REBUILD_MECHANISM_INTEGRITY_PROOF",
+    "visibleProof": "NOT_PROVEN",
+    "detail": "P33 proves the repository-side deterministic/fail-closed post-repair rebuild mechanism and its exact tested implementation bytes. It does not claim that a final integrated package has been rebuilt, does not prove renderer-source authority, does not authorize an Owner retry, and does not prove visible correctness."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM may use the separately owned/terminal P35 integration lineage as an exact source input to this P33 rebuild mechanism when a fresh integrated candidate rebuild is authorized. P34 readiness and P36 renderer-source authority remain separate gates; P33 itself authorizes neither retry nor promotion.",
+  "evidencePaths": [
+    "parallel/OWNER_ONECLICK/post_repair_final_candidate_rebuild.py",
+    "parallel/OWNER_ONECLICK/test_post_repair_final_candidate_rebuild.py",
+    "parallel/OWNER_ONECLICK/WOF_ALPHA_BUILD_FINAL_CANONICAL_CANDIDATE.cmd",
+    ".github/workflows/alpha-p19-final-canonical-candidate.yml",
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP_PROGRESS.json",
+    "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP_START_PROMPT.md"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "legacySpatialFallback": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "guessedAddresses": false,
+    "alphaLiveMoved": false,
+    "promotionPerformed": false
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "promotionPerformed": false,
+  "workflowRunId": 33977914719,
+  "workflowJobId": 101337774061,
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP_RESULT.md",
+  "completedAtUtc": "2026-09-05T16:32:00Z"
+}
