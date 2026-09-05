@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C1_RESULT_ENVELOPE_VALIDATOR",
+  "dedupKey": "alpha.pm.worker-communication.result-envelope-validator-v1",
+  "effectiveDedupKey": "alpha.pm.worker-communication.result-envelope-validator-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.pm.worker-communication.result-envelope-validator-v1.json",
+  "claimToken": "aa1ede4f535444049927a3007b178fdb",
+  "state": "ACTIVE",
+  "startCommit": "5a8927dd83de07959d070d30ea3dcdb8feeab094"
+}
