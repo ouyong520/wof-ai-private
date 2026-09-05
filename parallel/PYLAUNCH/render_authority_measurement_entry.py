@@ -66,12 +66,16 @@ def _endpoint_has_exact_wof(host: str, port: int) -> bool:
             pass
 
 
-def _choose_runner_port(host: str, preferred: int) -> tuple[int, str]:
+def _choose_runner_port(host: str, preferred: int, owner_navigates: bool = True) -> tuple[int, str]:
     endpoint, _ = probe_endpoint_diagnostic(host, preferred)
     if endpoint is None:
         return preferred, "program-launch-free-port"
     if _endpoint_has_exact_wof(host, preferred):
         return preferred, "reuse-existing-exact-wof"
+    if owner_navigates:
+        # This is the dedicated Alpha CDP port. During rapid retest we preserve
+        # the Owner's browser/tab instead of spawning a new Chrome on every fix.
+        return preferred, "reuse-existing-alpha-browser"
     for port in range(preferred + 1, preferred + 11):
         candidate, _ = probe_endpoint_diagnostic(host, port)
         if candidate is None:
@@ -147,16 +151,17 @@ def main() -> int:
         os.environ[OWNER_NAVIGATES_ENV] = "1"
         try:
             runner = _load_runner(root)
-            run_port, entry_source = _choose_runner_port(args.host, args.port)
+            run_port, entry_source = _choose_runner_port(args.host, args.port, owner_navigates=True)
+            browser_already_running = entry_source in {"reuse-existing-exact-wof", "reuse-existing-alpha-browser"}
             publisher.publish(
                 "WAITING_FOR_WOF",
-                browserConnected=False,
-                wofPageFound=False,
+                browserConnected=browser_already_running,
+                wofPageFound=entry_source == "reuse-existing-exact-wof",
                 workerFound=False,
                 wasmFound=False,
                 heapFound=False,
                 browserEntrySource=entry_source,
-                browserLaunchAttempted=entry_source != "reuse-existing-exact-wof",
+                browserLaunchAttempted=not browser_already_running,
                 navigationAttempted=False,
                 ownerNavigationRequired=entry_source != "reuse-existing-exact-wof",
                 staleGameUrlIgnored=True,
