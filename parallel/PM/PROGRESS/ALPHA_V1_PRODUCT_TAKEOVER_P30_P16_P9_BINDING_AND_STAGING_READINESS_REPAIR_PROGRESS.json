@@ -4,11 +4,11 @@
   "dedupKey": "alpha.v1.product-takeover.p16-p9-binding-staging-readiness-repair-v1",
   "claimToken": "07c4ebfe2077a52b842c5c53d2f3cd05",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "SELF_CHECK",
-  "overallPercent": 76,
+  "workState": "READY_TO_PUBLISH",
+  "overallPercent": 94,
   "implementationState": "DONE",
-  "selfCheckState": "IN_PROGRESS",
-  "resultPublicationState": "NOT_STARTED",
+  "selfCheckState": "PASS",
+  "resultPublicationState": "PENDING",
   "claimCloseState": "PENDING",
   "startCommit": "c97603ef0c217a859d0ae230ade62fcfee4844e8",
   "lastKnownGoodCommit": "90094a656ab311f18b0a758716dc97c3f8df092d",
@@ -24,7 +24,7 @@
   "testedCandidate": {
     "commit": "90094a656ab311f18b0a758716dc97c3f8df092d",
     "tree": "efcc1b3e517c488ea1e8aa6b6bddcf9efcfea2ed",
-    "state": "READY_FOR_FRESH_FOCUSED_TESTS",
+    "state": "PASS_FRESH_FOCUSED_SELF_CHECK",
     "blobMap": {
       "parallel/OWNER_STAGING/p21_acceptance.py": "b14f0e8967093b8a35512321965e4b646573bef1",
       "parallel/OWNER_STAGING/p21_runtime.py": "28a8f19f1b4bb27719c1e09f70fc91bf2ebdcce5",
@@ -42,19 +42,41 @@
     "Added P9 then P8 before maintained HUD in ProductionP1Overlay fallback source order; missing P9 remains fail-closed with exact path in binding error",
     "Tightened staged P16 usability: exact accepted World SHA, page/worker targets, non-early canonical state, runtimeEpoch, authorityKey, rendererEpoch, rendererAuthority, and safety are all required",
     "Added focused P30 staging and P9/P1 regression suites",
-    "Created durable implementation candidate 90094a656ab311f18b0a758716dc97c3f8df092d / tree efcc1b3e517c488ea1e8aa6b6bddcf9efcfea2ed and recorded seven-file blob map before terminal-significant tests"
+    "Created durable implementation candidate 90094a656ab311f18b0a758716dc97c3f8df092d / tree efcc1b3e517c488ea1e8aa6b6bddcf9efcfea2ed and recorded seven-file blob map before terminal-significant tests",
+    "Fresh exact-candidate readback matched the recorded commit/tree and all seven recorded blob SHAs",
+    "Fresh focused regression execution passed 9/9 checks covering staged manifest copy/hash/binding, tamper rejection, VERIFYING_WORLD rejection, complete P16 authority requirements, staged wait behavior, P9->P8->HUD order, exact P9 fail-closed diagnostics, and explicit staged manifest identity validation",
+    "Static safety/proof-boundary readback preserved readOnly=true, ramWrites=0, inputInjection=false, real/Owner visual acceptance NOT_RUN, and no alpha-live promotion"
   ],
   "remaining": [
-    "Run fresh focused compile/unittest/static safety checks against exact durable candidate 90094a656ab311f18b0a758716dc97c3f8df092d",
-    "If PASS and implementation bytes remain unchanged, checkpoint test provenance",
-    "Publish RESULT JSON/MD, close canonical/stage claims, terminalize PROGRESS"
+    "Publish terminal RESULT JSON/MD with exact tested candidate and bounded proof claims",
+    "Close canonical and stage claims with the same claimToken",
+    "Terminalize PROGRESS after durable RESULT and claim closeout"
   ],
   "tests": [
-    {"name": "P30 exact durable candidate focused self-check", "result": "IN_PROGRESS", "detail": "Candidate commit/tree and changed-file blob map were durably recorded before test execution."}
+    {
+      "name": "P30 exact durable candidate identity readback",
+      "result": "PASS",
+      "detail": "Commit 90094a656ab311f18b0a758716dc97c3f8df092d resolves to tree efcc1b3e517c488ea1e8aa6b6bddcf9efcfea2ed; all seven recorded file/blob identities matched fresh GitHub readback."
+    },
+    {
+      "name": "P30 focused deterministic regression",
+      "result": "PASS",
+      "detail": "Fresh isolated execution of the P30-owned deterministic seam checks passed 9/9; no game/browser/runtime launch was performed."
+    },
+    {
+      "name": "P30 static safety and proof-boundary check",
+      "result": "PASS",
+      "detail": "Exact candidate staging/runtime seams retain read-only/no-input-injection boundaries and explicit no-promotion / NOT_RUN live-proof semantics."
+    },
+    {
+      "name": "Real WOF / Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Intentionally not run by P30 authority."
+    }
   ],
   "blocker": null,
-  "nextAction": "Execute focused self-checks against exact durable candidate 90094a656ab311f18b0a758716dc97c3f8df092d only.",
+  "nextAction": "Publish P30 terminal RESULT, close the matching canonical/stage claims, then write the terminal PROGRESS checkpoint.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T15:33:00Z"
+  "updatedAtUtc": "2026-09-05T15:44:00Z"
 }
