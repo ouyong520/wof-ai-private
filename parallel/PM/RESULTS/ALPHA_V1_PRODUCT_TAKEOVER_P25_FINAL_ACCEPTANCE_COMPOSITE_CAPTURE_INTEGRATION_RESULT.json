@@ -1,0 +1,134 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION",
+  "dedupKey": "alpha.v1.product-takeover.final-acceptance-composite-capture-integration-v1",
+  "claimToken": "1a8e410f279e1450057986f7e8212959",
+  "state": "COMPLETE",
+  "verdict": "P25 composite capture integration remains byte-identical to its durable tested candidate and now deterministically consumes the same-session maintained P10 canonical coordinator status exposed by terminal P27 through the supported P21 staged path, so the prior staged-feed exposure blocker is resolved at repository integration level.",
+  "startCommit": "d59bc3135286cc23caba8711c475db7cbf12acf9",
+  "testedCommit": "d56d9b69aa682f5f49eeff8fe367ee68097f3c0f",
+  "implementationCommits": [
+    "d6a0817bda6e0856ae71f1215d72dd0f6d6a7340",
+    "f20e4f9ae38e40124d23012ef40cf8048689bb93",
+    "0a1e99b247b3405186dabcc32b95462248a77ac3",
+    "95204c04bf7d48d78cdd1924c11fb7fdfa64bc54",
+    "d56d9b69aa682f5f49eeff8fe367ee68097f3c0f"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/OWNER_ACCEPTANCE_COMPOSITE/README.md",
+    "parallel/OWNER_ACCEPTANCE_COMPOSITE/WOF_ALPHA_FINAL_COMPOSITE_ACCEPTANCE.cmd",
+    "parallel/OWNER_ACCEPTANCE_COMPOSITE/composite_acceptance.py",
+    "parallel/OWNER_ACCEPTANCE_COMPOSITE/p25_runtime_tee.py",
+    "parallel/OWNER_ACCEPTANCE_COMPOSITE/test_composite_acceptance.py"
+  ],
+  "testedBlobReadback": {
+    "candidateCommit": "d56d9b69aa682f5f49eeff8fe367ee68097f3c0f",
+    "currentMainMatches": true,
+    "blobs": {
+      "parallel/OWNER_ACCEPTANCE_COMPOSITE/README.md": "25d9c7010c0b85284b1a6f18cad94b0749df3f09",
+      "parallel/OWNER_ACCEPTANCE_COMPOSITE/WOF_ALPHA_FINAL_COMPOSITE_ACCEPTANCE.cmd": "12dc1062e6929facd6e70353731e1bddcbd7dd8b",
+      "parallel/OWNER_ACCEPTANCE_COMPOSITE/composite_acceptance.py": "d6ce58cb3252e174d48de9b20cbcf17978fff8e2",
+      "parallel/OWNER_ACCEPTANCE_COMPOSITE/p25_runtime_tee.py": "a43179ce5d691a9a6a41a2e08b5513ca66761ae8",
+      "parallel/OWNER_ACCEPTANCE_COMPOSITE/test_composite_acceptance.py": "b44c194276f0213b9c0508d2fadd80e9292cf854"
+    }
+  },
+  "postP27Revalidation": {
+    "result": "PASS",
+    "resolvedBlocker": "P21_STAGED_RUNTIME_CANONICAL_FEED_NOT_EXPOSED",
+    "formerState": "NOT_EXPOSED_BY_STAGED_RUNTIME_STATUS",
+    "p27Stage": "ALPHA_V1_PRODUCT_TAKEOVER_P27_P21_STAGED_RUNTIME_CANONICAL_FEED_EXPOSURE",
+    "p27TerminalCommit": "33f0621ca39c144e6d21a685ca608cd9d1fd1e6f",
+    "canonicalSchema": "wof-alpha-canonical-runtime-coordinator-v1",
+    "supportedPath": [
+      "P25 p21_runtime_override supplies the existing tee builder",
+      "P21 wraps the builder output after build_runtime_command returns with p27_canonical_feed_interposer.py",
+      "P27 installs its patch on the exact-candidate MeasurementPublisher before delegating to the P25 tee script",
+      "P27 validates maintained P10 CanonicalRuntimeCoordinator output and publishes it as canonicalCoordinator plus alpha_status.canonicalOverlay",
+      "P25 TeePublisher calls super().publish first, then snapshots the same publisher store into the run-nonce-bound status ring",
+      "P25 extract_canonical_status accepts canonicalOverlay/canonicalCoordinator only when schema is wof-alpha-canonical-runtime-coordinator-v1 and downstream safety/identity validation remains fail-closed"
+    ],
+    "scope": "deterministic committed repository readback only; no real staged WOF or Owner visual run"
+  },
+  "tests": [
+    {
+      "name": "Python compile",
+      "result": "PASS",
+      "detail": "Previously passed on durable tested P25 candidate d56d9b69aa682f5f49eeff8fe367ee68097f3c0f; current P25-owned blob map is identical."
+    },
+    {
+      "name": "focused composite acceptance fixtures",
+      "result": "PASS",
+      "detail": "11 focused fixtures previously passed on the same durable tested P25 bytes; current P25-owned blobs are unchanged."
+    },
+    {
+      "name": "forbidden source scan",
+      "result": "PASS",
+      "detail": "Previously passed on the same durable tested P25 bytes; no P25 implementation bytes changed during this continuation."
+    },
+    {
+      "name": "post-P27 supported staged-path deterministic committed readback",
+      "result": "PASS",
+      "detail": "Current P21/P27/P25 call-chain readback proves the P27 interposer remains outside and after the P25 builder override, publishes validated maintained P10 coordinator status into surfaces consumed by P25, and therefore removes the former structural NOT_EXPOSED_BY_STAGED_RUNTIME_STATUS blocker without relabeling W3/V3 coordinates as canonical."
+    },
+    {
+      "name": "real WOF acceptance",
+      "result": "NOT_RUN",
+      "detail": "Deliberately not run under P25 terminal-continuation authority."
+    },
+    {
+      "name": "Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "No Owner visual question/run or P22/P24/W3 visual evidence was manufactured by this continuation."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_INTEGRATION_PROOF",
+    "visibleProof": "NOT_PROVEN",
+    "detail": "Proves only the repository-level P25 composite integration and same-session maintained P10 feed consumption path after terminal P27. It does not prove real-WOF behavior, renderer-source qualification, dynamic/temporal live coverage, or Owner-visible correctness."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": "P25 authority ends at integration readiness. Any later live/visual acceptance remains under the final Owner gate and was not run or fabricated here."
+  },
+  "blocker": null,
+  "nextAction": "PM may advance the existing final live acceptance Owner gate from durable P25 COMPLETE while preserving that real WOF and Owner visual acceptance remain NOT_RUN until that gate explicitly executes them.",
+  "evidencePaths": [
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P27_P21_STAGED_RUNTIME_CANONICAL_FEED_EXPOSURE_RESULT.json",
+    "parallel/OWNER_STAGING/exact_candidate_staging_acceptance.py",
+    "parallel/OWNER_STAGING/p27_canonical_feed_interposer.py",
+    "parallel/OWNER_ACCEPTANCE_COMPOSITE/composite_acceptance.py",
+    "parallel/OWNER_ACCEPTANCE_COMPOSITE/p25_runtime_tee.py",
+    "parallel/OWNER_ACCEPTANCE_COMPOSITE/test_composite_acceptance.py",
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION_PROGRESS.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "legacySpatialFallback": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "guessedAddresses": false,
+    "guessedCoordinates": false,
+    "alphaLiveMoved": false,
+    "visibleProof": "NOT_PROVEN"
+  },
+  "ownership": {
+    "p25ImplementationRewrittenInContinuation": false,
+    "p27ImplementationModified": false,
+    "p21ImplementationModified": false,
+    "p22OrP24OwnershipModified": false,
+    "w3OwnershipModified": false,
+    "p20OrP23Modified": false,
+    "alphaLiveModified": false
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION_RESULT.md",
+  "completedAtUtc": "2026-09-05T14:16:00Z"
+}
