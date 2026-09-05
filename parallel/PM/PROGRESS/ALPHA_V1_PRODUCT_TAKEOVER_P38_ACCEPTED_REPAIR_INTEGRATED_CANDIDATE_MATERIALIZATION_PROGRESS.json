@@ -4,45 +4,36 @@
   "dedupKey": "alpha.v1.product-takeover.accepted-repair-integrated-candidate-materialization-v1",
   "claimToken": "d8d6f273a87aadf9fc2e3e84a84824e8",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
-  "overallPercent": 95,
+  "workState": "PUBLISHING",
+  "overallPercent": 98,
   "implementationState": "DONE",
   "selfCheckState": "PASS",
-  "resultPublicationState": "PENDING",
+  "resultPublicationState": "IN_PROGRESS",
   "claimCloseState": "PENDING",
   "startCommit": "a9eba304aaae591b14a9dbadb5c37453a9e53ae0",
   "lastKnownGoodCommit": "107850cb8409dd3f2f1135022375114f96469035",
   "implementationCommits": ["107850cb8409dd3f2f1135022375114f96469035"],
   "completed": [
-    "P33 exact mechanism materialized and verified P38 artifact bytes on durable tested commit 3e9ae7e725e3dd32d1172866fef11d3ff89e163f/tree 2434e11c718741fae0c9186238d748df17c37abb",
-    "Workflow run 33979187125/job 101341180297 passed exact-source materialization, verify, repeated deterministic rebuild, stale-P19 rejection, P32/P36 fail-closed checks, and alpha-live no-move assertion",
-    "Published only five exact tested P38 artifact blobs to main in 107850cb8409dd3f2f1135022375114f96469035; runner workflow was not published to main",
-    "Fresh main readback matched all five exact worker-tested Git blob identities",
-    "Exact source/package readback: 82b0b09ecd902f502ae5509bcb3ee5a713f43fee / 2026.09.05.82b0b09ecd90",
-    "Exact artifact SHA256 readback: candidate 53e4e2f2ad4c6c697b64d628b21576f341b3839bea8e2409057c0372fac56449; attestation 5fdb606ee2aeb747a8bcda64c8009bb8d704820bcfa0000d1fd099c20fa6b68e; manifest 1761fc613ccd84f2e7dc7bfe629113f2d2d07e4871996adc92260696d4cf906c; pointer a2e676f8f08316ebbe50a6b032bde06159562615af66ad03c28f20d6a2ac7330",
-    "Independent GitHub compares reconfirmed exact P29/P30/P31 tested commits are ancestors of P35 source with behind_by=0 and merge-base equal to each exact required commit",
-    "P38 provenance explicitly records NOT_RETRY_ELIGIBLE_PENDING_P36; current P36 claim is ACTIVE and terminal RESULT is absent",
-    "P32 remains terminal BLOCKED/integrationReady=false with NATIVE_PLAYER_MARKER_DIRECT_RENDERER_CAUSAL_EDGE_NOT_CHECKED_IN and is not rewritten to PASS",
-    "Global LATEST_FINAL_CANONICAL_CANDIDATE remains untouched at historical source 0752796369f1687435a1b1647e66ea0b5ab07688",
-    "alpha-live remains d664618403b1ae83f6880ca4d3833202c299415f; no promotion or real-game execution occurred"
+    "Durable tested materialization commit 3e9ae7e725e3dd32d1172866fef11d3ff89e163f/tree 2434e11c718741fae0c9186238d748df17c37abb passed workflow 33979187125/job 101341180297",
+    "Five exact tested P38 artifact blobs published to main in 107850cb8409dd3f2f1135022375114f96469035 and fresh-read byte-identical",
+    "sourceCommit/packageVersion/candidate/attestation/manifest/pointer/runtime pins exact-read verified",
+    "P29/P30/P31 exact ancestry independently reconfirmed",
+    "P32 remains BLOCKED; P36 remains ACTIVE with no terminal RESULT; retry eligibility remains NOT_RETRY_ELIGIBLE_PENDING_P36",
+    "Global latest-candidate pointer untouched; alpha-live unchanged; no promotion; no real game"
   ],
   "remaining": [
-    "Publish terminal RESULT JSON/MD with exact terminal evidence",
-    "Close canonical/stage claims and write terminal progress"
+    "Atomically publish RESULT JSON/MD, close canonical/stage claims, and write terminal progress"
   ],
   "tests": [
-    {"name": "P38 isolated P33 materialization workflow", "result": "PASS", "detail": "Run 33979187125/job 101341180297 completed success on durable materialization commit 3e9ae7e725e3dd32d1172866fef11d3ff89e163f."},
-    {"name": "P38 exact five-blob main readback", "result": "PASS", "detail": "Candidate ee00156e, attestation d2102f3f, manifest adb06119, pointer 48c6ca92, provenance 3d1af5e3 exactly match worker-tested Git blobs."},
-    {"name": "P29/P30/P31 exact ancestry readback", "result": "PASS", "detail": "Each compare to source 82b0b09e is ahead with behind_by=0 and merge-base equal to the exact required tested commit."},
-    {"name": "source/package/manifest-attestation-runtime pin binding", "result": "PASS", "detail": "P38 pointer/provenance binds exact source, packageVersion, SHA256 values, 90 selected runtime file pins and critical runtime blobs."},
-    {"name": "P32 BLOCKED / P36 pending fail-closed readback", "result": "PASS", "detail": "P32 remains BLOCKED and P36 remains ACTIVE without terminal result; retryEligibility is NOT_RETRY_ELIGIBLE_PENDING_P36."},
-    {"name": "stale historical P19 rejection", "result": "PASS", "detail": "P33 mechanism rejected exact historical source 0752796369f1687435a1b1647e66ea0b5ab07688."},
-    {"name": "promotion / alpha-live movement", "result": "PASS", "detail": "alpha-live stayed d664618403b1ae83f6880ca4d3833202c299415f and no promotion was performed."},
-    {"name": "real WOF / Owner visual acceptance", "result": "NOT_RUN", "detail": "Forbidden/not requested under P38 authority."}
+    {"name": "P38 materialization + deterministic repeat", "result": "PASS", "detail": "GitHub Actions 33979187125/job 101341180297."},
+    {"name": "exact P38 main blob readback", "result": "PASS", "detail": "All five Git blob SHAs match worker-tested bytes."},
+    {"name": "exact P29/P30/P31 ancestry", "result": "PASS", "detail": "Each required tested commit has behind_by=0 and exact merge-base at P35 source."},
+    {"name": "P32/P36 fail-closed retry state", "result": "PASS", "detail": "NOT_RETRY_ELIGIBLE_PENDING_P36; P32 not rewritten."},
+    {"name": "promotion / alpha-live / real WOF", "result": "PASS_NOT_RUN", "detail": "No promotion or alpha-live movement; real WOF and Owner visual acceptance not run."}
   ],
   "blocker": null,
-  "nextAction": "Publish terminal P38 materialization RESULT as COMPLETE-with-NOT_RETRY_ELIGIBLE_PENDING_P36, atomically close claims, and mark terminal progress.",
+  "nextAction": "Publish terminal COMPLETE materialization truth while preserving NOT_RETRY_ELIGIBLE_PENDING_P36.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:57:00Z"
+  "updatedAtUtc": "2026-09-05T16:58:00Z"
 }
