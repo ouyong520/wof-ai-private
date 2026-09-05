@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P18_MAINTAINED_HUD_CANONICAL_DRAW_ACKNOWLEDGEMENT",
+  "dedupKey": "alpha.v1.product-takeover.maintained-hud-canonical-draw-acknowledgement-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.maintained-hud-canonical-draw-acknowledgement-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.maintained-hud-canonical-draw-acknowledgement-v1.json",
+  "claimToken": "d2244a0d1f358021e44b09011bfd3c90b593506e4a866f74",
+  "state": "ACTIVE",
+  "startCommit": "5b00a23c4347555eb236a05f295f3ab15bc1b6c3"
+}
