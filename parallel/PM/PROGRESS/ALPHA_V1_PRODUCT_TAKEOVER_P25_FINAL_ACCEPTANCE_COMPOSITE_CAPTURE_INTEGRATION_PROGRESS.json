@@ -1,0 +1,78 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION",
+  "dedupKey": "alpha.v1.product-takeover.final-acceptance-composite-capture-integration-v1",
+  "claimToken": "1a8e410f279e1450057986f7e8212959",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "BLOCKED_PENDING_RESULT",
+  "overallPercent": 90,
+  "implementationState": "DONE",
+  "selfCheckState": "PASS",
+  "resultPublicationState": "PENDING",
+  "claimCloseState": "PENDING",
+  "startCommit": "d59bc3135286cc23caba8711c475db7cbf12acf9",
+  "lastKnownGoodCommit": "d56d9b69aa682f5f49eeff8fe367ee68097f3c0f",
+  "implementationCommits": [
+    "d6a0817bda6e0856ae71f1215d72dd0f6d6a7340",
+    "f20e4f9ae38e40124d23012ef40cf8048689bb93",
+    "0a1e99b247b3405186dabcc32b95462248a77ac3",
+    "95204c04bf7d48d78cdd1924c11fb7fdfa64bc54",
+    "d56d9b69aa682f5f49eeff8fe367ee68097f3c0f"
+  ],
+  "completed": [
+    "exclusive dedup-v2 canonical claim acquired and verified",
+    "five P25-owned files added under parallel/OWNER_ACCEPTANCE_COMPOSITE/ only",
+    "exact-candidate run nonce and P21 runtime status tee implemented",
+    "P22 record_cycle integration and P24 canonical temporal observation conversion implemented",
+    "P16/P18/W3/P17 evidence hashing and composite index implemented",
+    "duplicate/out-of-order/stale page/runtime/renderer fail-closed handling implemented",
+    "P21 builder/environment restoration on cancellation/exception implemented",
+    "Python compile passed",
+    "11 focused fixtures passed",
+    "forbidden source scan passed"
+  ],
+  "remaining": [
+    "publish truthful terminal RESULT.json and RESULT.md with state=BLOCKED and integrationReady=false",
+    "record canonicalFeed.state=NOT_EXPOSED_BY_STAGED_RUNTIME_STATUS and the precise upstream seam blocker",
+    "close matching canonical and stage claims as BLOCKED using the same claimToken",
+    "write WORKER_RESULT terminal commit"
+  ],
+  "tests": [
+    {
+      "name": "Python compile",
+      "result": "PASS",
+      "detail": "P25 implementation compiled in the interrupted worker run."
+    },
+    {
+      "name": "focused composite acceptance fixtures",
+      "result": "PASS",
+      "detail": "11 focused fixtures passed."
+    },
+    {
+      "name": "forbidden source scan",
+      "result": "PASS",
+      "detail": "No screenshot/world-projection/W3-world-coordinate production fallback introduced."
+    },
+    {
+      "name": "real WOF acceptance",
+      "result": "NOT_RUN",
+      "detail": "Not run; staged publisher does not expose the maintained P10 canonical coordinator feed required for legitimate P22/P24 live cycles."
+    }
+  ],
+  "blocker": {
+    "code": "P21_STAGED_RUNTIME_CANONICAL_FEED_NOT_EXPOSED",
+    "detail": "The current P19 exact candidate P21 staged runtime publisher exposes V3 measurement status but does not expose the maintained P10 canonical coordinator feed; no existing ingest_canonical_w3_frame caller is available on this seam, so P25 cannot legally manufacture P22/P24 canonical cycles within ownership constraints.",
+    "canonicalFeedState": "NOT_EXPOSED_BY_STAGED_RUNTIME_STATUS",
+    "ownerRequired": false,
+    "pmRequired": true,
+    "recoveryAllowedByWorker": false
+  },
+  "nextAction": "Reattach the same P25 claimToken in a fresh worker chat and perform terminal BLOCKED publication only; do not expand implementation or touch P21/P16-P24 ownership.",
+  "terminalResultPath": null,
+  "writerRole": "PM_RECONSTRUCTION",
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "updatedAtUtc": "2026-09-05T10:23:00Z"
+}
