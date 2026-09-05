@@ -1,0 +1,121 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P34_FINAL_RETRY_READINESS_GATE",
+  "dedupKey": "alpha.v1.product-takeover.final-retry-readiness-gate-v1",
+  "claimToken": "-Q3KGRVDrKFWdG2wPly3SJN4FuySDrUztftzIqDWK8Y",
+  "state": "COMPLETE",
+  "verdict": "The isolated deterministic final-retry readiness gate is durable and exact-candidate tested; current repository authority remains BLOCKED because P32 is terminal BLOCKED and the selected final-canonical provenance is stale/incomplete for the accepted repair chain.",
+  "startCommit": "dd0c1d494e01ee9b0bab8526bbcc265600d10267",
+  "testedCommit": "dbea3c222d58b393d0b8f2895356457d0c17d887",
+  "testedTree": "de1cc0427a9ad0ca66951a83d8076c4caf1abc2d",
+  "implementationCommits": [
+    "9bfb62f95f6c0583fd4994d7c7a350dfbe9faa1f",
+    "48dd524b2718938ed129457674b9dc9a10ed1cea",
+    "dbea3c222d58b393d0b8f2895356457d0c17d887"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/OWNER_RETRY_READINESS/final_retry_readiness.py",
+    "parallel/OWNER_RETRY_READINESS/test_final_retry_readiness.py",
+    "parallel/OWNER_RETRY_READINESS/README.md"
+  ],
+  "candidateReadback": {
+    "state": "PASS",
+    "candidateCommit": "dbea3c222d58b393d0b8f2895356457d0c17d887",
+    "treeSha": "de1cc0427a9ad0ca66951a83d8076c4caf1abc2d",
+    "candidateImplementationBytesChangedAfterTest": false,
+    "blobMap": {
+      "parallel/OWNER_RETRY_READINESS/final_retry_readiness.py": "4df4becabe7eb43307367c5f08793caf38ada651",
+      "parallel/OWNER_RETRY_READINESS/test_final_retry_readiness.py": "918fafde812f3aa94276c228d240163b125bd34d",
+      "parallel/OWNER_RETRY_READINESS/README.md": "e0fa2f6189d3ab638e17727395452a0ac2826ec9"
+    }
+  },
+  "tests": [
+    {
+      "name": "P34 exact durable candidate blob identity readback",
+      "result": "PASS",
+      "detail": "Fresh GitHub readback of candidate dbea3c222d58b393d0b8f2895356457d0c17d887/tree de1cc0427a9ad0ca66951a83d8076c4caf1abc2d matched all three recorded implementation/test/document blobs exactly."
+    },
+    {
+      "name": "P34 focused deterministic retry-readiness regression",
+      "result": "PASS",
+      "detail": "Fresh byte-identical exact-candidate run passed 10/10 tests covering terminal RESULT authority over PROGRESS, active/missing RESULT rejection, stale tested-commit ancestry rejection, exact claim token/state closure, candidate and manifest SHA mismatch rejection, exact required-tested-commit pins, P32 BLOCKED metadata preservation, alpha-live movement rejection, and the exact READY fixture."
+    },
+    {
+      "name": "P34 current repository fail-closed authority readback",
+      "result": "PASS",
+      "detail": "Fresh repo authority remains non-ready: P32 terminal RESULT is BLOCKED with integrationReady=false; historical latest final candidate points to sourceCommit 0752796369f1687435a1b1647e66ea0b5ab07688, lacks manifestPath/manifestSha256/requiredTestedCommits, and GitHub compare proves that source is 165 commits behind P29 testedCommit c02f7e108e73665f22eb950573622acb6f452732."
+    },
+    {
+      "name": "real WOF acceptance",
+      "result": "NOT_RUN",
+      "detail": "Forbidden by P34 scope; no game process was launched."
+    },
+    {
+      "name": "Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "No Owner YES/NO was requested or inferred."
+    },
+    {
+      "name": "promotion / alpha-live movement",
+      "result": "NOT_RUN",
+      "detail": "P34 has no promotion authority and performed no alpha-live movement."
+    }
+  ],
+  "currentReadiness": {
+    "state": "BLOCKED",
+    "readyForOneBoundedOwnerRetry": false,
+    "ownerRetryBudget": 0,
+    "promotionAuthorized": false,
+    "alphaLiveMoveAuthorized": false,
+    "authorityReadback": {
+      "P29": {"state": "COMPLETE", "testedCommit": "c02f7e108e73665f22eb950573622acb6f452732"},
+      "P30": {"state": "COMPLETE", "testedCommit": "90094a656ab311f18b0a758716dc97c3f8df092d"},
+      "P31": {"state": "COMPLETE", "testedCommit": "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731"},
+      "P32": {"state": "BLOCKED", "testedCommit": "bd75c3b5f7fd20fe004fae21142a0fa19942e076", "integrationReady": false, "blockerCode": "NATIVE_PLAYER_MARKER_DIRECT_RENDERER_CAUSAL_EDGE_NOT_CHECKED_IN"}
+    },
+    "selectedCandidate": {
+      "sourceCommit": "0752796369f1687435a1b1647e66ea0b5ab07688",
+      "packageVersion": "2026.09.05.0752796369f1",
+      "historicalPointerState": "READY",
+      "w3LiveQualification": "INCONCLUSIVE",
+      "requiredManifestPathPresent": false,
+      "requiredManifestSha256Present": false,
+      "requiredTestedCommitsPresent": false,
+      "p29Ancestry": {"containsRequiredTestedCommit": false, "compareStatusFromP29TestedToSource": "behind", "behindBy": 165, "mergeBase": "0752796369f1687435a1b1647e66ea0b5ab07688"}
+    },
+    "blockers": [
+      {"code": "UPSTREAM_TERMINAL_STATE_NOT_ACCEPTED", "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION", "detail": "P32 is truthfully terminal BLOCKED and must not be rewritten to PASS."},
+      {"code": "UPSTREAM_NOT_INTEGRATION_READY", "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION", "detail": "P32 terminal RESULT explicitly has integrationReady=false."},
+      {"code": "MISSING_FINAL_CANDIDATE_MANIFEST_PROVENANCE", "detail": "The selected historical latest-candidate pointer lacks manifestPath and manifestSha256 required for exact retry-readiness readback."},
+      {"code": "MISSING_REQUIRED_TESTED_COMMITS_PROVENANCE", "detail": "The selected historical latest-candidate pointer does not pin every required repair stage testedCommit."},
+      {"code": "SOURCE_COMMIT_MISSING_REQUIRED_TESTED_COMMIT", "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P29_W3_LIVE_EVIDENCE_CONTRACT_REPAIR", "detail": "Historical sourceCommit 0752796369f1687435a1b1647e66ea0b5ab07688 is 165 commits behind P29 testedCommit c02f7e108e73665f22eb950573622acb6f452732 and therefore does not contain it."}
+    ]
+  },
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "visibleProof": "NOT_PROVEN",
+    "detail": "Exact-candidate focused tests prove only the deterministic fail-closed repository-side retry-readiness gate semantics. They do not prove real WOF correctness, W3 live PASS, native marker renderer authority, Owner-visible correctness, or promotion eligibility."
+  },
+  "ownerGate": {"required": false, "question": null, "reason": "Current repo-side readiness is BLOCKED before any Owner retry should be requested."},
+  "blocker": null,
+  "nextAction": "PM should keep the Owner retry blocked, preserve P32's terminal BLOCKED truth, resolve that missing renderer causal-edge dependency only through separately authorized work, then build/select one fresh final candidate whose exact sourceCommit contains every accepted repair testedCommit and rerun this readiness gate.",
+  "evidencePaths": [
+    "parallel/OWNER_RETRY_READINESS/final_retry_readiness.py",
+    "parallel/OWNER_RETRY_READINESS/test_final_retry_readiness.py",
+    "parallel/OWNER_RETRY_READINESS/README.md",
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P34_FINAL_RETRY_READINESS_GATE_PROGRESS.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P29_W3_LIVE_EVIDENCE_CONTRACT_REPAIR_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P31_WOF_PAGE_ASSOCIATION_AMBIGUITY_REPAIR_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION_RESULT.json",
+    "parallel/OWNER_ONECLICK/CANDIDATES/LATEST_FINAL_CANONICAL_CANDIDATE.json"
+  ],
+  "safety": {"readOnly": true, "ramWrites": 0, "inputInjection": false, "realGameRun": false, "promotion": false, "alphaLiveMoved": false},
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "completedAtUtc": "2026-09-05T16:14:00Z"
+}
