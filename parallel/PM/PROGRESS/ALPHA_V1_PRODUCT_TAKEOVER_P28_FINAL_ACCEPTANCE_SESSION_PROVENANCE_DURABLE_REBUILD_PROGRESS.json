@@ -4,14 +4,14 @@
   "dedupKey": "alpha.v1.product-takeover.final-acceptance-session-provenance-durable-rebuild-v1",
   "claimToken": "69884841cf571855163ab7db0ac663dc",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "SELF_CHECK",
-  "overallPercent": 90,
+  "workState": "READY_TO_PUBLISH",
+  "overallPercent": 96,
   "implementationState": "DONE_CANDIDATE_READBACK_BOUND",
-  "selfCheckState": "READY_FOR_FRESH_FOCUSED_TESTS",
-  "resultPublicationState": "NOT_STARTED",
+  "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
+  "resultPublicationState": "PENDING",
   "claimCloseState": "PENDING",
   "startCommit": "5c4562b884ef76a934ef5ad26206cbca537c1f5e",
-  "lastKnownGoodCommit": null,
+  "lastKnownGoodCommit": "5e373a21292f22be46ce8b311af9b1ec606b6874",
   "candidateCommit": "5e373a21292f22be46ce8b311af9b1ec606b6874",
   "candidateTreeSha": "dce2ab917f6bcf9a6536d6a33f735b24074272aa",
   "candidateHeadReadback": "5e373a21292f22be46ce8b311af9b1ec606b6874",
@@ -57,28 +57,86 @@
   "completed": [
     "read P28 START prompt and post-candidate continuation authority",
     "verified P26 remains terminal and did not reopen or recover it",
-    "re-read current dedup-v2 P28 canonical and stage claim files on main and confirmed exact claimToken 69884841cf571855163ab7db0ac663dc remains ACTIVE",
+    "re-read current dedup-v2 P28 canonical and stage claim files in the prior durable checkpoint and confirmed exact claimToken 69884841cf571855163ab7db0ac663dc was ACTIVE",
     "reconciled Git from superseded candidate 9a02856edf9be1768cd0fc8b8235cb13ac3b4cfd and incorporated the later 765c08d durable_session implementation",
     "integrated durable_session.py as the authoritative incremental P28 CLI while retaining provenance_chain.py as the one-shot compatibility path",
     "added fresh synthetic durable-session regression coverage without real WOF, Owner interaction, promotion, alpha-live movement, input injection, memory write, screenshot/world projection, or guessed-coordinate fallback",
     "created final implementation candidate marker 5e373a21292f22be46ce8b311af9b1ec606b6874 over tree dce2ab917f6bcf9a6536d6a33f735b24074272aa",
     "Git-read back the exact candidate head and all six P28-owned implementation blobs and durably recorded the binding before any fresh focused test",
+    "executed fresh exact-candidate CI against detached HEAD 5e373a21292f22be46ce8b311af9b1ec606b6874 and asserted tree dce2ab917f6bcf9a6536d6a33f735b24074272aa plus all six candidate blobs",
+    "fresh compile/syntax PASS; durable-session focused tests 16/16 PASS; compatibility provenance focused tests 20/20 PASS; safety/static scan PASS",
     "preserved all frozen acceptance gates: real WOF NOT_RUN, Owner visual acceptance NOT_RUN, visible proof NOT_PROVEN, alpha-live not moved"
   ],
   "remaining": [
-    "run fresh focused P28 tests only against exact candidate 5e373a21292f22be46ce8b311af9b1ec606b6874; do not reuse P26 historical 13/13 or superseded 9a02856 test evidence",
-    "if any implementation byte changes after testing, create and bind another candidate and rerun affected fresh tests",
-    "publish RESULT.json/RESULT.md with RESULT.testedCommit equal to the final actually tested candidate",
-    "close exact-token P28 canonical/stage claims, update PROGRESS TERMINAL/100, and finish with WORKER_RESULT terminal commit"
+    "independently live-read current canonical and stage claim durable files and confirm exact token remains ACTIVE in the execution environment that owns those Windows-local claim paths",
+    "publish RESULT.json/RESULT.md with RESULT.testedCommit equal to 5e373a21292f22be46ce8b311af9b1ec606b6874",
+    "close exact-token P28 canonical/stage claims",
+    "update PROGRESS TERMINAL/100 only after RESULT publication and exact-token claim close, then finish with WORKER_RESULT terminal commit"
   ],
-  "tests": [],
-  "blocker": null,
-  "nextAction": "Execute fresh P28 focused regression against exact readback candidate 5e373a21292f22be46ce8b311af9b1ec606b6874, then persist the actual result before any terminal publication.",
+  "tests": [
+    {
+      "kind": "fresh_exact_candidate_binding",
+      "state": "PASS",
+      "testedCommit": "5e373a21292f22be46ce8b311af9b1ec606b6874",
+      "testedTree": "dce2ab917f6bcf9a6536d6a33f735b24074272aa",
+      "sixBlobMapReadback": "PASS",
+      "workflowRunId": 33969758327,
+      "workflowJobId": 101316062575
+    },
+    {
+      "kind": "compile_syntax",
+      "state": "PASS",
+      "count": 4,
+      "scope": "provenance_chain.py,durable_session.py,test_provenance_chain.py,test_durable_session.py plus Windows CMD contract in focused tests"
+    },
+    {
+      "kind": "durable_session_focused",
+      "state": "PASS",
+      "passed": 16,
+      "failed": 0,
+      "coverage": "valid chain; monotonic states; cross-candidate and identity mismatch rejection; explicit/unrelated epoch transition; stale P18 ACK; P17 dependency hash; fixture Owner receipt rejection; P20 CAS/hash rejection; P23 cross-session rejection; digest stability; atomic persistence/terminal immutability; Python/CMD syntax; safety static scan"
+    },
+    {
+      "kind": "compatibility_provenance_focused",
+      "state": "PASS",
+      "passed": 20,
+      "failed": 0,
+      "coverage": "full-chain fixture and fail-closed candidate/session/identity/epoch/ACK/P17/P20/P23/digest/tamper/immutability/verify-only/CLI/safety cases"
+    },
+    {
+      "kind": "safety_static_scan",
+      "state": "PASS",
+      "forbiddenRuntimePrimitivesFound": 0
+    }
+  ],
+  "freshFocusedTestSummary": {
+    "state": "PASS",
+    "testedCommit": "5e373a21292f22be46ce8b311af9b1ec606b6874",
+    "testedTree": "dce2ab917f6bcf9a6536d6a33f735b24074272aa",
+    "candidateImplementationBytesChangedAfterTest": false,
+    "durableSessionTests": "16/16 PASS",
+    "compatibilityProvenanceTests": "20/20 PASS",
+    "compileSyntax": "PASS",
+    "safetyStaticScan": "PASS",
+    "oldP26Historical13Of13Reused": false,
+    "superseded9a02856EvidenceReused": false,
+    "workflowRunId": 33969758327,
+    "workflowJobId": 101316062575,
+    "testHarnessBranch": "codex/p28-fresh-focused-69884841",
+    "testHarnessAddedCommit": "ca5751973bc62695dc17d7aa942bd5401ad1af4f",
+    "testHarnessRemovedCommit": "9cf1e2e8ca21c05a051f55f4fba52b942e849f95",
+    "testTargetCheckoutWasExactCandidate": true
+  },
+  "blocker": {
+    "code": "P28_LIVE_CLAIM_FILES_NOT_MOUNTED_IN_CURRENT_CONNECTED_EXECUTION_ENVIRONMENT",
+    "detail": "The canonical and stage claim files named by the P28 governance prompt are Windows-local durable files and are not present in the Git repository or current Linux execution filesystem. The prior PROGRESS checkpoint records exact-token ACTIVE, but that snapshot is not being misrepresented as a new live readback. Claim close is therefore not performed from this environment."
+  },
+  "nextAction": "From an execution environment with the existing P28 canonical/stage claim durable paths mounted, live-read exact token 69884841cf571855163ab7db0ac663dc, publish RESULT bound to testedCommit 5e373a21292f22be46ce8b311af9b1ec606b6874, close both exact-token claims, then PROGRESS TERMINAL/100 and WORKER_RESULT terminal commit. Do not rerun tests unless implementation bytes change.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
   "realWofAcceptance": "NOT_RUN",
   "ownerVisualAcceptance": "NOT_RUN",
   "visibleProof": "NOT_PROVEN",
   "alphaLiveMoved": false,
-  "updatedAtUtc": "2026-09-05T13:03:10Z"
+  "updatedAtUtc": "2026-09-05T13:45:25Z"
 }
