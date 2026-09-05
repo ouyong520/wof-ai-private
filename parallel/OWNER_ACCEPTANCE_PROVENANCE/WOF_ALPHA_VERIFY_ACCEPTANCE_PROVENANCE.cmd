@@ -3,8 +3,8 @@ setlocal
 set "HERE=%~dp0"
 where py >nul 2>nul
 if %ERRORLEVEL%==0 (
-  py -3 "%HERE%provenance_chain.py" %*
+  py -3 "%HERE%durable_session.py" %*
 ) else (
-  python "%HERE%provenance_chain.py" %*
+  python "%HERE%durable_session.py" %*
 )
 exit /b %ERRORLEVEL%
