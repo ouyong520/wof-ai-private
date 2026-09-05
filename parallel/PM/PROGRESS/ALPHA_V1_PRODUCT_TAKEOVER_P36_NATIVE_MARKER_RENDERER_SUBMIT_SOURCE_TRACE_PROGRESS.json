@@ -1,0 +1,34 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P36_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE",
+  "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-submit-source-trace-v1",
+  "claimToken": "222df9c7af3d836a06c928105d5d3419",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 5,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "6af80330fbf5eed3c62e82b8ebf4a3e5257d1cba",
+  "lastKnownGoodCommit": null,
+  "implementationCommits": [],
+  "completed": [
+    "Fresh main read and P36 START_PROMPT read",
+    "Canonical dedup claim created and exact-token readback verified",
+    "Stage claim created and exact-token readback verified"
+  ],
+  "remaining": [
+    "Read P29/P32 authority and renderer/source-trace runtime code",
+    "Identify strongest checked-in displayed renderer submit causal hook",
+    "Implement bounded read-only source-trace proof producer and focused tests if source path exists",
+    "Create durable tested candidate and run terminal-significant focused self-check",
+    "Publish RESULT and close claims"
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "Inspect P29/P32 contracts and the checked-in renderer submit/runtime source path, then implement only the narrowest truthful source-trace producer.",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "updatedAtUtc": "2026-09-05T16:47:45Z"
+}
