@@ -5,6 +5,12 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.canonical-overlay-product-plan-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.canonical-overlay-product-plan-v1.json",
   "claimToken": "e6577fbdd88be2575cd71a41edb17f423fdc7607afaf86f5",
-  "state": "ACTIVE",
-  "startCommit": "fed0b516208937ea84ca1a3f48e15bb721ccd28a"
+  "state": "COMPLETE",
+  "startCommit": "fed0b516208937ea84ca1a3f48e15bb721ccd28a",
+  "implementationCommits": [
+    "729892ec397aff0b8e445d92faa754b26a5c466b"
+  ],
+  "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P8_CANONICAL_OVERLAY_PRODUCT_PLAN_RESULT.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P8_CANONICAL_OVERLAY_PRODUCT_PLAN_RESULT.md",
+  "resultCommit": "3ff70a22622a17fc3052803d3c190c743b064d6b"
 }
