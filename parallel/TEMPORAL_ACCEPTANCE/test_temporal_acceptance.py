@@ -185,6 +185,21 @@ class TemporalAcceptanceTests(unittest.TestCase):
         self.assertEqual(report["aggregate"]["duplicateDrawAcknowledgementCount"], 1)
         self.assertEqual(report["aggregate"]["staleDrawAcknowledgementRejectionCount"], 0)
 
+    def test_draw_ack_after_suppression_and_revoked_ledger_generation_are_stale(self):
+        rows = [
+            obs(1, 1, transport=10, canonical_sample=1.0, acks=[ack(1, transport=10, sample_at=1.0, evidence_generation=1)]),
+            obs(2, 2, state="SUPPRESSED", reason="ANCHOR_REVOKED", presence="PRESENT", geometry=False,
+                transport=10, canonical_sample=1.0, acks=[ack(1, transport=10, sample_at=1.0, evidence_generation=1)]),
+            obs(3, 3, transport=30, canonical_sample=3.0, acks=[ack(2, transport=30, sample_at=3.0, evidence_generation=2)]),
+            obs(4, 4, transport=40, canonical_sample=4.0, acks=[ack(3, transport=40, sample_at=4.0, evidence_generation=1)]),
+        ]
+        report = p24.analyze_bundle(bundle(rows))
+        self.assertEqual(report["aggregate"]["acceptedDrawAcknowledgementCount"], 2)
+        self.assertEqual(report["aggregate"]["staleDrawAcknowledgementRejectionCount"], 2)
+        self.assertEqual(report["rejectionReasons"]["DRAW_ACK_AFTER_SUPPRESSION_OR_ABSENCE"], 1)
+        self.assertEqual(report["rejectionReasons"]["DRAW_ACK_EVIDENCE_GENERATION_REVOKED"], 1)
+        self.assertEqual(report["aggregate"]["classification"], "STALE_OR_MISMATCH")
+
     def test_p16_p18_snapshots_are_binding_only_and_do_not_create_continuity(self):
         source = {
             "p16": {"schema": p24.P16_SCHEMA, "visibleProof": "NOT_PROVEN"},
