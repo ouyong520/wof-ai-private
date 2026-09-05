@@ -1,4 +1,4 @@
-name: Alpha P19 Final Canonical Candidate
+name: Alpha Final Canonical Candidate Rebuild Contract
 
 on:
   push:
@@ -6,15 +6,17 @@ on:
     paths:
       - 'parallel/OWNER_ONECLICK/final_canonical_candidate.py'
       - 'parallel/OWNER_ONECLICK/test_final_canonical_candidate.py'
+      - 'parallel/OWNER_ONECLICK/post_repair_final_candidate_rebuild.py'
+      - 'parallel/OWNER_ONECLICK/test_post_repair_final_candidate_rebuild.py'
       - 'parallel/OWNER_ONECLICK/WOF_ALPHA_BUILD_FINAL_CANONICAL_CANDIDATE.cmd'
       - '.github/workflows/alpha-p19-final-canonical-candidate.yml'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  build-attest:
+  rebuild-contract:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,23 +28,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: P19 focused compile and deterministic fixtures
+      - name: Compile final-candidate rebuild code
         shell: bash
         run: |
-          python -m py_compile parallel/OWNER_ONECLICK/final_canonical_candidate.py parallel/OWNER_ONECLICK/test_final_canonical_candidate.py
+          python -m py_compile \
+            parallel/OWNER_ONECLICK/final_canonical_candidate.py \
+            parallel/OWNER_ONECLICK/test_final_canonical_candidate.py \
+            parallel/OWNER_ONECLICK/post_repair_final_candidate_rebuild.py \
+            parallel/OWNER_ONECLICK/test_post_repair_final_candidate_rebuild.py
+      - name: Focused deterministic rebuild regression
+        shell: bash
+        run: |
           cd parallel/OWNER_ONECLICK
-          python -m unittest -v test_final_canonical_candidate.py
-      - name: Build and verify exact final candidate
+          python -m unittest -v test_final_canonical_candidate.py test_post_repair_final_candidate_rebuild.py
+      - name: Assert contract verification emitted no repository candidate changes
         shell: bash
-        run: python parallel/OWNER_ONECLICK/final_canonical_candidate.py --root . build-verify --source "$GITHUB_SHA"
-      - name: Commit generated candidate, attestation, and stable pointer
-        shell: bash
-        run: |
-          git config user.name 'Alpha P19 Worker'
-          git config user.email 'alpha-p19@users.noreply.github.com'
-          git add parallel/OWNER_ONECLICK/CANDIDATES/FINAL_CANONICAL parallel/OWNER_ONECLICK/CANDIDATES/LATEST_FINAL_CANONICAL_CANDIDATE.json
-          git diff --cached --quiet && { echo 'No generated changes'; exit 1; }
-          git commit -m "Alpha P19: emit final canonical candidate ${GITHUB_SHA::12}"
-          git fetch origin main
-          git rebase origin/main
-          git push origin HEAD:main
+        run: git diff --exit-code -- parallel/OWNER_ONECLICK/CANDIDATES
