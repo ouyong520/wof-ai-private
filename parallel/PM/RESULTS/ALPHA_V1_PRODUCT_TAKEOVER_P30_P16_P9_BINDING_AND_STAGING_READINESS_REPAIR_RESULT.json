@@ -1,0 +1,83 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR",
+  "dedupKey": "alpha.v1.product-takeover.p16-p9-binding-staging-readiness-repair-v1",
+  "claimToken": "07c4ebfe2077a52b842c5c53d2f3cd05",
+  "state": "COMPLETE",
+  "verdict": "Repo-side P9/P1 binding and P16 staged-readiness seams are repaired on the exact durable candidate and passed focused deterministic self-check; live WOF acceptance remains intentionally unrun.",
+  "startCommit": "c97603ef0c217a859d0ae230ade62fcfee4844e8",
+  "testedCommit": "90094a656ab311f18b0a758716dc97c3f8df092d",
+  "testedTree": "efcc1b3e517c488ea1e8aa6b6bddcf9efcfea2ed",
+  "implementationCommits": [
+    "30515c69b4c6296bf2867bbd8a8a9634c9a9da4e",
+    "9aee7bdac52a64dc5b98a70781f100fde125d209",
+    "764583e4ef444c66d2247547ed8d04d718a2ca49",
+    "f351dc3f83f5850dc0b8b0ccc1c8d4385a607104",
+    "27e5e51bc975d050770e3d7ef7aae2606b7d2155",
+    "8b93701802a86c5d4a07779c96a3ba8f4bb590ec",
+    "90094a656ab311f18b0a758716dc97c3f8df092d"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/OWNER_STAGING/p21_acceptance.py",
+    "parallel/OWNER_STAGING/p21_runtime.py",
+    "parallel/OWNER_STAGING/exact_candidate_staging_acceptance.py",
+    "parallel/PYLAUNCH/wof_launcher/alpha_runtime.py",
+    "parallel/PYLAUNCH/wof_launcher/production_p1_overlay.py",
+    "parallel/OWNER_STAGING/test_p30_p16_p9_binding_staging_readiness.py",
+    "parallel/PYLAUNCH/tests/test_alpha_p30_p9_p1_binding.py"
+  ],
+  "tests": [
+    {
+      "name": "P30 exact durable candidate identity readback",
+      "result": "PASS",
+      "detail": "Commit 90094a656ab311f18b0a758716dc97c3f8df092d resolves to tree efcc1b3e517c488ea1e8aa6b6bddcf9efcfea2ed and all seven recorded file/blob identities matched fresh readback."
+    },
+    {
+      "name": "P30 focused deterministic regression",
+      "result": "PASS",
+      "detail": "Fresh isolated deterministic execution passed 9/9 P30 seam checks: staged manifest copy/hash/binding, post-verification tamper rejection, VERIFYING_WORLD rejection, complete P16 authority requirements, staged wait behavior, P9->P8->HUD ordering, precise P9 fail-closed diagnostics, and explicit staged manifest identity validation."
+    },
+    {
+      "name": "P30 static safety and proof-boundary readback",
+      "result": "PASS",
+      "detail": "Exact candidate retains readOnly=true, ramWrites=0, inputInjection=false, staged/prepromotion boundaries, and no alpha-live promotion semantics."
+    },
+    {
+      "name": "Real WOF acceptance",
+      "result": "NOT_RUN",
+      "detail": "Intentionally not run under P30 authority."
+    },
+    {
+      "name": "Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Intentionally not requested or run under P30 authority."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_PROVEN",
+    "detail": "Focused deterministic checks prove the repo-side P9/P1/P16 staging seam only; no real-WOF or Owner-visible proof was produced."
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM may integrate/retry the repaired P30 repo-side seam in a separately authorized live acceptance flow; P30 itself performs no promotion or real-game run.",
+  "evidencePaths": [
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR_PROGRESS.json",
+    "parallel/OWNER_STAGING/test_p30_p16_p9_binding_staging_readiness.py",
+    "parallel/PYLAUNCH/tests/test_alpha_p30_p9_p1_binding.py"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "alphaLiveMoved": false
+  }
+}
