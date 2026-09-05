@@ -4,30 +4,42 @@
   "dedupKey": "alpha.v1.product-takeover.accepted-repair-integrated-candidate-materialization-v1",
   "claimToken": "d8d6f273a87aadf9fc2e3e84a84824e8",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 10,
-  "implementationState": "NOT_STARTED",
-  "selfCheckState": "NOT_RUN",
+  "workState": "IMPLEMENTING",
+  "overallPercent": 70,
+  "implementationState": "IN_PROGRESS",
+  "selfCheckState": "IN_PROGRESS",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "a9eba304aaae591b14a9dbadb5c37453a9e53ae0",
-  "lastKnownGoodCommit": null,
+  "lastKnownGoodCommit": "3e9ae7e725e3dd32d1172866fef11d3ff89e163f",
   "implementationCommits": [],
   "completed": [
-    "Read P38 START_PROMPT, root AGENTS.md, product governance, dedup-v2 guard, progress protocol, result protocol",
-    "Confirmed no pre-existing P38 canonical or stage claim",
-    "Created and exact-read verified canonical + stage claims with matching claimToken"
+    "Read terminal P33/P35/P34 authority and exact P33 rebuild implementation contract",
+    "Confirmed P33 tested rebuild script blob remains exact on current main",
+    "Confirmed P35 exact source 82b0b09ecd902f502ae5509bcb3ee5a713f43fee/tree e5dba33a2cd579826704d3f78ec2587ee2305a5a",
+    "Materialized one P38-only fresh candidate/attestation/rebuild-manifest/pointer/provenance set on durable worker commit 3e9ae7e725e3dd32d1172866fef11d3ff89e163f",
+    "GitHub Actions run 33979187125/job 101341180297 completed SUCCESS using the P33 mechanism",
+    "Repeated identical-source materialization produced identical SHA256 set",
+    "Historical P19 source 0752796369f1687435a1b1647e66ea0b5ab07688 was rejected with STALE_P19_SOURCE_COMMIT_REJECTED",
+    "P32 remained BLOCKED/integrationReady=false and P36 was ACTIVE without terminal RESULT at materialization",
+    "alpha-live observed ref did not move during materialization"
   ],
   "remaining": [
-    "Read terminal P33/P35 authority, P33 rebuild implementation/tests, P35 provenance, current candidate/manifest/runtime pins, P34 readiness contract",
-    "Materialize fresh deterministic integrated candidate/provenance from exact P35 source",
-    "Run focused deterministic checks and exact readback",
-    "Publish terminal RESULT and close claims"
+    "Publish only the five exact materialized P38 blobs to current main without the runner workflow and without changing the global latest-candidate pointer",
+    "Fresh-read exact main blob identities/hashes and recheck P29/P30/P31 ancestry",
+    "Record READY_TO_PUBLISH checkpoint",
+    "Publish terminal RESULT, close claims, and write terminal progress"
   ],
-  "tests": [],
+  "tests": [
+    {"name": "P38 isolated P33 materialization workflow", "result": "PASS", "detail": "Run 33979187125/job 101341180297 completed success."},
+    {"name": "repeated deterministic materialization", "result": "PASS", "detail": "Second build-verify produced byte-identical SHA256 inventory for the same exact source."},
+    {"name": "stale historical P19 rejection", "result": "PASS", "detail": "Exact historical source was rejected with STALE_P19_SOURCE_COMMIT_REJECTED."},
+    {"name": "P32 BLOCKED / P36 pending fail-closed status", "result": "PASS", "detail": "P32 terminal BLOCKED was preserved and P36 had no terminal result at materialization."},
+    {"name": "promotion / alpha-live movement", "result": "PASS", "detail": "No promotion performed and alpha-live ref before/after materialization was identical."}
+  ],
   "blocker": null,
-  "nextAction": "Read P33/P35/P34 authority and deterministic rebuild contract, then materialize only the authorized P38 candidate/provenance artifact.",
+  "nextAction": "Publish only the five exact tested P38 artifact blobs to current main, then fresh-read them and finish terminal self-check.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:48:30Z"
+  "updatedAtUtc": "2026-09-05T16:53:00Z"
 }
