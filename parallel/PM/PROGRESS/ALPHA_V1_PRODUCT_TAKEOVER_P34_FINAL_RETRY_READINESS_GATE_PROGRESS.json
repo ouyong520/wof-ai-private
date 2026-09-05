@@ -4,35 +4,45 @@
   "dedupKey": "alpha.v1.product-takeover.final-retry-readiness-gate-v1",
   "claimToken": "-Q3KGRVDrKFWdG2wPly3SJN4FuySDrUztftzIqDWK8Y",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 12,
-  "implementationState": "NOT_STARTED",
-  "selfCheckState": "NOT_RUN",
+  "workState": "IMPLEMENTING",
+  "overallPercent": 38,
+  "implementationState": "IN_PROGRESS",
+  "selfCheckState": "PRE_DURABLE_DRAFT_PASS_10_OF_10",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "dd0c1d494e01ee9b0bab8526bbcc265600d10267",
-  "lastKnownGoodCommit": null,
-  "implementationCommits": [],
+  "lastKnownGoodCommit": "9bfb62f95f6c0583fd4994d7c7a350dfbe9faa1f",
+  "implementationCommits": [
+    "9bfb62f95f6c0583fd4994d7c7a350dfbe9faa1f"
+  ],
   "completed": [
-    "read P34 START prompt, dispatch, root AGENTS, dedup/progress/result protocols",
+    "read P34 START prompt, dispatch, root AGENTS, dedup/progress/result protocols and current final live gate",
     "confirmed P34 canonical claim, stage claim, and terminal RESULT were absent before claim creation",
-    "read P29/P30 terminal RESULT authority and exact tested commits",
-    "observed P31 transition to terminal COMPLETE before P34 claim acquisition and will consume its terminal authority rather than prior PROGRESS",
-    "read authoritative P32 terminal BLOCKED RESULT without rewriting it to PASS",
-    "read current old final-canonical pointer and confirmed its sourceCommit predates repair stages",
-    "created and re-read P34 canonical and stage claims with the exact matching claimToken"
+    "read P29/P30 terminal RESULT authority and exact COMPLETE claims/tested commits",
+    "read P31 terminal COMPLETE RESULT and closed exact-token claims; PROGRESS was not used as terminal authority",
+    "read authoritative P32 terminal BLOCKED RESULT and matching BLOCKED claims without rewriting live dependency to PASS",
+    "read historical latest final-canonical pointer sourceCommit 0752796369f1687435a1b1647e66ea0b5ab07688 and confirmed it is pre-repair provenance",
+    "created and re-read P34 canonical and stage claims with the exact matching claimToken",
+    "implemented isolated final_retry_readiness.py fail-closed gate on durable main commit 9bfb62f95f6c0583fd4994d7c7a350dfbe9faa1f",
+    "draft focused fixture suite passed 10/10 before durable publication; this checkpoint does not treat draft tests as terminal provenance"
   ],
   "remaining": [
-    "read P31 terminal RESULT/closed claims and P32 closed claims",
-    "implement isolated parallel/OWNER_RETRY_READINESS deterministic fail-closed gate and focused tests",
-    "create durable tested candidate commit and bind PROGRESS to exact bytes",
-    "run focused deterministic self-check on exact durable candidate",
-    "publish terminal RESULT and close canonical/stage claims"
+    "durably publish focused deterministic tests and readiness contract documentation",
+    "bind PROGRESS to the final durable candidate commit/blob identities",
+    "fresh-read exact candidate bytes and rerun terminal-significant focused self-check",
+    "evaluate current repository truth and confirm it remains BLOCKED for truthful reasons",
+    "publish terminal RESULT, close canonical/stage claims, and publish terminal PROGRESS"
   ],
-  "tests": [],
+  "tests": [
+    {
+      "name": "P34 draft focused deterministic readiness regression",
+      "result": "PASS",
+      "detail": "10/10 passed on local draft bytes before durable candidate publication; nonterminal evidence only."
+    }
+  ],
   "blocker": null,
-  "nextAction": "Read final P31/P32 terminal claim authority, then implement isolated readiness gate.",
+  "nextAction": "Publish tests/docs, record final durable candidate commit and exact blobs, then rerun focused tests on byte-identical readback.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:03:42Z"
+  "updatedAtUtc": "2026-09-05T16:08:49Z"
 }
