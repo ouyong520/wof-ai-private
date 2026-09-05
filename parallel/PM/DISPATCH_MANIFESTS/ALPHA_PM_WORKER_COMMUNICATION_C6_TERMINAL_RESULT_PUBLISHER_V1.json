@@ -1,0 +1,19 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_PM_WORKER_COMMUNICATION_C6_TERMINAL_RESULT_PUBLISHER_V1",
+  "createdAtUtc": "2026-09-05T05:19:18Z",
+  "authorityCommit": "feadaf3ef022d1c0fdd9b003177dcfbdd74ff880",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C6_TERMINAL_RESULT_PUBLISHER",
+      "promptPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C6_TERMINAL_RESULT_PUBLISHER_START_PROMPT.md",
+      "dedupKey": "alpha.pm.worker-communication.terminal-result-publisher-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C6_TERMINAL_RESULT_PUBLISHER_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C6_TERMINAL_RESULT_PUBLISHER_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_PM_WORKER_COMMUNICATION_C6_TERMINAL_RESULT_PUBLISHER"
+    }
+  ]
+}
