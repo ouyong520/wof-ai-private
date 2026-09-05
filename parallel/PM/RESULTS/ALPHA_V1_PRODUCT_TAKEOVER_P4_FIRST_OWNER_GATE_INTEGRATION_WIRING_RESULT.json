@@ -1,0 +1,63 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P4_FIRST_OWNER_GATE_INTEGRATION_WIRING",
+  "dedupKey": "alpha.v1.product-takeover.first-owner-gate.integration-wiring-v1",
+  "claimToken": "od43xqay5c1_UceGAPfhQNjtPwbe0hq-mDaraeNP_sA",
+  "state": "COMPLETE",
+  "verdict": "The fixed-draw Alpha runtime now automatically routes every fixed-gate status callback through the accepted P3 feedback classifier, refreshes LATEST_ALPHA_FEEDBACK.txt without Owner commands, and fails closed on feedback-helper errors without losing P1 machine status.",
+  "startCommit": "6316f451fe178b414ac1515cf64f5d13cdeb97d4",
+  "implementationCommits": [
+    "5b5c61f9f0b91c48ba77031fbbb9637ef60d3575"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PYLAUNCH/render_authority_measurement_entry.py"
+  ],
+  "tests": [
+    {
+      "name": "committed source compile and blob identity check",
+      "result": "PASS",
+      "detail": "The exact production source compiled successfully; its locally computed Git blob SHA bf1edbda1adf1b4d60d1e648a5a97474b189c900 exactly matches the GitHub content SHA returned by implementation commit 5b5c61f9f0b91c48ba77031fbbb9637ef60d3575."
+    },
+    {
+      "name": "bounded fixed-status to feedback refresh smoke",
+      "result": "PASS",
+      "detail": "Using temporary local artifacts, ALPHA_FIXED_DRAW_STATUS.json with FIXED_TEST_ACTUALLY_DRAWN was consumed through the new refresh wiring and produced LATEST_ALPHA_FEEDBACK.txt with MACHINE_DRAW_PROOF_PRESENT_AWAITING_OWNER_VISUAL."
+    },
+    {
+      "name": "feedback-helper execution failure fail-closed smoke",
+      "result": "PASS",
+      "detail": "A simulated P3 RuntimeError left ALPHA_FIXED_DRAW_STATUS.json byte-for-byte unchanged and atomically replaced LATEST_ALPHA_FEEDBACK.txt with routingClassification=FEEDBACK_INPUT_MALFORMED, an exact OWNER_FEEDBACK_REFRESH_FAILED reason, and ownerVisualConfirmation=NOT_RECORDED."
+    },
+    {
+      "name": "real WOF Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Authority explicitly forbids asking Owner to test in P4 and forbids moving alpha-live; live visual confirmation remains a PM-owned post-promotion boundary."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_PROVEN",
+    "classification": "IMPLEMENTATION_ONLY",
+    "detail": "Automatic runtime status-to-feedback wiring and fail-closed behavior are proven with bounded local artifacts. No real-WOF visual claim or Owner visual PASS is made."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM should review and accept implementation commit 5b5c61f9f0b91c48ba77031fbbb9637ef60d3575, then promote the coherent first-Owner-gate candidate to alpha-live before any bounded Owner visual gate.",
+  "evidencePaths": [
+    "parallel/PYLAUNCH/render_authority_measurement_entry.py",
+    "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P1_RUNTIME_FIXED_TEST_GATE_SUBRESULT.md",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P2_PERMANENT_LAUNCHER_GATE_MODE_SUBRESULT.md",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P3_OWNER_FEEDBACK_ACCEPTANCE_HARNESS_SUBRESULT.md",
+    "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P4_FIRST_OWNER_GATE_INTEGRATION_WIRING_START_PROMPT.md",
+    "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_PRODUCT_TAKEOVER_P4_FIRST_OWNER_GATE_INTEGRATION_WIRING_V1.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
