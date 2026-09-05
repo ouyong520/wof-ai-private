@@ -5,37 +5,56 @@
   "claimToken": "69884841cf571855163ab7db0ac663dc",
   "claimStateAtCheckpoint": "ACTIVE",
   "workState": "IMPLEMENTING",
-  "overallPercent": 12,
-  "implementationState": "IN_PROGRESS",
-  "selfCheckState": "NOT_RUN",
+  "overallPercent": 72,
+  "implementationState": "DURABLE_CANDIDATE",
+  "selfCheckState": "READY_TO_RUN",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "5c4562b884ef76a934ef5ad26206cbca537c1f5e",
   "lastKnownGoodCommit": null,
-  "implementationCommits": [],
+  "candidateCommit": "9a02856edf9be1768cd0fc8b8235cb13ac3b4cfd",
+  "implementationCommits": [
+    "31841f5fb824cca525264e70fc620a60c5011359",
+    "ea7e55cd33bdb27d0d00922f2c84fc829abbadfe",
+    "152251437bd5c51b39d1716ecfefa27e9682c009",
+    "9a02856edf9be1768cd0fc8b8235cb13ac3b4cfd"
+  ],
+  "candidateChangedFiles": [
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/README.md",
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/WOF_ALPHA_VERIFY_ACCEPTANCE_PROVENANCE.cmd",
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/provenance_chain.py",
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/test_provenance_chain.py"
+  ],
+  "candidateBlobMap": {
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/README.md": "7d584ee593a53c1d40254f00d609ed25f9c76348",
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/WOF_ALPHA_VERIFY_ACCEPTANCE_PROVENANCE.cmd": "cd5be6fab3530d2db636940679c8de668d3a085d",
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/provenance_chain.py": "f2f36bf33384f5e9f8169327875b0984d01cdc6f",
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/test_provenance_chain.py": "a72f9a9c7c76a00b43031d71d9cb92a7e34e4e33"
+  },
   "completed": [
     "read P28 START prompt, dispatch authority, manifest, terminal P26 RESULT, root AGENTS/product governance, dedup guard, progress protocol, result protocol and P26 START prompt",
-    "verified P26 canonical and stage claims remain terminal BLOCKED with exact historical token d60b10ee92743c2181969d475ac93164 and no recovery allowed",
-    "verified parallel/OWNER_ACCEPTANCE_PROVENANCE is absent on latest main so no conflicting active ownership exists",
-    "acquired and re-read new dedup-v2 P28 canonical and stage claims with exact claimToken 69884841cf571855163ab7db0ac663dc",
-    "re-read P28 canonical/stage claim commit evidence and confirmed exact claimToken 69884841cf571855163ab7db0ac663dc is still ACTIVE before implementation"
+    "verified P26 remains terminal BLOCKED and did not reopen or recover it",
+    "re-read P28 dedup-v2 canonical and stage claims with exact ACTIVE claimToken 69884841cf571855163ab7db0ac663dc",
+    "read P19/P21/W3/P16/P18/P22/P24/P17/P20/P23 and active P25 artifact/schema boundaries needed for strict provenance validation",
+    "implemented the new P28 provenance/session chain only under parallel/OWNER_ACCEPTANCE_PROVENANCE",
+    "created durable implementation candidate 9a02856edf9be1768cd0fc8b8235cb13ac3b4cfd before any P28 focused test",
+    "Git compare readback confirms exactly four P28-owned implementation files changed from the pre-implementation checkpoint",
+    "Git candidate directory readback recorded exact committed blob identities for all four files"
   ],
   "remaining": [
-    "inspect relevant upstream P16-P25 artifact schemas/contracts needed for strict provenance validation",
-    "implement new provenance/session chain under parallel/OWNER_ACCEPTANCE_PROVENANCE only",
-    "create durable implementation candidate commit before terminal-significant focused tests",
-    "read back exact candidate files and record tested candidate SHA/blob map in PROGRESS",
-    "run fresh P28 focused tests against that exact committed candidate; do not reuse P26 historical 13/13",
-    "publish RESULT.json/RESULT.md, close exact-token P28 claims, then update PROGRESS TERMINAL/100 and WORKER_RESULT commit"
+    "run fresh P28 compile/focused tests against the exact committed candidate bytes; do not reuse P26 historical 13/13",
+    "if any implementation byte changes, create a new durable candidate, update this PROGRESS candidate binding and rerun affected fresh tests",
+    "publish RESULT.json/RESULT.md with testedCommit bound to the final actually tested candidate",
+    "close exact-token P28 canonical/stage claims and update PROGRESS TERMINAL/100 in WORKER_RESULT terminal commit"
   ],
   "tests": [],
   "blocker": null,
-  "nextAction": "Inspect exact P16-P25 artifact contracts on current main, then implement the bounded P28 provenance module without touching P26 or alpha-live.",
+  "nextAction": "Materialize the exact Git-readback candidate bytes and run fresh P28 focused tests only against candidate 9a02856edf9be1768cd0fc8b8235cb13ac3b4cfd.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
   "realWofAcceptance": "NOT_RUN",
   "ownerVisualAcceptance": "NOT_RUN",
   "visibleProof": "NOT_PROVEN",
   "alphaLiveMoved": false,
-  "updatedAtUtc": "2026-09-05T12:16:00Z"
+  "updatedAtUtc": "2026-09-05T12:30:33Z"
 }
