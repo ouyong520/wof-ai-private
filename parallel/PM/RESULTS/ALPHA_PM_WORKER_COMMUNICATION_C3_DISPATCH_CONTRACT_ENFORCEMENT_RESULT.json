@@ -1,0 +1,71 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C3_DISPATCH_CONTRACT_ENFORCEMENT",
+  "dedupKey": "alpha.pm.worker-communication.dispatch-contract-enforcement-v1",
+  "claimToken": "1d77218c75654ae4895e3229b3237a66",
+  "state": "COMPLETE",
+  "verdict": "Alpha PM dispatches now fail closed unless Git authority, immutable manifest membership, deterministic RESULT paths, dedup-v2 metadata, and terminal reporting contract validate together.",
+  "startCommit": "45ad70ad6c059a44a5ec93405aaef2eb96493d61",
+  "implementationCommits": [
+    "2fee0f88a1fa9f2852b6d288ec0cca8a89423390",
+    "ab51fd8e3572777f9cc62fdc8c5400550b478116",
+    "4b3506a2295041dd181db1eef2fbc4cf64bfc2b2",
+    "6a6427ec6d3f807388190438ccd0917d0bf47adf",
+    "6cb74ff5d94320194e497e27ba7fa28b6b9d6a44",
+    "cb02af536c6e54ae6163c835a3f14087c7ece2c1",
+    "2fe039b7f343d71910f65603e4d6d01cc2ba69c6",
+    "2c0e3433f42c8ec9b5aab6f49f7e3ebc7635baa9",
+    "358a487dff636986e63bdae86c32d86ccad894b2"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PM/tools/alpha_worker_dispatch_contract.py",
+    "parallel/PM/tests/test_alpha_worker_dispatch_contract.py",
+    "parallel/PM/templates/alpha_worker_start_prompt_header.md",
+    "parallel/PM/ALPHA_PM_DISPATCH_CONTRACT_V1.md",
+    "parallel/PM/ALPHA_PM_SHORT_HANDOFF_FORMAT.md"
+  ],
+  "tests": [
+    {
+      "name": "python parallel/PM/tests/test_alpha_worker_dispatch_contract.py",
+      "result": "PASS",
+      "detail": "20 focused tests passed covering valid 1/2/3-worker dispatches, missing prompt metadata, deterministic path mismatches, missing terminal protocol, independent-validation metadata, exact C2 final manifest shape, bootstrap draft compatibility, slot rules, malformed entries, RESULT collisions, shared/global status paths, immutability, prompt/manifest mismatch, and machine-readable CLI output."
+    },
+    {
+      "name": "C2 final manifest compatibility",
+      "result": "PASS",
+      "detail": "The C2-owned final manifest contract validates under C3 without rewriting C2 schema/template ownership."
+    },
+    {
+      "name": "C3 bootstrap dispatch contract smoke",
+      "result": "PASS",
+      "detail": "The existing immutable C3 draft solo manifest and current C3 prompt contract validate as compatible, preserving bootstrap history while new manifests use the final C2 schema."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_APPLICABLE",
+    "classification": "NOT_APPLICABLE",
+    "detail": "Coordination-only Git protocol/tooling; no Alpha runtime or Owner-visible product behavior was changed."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM should run validate-dispatch on every new immutable Alpha worker manifest before sending the short chat handoff, then read terminal RESULT.json paths declared by that manifest.",
+  "evidencePaths": [
+    "parallel/PM/ALPHA_PM_DISPATCH_CONTRACT_V1.md",
+    "parallel/PM/tools/alpha_worker_dispatch_contract.py",
+    "parallel/PM/tests/test_alpha_worker_dispatch_contract.py",
+    "parallel/PM/templates/alpha_worker_start_prompt_header.md",
+    "parallel/PM/ALPHA_PM_SHORT_HANDOFF_FORMAT.md",
+    "parallel/PM/schemas/alpha_dispatch_manifest_v1.schema.json",
+    "parallel/PM/templates/alpha_dispatch_manifest_v1.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
