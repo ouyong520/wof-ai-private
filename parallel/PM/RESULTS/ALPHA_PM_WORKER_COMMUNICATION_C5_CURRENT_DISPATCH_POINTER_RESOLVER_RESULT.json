@@ -1,0 +1,71 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C5_CURRENT_DISPATCH_POINTER_RESOLVER",
+  "dedupKey": "alpha.pm.worker-communication.current-dispatch-pointer-resolver-v1",
+  "claimToken": "16020c08f86b95801794476a72a2b51f",
+  "state": "COMPLETE",
+  "verdict": "PM-owned current-dispatch pointer contract, exact manifest identity resolver, and C2 RESULT delegation are implemented and tested, enabling Git-only dispatch recovery without chat-memory reconstruction.",
+  "startCommit": "b38e53779e92a5c2bb84ff418c8873238b555342",
+  "implementationCommits": [
+    "fa3d17a72ff12e429dd5ff01d83ec6394caaee94",
+    "50003aa4f2aca2113fca7db01ac7f6b190f7e077",
+    "55932eb996162e631b3ffd9a8bba0dd7c3c32625",
+    "e37e7d93dd127149a6d458eeef04d2cfa4fb7c56",
+    "7f4be30176bc0fec02d4a52c86d34741bbad3b93"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PM/schemas/alpha_current_dispatch_v1.schema.json",
+    "parallel/PM/templates/alpha_current_dispatch_v1.json",
+    "parallel/PM/tools/alpha_pm_current_dispatch.py",
+    "parallel/PM/tests/test_alpha_pm_current_dispatch.py",
+    "parallel/PM/ALPHA_PM_CURRENT_DISPATCH_PROTOCOL_V1.md"
+  ],
+  "tests": [
+    {
+      "name": "unit: test_alpha_pm_current_dispatch",
+      "result": "PASS",
+      "detail": "16 focused tests passed covering pointer validation, exact manifest resolution, slots 1/3, missing RESULT=NOT_FINISHED, COMPLETE/BLOCKED mix, malformed result, missing/malformed/non-PM pointer, missing/immutable-false/unsupported manifest, dispatch/repository/authority/hash mismatch, traversal, unknown slot, and Git-only new-session reconstruction."
+    },
+    {
+      "name": "python compile: C5 resolver and tests",
+      "result": "PASS",
+      "detail": "alpha_pm_current_dispatch.py and test_alpha_pm_current_dispatch.py compiled successfully."
+    },
+    {
+      "name": "schema/template validation",
+      "result": "PASS",
+      "detail": "alpha_current_dispatch_v1.json validates against the Draft 2020-12 alpha_current_dispatch_v1.schema.json contract."
+    },
+    {
+      "name": "template resolution smoke: C4/C5 manifest slots 1 2",
+      "result": "PASS",
+      "detail": "The non-authoritative pointer template bound the exact C4/C5 immutable manifest by dispatchId, authorityCommit, and SHA-256, then selected slots 1 and 2 through C2-style RESULT truth without chat state."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_APPLICABLE",
+    "classification": "NOT_APPLICABLE",
+    "detail": "Coordination-only Git protocol/tooling; no Alpha runtime, HUD, renderer, updater, Collector, Unified Collector, Training Farm, or 10训 product behavior was changed."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM/coordinator may activate parallel/PM/CURRENT_DISPATCH.json for a selected immutable manifest using the C5 schema/template, then new PM sessions can run alpha_pm_current_dispatch.py; ordinary workers must never write the pointer.",
+  "evidencePaths": [
+    "parallel/PM/ALPHA_PM_CURRENT_DISPATCH_PROTOCOL_V1.md",
+    "parallel/PM/tools/alpha_pm_current_dispatch.py",
+    "parallel/PM/tests/test_alpha_pm_current_dispatch.py",
+    "parallel/PM/schemas/alpha_current_dispatch_v1.schema.json",
+    "parallel/PM/templates/alpha_current_dispatch_v1.json",
+    "parallel/PM/DISPATCH_MANIFESTS/ALPHA_PM_WORKER_COMMUNICATION_C4_C5_2_WORKER_V1.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
