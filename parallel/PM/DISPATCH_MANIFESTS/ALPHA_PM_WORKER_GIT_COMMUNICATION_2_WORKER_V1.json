@@ -1,0 +1,27 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1-draft",
+  "dispatchId": "ALPHA_PM_WORKER_GIT_COMMUNICATION_2_WORKER_V1",
+  "repository": "ouyong520/wof-ai-private",
+  "authorityPath": "parallel/PM/ALPHA_PM_WORKER_GIT_COMMUNICATION_2_WORKER_DISPATCH.md",
+  "immutable": true,
+  "workers": [
+    {
+      "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C1_RESULT_ENVELOPE_VALIDATOR",
+      "promptPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C1_RESULT_ENVELOPE_VALIDATOR_START_PROMPT.md",
+      "dedupKey": "alpha.pm.worker-communication.result-envelope-validator-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C1_RESULT_ENVELOPE_VALIDATOR_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C1_RESULT_ENVELOPE_VALIDATOR_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_PM_WORKER_COMMUNICATION_C1_RESULT_ENVELOPE_VALIDATOR"
+    },
+    {
+      "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C2_DISPATCH_MANIFEST_FAST_READER",
+      "promptPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C2_DISPATCH_MANIFEST_FAST_READER_START_PROMPT.md",
+      "dedupKey": "alpha.pm.worker-communication.dispatch-manifest-fast-reader-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C2_DISPATCH_MANIFEST_FAST_READER_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C2_DISPATCH_MANIFEST_FAST_READER_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_PM_WORKER_COMMUNICATION_C2_DISPATCH_MANIFEST_FAST_READER"
+    }
+  ]
+}
