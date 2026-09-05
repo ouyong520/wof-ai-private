@@ -1,0 +1,29 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_PM_WORKER_COMMUNICATION_C7_C8_2_WORKER_V1",
+  "createdAtUtc": "2026-09-05T05:28:00Z",
+  "authorityCommit": "9f095bd4aba552e43c536ad49cf49c9f7752938d",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C7_CURRENT_DISPATCH_ACTIVATOR",
+      "promptPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C7_CURRENT_DISPATCH_ACTIVATOR_START_PROMPT.md",
+      "dedupKey": "alpha.pm.worker-communication.current-dispatch-activator-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C7_CURRENT_DISPATCH_ACTIVATOR_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C7_CURRENT_DISPATCH_ACTIVATOR_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_PM_WORKER_COMMUNICATION_C7_CURRENT_DISPATCH_ACTIVATOR"
+    },
+    {
+      "slot": 2,
+      "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C8_RESULT_EVIDENCE_VERIFIER",
+      "promptPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C8_RESULT_EVIDENCE_VERIFIER_START_PROMPT.md",
+      "dedupKey": "alpha.pm.worker-communication.result-evidence-verifier-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C8_RESULT_EVIDENCE_VERIFIER_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C8_RESULT_EVIDENCE_VERIFIER_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_PM_WORKER_COMMUNICATION_C8_RESULT_EVIDENCE_VERIFIER"
+    }
+  ]
+}
