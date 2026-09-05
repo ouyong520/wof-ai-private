@@ -100,6 +100,25 @@ async function verifySelectedIdentity(scope,mod,binding){
 }
 function stableWarningsHash(warnings){return JSON.stringify((warnings||[]).map(w=>[w.ruleId,w.slot,w.target7E,w.sourceSide,w.threatSide,w.attack,w.publication,w.evidence]));}
 function markerTargetHash(markers,projectionOk){return (projectionOk?'ok|':'invalid|')+JSON.stringify((markers||[]).map(m=>[m.slot,m.target7E,m.target]));}
+function targetForField(target7E){
+  if(target7E===0)return'P1';
+  if(target7E===4)return'P2';
+  if(target7E===8)return'P3';
+  return null;
+}
+function buildEnemyTargetSemanticMarkers(rows,sampleAt,runtimeEpoch){
+  if(!Array.isArray(rows)||!Number.isFinite(sampleAt)||typeof runtimeEpoch!=='string'||runtimeEpoch.length<16)return[];
+  const markers=[];
+  for(const s of rows){
+    if(!s||!Number.isInteger(s.slot)||s.slot<0||s.slot>=20)continue;
+    const target=targetForField(s.target7E);if(!target)continue;
+    markers.push({
+      slot:s.slot,sourceId:'enemy-slot-'+s.slot,type:s.type,target7E:s.target7E,target,
+      sampleAt,confidence:1,epoch:runtimeEpoch,projectionEpoch:runtimeEpoch
+    });
+  }
+  return markers;
+}
 
 async function install(scope,binding){
   if(!validBinding(binding))throw new Error('正式 field adapter 绑定无效');
@@ -135,18 +154,24 @@ async function install(scope,binding){
     return{slot:i,type,target7E,state99:B(a+0x99),action2A:B(a+0x2A),b2B:B(a+0x2B),body:U16(a+0x6E),attack:U16(a+0x70),frameEnd,next,value30:U32(a+0x30),timer34:U16(a+0x34),payload6C:U16(a+0x6C),enemyX,targetX,enemyWorldX:F16(a+0x04),enemyY:F16(a+0x08),enemyZ:F16(a+0x0C)};
   }
   function markerSnapshot(rows,sampleAt){
-    if(!projectionProfile)return null;
+    const semanticMarkers=buildEnemyTargetSemanticMarkers(rows,sampleAt,binding.runtimeEpoch);
+    if(!projectionProfile){
+      return{projection:null,markers:semanticMarkers,projectionOk:false,semanticProjectionIndependent:true,error:markerSetupError};
+    }
     try{
       const cameraRaw=U16(projectionProfile.cameraAddress),cameraX=cameraRaw*projectionProfile.cameraSign*projectionProfile.cameraScale;
       if(!Number.isFinite(cameraX))throw new Error('camera sample non-finite');
-      const projection={...projectionProfile,epoch:binding.runtimeEpoch,sampleAt,confidence:1,cameraRaw,cameraX},markers=[];
-      for(const s of rows){
-        const target=core.TARGETS[s.target7E]||null;
-        if(!target||![s.enemyWorldX,s.enemyY,s.enemyZ].every(Number.isFinite)||!Number.isFinite(projectionProfile.enemyHeadClearanceByType?.[String(s.type)]))continue;
-        markers.push({slot:s.slot,sourceId:'enemy-slot-'+s.slot,type:s.type,target7E:s.target7E,target,enemyX:s.enemyWorldX,enemyY:s.enemyY,enemyZ:s.enemyZ,sampleAt,confidence:1,epoch:binding.runtimeEpoch,projectionEpoch:binding.runtimeEpoch});
-      }
-      return{projection,markers,projectionOk:true,error:null};
-    }catch(error){return{projection:null,markers:[],projectionOk:false,error:String(error?.message||error)};}
+      const projection={...projectionProfile,epoch:binding.runtimeEpoch,sampleAt,confidence:1,cameraRaw,cameraX};
+      const bySlot=new Map(rows.map(s=>[s.slot,s]));
+      const markers=semanticMarkers.map(marker=>{
+        const s=bySlot.get(marker.slot);
+        const spatialOk=!!s&&[s.enemyWorldX,s.enemyY,s.enemyZ].every(Number.isFinite)&&Number.isFinite(projectionProfile.enemyHeadClearanceByType?.[String(s.type)]);
+        return spatialOk?{...marker,enemyX:s.enemyWorldX,enemyY:s.enemyY,enemyZ:s.enemyZ}:marker;
+      });
+      return{projection,markers,projectionOk:true,semanticProjectionIndependent:true,error:null};
+    }catch(error){
+      return{projection:null,markers:semanticMarkers,projectionOk:false,semanticProjectionIndependent:true,error:String(error?.message||error)};
+    }
   }
   function playerSpatialSnapshot(sampleAt){
     const players={};
@@ -172,18 +197,20 @@ async function install(scope,binding){
     Promise.resolve().then(()=>engine.step(rows,sampledAt)).then(state=>{
       if(!gate.finish(authority))return;polls++;
       const warnings=Array.isArray(state?.warnings)?state.warnings:[],hash=stableWarningsHash(warnings),changed=hash!==lastHash,heartbeat=lastPublishedAt===null||sampledAt-lastPublishedAt>=250,statePublished=changed||heartbeat;
-      if(statePublished){seq++;bc.postMessage(envelope('state',{seq,warnings,sampleAt:sampleAtEpoch}));lastHash=hash;lastPublishedAt=sampledAt;}
+      if(statePublished){seq++;bc.postMessage(envelope('state',{seq,warnings,sampleAt:sampleAtEpoch,semanticProjectionIndependent:true}));lastHash=hash;lastPublishedAt=sampledAt;}
       const spatialHeartbeat=lastPlayerSpatialPublishedAt===null||sampledAt-lastPlayerSpatialPublishedAt>=PLAYER_SPATIAL_PUBLISH_MS;
       if(playerSpatial&&(statePublished||(warnings.length>0&&spatialHeartbeat))){playerSpatialSeq++;lastPlayerSpatialError=playerSpatial.error;bc.postMessage(envelope('player-head-spatial',{playerSpatialSeq,sampleAt:sampleAtEpoch,players:playerSpatial.players,projection:playerSpatial.projection}));lastPlayerSpatialPublishedAt=sampledAt;}
       const markerState=markerSnapshot(rows,sampleAtEpoch);
-      if(markerState){lastMarkerError=markerState.error;const targetHash=markerTargetHash(markerState.markers,markerState.projectionOk),changedTarget=targetHash!==lastMarkerTargetHash,followHeartbeat=lastMarkerPublishedAt===null||sampledAt-lastMarkerPublishedAt>=50;if(changedTarget||followHeartbeat){markerSeq++;bc.postMessage(envelope('enemy-target-markers',{markerSeq,markers:markerState.markers,projection:markerState.projection}));lastMarkerTargetHash=targetHash;lastMarkerPublishedAt=sampledAt;}}
+      lastMarkerError=markerState.error;
+      const targetHash=markerTargetHash(markerState.markers,markerState.projectionOk),changedTarget=targetHash!==lastMarkerTargetHash,followHeartbeat=lastMarkerPublishedAt===null||sampledAt-lastMarkerPublishedAt>=50;
+      if(changedTarget||followHeartbeat){markerSeq++;bc.postMessage(envelope('enemy-target-markers',{markerSeq,markers:markerState.markers,projection:markerState.projection,semanticProjectionIndependent:true,legacyProjectionAvailable:markerState.projectionOk===true}));lastMarkerTargetHash=targetHash;lastMarkerPublishedAt=sampledAt;}
     }).catch(error=>{if(!gate.finish(authority))return;lastError=String(error?.message||error);running=false;engine.reset();postDiag('检测器运行异常：'+lastError);});
   }
   timer=setInterval(beginTick,10);beginTick();
   const runtime={version:VERSION,release:RELEASE,running:true,identitySignature:IDENTITY_SIGNATURE,identity,...SAFETY,
     stop(){if(!running&&gate.status().active===false)return true;running=false;runtime.running=false;try{clearInterval(timer);}catch(_){}gate.revoke();try{engine.reset();}catch(_){}try{bc.close();}catch(_){}return true;},
-    status(){return{version:VERSION,release:RELEASE,running:running&&gate.status().active,identitySignature:IDENTITY_SIGNATURE,identity,...SAFETY,polls,lastError,playerHeadWarning:{moduleReady:true,projectionReady:!!playerProjectionProfile,proofId:playerProjectionProfile?.proofId??null,playerSpatialSeq,lastError:lastPlayerSpatialError,holdMs:0,smoothing:false,maxPublishHz:1000/PLAYER_SPATIAL_PUBLISH_MS,maxSpatialAgeMs:playerHeadApi.MAX_PLAYER_AGE_MS??80},enemyTargetLabels:{moduleReady:true,projectionReady:!!projectionProfile,proofId:projectionProfile?.proofId??null,markerSeq,lastError:lastMarkerError,holdMs:0,smoothing:false,maxPublishHz:20},...gate.status()};}};
+    status(){return{version:VERSION,release:RELEASE,running:running&&gate.status().active,identitySignature:IDENTITY_SIGNATURE,identity,...SAFETY,polls,lastError,playerHeadWarning:{moduleReady:true,semanticReady:true,canonicalSpatialAuthority:'P9/P10-only',projectionReady:!!playerProjectionProfile,proofId:playerProjectionProfile?.proofId??null,playerSpatialSeq,lastError:lastPlayerSpatialError,holdMs:0,smoothing:false,maxPublishHz:1000/PLAYER_SPATIAL_PUBLISH_MS,maxSpatialAgeMs:playerHeadApi.MAX_PLAYER_AGE_MS??80},enemyTargetLabels:{moduleReady:true,semanticReady:true,semanticProjectionIndependent:true,canonicalSpatialAuthority:'P9/P10-only',projectionReady:!!projectionProfile,proofId:projectionProfile?.proofId??null,markerSeq,lastError:lastMarkerError,holdMs:0,smoothing:false,maxPublishHz:20},...gate.status()};}};
   scope.__WOF_ALPHA_REAL_TRANSPORT=runtime;return runtime.status();
 }
-return{VERSION,RELEASE,SCHEMA,TRANSPORT,GOLDEN_SHA,IDENTITY_SIGNATURE,SAFETY,PLAYER_LOCAL_IDENTITY,validBinding,classifyPlayerLocalIdentity,evaluatePlayerLocalIdentities,verifySelectedIdentity,createTickAuthorityGate,install};
+return{VERSION,RELEASE,SCHEMA,TRANSPORT,GOLDEN_SHA,IDENTITY_SIGNATURE,SAFETY,PLAYER_LOCAL_IDENTITY,validBinding,classifyPlayerLocalIdentity,evaluatePlayerLocalIdentities,verifySelectedIdentity,createTickAuthorityGate,targetForField,buildEnemyTargetSemanticMarkers,install};
 });

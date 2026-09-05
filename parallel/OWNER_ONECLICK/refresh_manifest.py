@@ -8,7 +8,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = Path(__file__).resolve().parent / "package_manifest.json"
@@ -18,6 +18,7 @@ DEFAULT_PIN = ROOT / PIN_PATH
 SCHEMA = "wof-owner-oneclick-package-v1"
 GENERATOR = "parallel/OWNER_ONECLICK/refresh_manifest.py"
 SELECTION_POLICY = "owner-oneclick-runtime-v8-visible-production-top-overlay-slice-a-pinned"
+CANONICAL_SELECTION_POLICY = "owner-oneclick-runtime-v9-canonical-product-convergence-candidate-pinned"
 RUNTIME_SUFFIXES = {".py", ".js", ".mjs", ".cmd", ".bat", ".ps1", ".json"}
 EXCLUDED_PARTS = {"tests", "__pycache__"}
 
@@ -48,6 +49,11 @@ FIXED_PATHS = {
     "parallel/ALPHAQA_RC5/independent_bootstrap_retest.mjs",
 }
 
+CANONICAL_FIXED_PATHS = {
+    "product/alpha/wof_alpha_canonical_anchor_envelope.js",
+    "product/alpha/wof_alpha_canonical_overlay_plan.js",
+}
+
 PYLAUNCH_TOP = {
     "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd",
     "parallel/PYLAUNCH/RUN_WOF_LAUNCHER.bat",
@@ -74,9 +80,8 @@ RUNTIME_ROOTS = (
     "parallel/BROWSER_FLEET/",
 )
 
-# A Slice A pin is a complete runtime snapshot, not merely the files touched by
-# the final commit. These are the authority -> tracker -> maintained HUD pieces
-# that must remain byte-identical between the Slice A handoff and final package.
+# Legacy published package contract. Keep this unchanged for old official
+# package_manifest.json verification.
 SLICE_A_RUNTIME_PATHS = (
     "parallel/RENDER_AUTHORITY_V3/measurement_runner.py",
     "parallel/PYLAUNCH/wof_launcher/render_authority_capture.py",
@@ -90,6 +95,34 @@ SLICE_A_RUNTIME_PATHS = (
     "product/alpha/wof_alpha_hud.js",
 )
 
+# P15 candidates preserve the proven authority/tracker side of Slice A byte-for-byte,
+# while deliberately pinning the current maintained HUD and canonical P12/P10/P9/P8
+# stack from one new immutable source commit.
+SLICE_A_AUTHORITY_PATHS = (
+    "parallel/RENDER_AUTHORITY_V3/measurement_runner.py",
+    "parallel/PYLAUNCH/wof_launcher/render_authority_capture.py",
+    "parallel/PYLAUNCH/wof_launcher/semantic_evidence_producer.py",
+    "parallel/PYLAUNCH/wof_launcher/zero_click_identity_acquisition.py",
+    "parallel/PYLAUNCH/wof_launcher/head_visual_tracker.py",
+    "parallel/PYLAUNCH/wof_launcher/production_p1_overlay.py",
+)
+
+CANONICAL_STACK_PATHS = (
+    "parallel/PYLAUNCH/wof_launcher/alpha_runtime.py",
+    "parallel/PYLAUNCH/wof_launcher/canonical_runtime_coordinator.py",
+    "parallel/PYLAUNCH/wof_launcher/canonical_actor_generation_registry.py",
+    "parallel/PYLAUNCH/wof_launcher/canonical_overlay_runtime_bridge.py",
+    "parallel/PYLAUNCH/wof_launcher/render_object_anchor.py",
+    "product/alpha/wof_alpha_bootstrap.user.js",
+    "product/alpha/wof_alpha_hud_model.js",
+    "product/alpha/wof_alpha_field_adapter.js",
+    "product/alpha/wof_alpha_enemy_target_labels.js",
+    "product/alpha/wof_alpha_player_head_warning.js",
+    "product/alpha/wof_alpha_canonical_anchor_envelope.js",
+    "product/alpha/wof_alpha_canonical_overlay_plan.js",
+    "product/alpha/wof_alpha_hud.js",
+)
+
 PRODUCTION_OVERLAY_SOURCE = "product/alpha/wof_alpha_hud.js"
 REMOVED_FORKED_OVERLAY_SOURCE = "product/alpha/wof_alpha_p1_tracker_overlay.js"
 
@@ -100,8 +133,14 @@ class ManifestError(RuntimeError):
 
 def run_git(root: Path, *args: str) -> str:
     cp = subprocess.run(
-        ["git", *args], cwd=root, text=True, encoding="utf-8", errors="replace",
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        ["git", *args],
+        cwd=root,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
     )
     if cp.returncode:
         raise ManifestError(cp.stderr.strip() or cp.stdout.strip() or "git command failed")
@@ -133,13 +172,25 @@ def git_blob_sha(data: bytes) -> str:
     return hashlib.sha1(b"blob " + str(len(data)).encode("ascii") + b"\0" + data).hexdigest()
 
 
-def is_runtime_path(path: str) -> bool:
+def required_fixed_paths(*, canonical_candidate: bool = False) -> set[str]:
+    required = set(FIXED_PATHS)
+    if canonical_candidate:
+        required.update(CANONICAL_FIXED_PATHS)
+    return required
+
+
+def is_runtime_path(path: str, *, canonical_candidate: bool = False) -> bool:
     p = Path(path)
     if any(part in EXCLUDED_PARTS for part in p.parts):
         return False
     if p.name.startswith("test_"):
         return False
-    if path in FIXED_PATHS or path in PYLAUNCH_TOP or path in LIVE_PROOF_TOP or path in RENDER_AUTHORITY_V3_PATHS:
+    if (
+        path in required_fixed_paths(canonical_candidate=canonical_candidate)
+        or path in PYLAUNCH_TOP
+        or path in LIVE_PROOF_TOP
+        or path in RENDER_AUTHORITY_V3_PATHS
+    ):
         return True
     if path.startswith("parallel/PYLAUNCH/wof_launcher/"):
         return p.suffix.lower() == ".py"
@@ -148,7 +199,7 @@ def is_runtime_path(path: str) -> bool:
     return False
 
 
-def selected_paths_from_commit(root: Path, commit: str) -> dict[str, str]:
+def selected_paths_from_commit(root: Path, commit: str, *, canonical_candidate: bool = False) -> dict[str, str]:
     out = run_git(
         root, "-c", "core.quotepath=false", "ls-tree", "-r", commit, "--",
         "WOF_一键工具.cmd", "WOF_TOOLKIT.cmd", "parallel/OWNER_ONECLICK", "parallel/OPTOOLKIT",
@@ -162,16 +213,17 @@ def selected_paths_from_commit(root: Path, commit: str) -> dict[str, str]:
             continue
         meta, path = line.split("\t", 1)
         _mode, obj_type, sha = meta.split()
-        if obj_type == "blob" and is_runtime_path(path):
+        if obj_type == "blob" and is_runtime_path(path, canonical_candidate=canonical_candidate):
             selected[path] = sha.lower()
-    missing = sorted((FIXED_PATHS | PYLAUNCH_TOP | LIVE_PROOF_TOP | RENDER_AUTHORITY_V3_PATHS) - selected.keys())
+    required = required_fixed_paths(canonical_candidate=canonical_candidate) | PYLAUNCH_TOP | LIVE_PROOF_TOP | RENDER_AUTHORITY_V3_PATHS
+    missing = sorted(required - selected.keys())
     if missing:
         raise ManifestError("固定 package runtime 文件缺失：" + ", ".join(missing))
     return dict(sorted(selected.items()))
 
 
-def selected_worktree_paths(root: Path) -> list[str]:
-    candidates: set[str] = set(FIXED_PATHS | PYLAUNCH_TOP | LIVE_PROOF_TOP | RENDER_AUTHORITY_V3_PATHS)
+def selected_worktree_paths(root: Path, *, canonical_candidate: bool = False) -> list[str]:
+    candidates: set[str] = set(required_fixed_paths(canonical_candidate=canonical_candidate) | PYLAUNCH_TOP | LIVE_PROOF_TOP | RENDER_AUTHORITY_V3_PATHS)
     py_pkg = root / "parallel" / "PYLAUNCH" / "wof_launcher"
     if py_pkg.is_dir():
         for p in py_pkg.glob("*.py"):
@@ -184,9 +236,9 @@ def selected_worktree_paths(root: Path) -> list[str]:
             if not p.is_file():
                 continue
             rel = p.relative_to(root).as_posix()
-            if is_runtime_path(rel):
+            if is_runtime_path(rel, canonical_candidate=canonical_candidate):
                 candidates.add(rel)
-    return sorted(path for path in candidates if (root / path).is_file() and is_runtime_path(path))
+    return sorted(path for path in candidates if (root / path).is_file() and is_runtime_path(path, canonical_candidate=canonical_candidate))
 
 
 def component_paths(paths: Iterable[str], prefix: str) -> list[str]:
@@ -259,15 +311,9 @@ def validate_visible_overlay_text(text: str) -> None:
 
 def validate_overlay_adapter_text(text: str) -> None:
     required = [
-        'SOURCE = "product/alpha/wof_alpha_hud.js"',
-        "window.WOFALPHAHUD",
-        "bindP1HeadTrackerAuthority",
-        "setP1HeadTracker",
-        "clearP1HeadTrackerAuthority",
-        '"productionOverlayEnabled": True',
-        '"readOnly": True',
-        '"ramWrites": 0',
-        '"inputInjection": False',
+        'SOURCE = "product/alpha/wof_alpha_hud.js"', "window.WOFALPHAHUD",
+        "bindP1HeadTrackerAuthority", "setP1HeadTracker", "clearP1HeadTrackerAuthority",
+        '"productionOverlayEnabled": True', '"readOnly": True', '"ramWrites": 0', '"inputInjection": False',
     ]
     missing = [token for token in required if token not in text]
     if missing:
@@ -276,16 +322,14 @@ def validate_overlay_adapter_text(text: str) -> None:
         raise ManifestError("production overlay adapter 仍引用已移除 forked HUD")
 
 
-def validate_slice_a_pin(root: Path, source_commit: str, slice_a_source: str | None) -> dict:
+def validate_slice_a_pin(root: Path, source_commit: str, slice_a_source: str | None, *, canonical_candidate: bool = False) -> dict:
     slice_a, pin_meta = resolve_slice_a_pin(root, slice_a_source)
-    cp = subprocess.run(
-        ["git", "merge-base", "--is-ancestor", slice_a, source_commit], cwd=root,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
-    )
+    cp = subprocess.run(["git", "merge-base", "--is-ancestor", slice_a, source_commit], cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
     if cp.returncode != 0:
         raise ManifestError("Slice A exact commit 不是 package source 的 ancestor，拒绝 pin")
+    pinned_paths = SLICE_A_AUTHORITY_PATHS if canonical_candidate else SLICE_A_RUNTIME_PATHS
     rows = []
-    for path in SLICE_A_RUNTIME_PATHS:
+    for path in pinned_paths:
         slice_blob = _blob_at(root, slice_a, path)
         source_blob = _blob_at(root, source_commit, path)
         if source_blob != slice_blob:
@@ -329,95 +373,152 @@ def verify_publishable_manifest(manifest: dict) -> None:
     projection = components.get("projectionProof") if isinstance(components, dict) else None
     if isinstance(projection, dict):
         checks.append((projection.get("selected") is False, "legacy projection proof 不得成为 selected normal path"))
+    canonical = components.get("canonicalProductConvergence") if isinstance(components, dict) else None
+    if canonical is not None:
+        if not isinstance(canonical, dict):
+            raise ManifestError("canonicalProductConvergence metadata 无效")
+        canonical_files = set(canonical.get("files") or [])
+        checks += [
+            (manifest.get("selectionPolicy") == CANONICAL_SELECTION_POLICY, "canonical candidate selection policy 不匹配"),
+            (canonical.get("sourceCommit") == source, "canonical candidate sourceCommit 不匹配"),
+            (canonical.get("chain") == "P12->P10->P9/P8->P11", "canonical product chain metadata 不匹配"),
+            (canonical.get("legacySpatialFallback") is False, "canonical candidate 禁止 legacy spatial fallback"),
+            (canonical.get("alphaLivePromoted") is False, "P15 candidate 不得声明 alpha-live 已切换"),
+            (canonical.get("realWofAcceptance") == "NOT_RUN", "P15 candidate 不得伪造真实 WOF 验收"),
+            (set(CANONICAL_STACK_PATHS).issubset(canonical_files), "canonical candidate runtime pin 不完整"),
+            (safety.get("legacySpatialFallback") is False, "safety.legacySpatialFallback 必须为 false"),
+        ]
     for ok, reason in checks:
         if not ok:
             raise ManifestError(reason)
 
 
-def generate_manifest(root: Path, source: str, slice_a_commit: str | None = None) -> dict:
+def generate_manifest(root: Path, source: str, slice_a_commit: str | None = None, *, canonical_candidate: bool = False) -> dict:
     commit = resolve_commit(root, source)
-    slice_a = validate_slice_a_pin(root, commit, slice_a_commit)
+    slice_a = validate_slice_a_pin(root, commit, slice_a_commit, canonical_candidate=canonical_candidate)
     generated_at = commit_generated_at_utc(root, commit)
-    selected = selected_paths_from_commit(root, commit)
+    selected = selected_paths_from_commit(root, commit, canonical_candidate=canonical_candidate)
     paths = list(selected)
-    render_files = sorted(set([
-        "parallel/PYLAUNCH/render_authority_measurement_entry.py",
-        "parallel/PYLAUNCH/wof_launcher/render_measurement_ui.py",
-        "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js",
-        *SLICE_A_RUNTIME_PATHS,
-    ]))
+    if canonical_candidate:
+        render_files = sorted({
+            "parallel/PYLAUNCH/render_authority_measurement_entry.py",
+            "parallel/PYLAUNCH/wof_launcher/render_measurement_ui.py",
+            "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js",
+            *SLICE_A_AUTHORITY_PATHS,
+            "product/alpha/wof_alpha_hud_model.js",
+            "product/alpha/wof_alpha_enemy_target_labels.js",
+            "product/alpha/wof_alpha_player_head_warning.js",
+            "product/alpha/wof_alpha_hud.js",
+        })
+    else:
+        render_files = sorted({
+            "parallel/PYLAUNCH/render_authority_measurement_entry.py",
+            "parallel/PYLAUNCH/wof_launcher/render_measurement_ui.py",
+            "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js",
+            *SLICE_A_RUNTIME_PATHS,
+        })
     for path in render_files:
         if path not in selected:
             raise ManifestError("production top-overlay package 文件未被选择：" + path)
+    if canonical_candidate:
+        missing_stack = [path for path in CANONICAL_STACK_PATHS if path not in selected]
+        if missing_stack:
+            raise ManifestError("canonical candidate runtime 文件未被选择：" + ", ".join(missing_stack))
+
+    components: dict[str, Any] = {
+        "ownerOneclick": {
+            "sourceCommit": commit,
+            "bootstrap": "parallel/OWNER_ONECLICK/bootstrap_v2.ps1",
+            "runtimePin": PIN_PATH,
+            "files": [p for p in paths if p.startswith("parallel/OWNER_ONECLICK/") or p in {"WOF_一键工具.cmd", "WOF_TOOLKIT.cmd"}],
+        },
+        "alpha": {"sourceCommit": commit, "fieldAdapter": "product/alpha/wof_alpha_field_adapter.js", "files": component_paths(paths, "product/alpha/")},
+        "pylaunch": {
+            "revision": "canonical-product-convergence-p15-candidate" if canonical_candidate else "visible-production-top-overlay-slice-a-pinned",
+            "sourceCommit": commit,
+            "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd",
+            "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd",
+            "files": component_paths(paths, "parallel/PYLAUNCH/"),
+        },
+        "operatorToolkit": {"sourceCommit": commit, "ownerEntry": "parallel/OPTOOLKIT/owner_zh_cn.py", "files": component_paths(paths, "parallel/OPTOOLKIT/")},
+        "renderAuthorityV3": {
+            "sourceCommit": commit,
+            "sliceARuntimeCommit": slice_a["commit"],
+            "sliceARuntimeFiles": slice_a["files"],
+            "mode": "owner-visible-production-top-overlay-v1",
+            "selectedNormalPath": "production-top-overlay",
+            "productionOverlaySource": PRODUCTION_OVERLAY_SOURCE,
+            "entry": "parallel/PYLAUNCH/render_authority_measurement_entry.py",
+            "ownerFlow": "menu6 -> reuse/enter WOF -> visible tray status -> automatic P1 attempt -> SAFE_UNIQUE zero-click OR bounded one-click real-P1-head fallback -> same maintained Alpha production top overlay -> loss hides -> recovery reappears",
+            "ownerClickExpectedNormal": 0,
+            "ownerClickMaximumPerAuthorityGeneration": 1,
+            "ownerClickFallbackMaximumPerAuthorityGeneration": 1,
+            "automaticSeedRequiredBeforeFallback": True,
+            "semanticIdentityGate": "W2_FAIL_CLOSED",
+            "genericHudPaletteSemanticIdentityAllowed": False,
+            "hudPortraitMayIdentifyButNeverSeedSceneHead": True,
+            "confidenceLossBehavior": "HIDE_AND_AUTO_RECOVER",
+            "productionOverlayEnabled": True,
+            "productionOverlaySuppressed": False,
+            "diagnosticOnly": False,
+            "emptyBrowserMayCountAsSuccess": False,
+            "whiteAcquisitionMarkerIsProduct": False,
+            "ownerStatusStates": ["WAITING_FOR_WOF", "AUTO_ACQUIRING_P1", "ONE_CLICK_REQUIRED", "TOP_OVERLAY_VISIBLE", "TEMPORARILY_LOST_RECOVERING", "BLOCKED"],
+            "files": render_files,
+        },
+        "projectionProof": {"sourceCommit": commit, "selected": False, "mode": "legacy-compatibility-not-normal-path", "files": component_paths(paths, "parallel/HUDANCHOR_PROOF/")},
+        "recorder": {"sourceCommit": commit, "ownerEntry": "parallel/WOF052L_RECORDER/owner_zh_cn.py", "files": component_paths(paths, "parallel/WOF052L_RECORDER/")},
+        "browserFleet": {"sourceCommit": commit, "ownerEntry": "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py", "files": component_paths(paths, "parallel/BROWSER_FLEET/")},
+        "liveProof": {"sourceCommit": commit, "entry": "parallel/LIVE_PROOF_BUNDLE/RUN_WOF_UNIFIED_LIVE_PROOF.cmd", "files": component_paths(paths, "parallel/LIVE_PROOF_BUNDLE/")},
+    }
+    if canonical_candidate:
+        components["canonicalProductConvergence"] = {
+            "sourceCommit": commit,
+            "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE",
+            "chain": "P12->P10->P9/P8->P11",
+            "semanticSpatialDecoupled": True,
+            "w3ProducerOwnershipChanged": False,
+            "legacySpatialFallback": False,
+            "alphaLivePromoted": False,
+            "realWofAcceptance": "NOT_RUN",
+            "initialState": "WAITING_FOR_W3_FRAME_SOURCE_QUALIFICATION",
+            "files": list(CANONICAL_STACK_PATHS),
+        }
+    safety = {
+        "readOnly": True,
+        "ramWrites": 0,
+        "inputInjection": False,
+        "manualCalibration": False,
+        "legacyProjectionSelected": False,
+        "ownerClickMaximumPerAuthorityGeneration": 1,
+        "productionOverlayEnabled": True,
+        "productionOverlaySuppressed": False,
+    }
+    if canonical_candidate:
+        safety["legacySpatialFallback"] = False
     manifest = {
         "schema": SCHEMA,
         "packageVersion": package_version(commit, generated_at),
         "sourceCommit": commit,
         "generatedAtUtc": generated_at,
         "generator": GENERATOR,
-        "selectionPolicy": SELECTION_POLICY,
+        "selectionPolicy": CANONICAL_SELECTION_POLICY if canonical_candidate else SELECTION_POLICY,
         "baseUrl": f"https://raw.githubusercontent.com/ouyong520/wof-ai-private/{commit}/",
-        "components": {
-            "ownerOneclick": {
-                "sourceCommit": commit,
-                "bootstrap": "parallel/OWNER_ONECLICK/bootstrap_v2.ps1",
-                "runtimePin": PIN_PATH,
-                "files": [p for p in paths if p.startswith("parallel/OWNER_ONECLICK/") or p in {"WOF_一键工具.cmd", "WOF_TOOLKIT.cmd"}],
-            },
-            "alpha": {"sourceCommit": commit, "fieldAdapter": "product/alpha/wof_alpha_field_adapter.js", "files": component_paths(paths, "product/alpha/")},
-            "pylaunch": {"revision": "visible-production-top-overlay-slice-a-pinned", "sourceCommit": commit, "windowsProofEntry": "parallel/PYLAUNCH/RUN_WINDOWS_PROOF.cmd", "directProofEntry": "parallel/PYLAUNCH/WOF_ONECLICK_PROOF_CN.cmd", "files": component_paths(paths, "parallel/PYLAUNCH/")},
-            "operatorToolkit": {"sourceCommit": commit, "ownerEntry": "parallel/OPTOOLKIT/owner_zh_cn.py", "files": component_paths(paths, "parallel/OPTOOLKIT/")},
-            "renderAuthorityV3": {
-                "sourceCommit": commit,
-                "sliceARuntimeCommit": slice_a["commit"],
-                "sliceARuntimeFiles": slice_a["files"],
-                "mode": "owner-visible-production-top-overlay-v1",
-                "selectedNormalPath": "production-top-overlay",
-                "productionOverlaySource": PRODUCTION_OVERLAY_SOURCE,
-                "entry": "parallel/PYLAUNCH/render_authority_measurement_entry.py",
-                "ownerFlow": "menu6 -> reuse/enter WOF -> visible tray status -> automatic P1 attempt -> SAFE_UNIQUE zero-click OR bounded one-click real-P1-head fallback -> same maintained Alpha production top overlay -> loss hides -> recovery reappears",
-                "ownerClickExpectedNormal": 0,
-                "ownerClickMaximumPerAuthorityGeneration": 1,
-                "ownerClickFallbackMaximumPerAuthorityGeneration": 1,
-                "automaticSeedRequiredBeforeFallback": True,
-                "semanticIdentityGate": "W2_FAIL_CLOSED",
-                "genericHudPaletteSemanticIdentityAllowed": False,
-                "hudPortraitMayIdentifyButNeverSeedSceneHead": True,
-                "confidenceLossBehavior": "HIDE_AND_AUTO_RECOVER",
-                "productionOverlayEnabled": True,
-                "productionOverlaySuppressed": False,
-                "diagnosticOnly": False,
-                "emptyBrowserMayCountAsSuccess": False,
-                "whiteAcquisitionMarkerIsProduct": False,
-                "ownerStatusStates": ["WAITING_FOR_WOF", "AUTO_ACQUIRING_P1", "ONE_CLICK_REQUIRED", "TOP_OVERLAY_VISIBLE", "TEMPORARILY_LOST_RECOVERING", "BLOCKED"],
-                "files": render_files,
-            },
-            "projectionProof": {"sourceCommit": commit, "selected": False, "mode": "legacy-compatibility-not-normal-path", "files": component_paths(paths, "parallel/HUDANCHOR_PROOF/")},
-            "recorder": {"sourceCommit": commit, "ownerEntry": "parallel/WOF052L_RECORDER/owner_zh_cn.py", "files": component_paths(paths, "parallel/WOF052L_RECORDER/")},
-            "browserFleet": {"sourceCommit": commit, "ownerEntry": "parallel/BROWSER_FLEET/fleet_owner_zh_cn.py", "files": component_paths(paths, "parallel/BROWSER_FLEET/")},
-            "liveProof": {"sourceCommit": commit, "entry": "parallel/LIVE_PROOF_BUNDLE/RUN_WOF_UNIFIED_LIVE_PROOF.cmd", "files": component_paths(paths, "parallel/LIVE_PROOF_BUNDLE/")},
-        },
-        "safety": {
-            "readOnly": True,
-            "ramWrites": 0,
-            "inputInjection": False,
-            "manualCalibration": False,
-            "legacyProjectionSelected": False,
-            "ownerClickMaximumPerAuthorityGeneration": 1,
-            "productionOverlayEnabled": True,
-            "productionOverlaySuppressed": False,
-        },
+        "components": components,
+        "safety": safety,
         "files": [{"path": path, "gitBlobSha": selected[path]} for path in paths],
     }
     verify_publishable_manifest(manifest)
     return manifest
 
 
-def verify_worktree_payload(root: Path, manifest: dict) -> None:
+def verify_worktree_payload(root: Path, manifest: dict, *, canonical_candidate: bool | None = None) -> None:
+    if canonical_candidate is None:
+        canonical_candidate = manifest.get("selectionPolicy") == CANONICAL_SELECTION_POLICY
     expected = {str(row["path"]): str(row["gitBlobSha"]).lower() for row in manifest.get("files", [])}
-    current_paths = selected_worktree_paths(root)
+    current_paths = selected_worktree_paths(root, canonical_candidate=canonical_candidate)
     current_set = set(current_paths)
-    expected_runtime_set = {p for p in expected if is_runtime_path(p)}
+    expected_runtime_set = {p for p in expected if is_runtime_path(p, canonical_candidate=canonical_candidate)}
     missing = sorted(current_set - expected_runtime_set)
     if missing:
         raise ManifestError("当前运行时文件未进入 package manifest：" + ", ".join(missing))
@@ -442,6 +543,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--slice-a-commit", help="Slice A visible-overlay integration 的 exact commit；未提供时读取 durable runtime pin")
     parser.add_argument("--output", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--check", action="store_true", help="只校验现有 manifest 与 source/worktree 一致")
+    parser.add_argument("--canonical-candidate", action="store_true", help="生成 P15 canonical product-convergence 候选；不会自动改写正式 package_manifest.json")
     args = parser.parse_args(argv)
     try:
         if args.check:
@@ -451,16 +553,18 @@ def main(argv: list[str] | None = None) -> int:
                 raise ManifestError(f"无法读取 package manifest：{args.output}") from exc
             render = existing.get("components", {}).get("renderAuthorityV3", {}) if isinstance(existing, dict) else {}
             pinned = args.slice_a_commit or (render.get("sliceARuntimeCommit") if isinstance(render, dict) else None)
-            generated = generate_manifest(ROOT, args.source, str(pinned) if pinned else None)
+            candidate_mode = args.canonical_candidate or existing.get("selectionPolicy") == CANONICAL_SELECTION_POLICY
+            generated = generate_manifest(ROOT, args.source, str(pinned) if pinned else None, canonical_candidate=candidate_mode)
             verify_publishable_manifest(existing)
             if existing != generated:
                 raise ManifestError("package manifest 不是当前所选 immutable snapshot + Slice A exact pin 的确定性产物；请重新生成")
-            verify_worktree_payload(ROOT, existing)
+            verify_worktree_payload(ROOT, existing, canonical_candidate=candidate_mode)
             print("PACKAGE MANIFEST PASS：" f"{existing['packageVersion']} source={existing['sourceCommit']} sliceA={generated['components']['renderAuthorityV3']['sliceARuntimeCommit']} files={len(existing['files'])}")
             return 0
-        generated = generate_manifest(ROOT, args.source, args.slice_a_commit)
+        generated = generate_manifest(ROOT, args.source, args.slice_a_commit, canonical_candidate=args.canonical_candidate)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(render_manifest(generated), encoding="utf-8")
-        verify_worktree_payload(ROOT, generated)
+        verify_worktree_payload(ROOT, generated, canonical_candidate=args.canonical_candidate)
         print("PACKAGE MANIFEST REFRESHED：" f"{generated['packageVersion']} source={generated['sourceCommit']} sliceA={generated['components']['renderAuthorityV3']['sliceARuntimeCommit']} files={len(generated['files'])}")
         return 0
     except ManifestError as exc:
