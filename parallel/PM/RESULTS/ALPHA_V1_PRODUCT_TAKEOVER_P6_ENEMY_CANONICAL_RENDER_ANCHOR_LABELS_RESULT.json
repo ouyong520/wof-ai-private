@@ -1,0 +1,51 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P6_ENEMY_CANONICAL_RENDER_ANCHOR_LABELS",
+  "dedupKey": "alpha.v1.product-takeover.enemy-canonical-render-anchor-labels-v1",
+  "claimToken": "ca3d9adad520adafd524ac35409cebf5",
+  "state": "COMPLETE",
+  "verdict": "P6 now exposes an explicit fail-closed canonical render-anchor enemy label planner: target7E 0/4/8 remains P1/P2/P3 -> 1P/2P/3P, READY enemy anchors map directly from native 384x224 into the maintained drawing-buffer content rect, and stale/SUPPRESSED/unproven/unsafe/ambiguous/actor-generation-epoch mismatches hide instead of using legacy geometry.",
+  "startCommit": "3ceb3692fd0a1633288ac03a006d19a89c003ec9",
+  "implementationCommits": [
+    "7b888503777e694fb851e31b8673ba523693966e",
+    "5ac1e950e2a06587c82d3bb508368b5c1a690d9d"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "product/alpha/wof_alpha_enemy_target_labels.js",
+    "product/alpha/enemy_canonical_anchor_labels_selfcheck.mjs"
+  ],
+  "tests": [
+    {
+      "name": "node --check product/alpha/wof_alpha_enemy_target_labels.js",
+      "result": "PASS",
+      "detail": "Exact candidate module payload parsed successfully under Node before the GitHub update."
+    },
+    {
+      "name": "node product/alpha/enemy_canonical_anchor_labels_selfcheck.mjs",
+      "result": "PASS",
+      "detail": "Focused synthetic self-check passed against the exact candidate module: 0/4/8 -> 1P/2P/3P with drawing-buffer mapping; stale, SUPPRESSED, generation-mismatched and explicitly unproven anchors suppress; canonical mode does not access legacy projection fallback."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Repository implementation and focused synthetic Node fixtures prove the canonical planner contract only. W3 renderer/object source qualification remains unproven in real WOF, so no machine-draw or Owner-visible product PASS is claimed."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM may integrate buildCanonicalPlan with the W3-qualified enemy anchor feed. Runtime glue must provide current per-slot actor/generation plus authorityKey/runtimeEpoch/rendererEpoch; while W3 source is unproven or any anchor is SUPPRESSED, the canonical planner returns no label and never falls back to world/camera/Y-model geometry.",
+  "evidencePaths": [
+    "product/alpha/wof_alpha_enemy_target_labels.js",
+    "product/alpha/enemy_canonical_anchor_labels_selfcheck.mjs"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
