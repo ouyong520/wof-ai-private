@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P9_CANONICAL_ANCHOR_RUNTIME_ENVELOPE",
+  "dedupKey": "alpha.v1.product-takeover.canonical-anchor-runtime-envelope-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.canonical-anchor-runtime-envelope-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.canonical-anchor-runtime-envelope-v1.json",
+  "claimToken": "51d37e82c89f2ceb7325ec4e10a8d9d3402e44c27fe4e514",
+  "state": "ACTIVE",
+  "startCommit": "d462dbae63946aeca992c2d49d60e90b5f924a17"
+}
