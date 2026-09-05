@@ -1,0 +1,373 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wof.local/schemas/alpha_worker_result_v1.schema.json",
+  "title": "WOF Alpha Worker Result V1",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "stageId",
+    "dedupKey",
+    "claimToken",
+    "state",
+    "verdict",
+    "startCommit",
+    "implementationCommits",
+    "integrationReady",
+    "changedFiles",
+    "tests",
+    "productProof",
+    "ownerGate",
+    "blocker",
+    "nextAction",
+    "evidencePaths",
+    "safety"
+  ],
+  "properties": {
+    "schema": {
+      "const": "wof-alpha-worker-result-v1"
+    },
+    "stageId": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{2,127}$"
+    },
+    "dedupKey": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9.-]{2,95}$"
+    },
+    "claimToken": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 256
+    },
+    "state": {
+      "enum": [
+        "SUBCOMPLETE",
+        "COMPLETE",
+        "BLOCKED"
+      ]
+    },
+    "verdict": {
+      "type": "string",
+      "minLength": 1
+    },
+    "startCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "implementationCommits": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{40}$"
+      }
+    },
+    "integrationReady": {
+      "type": "boolean"
+    },
+    "changedFiles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "name",
+          "result",
+          "detail"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "NOT_RUN"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "productProof": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "classification",
+        "detail"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "PROVEN",
+            "NOT_PROVEN",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "classification": {
+          "enum": [
+            "IMPLEMENTATION_PROOF",
+            "MACHINE_DRAW_PROOF",
+            "OWNER_VISUAL_PROOF",
+            "NOT_PROVEN",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "PROVEN"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "classification": {
+                "enum": [
+                  "IMPLEMENTATION_PROOF",
+                  "MACHINE_DRAW_PROOF",
+                  "OWNER_VISUAL_PROOF"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "NOT_PROVEN"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "classification": {
+                "const": "NOT_PROVEN"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "NOT_APPLICABLE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "classification": {
+                "const": "NOT_APPLICABLE"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ownerGate": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "required",
+        "question",
+        "reason"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "question": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "blocker": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "code",
+            "detail",
+            "ownerRequired",
+            "pmRequired",
+            "recoveryAllowedByWorker"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]{2,127}$"
+            },
+            "detail": {
+              "type": "string",
+              "minLength": 1
+            },
+            "ownerRequired": {
+              "type": "boolean"
+            },
+            "pmRequired": {
+              "type": "boolean"
+            },
+            "recoveryAllowedByWorker": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "nextAction": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidencePaths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "readOnly",
+        "ramWrites",
+        "inputInjection"
+      ],
+      "properties": {
+        "readOnly": {
+          "type": "boolean"
+        },
+        "ramWrites": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inputInjection": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "COMPLETE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "implementationCommits": {
+            "minItems": 1
+          },
+          "changedFiles": {
+            "minItems": 1
+          },
+          "tests": {
+            "minItems": 1
+          },
+          "evidencePaths": {
+            "minItems": 1
+          },
+          "integrationReady": {
+            "const": true
+          },
+          "blocker": {
+            "type": "null"
+          },
+          "ownerGate": {
+            "properties": {
+              "required": {
+                "const": false
+              }
+            }
+          },
+          "productProof": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "PROVEN",
+                  "NOT_APPLICABLE"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "BLOCKED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "blocker": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "enum": [
+              "SUBCOMPLETE",
+              "COMPLETE"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "blocker": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}
