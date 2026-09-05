@@ -1,31 +1,33 @@
 # Alpha V1 Final Live Acceptance — Owner Gate
 
-Status: BLOCKED — P31 ACTIVE + P32 SELF-CHECK; P33/P34 PREP DISPATCHED
+Status: BLOCKED — P31 COMPLETE; P32 TERMINAL BLOCKED; P33/P35/P36 DISPATCHED; P34 ACTIVE
 
-P25, P27, P28, P29 and P30 are terminal COMPLETE at their repository-side authority boundaries. P26 remains historical terminal BLOCKED and must not be reopened or recovered.
+P25, P27, P28, P29, P30 and P31 are terminal COMPLETE at their repository-side authority boundaries. P26 remains historical terminal BLOCKED and must not be reopened or recovered. P32 is terminal BLOCKED with a truthful renderer-source causal-edge blocker.
 
-The first real Owner Windows final-staging run reached the actual browser/game runtime and failed closed with `FAILED_EVIDENCE_MISMATCH`. The repo-side false-rejection and staging-binding defects are being closed without weakening the still-required direct displayed-frame renderer/object authority.
+The first real Owner Windows final-staging run reached the actual browser/game runtime and failed closed with `FAILED_EVIDENCE_MISMATCH`. Repo-side false-rejection, P9/P16 staging readiness and Page/Worker/WASM association defects are now terminally repaired without weakening the still-required direct displayed-frame renderer/object authority.
 
 ## PM-reviewed state
 
 - P29 is PM-accepted terminal COMPLETE for W3 evidence-contract repair, testedCommit `c02f7e108e73665f22eb950573622acb6f452732`. Structural-only evidence remains INCONCLUSIVE; no rendererSourceProof/PASS was fabricated.
-- P30 `ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR` is PM-accepted terminal COMPLETE, testedCommit `90094a656ab311f18b0a758716dc97c3f8df092d`. Exact staged manifest binding, P9/P8/HUD dependency order and P16 readiness checks passed focused deterministic regression. Real WOF and Owner visual acceptance remain NOT_RUN.
-- P31 remains ACTIVE and owns deterministic Page/Worker/WASM association plus stale/duplicate/conflict rejection.
-- P32 is in exact-candidate self-check after implementing a fail-closed native `1P` / `2P` / `3P` marker qualification seam. Checked-in evidence still lacks the direct displayed CPS1 renderer/object submission -> exact marker object/cluster + actor-generation causal edge needed for real marker authority.
-- P33 is dispatched to harden post-repair final-candidate rebuild/containment so stale historical P19 bytes cannot masquerade as containing later repairs.
-- P34 is dispatched to build an isolated machine-readable `READY_FOR_ONE_BOUNDED_OWNER_RETRY` gate that remains blocked until all required terminal results and one exact containing candidate exist.
+- P30 is PM-accepted terminal COMPLETE for P16/P9/P1 staging readiness repair, testedCommit `90094a656ab311f18b0a758716dc97c3f8df092d`.
+- P31 is PM-accepted terminal COMPLETE for deterministic Page/Worker/WASM association, testedCommit `423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731`; stale/duplicate/conflicting target handling and multi-page fail-closed behavior passed focused exact-candidate checks.
+- P32 is terminal BLOCKED, testedCommit `bd75c3b5f7fd20fe004fae21142a0fa19942e076`, `integrationReady=false`. Its fail-closed native `1P` / `2P` / `3P` marker qualifier is exact-byte tested, but checked-in evidence lacks the direct displayed CPS1 renderer/object submission -> exact native marker object/cluster + explicit actor-generation causal edge.
+- P34 remains ACTIVE and owns the isolated machine-readable `READY_FOR_ONE_BOUNDED_OWNER_RETRY` gate. It must not be duplicated.
+- P33 is dispatched to harden deterministic/fail-closed final-candidate rebuild mechanics against stale historical P19 provenance.
+- P35 is dispatched to assemble/prove a source lineage containing exact PM-accepted P29/P30/P31 tested commits as ancestors while preserving their tested bytes.
+- P36 is a new successor to terminal BLOCKED P32 and owns the missing native-marker renderer-submit source trace/proof producer. P36 is not P32 recovery and must not weaken P29/P32 qualification criteria.
 
-## Remaining live blockers
+## Remaining blockers before one bounded Owner retry
 
-1. Page association ambiguity: P31 must terminally repair or precisely fail closed on the prior `WOF page association ambiguous: 2 page targets` condition.
-2. Renderer-source authority: P32 may prepare the proof producer/qualifier, but real authority still requires direct displayed-frame causal evidence with exact runtimeEpoch/rendererEpoch/authorityKey and actor generation. Structural HEAP, screenshot/OCR/template, world projection, row order, timing and nearest-distance guesses remain non-authoritative.
-3. Integrated retry candidate/readiness: the next retry must use a fresh candidate whose exact source commit contains every PM-accepted repair candidate; P33/P34 prepare these deterministic gates and cannot themselves claim live PASS.
+1. Renderer-source authority remains the critical product blocker. P36 must either produce a durable direct-source proof producer ready for one bounded live verification or terminally identify the narrowest unavoidable missing causal edge. Structural HEAP, screenshot/OCR/template, world projection, row order, timing and nearest-distance guesses remain non-authoritative.
+2. Accepted-repair integration lineage must be real Git ancestry, not a stale P19 label or cherry-pick-equivalence claim. P35 must prove an exact source commit contains the PM-accepted P29/P30/P31 tested commits and preserves accepted repair bytes.
+3. Final-candidate rebuild and retry readiness must remain fail-closed. P33 must prevent stale pre-repair candidate reuse, and P34 must continue to report BLOCKED until terminal results, ancestry, manifest/hash/sourceCommit identity and renderer authority truth all satisfy its gate.
 
 ## Retry rule
 
-Do not ask the Owner to rerun the game while P31 is non-terminal. Do not spend the one bounded retry until P32 reaches a PM-reviewable terminal state and PM validates P31/P32 together with the exact rebuilt candidate and retry-readiness gate.
+No Owner rerun is authorized now. Do not spend the one bounded retry while P36 renderer-source authority is unresolved or while the integrated source/candidate/readiness chain is incomplete.
 
-After that validation, exactly one fresh bounded Owner live retry may be authorized. Reuse the existing Windows repo, managed project venv, browser and Git objects; no unnecessary reinstall or redownload is authorized. Codex performs local deployment/run only; Owner performs actual game interaction and visual judgment.
+After PM validates terminal P33/P35/P36 and a recomputed P34 readiness decision against one exact containing source/candidate, exactly one fresh bounded Owner live retry may be authorized. Reuse the existing Windows repo, managed project venv, browser and Git objects; no unnecessary reinstall or redownload is authorized. Codex performs local deployment/run only; Owner performs actual game interaction and visual judgment.
 
 Only explicit W3 `PASS` plus exact P16/P17 readiness may advance to the existing Owner visual question. A truthful `INCONCLUSIVE` remains fail-closed and must not be looped into blind normal-play retries.
 
