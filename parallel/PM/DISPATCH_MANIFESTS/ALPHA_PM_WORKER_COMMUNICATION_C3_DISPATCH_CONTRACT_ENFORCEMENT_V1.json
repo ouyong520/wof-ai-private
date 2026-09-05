@@ -1,0 +1,18 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1-draft",
+  "dispatchId": "ALPHA_PM_WORKER_COMMUNICATION_C3_DISPATCH_CONTRACT_ENFORCEMENT_V1",
+  "repository": "ouyong520/wof-ai-private",
+  "authorityPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C3_DISPATCH_CONTRACT_ENFORCEMENT_START_PROMPT.md",
+  "immutable": true,
+  "workers": [
+    {
+      "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C3_DISPATCH_CONTRACT_ENFORCEMENT",
+      "promptPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C3_DISPATCH_CONTRACT_ENFORCEMENT_START_PROMPT.md",
+      "dedupKey": "alpha.pm.worker-communication.dispatch-contract-enforcement-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C3_DISPATCH_CONTRACT_ENFORCEMENT_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C3_DISPATCH_CONTRACT_ENFORCEMENT_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_PM_WORKER_COMMUNICATION_C3_DISPATCH_CONTRACT_ENFORCEMENT"
+    }
+  ]
+}
