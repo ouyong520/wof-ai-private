@@ -25,6 +25,8 @@ STAGE_RE = re.compile(r"^[A-Z][A-Z0-9_]{2,127}$")
 DEDUP_RE = re.compile(r"^[a-z0-9][a-z0-9.-]{2,95}$")
 INDEPENDENT_RE = re.compile(r"^[a-z0-9][a-z0-9.-]{2,47}$")
 REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+DISPATCH_ID_RE = re.compile(r"^[A-Z0-9][A-Z0-9_.-]{2,127}$")
+FINAL_TOP_LEVEL_FIELDS = {"schema", "dispatchId", "createdAtUtc", "authorityCommit", "immutable", "workers"}
 
 PROMPT_REQUIRED = (
     "stageId",
@@ -46,6 +48,7 @@ MANIFEST_WORKER_REQUIRED = (
     "resultMdPath",
     "terminalCommitPrefix",
 )
+FINAL_WORKER_FIELDS = {"slot", *MANIFEST_WORKER_REQUIRED}
 
 
 def result_contract(stage_id: str) -> dict[str, str]:
@@ -67,6 +70,14 @@ def _string(value: Any, where: str) -> list[str]:
     if not isinstance(value, str) or not value.strip():
         return [f"{where}: must be a non-empty string"]
     return []
+
+
+def _valid_pm_md_path(value: Any) -> bool:
+    if not isinstance(value, str) or not value.startswith("parallel/PM/") or not value.endswith(".md"):
+        return False
+    if "\\" in value:
+        return False
+    return ".." not in Path(value).parts
 
 
 def parse_prompt_metadata(text: str) -> dict[str, str]:
@@ -141,13 +152,11 @@ def validate_prompt_text(
             )
 
     if FEEDBACK_PROTOCOL_PATH not in text:
-        errors.append(
-            "$prompt.terminalReporting: must require " + FEEDBACK_PROTOCOL_PATH
-        )
+        errors.append("$prompt.terminalReporting: must require " + FEEDBACK_PROTOCOL_PATH)
 
     if prompt_path is not None:
-        if not prompt_path.startswith("parallel/PM/") or not prompt_path.endswith(".md"):
-            errors.append("$promptPath: must be a repository-relative parallel/PM/*.md path")
+        if not _valid_pm_md_path(prompt_path):
+            errors.append("$promptPath: must be a traversal-free repository-relative parallel/PM/*.md path")
 
     return sorted(set(errors))
 
@@ -162,8 +171,8 @@ def _validate_worker_entry(entry: Any, index: int) -> list[str]:
         errors.append(f"{where}.stageId: malformed stageId")
     prompt_path = entry.get("promptPath")
     if prompt_path is not None:
-        if not isinstance(prompt_path, str) or not prompt_path.startswith("parallel/PM/") or not prompt_path.endswith(".md"):
-            errors.append(f"{where}.promptPath: must be a repository-relative parallel/PM/*.md path")
+        if not _valid_pm_md_path(prompt_path):
+            errors.append(f"{where}.promptPath: must be a traversal-free repository-relative parallel/PM/*.md path")
     dedup_key = entry.get("dedupKey")
     if dedup_key is not None and (not isinstance(dedup_key, str) or not DEDUP_RE.fullmatch(dedup_key)):
         errors.append(f"{where}.dedupKey: malformed dedupKey")
@@ -206,22 +215,25 @@ def validate_manifest_data(data: Any) -> list[str]:
             f"$manifest.schema: expected {MANIFEST_SCHEMA!r} (or bootstrap draft), got {data.get('schema')!r}"
         )
     errors.extend(_string(data.get("dispatchId"), "$manifest.dispatchId") if "dispatchId" in data else [])
+    if "dispatchId" in data and isinstance(data.get("dispatchId"), str) and not DISPATCH_ID_RE.fullmatch(data["dispatchId"]):
+        errors.append("$manifest.dispatchId: must match ^[A-Z0-9][A-Z0-9_.-]{2,127}$")
+    if schema == MANIFEST_SCHEMA:
+        for key in sorted(set(data) - FINAL_TOP_LEVEL_FIELDS):
+            errors.append(f"$manifest.{key}: unexpected field in final C2 manifest contract")
     repo = data.get("repository")
     if repo is not None and (not isinstance(repo, str) or not REPO_RE.fullmatch(repo)):
         errors.append("$manifest.repository: must be owner/name")
     authority_path = data.get("authorityPath")
-    if authority_path is not None and (
-        not isinstance(authority_path, str)
-        or not authority_path.startswith("parallel/PM/")
-        or not authority_path.endswith(".md")
-    ):
-        errors.append("$manifest.authorityPath: must be a repository-relative parallel/PM/*.md path")
+    if authority_path is not None and not _valid_pm_md_path(authority_path):
+        errors.append("$manifest.authorityPath: must be a traversal-free repository-relative parallel/PM/*.md path")
     if schema == MANIFEST_SCHEMA:
         created = data.get("createdAtUtc")
         if created is not None and (not isinstance(created, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", created)):
             errors.append("$manifest.createdAtUtc: must be UTC YYYY-MM-DDTHH:MM:SSZ")
         authority_commit = data.get("authorityCommit")
-        if authority_commit is not None and (not isinstance(authority_commit, str) or not re.fullmatch(r"[0-9a-f]{40}", authority_commit)):
+        if authority_commit is not None and (
+            not isinstance(authority_commit, str) or not re.fullmatch(r"[0-9a-f]{40}", authority_commit)
+        ):
             errors.append("$manifest.authorityCommit: must be a lowercase 40-hex commit SHA")
     if data.get("immutable") is not True:
         errors.append("$manifest.immutable: must be true")
@@ -245,6 +257,8 @@ def validate_manifest_data(data: Any) -> list[str]:
         if not isinstance(entry, dict):
             continue
         if schema == MANIFEST_SCHEMA:
+            for key in sorted(set(entry) - FINAL_WORKER_FIELDS):
+                errors.append(f"$manifest.workers[{index}].{key}: unexpected field in final C2 manifest contract")
             slot = entry.get("slot")
             if not isinstance(slot, int) or isinstance(slot, bool) or not 1 <= slot <= 99:
                 errors.append(f"$manifest.workers[{index}].slot: final manifest requires integer slot 1..99")
