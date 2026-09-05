@@ -1,0 +1,43 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_FINAL_ACCEPTANCE_ZERO_CLICK_RENDERER_LONG_3_WORKER_V1",
+  "repository": "ouyong520/wof-ai-private",
+  "pmOwned": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P36_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P36_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE_START_PROMPT.md",
+      "role": "authoritative native marker renderer submit source trace"
+    },
+    {
+      "slot": 2,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P37_ZERO_CLICK_NATIVE_MARKER_AUTO_ACQUISITION_BASELINE",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P37_ZERO_CLICK_NATIVE_MARKER_AUTO_ACQUISITION_BASELINE_START_PROMPT.md",
+      "role": "zero-click non-authoritative native marker auto-acquisition baseline"
+    },
+    {
+      "slot": 3,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P38_ACCEPTED_REPAIR_INTEGRATED_CANDIDATE_MATERIALIZATION",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P38_ACCEPTED_REPAIR_INTEGRATED_CANDIDATE_MATERIALIZATION_START_PROMPT.md",
+      "role": "accepted-repair integrated candidate materialization"
+    }
+  ],
+  "constraints": {
+    "workerCount": 3,
+    "zeroClickRequired": true,
+    "manualAvatarSeedAllowed": false,
+    "realWofRun": false,
+    "ownerVisualAcceptance": "NOT_RUN",
+    "promotion": false,
+    "alphaLiveMoved": false,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "authority": {
+    "p35IntegratedSourceCommit": "82b0b09ecd902f502ae5509bcb3ee5a713f43fee",
+    "p33TestedCommit": "c8c61112efbccdef5794ee68cd27767eacb72e96",
+    "p32State": "BLOCKED",
+    "p32Blocker": "NATIVE_PLAYER_MARKER_DIRECT_RENDERER_CAUSAL_EDGE_NOT_CHECKED_IN"
+  }
+}
