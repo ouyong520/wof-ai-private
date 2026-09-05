@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.product-takeover.final-acceptance-session-provenance-durable-rebuild-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.final-acceptance-session-provenance-durable-rebuild-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P28_FINAL_ACCEPTANCE_SESSION_PROVENANCE_DURABLE_REBUILD",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P28_FINAL_ACCEPTANCE_SESSION_PROVENANCE_DURABLE_REBUILD_START_PROMPT.md",
+  "owner": "chatgpt-p28-worker",
+  "claimToken": "69884841cf571855163ab7db0ac663dc",
+  "state": "ACTIVE",
+  "startCommit": "5c4562b884ef76a934ef5ad26206cbca537c1f5e"
+}
