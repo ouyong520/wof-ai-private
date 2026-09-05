@@ -4,14 +4,14 @@
   "dedupKey": "alpha.v1.product-takeover.wof-page-association-ambiguity-repair-v1",
   "claimToken": "VEkVz7A8-x51yPL_-F9ctvlyf_LBDuuTmp09V7W3aYE",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "SELF_CHECK",
-  "overallPercent": 72,
+  "workState": "READY_TO_PUBLISH",
+  "overallPercent": 94,
   "implementationState": "DONE",
-  "selfCheckState": "IN_PROGRESS",
-  "resultPublicationState": "NOT_STARTED",
+  "selfCheckState": "PASS",
+  "resultPublicationState": "PENDING",
   "claimCloseState": "PENDING",
   "startCommit": "3f1079452cc46dbe47d242ac2796465fb1be2afb",
-  "lastKnownGoodCommit": null,
+  "lastKnownGoodCommit": "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731",
   "implementationCommits": [
     "88a6e855c04ea8e461ae1a8c072270aa02749a80",
     "7dc35e490ec6d2e9d0b604c0be80dde1921c9352",
@@ -20,33 +20,48 @@
   ],
   "completed": [
     "read P31 START prompt, dispatch, AGENTS, product governance, dedup/progress/result protocols",
-    "confirmed P31 canonical claim, stage claim, and terminal RESULT were absent before original claim creation",
-    "created and verified dedup-v2 exclusive canonical claim and stage claim with the exact claimToken",
-    "reattached the existing ACTIVE P31 claim without recovery and re-verified the exact canonical claimToken on current main",
-    "localized the live blocker to parallel/PYLAUNCH/wof_launcher/discovery_v2.py direct Page/Worker association fallback",
+    "created and verified the original dedup-v2 exclusive canonical/stage claim and reattached the same exact ACTIVE token without recovery",
+    "localized the blocker to parallel/PYLAUNCH/wof_launcher/discovery_v2.py direct Page/Worker association fallback",
     "implemented exact targetId deduplication with conflicting duplicate rejection rather than order selection",
     "implemented stale/unattachable Page and Worker rejection before association",
-    "preserved the established deterministic authority hierarchy: valid parentId first, then unique parentFrameId, then browser-context/runtime gameSurface evidence",
-    "restricted multi-page fallback to runtime gameSurface/browser-context evidence; URL/title hints are diagnostics only and cannot select among pages",
-    "added focused P31 fixtures for authoritative two-page selection, parentId precedence, duplicate/conflicting target rejection, stale rejection, unresolved ambiguity, and order invariance",
-    "read back existing parentFrame authority tests before testing and corrected the candidate to preserve parentId-over-parentFrame semantics",
-    "persisted replacement exact candidate on worker/p31-wof-page-association-ambiguity-repair at 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731 before terminal-significant tests"
+    "preserved deterministic authority hierarchy: valid parentId first, unique parentFrameId second, then browser-context/runtime gameSurface evidence",
+    "restricted multi-page fallback so URL/title/alphaBootstrap hints remain diagnostic only and never select among multiple pages",
+    "added focused P31 fixtures for two-page authoritative selection, parentId precedence, duplicate/conflicting target rejection, stale rejection, unresolved ambiguity, URL-only fail-closed behavior, and order invariance",
+    "persisted replacement exact candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731 before terminal-significant tests",
+    "fresh-read exact candidate blobs and matched discovery_v2.py=518c290aed5f1a06a4b981a11160ee1d95693a56, P31 fixture=6e898ae26e8eaff96c95de00b8e02b7634085d47, existing parentFrame authority fixture=1ed144a003bc54246ff12f75db5f5f886028029a",
+    "ran exact-candidate focused deterministic self-check: 13/13 PASS across P31 authority fixtures and existing parentFrame authority regression",
+    "verified candidate diff from branch base touches only discovery_v2.py and test_p31_page_association_authority.py"
   ],
   "remaining": [
-    "run focused self-check against exact durable candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731 without real game",
-    "if focused tests pass, publish pre-terminal READY_TO_PUBLISH checkpoint",
-    "publish RESULT, close canonical/stage claims, and publish terminal PROGRESS"
+    "publish P31 RESULT JSON and Markdown with testedCommit=423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731",
+    "close canonical and stage claims with the same exact claimToken",
+    "publish terminal PROGRESS after fresh claim readback"
   ],
   "tests": [
     {
-      "name": "P31 exact-candidate focused discovery tests",
-      "result": "IN_PROGRESS",
-      "detail": "Final test provenance is reset to replacement candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731; no result from the superseded 7dc35e490ec6d2e9d0b604c0be80dde1921c9352 candidate is being reused."
+      "name": "P31 exact candidate blob identity readback",
+      "result": "PASS",
+      "detail": "Fresh candidate readback matched discovery_v2.py blob 518c290aed5f1a06a4b981a11160ee1d95693a56 and P31 fixture blob 6e898ae26e8eaff96c95de00b8e02b7634085d47; existing parentFrame fixture matched 1ed144a003bc54246ff12f75db5f5f886028029a."
+    },
+    {
+      "name": "P31 focused deterministic discovery regression",
+      "result": "PASS",
+      "detail": "13/13 PASS against exact durable candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731: 8 P31 authority/duplicate/stale/fail-closed fixtures plus 5 existing parentFrame authority regressions."
+    },
+    {
+      "name": "Real WOF acceptance",
+      "result": "NOT_RUN",
+      "detail": "Intentionally not run under P31 authority."
+    },
+    {
+      "name": "Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Intentionally not requested or run under P31 authority."
     }
   ],
   "blocker": null,
-  "nextAction": "Run focused deterministic discovery tests against exact durable candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731.",
-  "terminalResultPath": null,
+  "nextAction": "Publish terminal P31 result artifacts, close the exact-token canonical/stage claims, then mark PROGRESS TERMINAL.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P31_WOF_PAGE_ASSOCIATION_AMBIGUITY_REPAIR_RESULT.json",
   "writerRole": "WORKER",
   "realWofAcceptance": "NOT_RUN",
   "ownerVisualAcceptance": "NOT_RUN",
@@ -58,5 +73,5 @@
     "parallel/PYLAUNCH/wof_launcher/discovery_v2.py": "518c290aed5f1a06a4b981a11160ee1d95693a56",
     "parallel/PYLAUNCH/tests/test_p31_page_association_authority.py": "6e898ae26e8eaff96c95de00b8e02b7634085d47"
   },
-  "updatedAtUtc": "2026-09-05T16:00:29Z"
+  "updatedAtUtc": "2026-09-05T16:02:10Z"
 }
