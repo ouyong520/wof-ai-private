@@ -1,0 +1,17 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_FINAL_ACCEPTANCE_NATIVE_PLAYER_MARKER_LONG_1_WORKER_V1",
+  "createdAtUtc": "2026-09-05T15:30:00Z",
+  "authorityCommit": "a236731404f0233411e7922cab361b1107273096",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.native-player-marker-renderer-anchor-qualification-v1",
+      "claimMode": "CREATE_NEW_DEDUP_V2_IF_UNCLAIMED",
+      "resultProtocol": "wof-alpha-worker-result-v1"
+    }
+  ]
+}
