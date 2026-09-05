@@ -1,0 +1,56 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P9_CANONICAL_ANCHOR_RUNTIME_ENVELOPE",
+  "dedupKey": "alpha.v1.product-takeover.canonical-anchor-runtime-envelope-v1",
+  "claimToken": "51d37e82c89f2ceb7325ec4e10a8d9d3402e44c27fe4e514",
+  "state": "COMPLETE",
+  "verdict": "P9 now provides a strict fail-closed canonical anchor runtime envelope for player/enemy READY and SUPPRESSED records, preserving generation, authorityKey, runtimeEpoch and rendererEpoch while exposing renderAnchor only for validated native 384x224 READY sources.",
+  "startCommit": "d462dbae63946aeca992c2d49d60e90b5f924a17",
+  "implementationCommits": [
+    "3c3abc59c0afb70cd5fa9a7ed58ec12165ebe5f7",
+    "9ab1528bf699cce9fd194b17654ae97ae68f66c2"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "product/alpha/wof_alpha_canonical_anchor_envelope.js",
+    "product/alpha/canonical_anchor_envelope_selfcheck.mjs"
+  ],
+  "tests": [
+    {
+      "name": "node --check product/alpha/wof_alpha_canonical_anchor_envelope.js",
+      "result": "PASS",
+      "detail": "The exact locally checked module has git blob 32197b5ed8c2069b23e5e883e396db5a472904e5, matching the committed main blob."
+    },
+    {
+      "name": "node product/alpha/canonical_anchor_envelope_selfcheck.mjs",
+      "result": "PASS",
+      "detail": "Exact committed blobs were checked: same-epoch READY+SUPPRESSED normalization passed; mixed renderer epoch, duplicate actor+generation, unsafe source and SUPPRESSED fallback position all failed closed; poison legacy projection data did not replace canonical READY coordinates."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Repository code plus focused synthetic Node fixtures prove only the P9 normalization/validation contract. P9 does not qualify W3 renderer/object authority, does not draw, and does not claim real-WOF machine-draw or Owner-visible PASS."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "Product composition may consume the P9 envelope and its P6/P7 adapter helpers once runtime supplies W3-qualified canonical anchor samples and the exact current authorityKey/runtimeEpoch/rendererEpoch binding; SUPPRESSED and invalid inputs must remain hidden with no legacy coordinate fallback.",
+  "evidencePaths": [
+    "product/alpha/wof_alpha_canonical_anchor_envelope.js",
+    "product/alpha/canonical_anchor_envelope_selfcheck.mjs",
+    "parallel/PYLAUNCH/wof_launcher/render_object_anchor.py",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P6_ENEMY_CANONICAL_RENDER_ANCHOR_LABELS_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR_RESULT.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_RENDER_ANCHOR_P5_P8_P9_CONTINUATION_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P9_CANONICAL_ANCHOR_RUNTIME_ENVELOPE_RESULT.md"
+}
