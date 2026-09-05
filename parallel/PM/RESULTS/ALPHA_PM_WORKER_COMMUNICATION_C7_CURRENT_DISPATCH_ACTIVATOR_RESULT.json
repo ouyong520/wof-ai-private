@@ -1,0 +1,77 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C7_CURRENT_DISPATCH_ACTIVATOR",
+  "dedupKey": "alpha.pm.worker-communication.current-dispatch-activator-v1",
+  "claimToken": "fn5_ZfFOf38GaX_iXyI45wAEvAj_LifwLrirbB6Eioc",
+  "state": "COMPLETE",
+  "verdict": "C7 now provides a deterministic PM-only current-dispatch activation planner, stale-write guard, and post-write verifier that derives manifest hash, revision, previous-dispatch identity, and exact pointer bytes without letting workers mutate CURRENT_DISPATCH.json.",
+  "startCommit": "74d50fc880ef155660ae2d38e5929ed38dd17bd1",
+  "implementationCommits": [
+    "51a39fe32150f69a7f1d1232b43151cde388c300",
+    "2a0c79521ba252c9b24a24952640e638f0f5785e",
+    "920bf6e249600d1738c5ba17868087b688170a15"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PM/tools/alpha_pm_dispatch_activate.py",
+    "parallel/PM/tests/test_alpha_pm_dispatch_activate.py",
+    "parallel/PM/ALPHA_PM_DISPATCH_ACTIVATION_PROTOCOL_V1.md"
+  ],
+  "tests": [
+    {
+      "name": "python compile: C7 activator and focused tests",
+      "result": "PASS",
+      "detail": "alpha_pm_dispatch_activate.py and test_alpha_pm_dispatch_activate.py compiled successfully in the local focused self-check harness."
+    },
+    {
+      "name": "clean no-pointer activation plan",
+      "result": "PASS",
+      "detail": "Focused fixture produced deterministic create planning with revision 1, previousDispatch=null, and an ABSENT write guard."
+    },
+    {
+      "name": "valid prior-pointer transition and post-write verification",
+      "result": "PASS",
+      "detail": "Focused fixture derived revision 2, rolled the exact prior dispatch identity into previousDispatch, rendered exact pointer bytes, and verified the temporary PM-written pointer through the C5-compatible resolver path."
+    },
+    {
+      "name": "stale/concurrent guard rejection",
+      "result": "PASS",
+      "detail": "Changing current-pointer bytes after planning caused the SHA-256 write guard to reject the stale plan."
+    },
+    {
+      "name": "revision regression rejection",
+      "result": "PASS",
+      "detail": "A requested revision lower than the exact derived next revision was rejected fail-closed."
+    },
+    {
+      "name": "full mounted-repository execution",
+      "result": "NOT_RUN",
+      "detail": "The GitHub connector provided authoritative source reads/writes but no mounted checkout, and the execution container could not clone the private repository because external network/DNS access was unavailable; broad QA was not required by the implementation-first authority."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_APPLICABLE",
+    "classification": "NOT_APPLICABLE",
+    "detail": "C7 changes PM/Worker coordination only; it does not modify or prove Alpha runtime, HUD, renderer, updater, Collector, Unified Collector, Training Farm, or 10训 behavior."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM may run alpha_pm_dispatch_activate.py plan, enforce the emitted expected-old guard with its PM-owned write/CAS mechanism, write exactly plannedPointerText, then run verify before trusting the new CURRENT_DISPATCH.json.",
+  "evidencePaths": [
+    "parallel/PM/tools/alpha_pm_dispatch_activate.py",
+    "parallel/PM/tests/test_alpha_pm_dispatch_activate.py",
+    "parallel/PM/ALPHA_PM_DISPATCH_ACTIVATION_PROTOCOL_V1.md",
+    "parallel/PM/ALPHA_PM_CURRENT_DISPATCH_PROTOCOL_V1.md",
+    "parallel/PM/CURRENT_DISPATCH.json",
+    "parallel/PM/DISPATCH_MANIFESTS/ALPHA_PM_WORKER_COMMUNICATION_C7_C8_2_WORKER_V1.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
