@@ -1,0 +1,25 @@
+{
+  "schema": "wof-alpha-dispatch-spec-v1",
+  "dispatchId": "ALPHA_EXAMPLE_2_WORKER_V1",
+  "createdAtUtc": "2026-09-05T00:00:00Z",
+  "authorityPath": "parallel/PM/ALPHA_EXAMPLE_2_WORKER_DISPATCH.md",
+  "authorityCommit": "0000000000000000000000000000000000000000",
+  "workers": [
+    {
+      "stageId": "ALPHA_EXAMPLE_W1",
+      "dedupKey": "alpha.example.worker-1",
+      "mission": "implement the first PM-assigned work item",
+      "instructions": [
+        "Stay inside the authority file's write scope."
+      ]
+    },
+    {
+      "stageId": "ALPHA_EXAMPLE_W2",
+      "dedupKey": "alpha.example.worker-2",
+      "mission": "independently validate the second PM-assigned work item",
+      "dedupMode": "independent-validation",
+      "independentValidationGroup": "alpha.example.validation",
+      "independentValidationKey": "slot-2"
+    }
+  ]
+}
