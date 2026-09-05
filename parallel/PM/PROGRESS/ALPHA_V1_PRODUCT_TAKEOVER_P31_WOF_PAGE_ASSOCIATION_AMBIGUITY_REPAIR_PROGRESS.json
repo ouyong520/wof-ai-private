@@ -4,9 +4,9 @@
   "dedupKey": "alpha.v1.product-takeover.wof-page-association-ambiguity-repair-v1",
   "claimToken": "VEkVz7A8-x51yPL_-F9ctvlyf_LBDuuTmp09V7W3aYE",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 8,
-  "implementationState": "NOT_STARTED",
+  "workState": "IMPLEMENTING",
+  "overallPercent": 28,
+  "implementationState": "IN_PROGRESS",
   "selfCheckState": "NOT_RUN",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
@@ -15,25 +15,28 @@
   "implementationCommits": [],
   "completed": [
     "read P31 START prompt, dispatch, AGENTS, product governance, dedup/progress/result protocols",
-    "confirmed P31 canonical claim, stage claim, and terminal RESULT were absent before claim creation",
-    "created dedup-v2 exclusive canonical claim from latest main authority and fresh-read exact claimToken ACTIVE",
-    "created stage claim with the same exact claimToken and fresh-read both canonical and stage claims ACTIVE"
+    "confirmed P31 canonical claim, stage claim, and terminal RESULT were absent before original claim creation",
+    "created and verified dedup-v2 exclusive canonical claim and stage claim with the exact claimToken",
+    "reattached the existing ACTIVE P31 claim without recovery and re-verified the exact canonical claimToken on current main",
+    "localized the live blocker to parallel/PYLAUNCH/wof_launcher/discovery_v2.py direct Page/Worker association fallback",
+    "identified that explicit parentId/parentFrameId topology is authoritative while URL/title-style WOF page signaling must not choose between multiple plausible pages",
+    "identified focused test seams in parallel/PYLAUNCH/tests/test_discovery_v2.py and test_parentframe_authority.py"
   ],
   "remaining": [
-    "inspect current Page/Worker/WASM discovery and live-gate association seam",
-    "implement deterministic authoritative association with stale/duplicate rejection and fail-closed ambiguity",
+    "implement deterministic authoritative Page/Worker/WASM association with duplicate/conflict/stale rejection and fail-closed unresolved ambiguity",
+    "add focused deterministic fixtures for two-page authoritative match, duplicate/conflicting target rejection, unresolved ambiguity, and order invariance",
     "create durable implementation candidate before terminal-significant focused tests",
     "run focused exact-candidate self-check without real game",
     "publish RESULT, close canonical/stage claims, and publish terminal PROGRESS"
   ],
   "tests": [],
   "blocker": null,
-  "nextAction": "Inspect the current WOF Page/Worker/WASM discovery implementation and identify the minimal authoritative association seam for P31.",
+  "nextAction": "Patch only the Page/Worker/WASM discovery association seam and its focused tests, using explicit topology authority and fail-closed conflict handling.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
   "realWofAcceptance": "NOT_RUN",
   "ownerVisualAcceptance": "NOT_RUN",
   "visibleProof": "NOT_PROVEN",
   "alphaLiveMoved": false,
-  "updatedAtUtc": "2026-09-05T15:21:00Z"
+  "updatedAtUtc": "2026-09-05T15:53:02Z"
 }
