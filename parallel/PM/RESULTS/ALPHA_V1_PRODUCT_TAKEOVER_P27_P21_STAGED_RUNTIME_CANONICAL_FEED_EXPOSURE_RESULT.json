@@ -90,7 +90,7 @@
   "visibleProof": "NOT_PROVEN",
   "alphaLiveMoved": false,
   "blocker": null,
-  "nextAction": "After P25/P26 terminal publication is settled, rerun the existing exact-candidate P21/P25 staged acceptance path against the same maintained P19 candidate. Downstream consumers must use only same-session P10 coordinator cycles surfaced by P27 and remain fail-closed if renderer-source proof or required dynamic/stability evidence is absent.",
+  "nextAction": "PM/downstream can now rerun the existing exact-candidate P21/P25 staged acceptance path against the maintained P19 candidate. Downstream consumers must use only same-session P10 coordinator cycles surfaced by P27 and remain fail-closed if renderer-source proof or required dynamic/stability evidence is absent.",
   "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_FINAL_ACCEPTANCE_P25_CLOSE_P26_CLOSE_P27_P21_FEED_LONG_3_WORKER_V1.json",
   "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P27_P21_STAGED_RUNTIME_CANONICAL_FEED_EXPOSURE_RESULT.md",
   "completedAtUtc": "2026-09-05T11:16:00Z"
