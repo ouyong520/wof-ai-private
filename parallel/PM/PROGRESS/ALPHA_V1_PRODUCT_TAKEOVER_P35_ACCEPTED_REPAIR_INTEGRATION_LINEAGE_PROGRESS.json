@@ -1,0 +1,35 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P35_ACCEPTED_REPAIR_INTEGRATION_LINEAGE",
+  "dedupKey": "alpha.v1.product-takeover.accepted-repair-integration-lineage-v1",
+  "claimToken": "8097ec89dc1679df79aa5299942ef78e86b252b6d30666cb",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 8,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "510516c569f5439ca567984cbf72e811815d3aab",
+  "lastKnownGoodCommit": null,
+  "implementationCommits": [],
+  "completed": [
+    "Read P35 START_PROMPT, dispatch, product governance, dedup/progress/result protocols.",
+    "Fresh-read terminal P29/P30/P31 COMPLETE and P32 BLOCKED RESULT authority.",
+    "Created and exact-token verified canonical dedup-v2 claim and stage claim."
+  ],
+  "remaining": [
+    "Create dedicated integration candidate branch from latest authoritative main.",
+    "Inspect exact P29/P30/P31 tested commit diffs/trees and accepted blob evidence for overlap/conflict.",
+    "Construct conflict-free integration lineage with exact tested commits as Git ancestors, excluding P32.",
+    "Fresh-read accepted repair blobs from integration source and prove ancestry/source tree metadata.",
+    "Run focused deterministic integration regression on durable candidate.",
+    "Publish terminal RESULT and close exact-token claims."
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "Inspect exact accepted tested commits and construct the dedicated integration lineage fail-closed.",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "updatedAtUtc": "2026-09-05T16:17:12Z"
+}
