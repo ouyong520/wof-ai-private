@@ -530,13 +530,30 @@ def verify_worktree_payload(root: Path, manifest: dict, *, canonical_candidate: 
     current_paths = selected_worktree_paths(root, canonical_candidate=canonical_candidate)
     current_set = set(current_paths)
     expected_runtime_set = {p for p in expected if is_runtime_path(p, canonical_candidate=canonical_candidate)}
-    missing = sorted(current_set - expected_runtime_set)
-    if missing:
-        raise ManifestError("当前运行时文件未进入 package manifest：" + ", ".join(missing))
+
+    allow_future_additions = False
+    source = str(manifest.get("sourceCommit") or "").lower()
+    if re.fullmatch(r"[0-9a-f]{40}", source):
+        try:
+            head = resolve_commit(root, "HEAD")
+            cp = subprocess.run(
+                ["git", "merge-base", "--is-ancestor", source, head],
+                cwd=root,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            allow_future_additions = cp.returncode == 0 and source != head
+        except (ManifestError, OSError):
+            allow_future_additions = False
+
+    extra = sorted(current_set - expected_runtime_set)
+    if extra and not allow_future_additions:
+        raise ManifestError("当前运行时文件未进入 package manifest：" + ", ".join(extra))
     stale_removed = sorted(expected_runtime_set - current_set)
     if stale_removed:
         raise ManifestError("package manifest 仍包含已移除运行时文件：" + ", ".join(stale_removed))
-    for path in current_paths:
+    for path in sorted(expected_runtime_set):
         data = (root / path).read_bytes()
         actual = git_blob_sha(data)
         wanted = expected[path]
