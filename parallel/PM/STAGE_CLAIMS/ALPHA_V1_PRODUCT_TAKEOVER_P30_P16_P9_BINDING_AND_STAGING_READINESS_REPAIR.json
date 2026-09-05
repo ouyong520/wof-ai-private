@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR",
+  "dedupKey": "alpha.v1.product-takeover.p16-p9-binding-staging-readiness-repair-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.p16-p9-binding-staging-readiness-repair-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.p16-p9-binding-staging-readiness-repair-v1.json",
+  "claimToken": "07c4ebfe2077a52b842c5c53d2f3cd05",
+  "state": "ACTIVE",
+  "startCommit": "c97603ef0c217a859d0ae230ade62fcfee4844e8"
+}
