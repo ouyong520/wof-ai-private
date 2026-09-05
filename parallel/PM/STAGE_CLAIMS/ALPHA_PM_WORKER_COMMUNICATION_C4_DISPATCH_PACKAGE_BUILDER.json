@@ -5,6 +5,9 @@
   "effectiveDedupKey": "alpha.pm.worker-communication.dispatch-package-builder-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.pm.worker-communication.dispatch-package-builder-v1.json",
   "claimToken": "bfbe7d8407010688672f988f8c8b6716bce982c3e1a7f674",
-  "state": "ACTIVE",
-  "startCommit": "10c778ce2337d913fda733da83c9a714db36f3dd"
+  "state": "COMPLETE",
+  "startCommit": "10c778ce2337d913fda733da83c9a714db36f3dd",
+  "resultJsonPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C4_DISPATCH_PACKAGE_BUILDER_RESULT.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C4_DISPATCH_PACKAGE_BUILDER_RESULT.md",
+  "resultCommit": "e54c27bf6aef5e3702c98a2ba394b386ecfff101"
 }
