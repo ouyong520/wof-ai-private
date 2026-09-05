@@ -1,0 +1,53 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR",
+  "dedupKey": "alpha.v1.product-takeover.player-danger-canonical-anchor-v1",
+  "claimToken": "615ac7ba7b347e5e60d1faa6d8887a745f9ff62cdbef7bde",
+  "state": "COMPLETE",
+  "verdict": "P7 now exposes an explicit fail-closed canonical P1/P2/P3 danger-anchor planner using exact READY 384x224 render-object anchors; unproven, suppressed, stale, missing, unsafe, ambiguous, generation-mismatched or authority/epoch-invalid inputs suppress placement instead of falling back to legacy geometry, while warning semantics remain unchanged.",
+  "startCommit": "000beefe0210535ce5dcc5ca4e0a5792990ab8b2",
+  "implementationCommits": [
+    "2aa158577a11d8a75fb01f9c1fdf33e84576ce28"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "product/alpha/wof_alpha_player_head_warning.js"
+  ],
+  "tests": [
+    {
+      "name": "node --check exact committed P7 module blob copy",
+      "result": "PASS",
+      "detail": "The local JS copy used for parse/load self-check had git blob SHA e9eaa398a6aaa62e4c0cbf5f73a39c7cb0ac2295, matching the committed GitHub blob for product/alpha/wof_alpha_player_head_warning.js."
+    },
+    {
+      "name": "focused P7 canonical-anchor fixture self-check",
+      "result": "PASS",
+      "detail": "READY P2 generation 7 canonical native anchor (192,80) mapped to drawing-buffer (384,160); RENDERER_SOURCE_UNPROVEN SUPPRESSED, stale canonical sample, and generation mismatch all produced zero anchored/fixed warnings; poison legacy projection/player inputs were not read and canonical fallback remained NONE."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "The exact committed planner path and focused synthetic fixtures prove the P7 implementation behavior only. W3 explicitly reports the displayed-frame renderer/object source is NOT YET PROVEN, so this result does not claim real-WOF machine draw or Owner visual PASS."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM may integrate buildCanonicalPlan with the canonical runtime/HUD bridge once W3 supplies proven READY player anchors plus current player generations and the matching authority/runtime/renderer binding; no player-danger geometry redesign is required.",
+  "evidencePaths": [
+    "product/alpha/wof_alpha_player_head_warning.js",
+    "parallel/PYLAUNCH/wof_launcher/render_object_anchor.py",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_W3_RENDER_OBJECT_AUTHORITY_CONTINUATION_SUBRESULT.md",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR_RESULT.md"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_RENDER_ANCHOR_PARALLEL_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR_RESULT.md"
+}
