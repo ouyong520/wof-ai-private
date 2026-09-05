@@ -16,7 +16,7 @@ from wof_launcher.render_measurement_ui import MeasurementPublisher, Measurement
 from wof_launcher.state import StatusStore
 
 ATTACH_ONLY_ENV = "WOF_ALPHA_MENU6_ATTACH_ONLY"
-DEFAULT_OWNER_WOF_URL = "https://play.wo1wan.com/jjnext/play?id=314&mode=1&look=1&sev=4&linkid=5&sgstate=def"
+OWNER_NAVIGATES_ENV = "WOF_ALPHA_OWNER_NAVIGATES"
 
 
 def _load_runner(root: Path):
@@ -133,6 +133,7 @@ def main() -> int:
         heapFound=False,
         browserLaunchAttempted=False,
         navigationAttempted=False,
+        ownerNavigationRequired=True,
         staleGameUrlIgnored=True,
         sourceCommit=source_commit or None,
     )
@@ -141,11 +142,12 @@ def main() -> int:
 
     def worker() -> None:
         previous_attach_only = os.environ.get(ATTACH_ONLY_ENV)
+        previous_owner_navigates = os.environ.get(OWNER_NAVIGATES_ENV)
         os.environ.pop(ATTACH_ONLY_ENV, None)
+        os.environ[OWNER_NAVIGATES_ENV] = "1"
         try:
             runner = _load_runner(root)
             run_port, entry_source = _choose_runner_port(args.host, args.port)
-            game_url = str(args.game_url or DEFAULT_OWNER_WOF_URL).strip()
             publisher.publish(
                 "WAITING_FOR_WOF",
                 browserConnected=False,
@@ -155,9 +157,10 @@ def main() -> int:
                 heapFound=False,
                 browserEntrySource=entry_source,
                 browserLaunchAttempted=entry_source != "reuse-existing-exact-wof",
-                navigationAttempted=entry_source != "reuse-existing-exact-wof",
+                navigationAttempted=False,
+                ownerNavigationRequired=entry_source != "reuse-existing-exact-wof",
                 staleGameUrlIgnored=True,
-                configuredGameUrl=game_url,
+                configuredGameUrl=None,
                 browserPort=run_port,
             )
             code = int(
@@ -168,7 +171,7 @@ def main() -> int:
                     run_port,
                     args.browser,
                     args.browser_path,
-                    None if entry_source == "reuse-existing-exact-wof" else game_url,
+                    None,
                     forward_status,
                     stop,
                 )
@@ -185,6 +188,10 @@ def main() -> int:
                 os.environ.pop(ATTACH_ONLY_ENV, None)
             else:
                 os.environ[ATTACH_ONLY_ENV] = previous_attach_only
+            if previous_owner_navigates is None:
+                os.environ.pop(OWNER_NAVIGATES_ENV, None)
+            else:
+                os.environ[OWNER_NAVIGATES_ENV] = previous_owner_navigates
 
     thread = threading.Thread(target=worker, name="wof-render-authority-v3", daemon=True)
     thread.start()
