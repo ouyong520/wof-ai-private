@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.product-takeover.accepted-repair-integration-lineage-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.accepted-repair-integration-lineage-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P35_ACCEPTED_REPAIR_INTEGRATION_LINEAGE",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P35_ACCEPTED_REPAIR_INTEGRATION_LINEAGE_START_PROMPT.md",
+  "owner": "ChatGPT Worker P35",
+  "claimToken": "8097ec89dc1679df79aa5299942ef78e86b252b6d30666cb",
+  "state": "ACTIVE",
+  "startCommit": "510516c569f5439ca567984cbf72e811815d3aab"
+}
