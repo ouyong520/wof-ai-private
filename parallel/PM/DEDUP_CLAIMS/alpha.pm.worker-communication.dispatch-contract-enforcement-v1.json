@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.pm.worker-communication.dispatch-contract-enforcement-v1",
+  "effectiveDedupKey": "alpha.pm.worker-communication.dispatch-contract-enforcement-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C3_DISPATCH_CONTRACT_ENFORCEMENT",
+  "promptPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C3_DISPATCH_CONTRACT_ENFORCEMENT_START_PROMPT.md",
+  "owner": "chatgpt-c3-worker",
+  "claimToken": "1d77218c75654ae4895e3229b3237a66",
+  "state": "ACTIVE",
+  "startCommit": "45ad70ad6c059a44a5ec93405aaef2eb96493d61"
+}
