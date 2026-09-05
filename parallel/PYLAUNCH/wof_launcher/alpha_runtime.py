@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import secrets
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,7 @@ RELEASE = "wof-alpha-rc3"
 SCHEMA = "wof-alpha-v2"
 TRANSPORT = "wof-alpha-safe-transport-v1"
 SAFETY = {"readOnly": True, "ramWrites": 0, "inputInjection": False}
+PACKAGE_MANIFEST_ENV = "WOF_ALPHA_PACKAGE_MANIFEST"
 
 PAGE_SOURCES = (
     "product/alpha/wof_alpha_bootstrap.user.js",
@@ -76,17 +78,32 @@ class AlphaRuntimeManager:
     def _load_manifest(self) -> dict[str, Any]:
         if self._manifest is not None:
             return self._manifest
-        candidates = (
-            self.root / "PACKAGE_MANIFEST.json",
-            self.root / "parallel" / "OWNER_ONECLICK" / "package_manifest.json",
-        )
+        explicit = os.environ.get(PACKAGE_MANIFEST_ENV)
+        if explicit:
+            candidates = (Path(explicit).expanduser().resolve(),)
+        else:
+            candidates = (
+                self.root / "PACKAGE_MANIFEST.json",
+                self.root / "parallel" / "OWNER_ONECLICK" / "package_manifest.json",
+            )
         path = next((p for p in candidates if p.is_file()), None)
         if path is None:
+            if explicit:
+                raise AlphaRuntimeError(f"显式 staged package manifest 不存在：{explicit}")
             raise AlphaRuntimeError("找不到 package manifest；拒绝从未固定的 main/runtime 启动 Alpha")
         try:
             manifest = json.loads(path.read_text(encoding="utf-8-sig"))
         except Exception as exc:
             raise AlphaRuntimeError(f"package manifest 无法读取：{exc}") from exc
+        if explicit:
+            if manifest.get("schema") != "wof-owner-oneclick-package-v1":
+                raise AlphaRuntimeError("显式 staged package manifest schema 无效")
+            expected_package = os.environ.get("WOF_ALPHA_ACCEPTANCE_PACKAGE_VERSION")
+            expected_commit = os.environ.get("WOF_ALPHA_ACCEPTANCE_COMMIT")
+            if expected_package and manifest.get("packageVersion") != expected_package:
+                raise AlphaRuntimeError("显式 staged package manifest packageVersion 不匹配")
+            if expected_commit and str(manifest.get("sourceCommit") or "").lower() != expected_commit.lower():
+                raise AlphaRuntimeError("显式 staged package manifest sourceCommit 不匹配")
         files = manifest.get("files")
         if not isinstance(files, list):
             raise AlphaRuntimeError("package manifest 缺少 files")
