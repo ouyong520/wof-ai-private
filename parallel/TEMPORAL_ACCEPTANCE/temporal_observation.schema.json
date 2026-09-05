@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wof-alpha-canonical-temporal-observation-v1",
+  "title": "Alpha V1 P24 Canonical Temporal Observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "sampleSeq",
+    "frameSeq",
+    "observedAt",
+    "worldSha256",
+    "authorityKey",
+    "runtimeEpoch",
+    "rendererEpoch",
+    "actor",
+    "generation",
+    "state",
+    "safety"
+  ],
+  "properties": {
+    "schema": {"const": "wof-alpha-canonical-temporal-observation-v1"},
+    "sampleSeq": {"type": "integer", "minimum": 0},
+    "frameSeq": {"type": "integer", "minimum": 0},
+    "observedAt": {"type": "number"},
+    "worldSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "authorityKey": {"type": "string", "minLength": 1},
+    "runtimeEpoch": {"type": "string", "minLength": 16},
+    "rendererEpoch": {"type": "string", "minLength": 16},
+    "actor": {
+      "type": "string",
+      "pattern": "^(?:P[123]|enemy-slot-(?:[0-9]|1[0-9]))$"
+    },
+    "generation": {"type": "integer", "minimum": 0},
+    "state": {"enum": ["READY", "SUPPRESSED"]},
+    "reason": {"type": ["string", "null"]},
+    "actorPresence": {"enum": ["PRESENT", "ABSENT", "UNKNOWN"]},
+    "transportSequence": {"type": ["integer", "null"], "minimum": 0},
+    "canonicalSampleAt": {"type": ["number", "null"]},
+    "canonicalGeometry": {
+      "type": ["object", "null"],
+      "required": ["coordinateAuthority"],
+      "properties": {
+        "coordinateAuthority": {"const": "canonical-render-object-only"}
+      },
+      "additionalProperties": true
+    },
+    "drawAcknowledgements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "sequence",
+          "evidenceGeneration",
+          "completed",
+          "actor",
+          "generation",
+          "authority",
+          "coordinateAuthority",
+          "screenshotAuthority",
+          "worldProjectionAuthority",
+          "visibleProof"
+        ],
+        "properties": {
+          "sequence": {"type": "integer", "minimum": 1},
+          "acknowledgedAt": {"type": "number"},
+          "evidenceGeneration": {"type": "integer", "minimum": 1},
+          "completed": {"const": true},
+          "actor": {"type": "string"},
+          "generation": {"type": "integer", "minimum": 0},
+          "authority": {"type": "object"},
+          "sampleIdentity": {"type": ["object", "null"]},
+          "coordinateAuthority": {"const": "canonical-render-object-only"},
+          "screenshotAuthority": {"const": false},
+          "worldProjectionAuthority": {"const": false},
+          "visibleProof": {"const": "NOT_PROVEN"}
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "required": ["readOnly", "ramWrites", "inputInjection"],
+      "properties": {
+        "readOnly": {"const": true},
+        "ramWrites": {"const": 0},
+        "inputInjection": {"const": false}
+      },
+      "additionalProperties": true
+    }
+  }
+}
