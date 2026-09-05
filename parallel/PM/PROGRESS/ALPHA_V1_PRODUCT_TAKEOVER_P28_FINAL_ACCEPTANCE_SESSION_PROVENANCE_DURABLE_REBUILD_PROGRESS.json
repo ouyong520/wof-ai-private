@@ -4,9 +4,9 @@
   "dedupKey": "alpha.v1.product-takeover.final-acceptance-session-provenance-durable-rebuild-v1",
   "claimToken": "69884841cf571855163ab7db0ac663dc",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 8,
-  "implementationState": "NOT_STARTED",
+  "workState": "IMPLEMENTING",
+  "overallPercent": 12,
+  "implementationState": "IN_PROGRESS",
   "selfCheckState": "NOT_RUN",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
@@ -17,7 +17,8 @@
     "read P28 START prompt, dispatch authority, manifest, terminal P26 RESULT, root AGENTS/product governance, dedup guard, progress protocol, result protocol and P26 START prompt",
     "verified P26 canonical and stage claims remain terminal BLOCKED with exact historical token d60b10ee92743c2181969d475ac93164 and no recovery allowed",
     "verified parallel/OWNER_ACCEPTANCE_PROVENANCE is absent on latest main so no conflicting active ownership exists",
-    "acquired and re-read new dedup-v2 P28 canonical and stage claims with exact claimToken 69884841cf571855163ab7db0ac663dc"
+    "acquired and re-read new dedup-v2 P28 canonical and stage claims with exact claimToken 69884841cf571855163ab7db0ac663dc",
+    "re-read P28 canonical/stage claim commit evidence and confirmed exact claimToken 69884841cf571855163ab7db0ac663dc is still ACTIVE before implementation"
   ],
   "remaining": [
     "inspect relevant upstream P16-P25 artifact schemas/contracts needed for strict provenance validation",
@@ -29,12 +30,12 @@
   ],
   "tests": [],
   "blocker": null,
-  "nextAction": "Inspect exact upstream artifact contracts on current main, then implement the bounded P28 provenance module without touching P26 or alpha-live.",
+  "nextAction": "Inspect exact P16-P25 artifact contracts on current main, then implement the bounded P28 provenance module without touching P26 or alpha-live.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
   "realWofAcceptance": "NOT_RUN",
   "ownerVisualAcceptance": "NOT_RUN",
   "visibleProof": "NOT_PROVEN",
   "alphaLiveMoved": false,
-  "updatedAtUtc": "2026-09-05T12:11:04Z"
+  "updatedAtUtc": "2026-09-05T12:16:00Z"
 }
