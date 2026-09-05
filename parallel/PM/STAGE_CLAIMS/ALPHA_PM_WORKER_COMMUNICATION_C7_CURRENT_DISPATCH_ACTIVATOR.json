@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C7_CURRENT_DISPATCH_ACTIVATOR",
+  "dedupKey": "alpha.pm.worker-communication.current-dispatch-activator-v1",
+  "effectiveDedupKey": "alpha.pm.worker-communication.current-dispatch-activator-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.pm.worker-communication.current-dispatch-activator-v1.json",
+  "claimToken": "fn5_ZfFOf38GaX_iXyI45wAEvAj_LifwLrirbB6Eioc",
+  "state": "ACTIVE",
+  "startCommit": "74d50fc880ef155660ae2d38e5929ed38dd17bd1"
+}
