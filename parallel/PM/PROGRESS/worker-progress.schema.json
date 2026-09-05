@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wof-alpha-worker-progress-v1",
+  "title": "WOF Alpha Worker Progress V1",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "stageId",
+    "dedupKey",
+    "claimToken",
+    "claimStateAtCheckpoint",
+    "workState",
+    "overallPercent",
+    "implementationState",
+    "selfCheckState",
+    "resultPublicationState",
+    "claimCloseState",
+    "startCommit",
+    "lastKnownGoodCommit",
+    "implementationCommits",
+    "completed",
+    "remaining",
+    "tests",
+    "blocker",
+    "nextAction",
+    "terminalResultPath",
+    "writerRole",
+    "updatedAtUtc"
+  ],
+  "properties": {
+    "schema": {"const": "wof-alpha-worker-progress-v1"},
+    "stageId": {"type": "string", "minLength": 1},
+    "dedupKey": {"type": "string", "minLength": 3},
+    "claimToken": {"type": "string", "minLength": 8},
+    "claimStateAtCheckpoint": {
+      "type": "string",
+      "enum": ["ACTIVE", "COMPLETE", "BLOCKED", "SUBCOMPLETE"]
+    },
+    "workState": {
+      "type": "string",
+      "enum": [
+        "CLAIMED",
+        "IMPLEMENTING",
+        "SELF_CHECK",
+        "READY_TO_PUBLISH",
+        "BLOCKED_PENDING_RESULT",
+        "PUBLISHING",
+        "INTERRUPTED",
+        "TERMINAL"
+      ]
+    },
+    "overallPercent": {"type": "integer", "minimum": 0, "maximum": 100},
+    "implementationState": {
+      "type": "string",
+      "enum": ["NOT_STARTED", "IN_PROGRESS", "DONE", "BLOCKED"]
+    },
+    "selfCheckState": {
+      "type": "string",
+      "enum": ["NOT_RUN", "IN_PROGRESS", "PASS", "FAIL", "NOT_APPLICABLE"]
+    },
+    "resultPublicationState": {
+      "type": "string",
+      "enum": ["NOT_STARTED", "PENDING", "IN_PROGRESS", "DONE"]
+    },
+    "claimCloseState": {
+      "type": "string",
+      "enum": ["PENDING", "IN_PROGRESS", "DONE"]
+    },
+    "startCommit": {"type": ["string", "null"]},
+    "lastKnownGoodCommit": {"type": ["string", "null"]},
+    "implementationCommits": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "completed": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "remaining": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "result"],
+        "properties": {
+          "name": {"type": "string"},
+          "result": {"type": "string", "enum": ["PASS", "FAIL", "NOT_RUN", "IN_PROGRESS"]},
+          "detail": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "blocker": {
+      "type": ["object", "string", "null"]
+    },
+    "nextAction": {"type": "string", "minLength": 1},
+    "terminalResultPath": {"type": ["string", "null"]},
+    "writerRole": {
+      "type": "string",
+      "enum": ["WORKER", "PM_RECONSTRUCTION"]
+    },
+    "updatedAtUtc": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"workState": {"const": "TERMINAL"}}, "required": ["workState"]},
+      "then": {
+        "properties": {
+          "overallPercent": {"const": 100},
+          "resultPublicationState": {"const": "DONE"},
+          "claimCloseState": {"const": "DONE"}
+        }
+      }
+    },
+    {
+      "if": {"not": {"properties": {"workState": {"const": "TERMINAL"}}, "required": ["workState"]}},
+      "then": {
+        "properties": {
+          "overallPercent": {"maximum": 99}
+        }
+      }
+    }
+  ]
+}
