@@ -1,0 +1,19 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_PRODUCT_TAKEOVER_P4_FIRST_OWNER_GATE_INTEGRATION_WIRING_V1",
+  "createdAtUtc": "2026-09-05T05:31:00Z",
+  "authorityCommit": "09b531d710a586d2d9627a1ac02a74679d52cd40",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P4_FIRST_OWNER_GATE_INTEGRATION_WIRING",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P4_FIRST_OWNER_GATE_INTEGRATION_WIRING_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.first-owner-gate.integration-wiring-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P4_FIRST_OWNER_GATE_INTEGRATION_WIRING_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P4_FIRST_OWNER_GATE_INTEGRATION_WIRING_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P4_FIRST_OWNER_GATE_INTEGRATION_WIRING"
+    }
+  ]
+}
