@@ -1,0 +1,83 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P12_CANONICAL_ACTOR_GENERATION_REGISTRY",
+  "dedupKey": "alpha.v1.product-takeover.canonical-actor-generation-registry-v1",
+  "claimToken": "e31a17b35e9175681f7c7f26ff5af381",
+  "state": "COMPLETE",
+  "verdict": "P12 provides a stateless fail-closed W3-frame actor/generation registry that exports only explicit proven {kind,actor,generation} descriptors under one exact AuthorityBinding and never derives identity from spatial or historical hints.",
+  "startCommit": "568913a877526d2ab13312c01afa0495e8ba8446",
+  "implementationCommits": [
+    "864fda69a3b777f05119bc7ae1ea4cc3a2a039c8"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PYLAUNCH/wof_launcher/canonical_actor_generation_registry.py"
+  ],
+  "tests": [
+    {
+      "name": "Python compile of exact committed registry blob",
+      "result": "PASS",
+      "detail": "canonical_actor_generation_registry.py compiled successfully; local git blob 53110e04bb9048bde326615a21c9ea9af25e54d5 exactly matches the GitHub content SHA at implementation commit 864fda69a3b777f05119bc7ae1ea4cc3a2a039c8."
+    },
+    {
+      "name": "exact-binding P1 plus enemy descriptor fixture",
+      "result": "PASS",
+      "detail": "A byte-identical registry module resolved P1 generation 7 and enemy-slot-3 generation 12 into deterministic descriptors containing exactly kind/actor/generation. Reversing W3 actor row order did not change output. Spatial fields present in fixture rows were not exported, and rendererSource.proven=false did not suppress otherwise explicit safe identity authority."
+    },
+    {
+      "name": "conflicting generation, ambiguous association, stale epoch, and boolean generation fail-closed fixture",
+      "result": "PASS",
+      "detail": "Conflicting P1 generations returned SUPPRESSED/CONFLICTING_ACTOR_GENERATIONS with no descriptors; ambiguous association returned SUPPRESSED/ACTOR_ASSOCIATION_UNPROVEN; stale renderer epoch returned SUPPRESSED/STALE_AUTHORITY_OR_RENDERER_EPOCH; boolean generation returned SUPPRESSED/ACTOR_GENERATION_INVALID."
+    },
+    {
+      "name": "real-WOF / Owner visual acceptance / W3 source qualification",
+      "result": "NOT_RUN",
+      "detail": "Explicitly outside P12 authority. P12 establishes identity/generation implementation authority only and does not qualify renderer spatial proof or claim product-visible draw."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Repository implementation plus narrow controlled fixtures prove deterministic current-frame actor/generation descriptor extraction, exact binding checks, association proof checks, duplicate/conflict rejection, requested-actor filtering, stateless fail-closed behavior, and zero spatial authority in descriptors."
+  },
+  "productProofBoundary": "P12 proves identity/generation registry behavior only. P10/DeterministicRenderObjectAnchor remains position authority, W3 remains renderer-source proof authority, and no real-WOF draw or Owner-visible behavior is claimed.",
+  "identityBoundary": {
+    "supportedPlayers": ["P1", "P2", "P3"],
+    "supportedEnemyRange": "enemy-slot-0..enemy-slot-19",
+    "descriptorKeys": ["kind", "actor", "generation"],
+    "forbiddenInference": [
+      "coordinates",
+      "row/index order",
+      "nearest object",
+      "sprite appearance",
+      "projection",
+      "screenshot/template",
+      "click",
+      "old cached state"
+    ],
+    "stateless": true
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "The runtime/P10 caller should resolve the current W3 frame through P12 and pass only registry READY descriptors to CanonicalOverlayRuntimeBridge instead of constructing actor generations ad hoc; keep P10 spatial resolution and W3 proof ownership unchanged.",
+  "evidencePaths": [
+    "parallel/PYLAUNCH/wof_launcher/canonical_actor_generation_registry.py",
+    "parallel/PYLAUNCH/wof_launcher/render_object_anchor.py",
+    "parallel/PYLAUNCH/wof_launcher/canonical_overlay_runtime_bridge.py",
+    "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P12_CANONICAL_ACTOR_GENERATION_REGISTRY_START_PROMPT.md",
+    "parallel/PM/ALPHA_V1_CANONICAL_RUNTIME_P10_P12_P14_CONTINUATION_3_WORKER_DISPATCH.md",
+    "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_RUNTIME_P10_P12_P14_CONTINUATION_3_WORKER_V1.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_RUNTIME_P10_P12_P14_CONTINUATION_3_WORKER_V1.json",
+  "originalDispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_RUNTIME_P10_P12_P13_CONTINUATION_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P12_CANONICAL_ACTOR_GENERATION_REGISTRY_RESULT.md"
+}
