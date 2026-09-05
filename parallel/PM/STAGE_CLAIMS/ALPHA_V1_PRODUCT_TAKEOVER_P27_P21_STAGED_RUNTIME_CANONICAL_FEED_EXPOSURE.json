@@ -11,8 +11,8 @@
   "owner": "chatgpt-p27-worker",
   "result": "COMPLETE — P27 P21 STAGED RUNTIME CANONICAL FEED EXPOSURE — INTEGRATION READY",
   "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P27_P21_STAGED_RUNTIME_CANONICAL_FEED_EXPOSURE_RESULT.md",
-  "resultCommit": "39aca86b0a39eb94e141c4176fa87848cbc953d0",
-  "evidenceCommit": "350aace8206e36a068526a5a0337e5a3fc217a8f",
+  "resultCommit": "eb79edc676b97ff2924b9e487ed0c5b465bd2b13",
+  "evidenceCommit": "ed5b9fb1dd3dcb2d06c72a284e4db6849260536c",
   "implementationCommits": [
     "2eddd1194a886c80629e3b115587754d6279a74a",
     "32e4b9f31cf6ba10118282bb0ef78166a11d7c41",
