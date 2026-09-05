@@ -3,49 +3,62 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P27_P21_STAGED_RUNTIME_CANONICAL_FEED_EXPOSURE",
   "dedupKey": "alpha.v1.product-takeover.p21-staged-runtime-canonical-feed-exposure-v1",
   "claimToken": "ee254ee086ca56d8ae140aab3c3d26b3",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "IMPLEMENTED_SELF_CHECKING",
-  "overallPercent": 68,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
   "implementationState": "COMPLETE",
-  "selfCheckState": "RUNNING",
-  "resultPublicationState": "NOT_STARTED",
-  "claimCloseState": "PENDING",
+  "selfCheckState": "PASS",
+  "resultPublicationState": "PUBLISHED",
+  "claimCloseState": "CLOSED",
   "startCommit": "aa862708c6d9662ba38170f590a6ef7bab669072",
-  "lastKnownGoodCommit": "291919841dd673ec1363565410f0431e88ac0e66",
+  "lastKnownGoodCommit": "dce94112650e74389a12174c6eb2b9f711b1822e",
   "implementationCommits": [
     "2eddd1194a886c80629e3b115587754d6279a74a",
     "32e4b9f31cf6ba10118282bb0ef78166a11d7c41",
     "291919841dd673ec1363565410f0431e88ac0e66"
   ],
   "completed": [
-    "read P27 START prompt, dispatch authority, manifest, governance, progress/result protocols and P25 blocker checkpoint",
-    "acquired and re-read exclusive dedup-v2 canonical and stage claims with exact claimToken",
-    "traced P21 staged runtime, P25 runtime override, W3 exact actor slot/generation feed, P12 identity registry, maintained P10 coordinator and P25 canonical consumer",
-    "implemented P27 exact-candidate runtime interposer that feeds only W3 actor slot/generation identity into the real candidate P12->P10 coordinator and exposes the real coordinator status",
-    "kept rendererSource.proven=false for current unproven W3 source so P10 remains coordinate-free SUPPRESSED/RENDERER_SOURCE_UNPROVEN rather than upgrading W3 measurement coordinates",
-    "wrapped the staged runtime command after P21/P25 runtime-command builders so P25 tee cannot bypass the P27 seam while the detached exact-candidate checkout remains immutable",
-    "added focused deterministic checks for coordinate stripping, real canonical schema exposure, replay rejection, stale renderer rejection, generation regression and coordinate-bearing SUPPRESSED rejection"
+    "read P27 START prompt, dispatch authority, manifest, governance, progress/result protocols and P25 blocker evidence",
+    "acquired and re-read the exclusive dedup-v2 canonical and stage claims with exact claimToken ee254ee086ca56d8ae140aab3c3d26b3",
+    "traced P21 staged runtime, P25 runtime-command override, W3 exact actor slot/generation feed, P12 identity registry, maintained P10 coordinator and P25 canonical consumer",
+    "implemented the P27 exact-candidate runtime interposer that feeds only W3 actor slot/generation identity into the real candidate P12->P10 coordinator and exposes the real coordinator status",
+    "preserved rendererSource.proven=false for the current unproven W3 source so the maintained P10 coordinator remains coordinate-free SUPPRESSED/RENDERER_SOURCE_UNPROVEN rather than upgrading W3/V3 measurement coordinates",
+    "wrapped the staged runtime command after P21/P25 runtime-command builders so the P25 tee cannot bypass the P27 seam while the detached exact-candidate checkout remains immutable",
+    "passed 6/6 focused deterministic checks for coordinate stripping, real P10 schema exposure, replay rejection, stale renderer rejection, generation regression and coordinate-bearing SUPPRESSED rejection",
+    "reread the committed P21 wrapper and P27 publisher/coordinator seam from main and verified the committed topology",
+    "published truthful COMPLETE/INTEGRATION-READY RESULT.json and RESULT.md with realWofAcceptance=NOT_RUN, ownerVisualAcceptance=NOT_RUN, visibleProof=NOT_PROVEN and alphaLiveMoved=false",
+    "closed both exact-token canonical/stage dedup-v2 claims using repository convention state=COMPLETE and refreshed their terminal result/evidence pointers"
   ],
-  "remaining": [
-    "verify the committed interposer/wrapper tree and focused checks against current main",
-    "publish truthful RESULT.json and RESULT.md",
-    "re-read and close canonical/stage claims using the exact claimToken",
-    "update PROGRESS to TERMINAL/100 with final WORKER_RESULT commit"
-  ],
+  "remaining": [],
   "tests": [
     {
-      "name": "P27 focused adapter self-check",
+      "name": "P27 focused canonical-feed adapter self-check",
       "result": "PASS",
-      "detail": "6/6 deterministic unit checks passed in the worker sandbox before publication: no W3 x/y/z or candidate coordinates copied; exposed schema is the P10 canonical coordinator; duplicate sample replay is not accepted as a new cycle; stale renderer epoch and generation regression clear old feed; coordinate-bearing SUPPRESSED output is rejected."
+      "detail": "6/6 deterministic unit checks passed in the worker sandbox: W3 coordinates/candidates are not copied; exposed schema is the real P10 canonical coordinator; duplicate replay is not a new cycle; stale renderer epoch and actor-generation regression revoke old feed; coordinate-bearing SUPPRESSED output is rejected."
+    },
+    {
+      "name": "Committed P21 seam readback",
+      "result": "PASS",
+      "detail": "main confirms P27 wraps the runtime command after build_runtime_command returns, preserving P25 override coverage and detached exact-candidate immutability."
+    },
+    {
+      "name": "Committed P27 publisher/coordinator readback",
+      "result": "PASS",
+      "detail": "main confirms canonicalCoordinator/canonicalOverlay originate only from validated output returned by the exact-candidate maintained P10 CanonicalRuntimeCoordinator; renderAuthorityV3 remains separate."
+    },
+    {
+      "name": "Real staged WOF / Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Forbidden/not required under P27 implementation authority; no visible product proof is claimed."
     }
   ],
   "blocker": null,
-  "nextAction": "Read back the committed P27 seam and run the final narrow committed-tree verification, then publish terminal evidence and close the exact-token claims.",
-  "terminalResultPath": null,
+  "nextAction": "PM/downstream can rerun the existing exact-candidate P21/P25 staged acceptance path and consume only same-session P10 coordinator cycles exposed by P27; remain fail-closed if renderer-source proof or P22/P24 evidence is incomplete.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P27_P21_STAGED_RUNTIME_CANONICAL_FEED_EXPOSURE_RESULT.json",
   "writerRole": "WORKER",
   "realWofAcceptance": "NOT_RUN",
   "ownerVisualAcceptance": "NOT_RUN",
   "visibleProof": "NOT_PROVEN",
   "alphaLiveMoved": false,
-  "updatedAtUtc": "2026-09-05T11:12:00Z"
+  "updatedAtUtc": "2026-09-05T11:18:00Z"
 }
