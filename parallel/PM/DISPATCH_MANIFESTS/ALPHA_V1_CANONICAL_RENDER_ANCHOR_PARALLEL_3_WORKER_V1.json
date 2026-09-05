@@ -1,0 +1,39 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_CANONICAL_RENDER_ANCHOR_PARALLEL_3_WORKER_V1",
+  "createdAtUtc": "2026-09-05T05:54:00Z",
+  "authorityCommit": "b4c70a81fe0d6481e09e910c7b648acddfa4f7b3",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P5_P1_CANONICAL_RENDER_ANCHOR_WIRING",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P5_P1_CANONICAL_RENDER_ANCHOR_WIRING_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.p1-canonical-render-anchor-wiring-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P5_P1_CANONICAL_RENDER_ANCHOR_WIRING_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P5_P1_CANONICAL_RENDER_ANCHOR_WIRING_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P5_P1_CANONICAL_RENDER_ANCHOR_WIRING"
+    },
+    {
+      "slot": 2,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P6_ENEMY_CANONICAL_RENDER_ANCHOR_LABELS",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P6_ENEMY_CANONICAL_RENDER_ANCHOR_LABELS_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.enemy-canonical-render-anchor-labels-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P6_ENEMY_CANONICAL_RENDER_ANCHOR_LABELS_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P6_ENEMY_CANONICAL_RENDER_ANCHOR_LABELS_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P6_ENEMY_CANONICAL_RENDER_ANCHOR_LABELS"
+    },
+    {
+      "slot": 3,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.player-danger-canonical-anchor-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR"
+    }
+  ]
+}
