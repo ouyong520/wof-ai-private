@@ -28,8 +28,20 @@ All detailed execution requirements must live in repository authority files, inc
 
 Workers must treat the referenced Git start prompt / dispatch as authoritative, not the shortened chat summary.
 
+## Dispatch contract gate
+
+Every new Alpha PM -> Worker handoff must satisfy `parallel/PM/ALPHA_PM_DISPATCH_CONTRACT_V1.md` before the chat is sent.
+
+PM must create the detailed Git authority plus an immutable 1/2/3-worker dispatch manifest, declare deterministic per-stage RESULT JSON/Markdown paths and terminal commit prefix, and run:
+
+`python parallel/PM/tools/alpha_worker_dispatch_contract.py validate-dispatch <manifest> --repo-root .`
+
+Only machine-readable `ok: true` is dispatch-ready. Missing dedup-v2 metadata, missing result protocol, mismatched deterministic RESULT paths, duplicate worker RESULT files, mutable shared status/dashboard paths, or prompt/manifest mismatch fail closed.
+
 ## PM behavior
 
-For future `1`, `1 2`, `1 3` dispatches, PM should first update or create the detailed Git authority, verify the relevant paths exist, then send only the short handoff message to the Owner for copy/paste into worker chats.
+For future `1`, `1 2`, `1 3` dispatches, PM should first update or create the detailed Git authority and immutable manifest, pass the dispatch-contract gate, then send only the short handoff message to the Owner for copy/paste into worker chats.
+
+The chat should include the worker authority path and manifest path. Worker terminal status must be recovered from the exact manifest-declared RESULT JSON, not reconstructed from chat history.
 
 This presentation rule changes only chat verbosity. It does not weaken dedup-v2, governance, testing, safety, product truth, or fail-closed requirements.
