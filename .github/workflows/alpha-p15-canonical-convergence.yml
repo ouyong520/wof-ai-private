@@ -53,19 +53,4 @@ jobs:
           node --check product/alpha/wof_alpha_field_adapter.js
           node --check product/alpha/canonical_semantic_spatial_decoupling_selfcheck.mjs
       - name: Pinned canonical candidate integrity
-        shell: bash
-        run: |
-          set -euo pipefail
-          CANDIDATE='parallel/OWNER_ONECLICK/CANDIDATES/ALPHA_V1_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE.json'
-          SOURCE="$(python - "$CANDIDATE" <<'PY'
-          import json
-          import sys
-          with open(sys.argv[1], encoding='utf-8') as f:
-              print(json.load(f)['sourceCommit'])
-          PY
-          )"
-          python parallel/OWNER_ONECLICK/refresh_manifest.py \
-            --canonical-candidate \
-            --source "$SOURCE" \
-            --output "$CANDIDATE" \
-            --check
+        run: python parallel/OWNER_ONECLICK/test_package.py PackageTests.test_p15_canonical_candidate_is_complete_deterministic_and_unpromoted

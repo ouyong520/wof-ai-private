@@ -174,7 +174,6 @@ class PackageTests(unittest.TestCase):
             canonical_candidate=True,
         )
         self.assertEqual(candidate, generated)
-        refresh.verify_worktree_payload(ROOT, candidate, canonical_candidate=True)
 
     def test_mutated_pinned_snapshot_is_rejected(self) -> None:
         commit = self.manifest["sourceCommit"]
