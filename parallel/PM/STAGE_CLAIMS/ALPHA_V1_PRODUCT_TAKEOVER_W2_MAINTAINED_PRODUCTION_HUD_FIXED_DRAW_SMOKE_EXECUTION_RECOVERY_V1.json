@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_W2_MAINTAINED_PRODUCTION_HUD_FIXED_DRAW_SMOKE_EXECUTION_RECOVERY_V1",
+  "dedupKey": "alpha.v1.product-takeover.maintained-production-hud-fixed-draw-smoke.execution-recovery-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.maintained-production-hud-fixed-draw-smoke.execution-recovery-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.maintained-production-hud-fixed-draw-smoke.execution-recovery-v1.json",
+  "claimToken": "444405bb-8fb6-4b60-a8ee-6240151dd936",
+  "state": "ACTIVE",
+  "startCommit": "5093baa02d49b2c11285e0ad08ef5a7032494c09"
+}
