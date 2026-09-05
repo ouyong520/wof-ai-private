@@ -5,6 +5,9 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.dynamic-actor-state-coverage-acceptance-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.dynamic-actor-state-coverage-acceptance-v1.json",
   "claimToken": "ab4eda208d544ec2bc22f79b65aa5dd4",
-  "state": "ACTIVE",
-  "startCommit": "e0975f9ffcafd9af465d32758afcdbcda986050a"
+  "state": "COMPLETE",
+  "startCommit": "e0975f9ffcafd9af465d32758afcdbcda986050a",
+  "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P22_DYNAMIC_ACTOR_STATE_COVERAGE_ACCEPTANCE_RESULT.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P22_DYNAMIC_ACTOR_STATE_COVERAGE_ACCEPTANCE_RESULT.md",
+  "resultCommit": "cde2db1cdacf574e98c1cd73bc4f57e3c7b0b129"
 }
