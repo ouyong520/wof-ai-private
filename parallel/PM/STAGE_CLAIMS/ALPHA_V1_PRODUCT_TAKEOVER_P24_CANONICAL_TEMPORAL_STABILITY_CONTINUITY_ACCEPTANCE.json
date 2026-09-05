@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P24_CANONICAL_TEMPORAL_STABILITY_CONTINUITY_ACCEPTANCE",
+  "dedupKey": "alpha.v1.product-takeover.canonical-temporal-stability-continuity-acceptance-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.canonical-temporal-stability-continuity-acceptance-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.canonical-temporal-stability-continuity-acceptance-v1.json",
+  "claimToken": "p24-3a9ca0d2961c490885cc8c22305bc52d",
+  "state": "ACTIVE",
+  "startCommit": "c3ab5173556017528e95d193c7cbb3cdea575886"
+}
