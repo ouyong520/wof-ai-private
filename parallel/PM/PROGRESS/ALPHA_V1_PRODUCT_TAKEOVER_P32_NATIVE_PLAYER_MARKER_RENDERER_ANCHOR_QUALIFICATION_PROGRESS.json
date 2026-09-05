@@ -4,30 +4,38 @@
   "dedupKey": "alpha.v1.product-takeover.native-player-marker-renderer-anchor-qualification-v1",
   "claimToken": "e4269802dd6ed3ea1c9854d05108494f",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 8,
-  "implementationState": "NOT_STARTED",
-  "selfCheckState": "NOT_RUN",
+  "workState": "SELF_CHECK",
+  "overallPercent": 72,
+  "implementationState": "DONE_DURABLE_CANDIDATE",
+  "selfCheckState": "READY_FOR_EXACT_CANDIDATE_TEST",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "54826e0bf1f45f93007665914ccef981fa808123",
-  "lastKnownGoodCommit": null,
-  "implementationCommits": [],
+  "lastKnownGoodCommit": "b713719234be3cd01ad70cb34f9523532f412a0e",
+  "implementationCommits": [
+    "813b6e1a9843798476bf07bf66fea30a0f310377",
+    "724c0b11b6d5bc5400299473999911c2814a1148",
+    "b713719234be3cd01ad70cb34f9523532f412a0e"
+  ],
   "completed": [
-    "Read P32 START_PROMPT, dispatch, product governance, dedup-v2 guard, progress protocol, and result protocol.",
-    "Created and re-read canonical dedup-v2 claim with exact claimToken.",
-    "Created and re-read stage claim with the same exact claimToken."
+    "Read P32 START_PROMPT, dispatch, product governance, dedup-v2 guard, progress protocol, result protocol, final live gate, P29 result, P30/P31 scopes, renderer authority contract, W3 capture worker, maintained P9 consumer and focused P9 bridge tests.",
+    "Confirmed current W3 worker exposes structural HEAP candidates only and explicitly labels them UNVERIFIED_CANDIDATE_ONLY; no checked-in direct marker renderer-submit causal edge exists.",
+    "Added isolated native player marker qualifier requiring native 384x224 coordinates, exact P1/P2/P3 generation association, exact runtimeEpoch/rendererEpoch/authorityKey, explicit direct source trace, deterministic explicit cluster join, and fail-closed ambiguity/staleness handling.",
+    "Added focused deterministic regressions and qualification documentation without modifying P29 analyzer, P30 staging/P16/P9 binding readiness, P31 Page/Worker/WASM association, HUD, or alpha-live.",
+    "Created durable candidate b713719234be3cd01ad70cb34f9523532f412a0e before terminal-significant self-check."
   ],
   "remaining": [
-    "Read current final live gate, P29 terminal result, P30/P31 active-scope authority, RENDER_AUTHORITY_V2, maintained P9 canonical-anchor contract/consumers, and exact checked-in renderer qualification evidence.",
-    "Trace the native 1P/2P/3P marker displayed-frame causal path and define the smallest deterministic fail-closed proof producer/qualification seam.",
-    "Implement focused deterministic tests without weakening P29 analyzer criteria or touching P30/P31 scope.",
-    "Create durable candidate, run terminal-significant focused self-check on exact durable bytes, publish RESULT, close claims, and finalize PROGRESS."
+    "Re-read the three P32 candidate files from exact durable candidate b713719234be3cd01ad70cb34f9523532f412a0e and run focused regression on those exact bytes.",
+    "Run focused compatibility check proving P29 analyzer criteria were not changed and P32 proof shape remains contract-compatible without claiming live W3 PASS.",
+    "Publish truthful terminal RESULT and close both claims."
   ],
-  "tests": [],
-  "blocker": null,
-  "nextAction": "Trace current renderer-source proof, P9 anchor, and checked-in live evidence paths before implementation.",
+  "tests": [
+    "Pre-durable local contract regression: python -m unittest -v test_native_player_marker_anchor_qualification.py => 6/6 PASS (informational only; terminal self-check still pending exact durable readback).",
+    "Pre-durable syntax check: python -m py_compile native_player_marker_anchor_qualification.py test_native_player_marker_anchor_qualification.py => PASS (informational only)."
+  ],
+  "blocker": "Checked-in evidence still lacks displayed CPS1 renderer/object submission -> exact native player-marker object/cluster identity + explicit P1/P2/P3 generation association. This blocks real marker authority proof, not the repo-side fail-closed qualification seam.",
+  "nextAction": "Read back exact durable candidate bytes and run terminal-significant focused self-check.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T15:39:00Z"
+  "updatedAtUtc": "2026-09-05T15:55:00Z"
 }
