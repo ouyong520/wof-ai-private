@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.product-takeover.owner-final-acceptance-orchestrator-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.owner-final-acceptance-orchestrator-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P17_OWNER_FINAL_ACCEPTANCE_ORCHESTRATOR",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P17_OWNER_FINAL_ACCEPTANCE_ORCHESTRATOR_START_PROMPT.md",
+  "owner": "ChatGPT GPT-5.6 Sol P17 worker",
+  "claimToken": "2B-9eCzghY3ChQ8TSSZ1LQ_hwxcHOWeV",
+  "state": "ACTIVE",
+  "startCommit": "ef3a7df93859f0a81787762d7de3e7b08c3a2d6b"
+}
