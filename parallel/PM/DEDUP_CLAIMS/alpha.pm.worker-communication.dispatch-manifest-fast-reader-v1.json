@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.pm.worker-communication.dispatch-manifest-fast-reader-v1",
+  "effectiveDedupKey": "alpha.pm.worker-communication.dispatch-manifest-fast-reader-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C2_DISPATCH_MANIFEST_FAST_READER",
+  "promptPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C2_DISPATCH_MANIFEST_FAST_READER_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol-c2",
+  "claimToken": "e48b93a2e10804cfe1dab70eecfba885ea20c02a64261b08",
+  "state": "ACTIVE",
+  "startCommit": "5a8927dd83de07959d070d30ea3dcdb8feeab094"
+}
