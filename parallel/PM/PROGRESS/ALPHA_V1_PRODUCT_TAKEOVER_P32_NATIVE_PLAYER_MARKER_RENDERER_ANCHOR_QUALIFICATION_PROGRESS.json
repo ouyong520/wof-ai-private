@@ -4,11 +4,11 @@
   "dedupKey": "alpha.v1.product-takeover.native-player-marker-renderer-anchor-qualification-v1",
   "claimToken": "e4269802dd6ed3ea1c9854d05108494f",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "SELF_CHECK",
-  "overallPercent": 78,
+  "workState": "BLOCKED_PENDING_RESULT",
+  "overallPercent": 94,
   "implementationState": "DONE_DURABLE_CANDIDATE",
-  "selfCheckState": "READY_FOR_EXACT_CANDIDATE_TEST",
-  "resultPublicationState": "NOT_STARTED",
+  "selfCheckState": "PASS_EXACT_DURABLE_CANDIDATE",
+  "resultPublicationState": "PENDING",
   "claimCloseState": "PENDING",
   "startCommit": "54826e0bf1f45f93007665914ccef981fa808123",
   "lastKnownGoodCommit": "bd75c3b5f7fd20fe004fae21142a0fa19942e076",
@@ -19,24 +19,28 @@
     "bd75c3b5f7fd20fe004fae21142a0fa19942e076"
   ],
   "completed": [
-    "Read P32 START_PROMPT, dispatch, product governance, dedup-v2 guard, progress protocol, result protocol, final live gate, P29 result, P30/P31 scopes, renderer authority contract, W3 capture worker, maintained P9 consumer and focused P9 bridge tests.",
-    "Confirmed current W3 worker exposes structural HEAP candidates only and explicitly labels them UNVERIFIED_CANDIDATE_ONLY; no checked-in direct marker renderer-submit causal edge exists.",
-    "Added isolated native player marker qualifier requiring native 384x224 coordinates, exact P1/P2/P3 generation association, exact runtimeEpoch/rendererEpoch/authorityKey, explicit direct source trace, deterministic explicit cluster join, and fail-closed ambiguity/staleness handling.",
-    "Added deterministic multi-object and single-object contract coverage for all P1/P2/P3 slots; fixtures are contract-only and are not live WOF proof.",
-    "Added qualification documentation without modifying P29 analyzer, P30 staging/P16/P9 binding readiness, P31 Page/Worker/WASM association, HUD, or alpha-live.",
-    "Created replacement durable candidate bd75c3b5f7fd20fe004fae21142a0fa19942e076 after test-byte change; older candidate self-check provenance is superseded."
+    "Read all mandated P32/governance/authority inputs and isolated ownership from P29/P30/P31.",
+    "Confirmed checked-in W3 capture has only UNVERIFIED_CANDIDATE_ONLY structural HEAP evidence and no direct native-marker submit hook/exported pointer/source-traced pointer.",
+    "Added fail-closed native marker qualification seam for exact P1/P2/P3 generation, native 384x224 coordinates, exact runtimeEpoch/rendererEpoch/authorityKey, explicit deterministic single/multi-object cluster identity, and direct-source-only proof emission.",
+    "Added focused regressions covering exact-generation direct contract, all P1/P2/P3 slots, single-object and row-order-independent multi-object clusters, duplicate ambiguity, stale/mixed authority, visual/structural-only rejection, and no-proof without displayed-frame causality.",
+    "Re-read candidate bd75c3b5f7fd20fe004fae21142a0fa19942e076 and verified exact Git blob map: module dd1cf633193312d65bc241b86eb23dace0656508; test 1131c5c24b5558d5419b90cec24fa82b34219fef; qualification doc 1ebbf944bdede60406da839e327ab6227b2dd72f.",
+    "Ran terminal-significant exact-byte checks: py_compile PASS and unittest 7/7 PASS.",
+    "Re-read P29 qualification_analyzer.py at exact candidate and confirmed blob a412faa31ac8d946e25f72868a57ae234d92b4b2 remains unchanged; PASS/INCONCLUSIVE/REJECTED criteria were not weakened."
   ],
   "remaining": [
-    "Re-read the P32 candidate blobs from exact durable candidate bd75c3b5f7fd20fe004fae21142a0fa19942e076 and rerun focused syntax/unit checks on byte-identical local copies.",
-    "Record truthful BLOCKED_PENDING_RESULT because direct displayed-frame native marker source causality remains absent from checked-in runtime evidence.",
-    "Publish terminal BLOCKED RESULT, close canonical/stage claims as BLOCKED, then write terminal PROGRESS."
+    "Publish BLOCKED RESULT.json and RESULT.md using tested candidate bd75c3b5f7fd20fe004fae21142a0fa19942e076.",
+    "Close stage and canonical claims as BLOCKED with the exact result path/commit.",
+    "Write terminal PROGRESS matching durable RESULT and closed claims."
   ],
   "tests": [
-    "Workspace-only regression after coverage expansion: python -m unittest -v test_native_player_marker_anchor_qualification.py => 7/7 PASS; not terminal until exact candidate blob readback completes."
+    "Exact candidate blob readback/hash comparison => PASS (3/3 blobs match bd75c3b5f7fd20fe004fae21142a0fa19942e076).",
+    "python -m py_compile native_player_marker_anchor_qualification.py test_native_player_marker_anchor_qualification.py => PASS on byte-identical candidate files.",
+    "python -m unittest -v test_native_player_marker_anchor_qualification.py => 7/7 PASS on byte-identical candidate files.",
+    "P29 analyzer immutability check => PASS; qualification_analyzer.py blob remains a412faa31ac8d946e25f72868a57ae234d92b4b2."
   ],
-  "blocker": "Checked-in evidence still lacks displayed CPS1 renderer/object submission -> exact native player-marker object/cluster identity + explicit P1/P2/P3 generation association. This blocks real marker authority proof and prevents truthful terminal COMPLETE for the requested direct live-proof producer.",
-  "nextAction": "Read back exact bd75c3b5f7fd20fe004fae21142a0fa19942e076 blobs and rerun terminal-significant focused self-check.",
-  "terminalResultPath": null,
+  "blocker": "NATIVE_PLAYER_MARKER_DIRECT_RENDERER_CAUSAL_EDGE_NOT_CHECKED_IN: displayed CPS1 renderer/object submission is not source-traced to an exact native 1P/2P/3P marker object/cluster with explicit actor generation. Fixtures cannot satisfy this live authority edge.",
+  "nextAction": "Publish truthful terminal BLOCKED result and close both P32 claims; PM may later schedule a successor once an exact source-traced native-marker renderer submit hook/exported pointer is available.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T15:58:00Z"
+  "updatedAtUtc": "2026-09-05T16:02:00Z"
 }
