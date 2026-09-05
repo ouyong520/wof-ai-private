@@ -4,39 +4,52 @@
   "dedupKey": "alpha.v1.product-takeover.wof-page-association-ambiguity-repair-v1",
   "claimToken": "VEkVz7A8-x51yPL_-F9ctvlyf_LBDuuTmp09V7W3aYE",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "IMPLEMENTING",
-  "overallPercent": 28,
-  "implementationState": "IN_PROGRESS",
-  "selfCheckState": "NOT_RUN",
+  "workState": "SELF_CHECK",
+  "overallPercent": 68,
+  "implementationState": "DONE",
+  "selfCheckState": "IN_PROGRESS",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "3f1079452cc46dbe47d242ac2796465fb1be2afb",
   "lastKnownGoodCommit": null,
-  "implementationCommits": [],
+  "implementationCommits": [
+    "88a6e855c04ea8e461ae1a8c072270aa02749a80",
+    "7dc35e490ec6d2e9d0b604c0be80dde1921c9352"
+  ],
   "completed": [
     "read P31 START prompt, dispatch, AGENTS, product governance, dedup/progress/result protocols",
     "confirmed P31 canonical claim, stage claim, and terminal RESULT were absent before original claim creation",
     "created and verified dedup-v2 exclusive canonical claim and stage claim with the exact claimToken",
     "reattached the existing ACTIVE P31 claim without recovery and re-verified the exact canonical claimToken on current main",
     "localized the live blocker to parallel/PYLAUNCH/wof_launcher/discovery_v2.py direct Page/Worker association fallback",
-    "identified that explicit parentId/parentFrameId topology is authoritative while URL/title-style WOF page signaling must not choose between multiple plausible pages",
-    "identified focused test seams in parallel/PYLAUNCH/tests/test_discovery_v2.py and test_parentframe_authority.py"
+    "implemented exact targetId deduplication with conflicting duplicate rejection rather than order selection",
+    "implemented stale/unattachable Page and Worker rejection before association",
+    "implemented deterministic parentId/parentFrameId authority convergence with conflict fail-closed behavior",
+    "restricted multi-page fallback to runtime gameSurface/browser-context evidence; URL/title hints are diagnostics only and cannot select among pages",
+    "added focused P31 fixtures for authoritative two-page selection, conflict rejection, stale rejection, unresolved ambiguity, and order invariance",
+    "persisted exact implementation candidate on worker/p31-wof-page-association-ambiguity-repair at 7dc35e490ec6d2e9d0b604c0be80dde1921c9352 before terminal-significant tests"
   ],
   "remaining": [
-    "implement deterministic authoritative Page/Worker/WASM association with duplicate/conflict/stale rejection and fail-closed unresolved ambiguity",
-    "add focused deterministic fixtures for two-page authoritative match, duplicate/conflicting target rejection, unresolved ambiguity, and order invariance",
-    "create durable implementation candidate before terminal-significant focused tests",
-    "run focused exact-candidate self-check without real game",
+    "run focused self-check against exact durable candidate 7dc35e490ec6d2e9d0b604c0be80dde1921c9352 without real game",
+    "if focused tests pass, publish pre-terminal READY_TO_PUBLISH checkpoint",
     "publish RESULT, close canonical/stage claims, and publish terminal PROGRESS"
   ],
-  "tests": [],
+  "tests": [
+    {
+      "name": "P31 exact-candidate focused discovery tests",
+      "result": "IN_PROGRESS",
+      "detail": "Will run only against durable candidate 7dc35e490ec6d2e9d0b604c0be80dde1921c9352; real WOF remains NOT_RUN."
+    }
+  ],
   "blocker": null,
-  "nextAction": "Patch only the Page/Worker/WASM discovery association seam and its focused tests, using explicit topology authority and fail-closed conflict handling.",
+  "nextAction": "Materialize the exact candidate files and run focused deterministic discovery tests against 7dc35e490ec6d2e9d0b604c0be80dde1921c9352.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
   "realWofAcceptance": "NOT_RUN",
   "ownerVisualAcceptance": "NOT_RUN",
   "visibleProof": "NOT_PROVEN",
   "alphaLiveMoved": false,
-  "updatedAtUtc": "2026-09-05T15:53:02Z"
+  "candidateBranch": "worker/p31-wof-page-association-ambiguity-repair",
+  "candidateCommit": "7dc35e490ec6d2e9d0b604c0be80dde1921c9352",
+  "updatedAtUtc": "2026-09-05T15:57:54Z"
 }
