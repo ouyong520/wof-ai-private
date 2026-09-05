@@ -194,11 +194,14 @@ def validate_manifest_data(data: Any) -> list[str]:
     if not isinstance(data, dict):
         return ["$manifest: must be a JSON object"]
     errors: list[str] = []
-    for field in ("schema", "dispatchId", "repository", "authorityPath", "immutable", "workers"):
+    schema = data.get("schema")
+    base_required = ("schema", "dispatchId", "immutable", "workers")
+    final_required = ("createdAtUtc", "authorityCommit") if schema == MANIFEST_SCHEMA else ()
+    for field in (*base_required, *final_required):
         if field not in data:
             errors.append(f"$manifest.{field}: missing required field")
 
-    if data.get("schema") not in MANIFEST_SCHEMAS:
+    if schema not in MANIFEST_SCHEMAS:
         errors.append(
             f"$manifest.schema: expected {MANIFEST_SCHEMA!r} (or bootstrap draft), got {data.get('schema')!r}"
         )
@@ -213,6 +216,13 @@ def validate_manifest_data(data: Any) -> list[str]:
         or not authority_path.endswith(".md")
     ):
         errors.append("$manifest.authorityPath: must be a repository-relative parallel/PM/*.md path")
+    if schema == MANIFEST_SCHEMA:
+        created = data.get("createdAtUtc")
+        if created is not None and (not isinstance(created, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", created)):
+            errors.append("$manifest.createdAtUtc: must be UTC YYYY-MM-DDTHH:MM:SSZ")
+        authority_commit = data.get("authorityCommit")
+        if authority_commit is not None and (not isinstance(authority_commit, str) or not re.fullmatch(r"[0-9a-f]{40}", authority_commit)):
+            errors.append("$manifest.authorityCommit: must be a lowercase 40-hex commit SHA")
     if data.get("immutable") is not True:
         errors.append("$manifest.immutable: must be true")
 
@@ -223,6 +233,7 @@ def validate_manifest_data(data: Any) -> list[str]:
     if not 1 <= len(workers) <= 3:
         errors.append("$manifest.workers: worker count must be 1, 2, or 3")
 
+    seen_slot: dict[int, int] = {}
     seen_stage: dict[str, int] = {}
     seen_prompt: dict[str, int] = {}
     seen_result_json: dict[str, int] = {}
@@ -233,6 +244,14 @@ def validate_manifest_data(data: Any) -> list[str]:
         errors.extend(_validate_worker_entry(entry, index))
         if not isinstance(entry, dict):
             continue
+        if schema == MANIFEST_SCHEMA:
+            slot = entry.get("slot")
+            if not isinstance(slot, int) or isinstance(slot, bool) or not 1 <= slot <= 99:
+                errors.append(f"$manifest.workers[{index}].slot: final manifest requires integer slot 1..99")
+            elif slot in seen_slot:
+                errors.append(f"$manifest.workers[{index}].slot: duplicate slot; also used by worker {seen_slot[slot]}")
+            else:
+                seen_slot[slot] = index
         for field, seen, code in (
             ("stageId", seen_stage, "duplicate stageId"),
             ("promptPath", seen_prompt, "duplicate promptPath"),
@@ -256,6 +275,9 @@ def validate_manifest_data(data: Any) -> list[str]:
                 )
             else:
                 mutable_paths[path] = (index, key)
+
+    if schema == MANIFEST_SCHEMA and len(workers) in (1, 2, 3) and set(seen_slot) != set(range(1, len(workers) + 1)):
+        errors.append(f"$manifest.workers: slots must be exactly 1..{len(workers)} for PM shorthand")
 
     for key, path in _status_dashboard_paths(data):
         if key not in {"status", "schema"}:
