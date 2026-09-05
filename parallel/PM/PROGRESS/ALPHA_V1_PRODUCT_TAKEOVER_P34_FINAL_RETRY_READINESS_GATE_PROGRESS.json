@@ -3,13 +3,13 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P34_FINAL_RETRY_READINESS_GATE",
   "dedupKey": "alpha.v1.product-takeover.final-retry-readiness-gate-v1",
   "claimToken": "-Q3KGRVDrKFWdG2wPly3SJN4FuySDrUztftzIqDWK8Y",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
-  "overallPercent": 94,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
   "implementationState": "DONE",
   "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
-  "resultPublicationState": "PENDING",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "DONE",
+  "claimCloseState": "DONE",
   "startCommit": "dd0c1d494e01ee9b0bab8526bbcc265600d10267",
   "lastKnownGoodCommit": "dbea3c222d58b393d0b8f2895356457d0c17d887",
   "implementationCommits": [
@@ -18,45 +18,39 @@
     "dbea3c222d58b393d0b8f2895356457d0c17d887"
   ],
   "completed": [
-    "read P34 START prompt, dispatch, root AGENTS, dedup/progress/result protocols and current final live gate",
-    "confirmed P34 canonical claim, stage claim, and terminal RESULT were absent before claim creation",
-    "read P29/P30 terminal RESULT authority and exact COMPLETE claims/tested commits",
-    "read P31 terminal COMPLETE RESULT and closed exact-token claims; PROGRESS was not used as terminal authority",
-    "read authoritative P32 terminal BLOCKED RESULT and matching BLOCKED claims without rewriting live dependency to PASS",
-    "read historical latest final-canonical pointer sourceCommit 0752796369f1687435a1b1647e66ea0b5ab07688 and confirmed it is pre-repair provenance",
-    "created and re-read P34 canonical and stage claims with the exact matching claimToken",
-    "implemented isolated deterministic gate, focused regressions, and provenance contract under parallel/OWNER_RETRY_READINESS",
-    "published final durable P34 implementation candidate dbea3c222d58b393d0b8f2895356457d0c17d887 with tree de1cc0427a9ad0ca66951a83d8076c4caf1abc2d",
-    "fresh GitHub readback matched exact implementation blob 4df4becabe7eb43307367c5f08793caf38ada651, test blob 918fafde812f3aa94276c228d240163b125bd34d, and README blob e0fa2f6189d3ab638e17727395452a0ac2826ec9",
-    "fresh terminal-significant focused regression passed 10/10 against byte-identical durable candidate files",
-    "fresh current-repository authority readback remains BLOCKED: P32 terminal RESULT is BLOCKED/integrationReady=false; latest final-candidate pointer is historical sourceCommit 0752796369f1687435a1b1647e66ea0b5ab07688 and lacks manifestPath/manifestSha256/requiredTestedCommits",
-    "GitHub ancestry readback proves stale candidate sourceCommit 0752796369f1687435a1b1647e66ea0b5ab07688 is the merge base and 165 commits behind P29 testedCommit c02f7e108e73665f22eb950573622acb6f452732, so it cannot contain that required repair commit"
+    "dedup-v2 canonical and stage ownership acquired and exact claimToken verified before implementation",
+    "terminal authority for P29/P30/P31/P32 read from RESULT plus exact canonical/stage claims; PROGRESS was never substituted for terminal RESULT",
+    "isolated deterministic gate, focused regressions, and contract documentation implemented only under parallel/OWNER_RETRY_READINESS",
+    "durable exact candidate dbea3c222d58b393d0b8f2895356457d0c17d887/tree de1cc0427a9ad0ca66951a83d8076c4caf1abc2d bound before terminal-significant testing",
+    "fresh candidate blob readback matched all three recorded blob SHAs",
+    "fresh exact-candidate focused deterministic regression passed 10/10",
+    "current repository authority correctly remains BLOCKED because P32 is terminal BLOCKED/integrationReady=false and the historical 0752796369f1687435a1b1647e66ea0b5ab07688 final candidate lacks required manifest/tested-commit provenance and does not contain P29 testedCommit",
+    "terminal RESULT JSON published at commit 9a8038868937f0ee4121d9d3cdb7268a115674b9 and RESULT Markdown at commit 4428089d2735984599468249cbd12ff78e89b035 with WORKER_RESULT COMPLETE prefix",
+    "stage claim closed COMPLETE at commit 3fa9d1f4df0c02dc1c3fcf4156c17554f29206d5 with exact claimToken/testedCommit/result authority",
+    "canonical claim closed COMPLETE at commit 4f68a65219ee26bb940c6cc91f5685f522f06ecd with exact claimToken/testedCommit/result authority",
+    "final readback confirmed canonical and stage claims are COMPLETE and agree with the durable P34 RESULT"
   ],
-  "remaining": [
-    "publish terminal RESULT JSON+Markdown for P34 implementation COMPLETE while preserving current readiness=BLOCKED",
-    "close P34 canonical/stage claims with exact token and tested candidate",
-    "publish terminal PROGRESS checkpoint"
-  ],
+  "remaining": [],
   "tests": [
     {
       "name": "P34 exact durable candidate blob identity readback",
       "result": "PASS",
-      "detail": "Candidate dbea3c222d58b393d0b8f2895356457d0c17d887 tree de1cc0427a9ad0ca66951a83d8076c4caf1abc2d exactly exposes blobs 4df4becabe7eb43307367c5f08793caf38ada651 / 918fafde812f3aa94276c228d240163b125bd34d / e0fa2f6189d3ab638e17727395452a0ac2826ec9 for the three owned files."
+      "detail": "Candidate dbea3c222d58b393d0b8f2895356457d0c17d887/tree de1cc0427a9ad0ca66951a83d8076c4caf1abc2d exposes exact blobs 4df4becabe7eb43307367c5f08793caf38ada651, 918fafde812f3aa94276c228d240163b125bd34d, and e0fa2f6189d3ab638e17727395452a0ac2826ec9."
     },
     {
       "name": "P34 focused deterministic retry-readiness regression",
       "result": "PASS",
-      "detail": "Fresh exact-candidate run passed 10/10: terminal RESULT authority over PROGRESS, stale ancestry rejection, exact token/state closure, exact candidate/manifest hashes and package/source readback, P32 BLOCKED preservation, alpha-live movement rejection, and the exact READY fixture."
+      "detail": "Fresh byte-identical exact-candidate run passed 10/10 tests covering terminal RESULT authority, stale ancestry, exact claim state/token, candidate/manifest hashes, required tested-commit pins, truthful P32 BLOCKED preservation, alpha-live movement rejection, and exact READY behavior."
     },
     {
       "name": "P34 current repository fail-closed authority readback",
       "result": "PASS",
-      "detail": "Current authority correctly remains non-ready: P32 is terminal BLOCKED/integrationReady=false; historical latest candidate sourceCommit 0752796369f1687435a1b1647e66ea0b5ab07688 lacks P34 manifest/required-tested-commit provenance and is 165 commits behind P29 testedCommit c02f7e108e73665f22eb950573622acb6f452732."
+      "detail": "Current machine readiness remains BLOCKED: P32 terminal BLOCKED/integrationReady=false; selected historical final candidate sourceCommit 0752796369f1687435a1b1647e66ea0b5ab07688 lacks required final-candidate provenance and is 165 commits behind P29 testedCommit c02f7e108e73665f22eb950573622acb6f452732."
     }
   ],
   "blocker": null,
-  "nextAction": "Publish P34 terminal COMPLETE result for the tested mechanism, while recording current READY_FOR_ONE_BOUNDED_OWNER_RETRY=false, then close claims and terminalize PROGRESS.",
-  "terminalResultPath": null,
+  "nextAction": "PM should read the terminal P34 RESULT and keep Owner retry blocked until P32's separately authorized dependency is resolved and one fresh exact containing final candidate passes this gate.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P34_FINAL_RETRY_READINESS_GATE_RESULT.json",
   "writerRole": "WORKER",
   "candidateCommit": "dbea3c222d58b393d0b8f2895356457d0c17d887",
   "candidateTree": "de1cc0427a9ad0ca66951a83d8076c4caf1abc2d",
@@ -65,5 +59,5 @@
     "parallel/OWNER_RETRY_READINESS/test_final_retry_readiness.py": "918fafde812f3aa94276c228d240163b125bd34d",
     "parallel/OWNER_RETRY_READINESS/README.md": "e0fa2f6189d3ab638e17727395452a0ac2826ec9"
   },
-  "updatedAtUtc": "2026-09-05T16:12:00Z"
+  "updatedAtUtc": "2026-09-05T16:17:00Z"
 }
