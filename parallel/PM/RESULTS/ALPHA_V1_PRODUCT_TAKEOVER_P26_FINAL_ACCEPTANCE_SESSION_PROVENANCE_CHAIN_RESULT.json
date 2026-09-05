@@ -1,0 +1,83 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P26_FINAL_ACCEPTANCE_SESSION_PROVENANCE_CHAIN",
+  "dedupKey": "alpha.v1.product-takeover.final-acceptance-session-provenance-chain-v1",
+  "claimToken": "d60b10ee92743c2181969d475ac93164",
+  "state": "BLOCKED",
+  "verdict": "P26 is terminally blocked because the one authorized bounded recovery did not recover the exact file-path-to-blob-SHA map for the original 13/13-tested unpublished provenance implementation, so those tested bytes cannot be safely published or reconstructed.",
+  "startCommit": "8ef71613834221d48031974dd3ee052be87e69f1",
+  "implementationCommits": [],
+  "integrationReady": false,
+  "changedFiles": [],
+  "tests": [
+    {
+      "name": "Python compile",
+      "result": "PASS",
+      "detail": "Passed in the original interrupted worker run against unpublished implementation bytes only. No regenerated or newly published provenance bytes are claimed as covered."
+    },
+    {
+      "name": "deterministic provenance focused tests",
+      "result": "PASS",
+      "detail": "13/13 passed in the original worker run against unpublished bytes only, covering identity mismatches, epoch transitions, stale P18, P22/P24 cross-run rejection, P17 hash mismatch, fixture receipt isolation, promotion CAS/hash mismatch, P23 cross-session rejection, digest stability, and terminal atomic immutability. The exact path-to-blob-SHA map for those tested bytes was not durably recorded and was not recovered."
+    },
+    {
+      "name": "verified blob-map bounded recovery",
+      "result": "FAIL",
+      "detail": "The single authorized bounded recovery inspected original Worker execution/tool-state context and exact durable Git refs/commits/trees but found no exact file-path-to-blob-SHA map, tree, commit, or ref identifying the original 13/13-tested unpublished bytes."
+    },
+    {
+      "name": "real WOF acceptance",
+      "result": "NOT_RUN",
+      "detail": "Not run by P26 authority."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_PROVEN",
+    "detail": "The original worker's implementation-level 13/13 result remains historical evidence tied only to unpublished bytes. No exact tested implementation bytes are durably published by this terminalization, no real WOF acceptance was run, and no visible proof is claimed."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": {
+    "code": "VERIFIED_BLOB_ID_MAP_NOT_DURABLY_RECORDED",
+    "detail": "The one authorized bounded recovery did not recover the exact file-path-to-blob-SHA map, tree, commit, or ref for the original 13/13-tested unpublished P26 bytes. Regenerating provenance bytes would violate the no-provenance-rewrite constraint and cannot be represented as the original tested bytes.",
+    "ownerRequired": false,
+    "pmRequired": false,
+    "recoveryAllowedByWorker": false
+  },
+  "boundedRecovery": {
+    "attemptsAuthorized": 1,
+    "attemptsPerformed": 1,
+    "state": "EXHAUSTED_NOT_RECOVERED",
+    "recoveredExactBlobMap": false,
+    "recoveredTreeOrCommitRef": false,
+    "regeneratedProvenanceBytes": false
+  },
+  "testProvenance": {
+    "focusedTests": "13/13 PASS",
+    "scope": "ORIGINAL_WORKER_UNPUBLISHED_BYTES_ONLY",
+    "reboundToNewBytes": false
+  },
+  "nextAction": "No P26 worker action remains. Treat this claim as terminal BLOCKED unless a separately authorized future action has exact durable evidence for the original tested blob map; do not regenerate provenance bytes and reuse the historical 13/13 claim.",
+  "evidencePaths": [
+    "parallel/PM/ALPHA_V1_P26_VERIFIED_BLOB_MAP_TERMINAL_CONTINUATION.md",
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P26_FINAL_ACCEPTANCE_SESSION_PROVENANCE_CHAIN_PROGRESS.json",
+    "parallel/PM/ALPHA_V1_FINAL_ACCEPTANCE_P25_RESUME_P26_TERMINAL_AFTER_P27_LONG_2_WORKER_DISPATCH.md"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "provenanceBytesRegenerated": false,
+    "alphaLiveMoved": false
+  },
+  "unpublishedImplementation": true,
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P26_FINAL_ACCEPTANCE_SESSION_PROVENANCE_CHAIN_RESULT.md",
+  "completedAtUtc": "2026-09-05T11:31:00Z"
+}
