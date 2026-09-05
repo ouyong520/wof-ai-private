@@ -1,0 +1,33 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION",
+  "dedupKey": "alpha.v1.product-takeover.native-player-marker-renderer-anchor-qualification-v1",
+  "claimToken": "e4269802dd6ed3ea1c9854d05108494f",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 8,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "54826e0bf1f45f93007665914ccef981fa808123",
+  "lastKnownGoodCommit": null,
+  "implementationCommits": [],
+  "completed": [
+    "Read P32 START_PROMPT, dispatch, product governance, dedup-v2 guard, progress protocol, and result protocol.",
+    "Created and re-read canonical dedup-v2 claim with exact claimToken.",
+    "Created and re-read stage claim with the same exact claimToken."
+  ],
+  "remaining": [
+    "Read current final live gate, P29 terminal result, P30/P31 active-scope authority, RENDER_AUTHORITY_V2, maintained P9 canonical-anchor contract/consumers, and exact checked-in renderer qualification evidence.",
+    "Trace the native 1P/2P/3P marker displayed-frame causal path and define the smallest deterministic fail-closed proof producer/qualification seam.",
+    "Implement focused deterministic tests without weakening P29 analyzer criteria or touching P30/P31 scope.",
+    "Create durable candidate, run terminal-significant focused self-check on exact durable bytes, publish RESULT, close claims, and finalize PROGRESS."
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "Trace current renderer-source proof, P9 anchor, and checked-in live evidence paths before implementation.",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "updatedAtUtc": "2026-09-05T15:39:00Z"
+}
