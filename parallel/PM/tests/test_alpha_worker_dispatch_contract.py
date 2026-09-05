@@ -39,6 +39,7 @@ def worker(n=1, **overrides):
     contract = MODULE.result_contract(sid)
     item = {
         "stageId": sid,
+        "slot": n,
         "promptPath": f"parallel/PM/ALPHA_EXAMPLE_WORKER_{n}_START_PROMPT.md",
         "dedupKey": f"alpha.example.worker-{n}",
         "dedupProtocol": "v2",
@@ -54,8 +55,8 @@ def manifest(count=1):
     return {
         "schema": MODULE.MANIFEST_SCHEMA,
         "dispatchId": f"ALPHA_EXAMPLE_{count}_WORKER",
-        "repository": "ouyong520/wof-ai-private",
-        "authorityPath": "parallel/PM/ALPHA_EXAMPLE_DISPATCH.md",
+        "createdAtUtc": "2026-09-05T05:00:00Z",
+        "authorityCommit": "1" * 40,
         "immutable": True,
         "workers": [worker(i) for i in range(1, count + 1)],
     }
@@ -112,9 +113,20 @@ class ManifestValidationTests(unittest.TestCase):
     def test_bootstrap_draft_manifest_is_accepted_when_worker_contract_is_complete(self):
         data = manifest(1)
         data["schema"] = "wof-alpha-dispatch-manifest-v1-draft"
+        data.pop("createdAtUtc")
+        data.pop("authorityCommit")
+        data["repository"] = "ouyong520/wof-ai-private"
+        data["authorityPath"] = "parallel/PM/ALPHA_EXAMPLE_DISPATCH.md"
+        data["workers"][0].pop("slot")
         data["workers"][0].pop("dedupProtocol")
         data["workers"][0].pop("dedupMode")
         self.assertEqual([], MODULE.validate_manifest_data(data))
+
+    def test_final_manifest_requires_slots_one_through_worker_count(self):
+        data = manifest(2)
+        data["workers"][1]["slot"] = 3
+        errors = MODULE.validate_manifest_data(data)
+        self.assertTrue(any("slots must be exactly 1..2" in error for error in errors))
 
     def test_malformed_manifest_worker_entry_rejected(self):
         data = manifest(1)
