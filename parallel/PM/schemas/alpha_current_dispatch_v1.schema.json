@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wof.local/schemas/alpha_current_dispatch_v1.schema.json",
+  "title": "Alpha PM Current Dispatch Pointer V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "pmOwned",
+    "repository",
+    "dispatchId",
+    "manifestPath",
+    "manifestAuthorityCommit",
+    "manifestSha256",
+    "updatedAtUtc",
+    "revision"
+  ],
+  "properties": {
+    "schema": {
+      "const": "wof-alpha-current-dispatch-v1"
+    },
+    "pmOwned": {
+      "const": true
+    },
+    "repository": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "dispatchId": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9_.-]{2,127}$"
+    },
+    "manifestPath": {
+      "type": "string",
+      "pattern": "^parallel/PM/DISPATCH_MANIFESTS/[A-Z0-9][A-Z0-9_.-]{2,127}\\.json$"
+    },
+    "manifestAuthorityCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "manifestSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "updatedAtUtc": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "previousDispatch": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "dispatchId",
+            "manifestPath",
+            "manifestAuthorityCommit",
+            "manifestSha256",
+            "revision"
+          ],
+          "properties": {
+            "dispatchId": {
+              "type": "string",
+              "pattern": "^[A-Z0-9][A-Z0-9_.-]{2,127}$"
+            },
+            "manifestPath": {
+              "type": "string",
+              "pattern": "^parallel/PM/DISPATCH_MANIFESTS/[A-Z0-9][A-Z0-9_.-]{2,127}\\.json$"
+            },
+            "manifestAuthorityCommit": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "manifestSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      ]
+    }
+  }
+}
