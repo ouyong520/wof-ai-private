@@ -91,6 +91,25 @@ The worker must update the progress file at all of these boundaries:
 
 Workers do not need to update every few minutes. The requirement is milestone durability, not noisy heartbeat commits.
 
+## 5A. Final tested-candidate durability — tests must bind to durable bytes
+
+Any test result that will be cited by terminal RESULT as proof for an implementation candidate must be bound to durable Git identity before it can become final test provenance.
+
+Rules:
+
+1. before the final focused/self-check pass, create a durable implementation candidate commit (or another explicitly authorized immutable Git tree/ref) containing the exact bytes to be tested;
+2. record that exact candidate commit/tree SHA in PROGRESS before or immediately with the final test checkpoint;
+3. when practical, record the exact changed-file set and file/blob identity needed to re-read the tested candidate later;
+4. run the terminal-significant focused tests against that exact durable candidate, not only workspace/unpublished bytes;
+5. if any implementation byte changes after the test, create a new durable candidate and rerun every affected terminal-significant focused check; old test results must not be rebound to the new bytes;
+6. RESULT/testedCommit must identify the final durable tested candidate actually covered by the reported tests;
+7. workspace-only tests may still be used during implementation as cheap self-checks, but they must be labeled nonterminal and cannot by themselves justify `COMPLETE`, `integrationReady=true`, or a terminal tested-byte claim;
+8. if tool/context budget becomes low after testing but before publication, PROGRESS must durably record the tested candidate SHA, test result, exact remaining publication work, and any required blob/file map before stopping.
+
+A worker must never report historical tests as applying to regenerated, reconstructed, or otherwise different bytes merely because the logical implementation is similar. If the exact tested bytes cannot be identified durably, fail closed and either run fresh tests on a new durable candidate under valid authority or publish a precise blocker.
+
+This rule is mandatory specifically to prevent the failure mode: **tests PASS, but the tested bytes have no durable Git identity and therefore cannot be safely published or verified later.**
+
 ## 6. Update safety
 
 Before every worker-authored progress update:
