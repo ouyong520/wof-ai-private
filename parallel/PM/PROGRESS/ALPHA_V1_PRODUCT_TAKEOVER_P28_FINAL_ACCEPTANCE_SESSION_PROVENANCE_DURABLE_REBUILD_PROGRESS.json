@@ -5,56 +5,57 @@
   "claimToken": "69884841cf571855163ab7db0ac663dc",
   "claimStateAtCheckpoint": "ACTIVE",
   "workState": "IMPLEMENTING",
-  "overallPercent": 72,
-  "implementationState": "DURABLE_CANDIDATE",
-  "selfCheckState": "READY_TO_RUN",
+  "overallPercent": 80,
+  "implementationState": "POST_CANDIDATE_IMPLEMENTATION_IN_PROGRESS",
+  "selfCheckState": "NOT_RUN_FOR_CURRENT_IMPLEMENTATION",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "5c4562b884ef76a934ef5ad26206cbca537c1f5e",
   "lastKnownGoodCommit": null,
-  "candidateCommit": "9a02856edf9be1768cd0fc8b8235cb13ac3b4cfd",
+  "candidateCommit": null,
+  "supersededCandidateCommit": "9a02856edf9be1768cd0fc8b8235cb13ac3b4cfd",
+  "supersededCandidateReason": "Implementation commit 765c08d676709b094b993849b048948aa74c2d58 added parallel/OWNER_ACCEPTANCE_PROVENANCE/durable_session.py after 9a02856; 9a02856 and its historical focused-test evidence are stale and must not be used as final tested candidate.",
   "implementationCommits": [
     "31841f5fb824cca525264e70fc620a60c5011359",
     "ea7e55cd33bdb27d0d00922f2c84fc829abbadfe",
     "152251437bd5c51b39d1716ecfefa27e9682c009",
-    "9a02856edf9be1768cd0fc8b8235cb13ac3b4cfd"
+    "9a02856edf9be1768cd0fc8b8235cb13ac3b4cfd",
+    "765c08d676709b094b993849b048948aa74c2d58"
   ],
-  "candidateChangedFiles": [
+  "implementationChangedFiles": [
     "parallel/OWNER_ACCEPTANCE_PROVENANCE/README.md",
     "parallel/OWNER_ACCEPTANCE_PROVENANCE/WOF_ALPHA_VERIFY_ACCEPTANCE_PROVENANCE.cmd",
     "parallel/OWNER_ACCEPTANCE_PROVENANCE/provenance_chain.py",
-    "parallel/OWNER_ACCEPTANCE_PROVENANCE/test_provenance_chain.py"
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/test_provenance_chain.py",
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/durable_session.py"
   ],
-  "candidateBlobMap": {
-    "parallel/OWNER_ACCEPTANCE_PROVENANCE/README.md": "7d584ee593a53c1d40254f00d609ed25f9c76348",
-    "parallel/OWNER_ACCEPTANCE_PROVENANCE/WOF_ALPHA_VERIFY_ACCEPTANCE_PROVENANCE.cmd": "cd5be6fab3530d2db636940679c8de668d3a085d",
-    "parallel/OWNER_ACCEPTANCE_PROVENANCE/provenance_chain.py": "f2f36bf33384f5e9f8169327875b0984d01cdc6f",
-    "parallel/OWNER_ACCEPTANCE_PROVENANCE/test_provenance_chain.py": "a72f9a9c7c76a00b43031d71d9cb92a7e34e4e33"
-  },
+  "candidateChangedFiles": [],
+  "candidateBlobMap": {},
   "completed": [
-    "read P28 START prompt, dispatch authority, manifest, terminal P26 RESULT, root AGENTS/product governance, dedup guard, progress protocol, result protocol and P26 START prompt",
-    "verified P26 remains terminal BLOCKED and did not reopen or recover it",
-    "re-read P28 dedup-v2 canonical and stage claims with exact ACTIVE claimToken 69884841cf571855163ab7db0ac663dc",
-    "read P19/P21/W3/P16/P18/P22/P24/P17/P20/P23 and active P25 artifact/schema boundaries needed for strict provenance validation",
-    "implemented the new P28 provenance/session chain only under parallel/OWNER_ACCEPTANCE_PROVENANCE",
-    "created durable implementation candidate 9a02856edf9be1768cd0fc8b8235cb13ac3b4cfd before any P28 focused test",
-    "Git compare readback confirms exactly four P28-owned implementation files changed from the pre-implementation checkpoint",
-    "Git candidate directory readback recorded exact committed blob identities for all four files"
+    "read P28 START prompt and post-candidate continuation authority",
+    "verified P26 remains terminal and did not reopen or recover it",
+    "re-read current dedup-v2 P28 canonical and stage claim files on main and confirmed exact claimToken 69884841cf571855163ab7db0ac663dc remains ACTIVE",
+    "reconciled Git from superseded candidate 9a02856edf9be1768cd0fc8b8235cb13ac3b4cfd to current main: exactly three later commits, with 765c08d676709b094b993849b048948aa74c2d58 the only additional P28 implementation commit",
+    "recorded durable_session.py as a fifth P28-owned implementation file and invalidated 9a02856 as the final tested-candidate binding",
+    "preserved all frozen acceptance gates: real WOF NOT_RUN, Owner visual acceptance NOT_RUN, visible proof NOT_PROVEN, alpha-live not moved"
   ],
   "remaining": [
-    "run fresh P28 compile/focused tests against the exact committed candidate bytes; do not reuse P26 historical 13/13",
-    "if any implementation byte changes, create a new durable candidate, update this PROGRESS candidate binding and rerun affected fresh tests",
-    "publish RESULT.json/RESULT.md with testedCommit bound to the final actually tested candidate",
-    "close exact-token P28 canonical/stage claims and update PROGRESS TERMINAL/100 in WORKER_RESULT terminal commit"
+    "integrate parallel/OWNER_ACCEPTANCE_PROVENANCE/durable_session.py with the existing P28 provenance entrypoint and extend focused P28 regression coverage without performing any real WOF/Owner/promotion action",
+    "create a new durable final implementation candidate commit containing 765c08d and all final P28-owned bytes",
+    "Git-readback the exact final candidate SHA, changed files and blob map, then write that binding to PROGRESS before testing",
+    "run fresh focused P28 tests only against the exact readback final candidate; do not reuse P26 historical 13/13 or the superseded 9a02856 test evidence",
+    "if any implementation byte changes after testing, create and bind another candidate and rerun affected fresh tests",
+    "publish RESULT.json/RESULT.md with RESULT.testedCommit equal to the final actually tested candidate",
+    "close exact-token P28 canonical/stage claims, update PROGRESS TERMINAL/100, and finish with WORKER_RESULT terminal commit"
   ],
   "tests": [],
   "blocker": null,
-  "nextAction": "Materialize the exact Git-readback candidate bytes and run fresh P28 focused tests only against candidate 9a02856edf9be1768cd0fc8b8235cb13ac3b4cfd.",
+  "nextAction": "Inspect the exact current P28 provenance implementation and durable_session.py contract, then finish their bounded integration before creating the new durable final candidate.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
   "realWofAcceptance": "NOT_RUN",
   "ownerVisualAcceptance": "NOT_RUN",
   "visibleProof": "NOT_PROVEN",
   "alphaLiveMoved": false,
-  "updatedAtUtc": "2026-09-05T12:30:33Z"
+  "updatedAtUtc": "2026-09-05T12:56:39Z"
 }
