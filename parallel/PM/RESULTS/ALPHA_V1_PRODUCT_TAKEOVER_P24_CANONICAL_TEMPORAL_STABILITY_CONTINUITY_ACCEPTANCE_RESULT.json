@@ -1,0 +1,155 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P24_CANONICAL_TEMPORAL_STABILITY_CONTINUITY_ACCEPTANCE",
+  "dedupKey": "alpha.v1.product-takeover.canonical-temporal-stability-continuity-acceptance-v1",
+  "claimToken": "p24-3a9ca0d2961c490885cc8c22305bc52d",
+  "state": "COMPLETE",
+  "verdict": "P24 passive canonical temporal stability/continuity acceptance is implementation-complete and integration-ready. The deterministic analyzer fail-closes READY/SUPPRESSED churn, one-sample pulses, revoked generations, runtime/renderer epoch replacement, explicit actor disappearance/reappearance, stale or replayed P18 draw acknowledgements, duplicate/out-of-order samples/frames, and independent multi-actor streams without interpolation, cached coordinates, row order, nearest-object, screenshot, projection, or spatial-proximity repair. No real WOF or Owner visual acceptance was run, so this result proves the repository acceptance module and fixtures only, not live product continuity or visible pixels.",
+  "startCommit": "c3ab5173556017528e95d193c7cbb3cdea575886",
+  "implementationCommits": [
+    "207ce5350a84e16924dc6e1add3f4e6d123b92e7",
+    "d09b31a37e66cba54be98de55e9e92148ffa9c05",
+    "fd077dd81960e403524136b599cc22cac639ceb7",
+    "7745f303969994e9eb772ff52915bca4b58de6d5",
+    "6cceabb64ae80f4af35a01b4e158026c3daaf5c1"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/TEMPORAL_ACCEPTANCE/README.md",
+    "parallel/TEMPORAL_ACCEPTANCE/temporal_observation.schema.json",
+    "parallel/TEMPORAL_ACCEPTANCE/temporal_acceptance.py",
+    "parallel/TEMPORAL_ACCEPTANCE/test_temporal_acceptance.py"
+  ],
+  "tests": [
+    {
+      "name": "P24 Python compile",
+      "result": "PASS",
+      "detail": "python -m py_compile passed for temporal_acceptance.py and test_temporal_acceptance.py."
+    },
+    {
+      "name": "P24 focused temporal continuity unittest fixture",
+      "result": "PASS",
+      "detail": "13 focused unittest cases passed: same-generation READY continuity with arbitrarily large canonical movement and no speed/proximity inference; generation rollover plus old-generation ghost rejection; runtime/renderer epoch replacement plus revoked-epoch rejection; READY/SUPPRESSED churn and one-frame suppression pulse visibility; duplicate/out-of-order samples and actor frames; rejected duplicate frames cannot mutate generation state; explicit actor disappear/reappear; independent P1/P2 streams with no cross-repair; duplicate ACK deduplication; ACK-after-suppression and revoked P18 evidenceGeneration rejection; P16/P18 snapshots remain binding-only; deterministic JSONL/output bytes; and suppressed geometry rejection."
+    },
+    {
+      "name": "P24 observation JSON syntax",
+      "result": "PASS",
+      "detail": "python -m json.tool passed for temporal_observation.schema.json."
+    },
+    {
+      "name": "Committed-source identity reread",
+      "result": "PASS",
+      "detail": "The committed Git blobs were reread and matched the exact tested source bytes: temporal_acceptance.py blob 633189a5226ffe48a38a1eb08550b8c6fdf0e296, final test blob 5cb4cefb8917f2d29e94c3724c4ad5bc1afca8da, README blob 08b932568c78255f3227b0cca89fbf247c540c29, and schema blob 9b3d5262fda48192aca054280df4e276bebc4a6a."
+    },
+    {
+      "name": "P24 write-boundary verification",
+      "result": "PASS",
+      "detail": "P24 implementation commits touch only parallel/TEMPORAL_ACCEPTANCE/*; P22/P23 commits were concurrent on main but P24 did not modify their ownership. P24 did not modify P21/P20/P19/P18/W3 implementation or alpha-live."
+    },
+    {
+      "name": "Real WOF / Owner visual temporal acceptance",
+      "result": "NOT_RUN",
+      "detail": "Deliberately not run by P24 authority. Focused synthetic time-series fixtures do not prove live WOF continuity or visible pixels."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Focused deterministic fixtures prove the P24 temporal evidence format, lifecycle/order classifier, churn metrics, stale ACK causality rejection, independent actor/generation accounting, deterministic report emission, and fail-closed proof boundaries. They do not prove a real-WOF renderer source, live temporal correctness, or Owner-visible continuity."
+  },
+  "evidenceContract": {
+    "observationSchema": "wof-alpha-canonical-temporal-observation-v1",
+    "bundleSchema": "wof-alpha-canonical-temporal-observation-bundle-v1",
+    "reportSchema": "wof-alpha-canonical-temporal-stability-evidence-v1",
+    "classificationVocabulary": [
+      "PROVEN_CONTINUOUS",
+      "OBSERVED_WITH_CHURN",
+      "SUPPRESSED_SAFELY",
+      "STALE_OR_MISMATCH",
+      "INSUFFICIENT_EVIDENCE",
+      "UNPROVEN"
+    ],
+    "defaultOutputRoot": "~/Documents/WOF_RESULTS/ALPHA_P24_TEMPORAL_ACCEPTANCE",
+    "jsonOutput": "ALPHA_CANONICAL_TEMPORAL_CONTINUITY_EVIDENCE.json",
+    "markdownOutput": "ALPHA_CANONICAL_TEMPORAL_CONTINUITY_EVIDENCE.md",
+    "inputFormats": ["JSON", "JSONL", "bundle"],
+    "p16SnapshotRole": "BINDING_AND_PROOF_BOUNDARY_METADATA_ONLY",
+    "p18SnapshotRole": "BINDING_AND_PROOF_BOUNDARY_METADATA_ONLY",
+    "singleSnapshotContinuityCredit": false
+  },
+  "coverage": {
+    "readySuppressedChurn": "PROVEN_BY_FOCUSED_FIXTURE",
+    "singleFrameFlickerPulse": "PROVEN_BY_FOCUSED_FIXTURE",
+    "oldGenerationGhostReappearance": "PROVEN_BY_FOCUSED_FIXTURE",
+    "runtimeEpochReplacement": "PROVEN_BY_FOCUSED_FIXTURE",
+    "rendererEpochReplacement": "PROVEN_BY_FOCUSED_FIXTURE",
+    "actorDisappearReappear": "PROVEN_BY_FOCUSED_FIXTURE",
+    "staleDrawAcknowledgement": "PROVEN_BY_FOCUSED_FIXTURE",
+    "duplicateDrawAcknowledgement": "PROVEN_BY_FOCUSED_FIXTURE",
+    "duplicateOutOfOrderSamplesFrames": "PROVEN_BY_FOCUSED_FIXTURE",
+    "multiActorIndependentContinuity": "PROVEN_BY_FOCUSED_FIXTURE",
+    "rejectedFrameCannotMutateLifecycle": "PROVEN_BY_FOCUSED_FIXTURE",
+    "liveWofTemporalContinuity": "NOT_RUN"
+  },
+  "proofBoundary": {
+    "crossEpochContinuityClaimed": false,
+    "crossActorRepairAllowed": false,
+    "coordinatesUsedForIdentity": false,
+    "coordinatesUsedForContinuityConfidence": false,
+    "drawAcknowledgementImpliesVisibility": false,
+    "singleP18SnapshotImpliesTemporalContinuity": false,
+    "unrecognizedGameplayStateInference": false,
+    "hitDownJumpDeathInference": false
+  },
+  "dependencies": {
+    "P16": "Consumed only as existing canonical status/evidence boundary; not modified and not promoted to visual proof.",
+    "P18": "Consumed only through the existing exact draw acknowledgement identity/ledger contract; not modified and ACK remains visibleProof=NOT_PROVEN.",
+    "P21": "No ownership touch; P24 provides a passive analyzer seam that a later staged acceptance capture may feed.",
+    "P22": "No ownership touch; dynamic state semantic coverage remains a separate acceptance module and is not inferred by P24.",
+    "P23": "No ownership touch; P24 publishes stable deterministic output paths/schema for optional downstream close verification consumption.",
+    "P19_P20": "No ownership touch and no promotion action.",
+    "W3": "No ownership touch and no renderer-source qualification claim; unproven W3 evidence remains fail-closed."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": "P24's assigned repository module is complete without a real-WOF run. Any later live temporal acceptance belongs to the existing final Owner/staging flow and must supply time-ordered exact canonical observations rather than being fabricated here."
+  },
+  "blocker": null,
+  "nextAction": "When the final staged/Owner acceptance flow has a qualified exact canonical runtime, feed bounded time-ordered P24 observations into parallel/TEMPORAL_ACCEPTANCE/temporal_acceptance.py and consume the deterministic JSON/MD output. If observations are stale, mismatched, duplicate/out-of-order, insufficient, or include stale draw acknowledgements, remain fail-closed; do not interpolate, reuse old coordinates, infer identity by proximity, or promote a single P16/P18 snapshot into continuity proof.",
+  "evidencePaths": [
+    "parallel/TEMPORAL_ACCEPTANCE/README.md",
+    "parallel/TEMPORAL_ACCEPTANCE/temporal_observation.schema.json",
+    "parallel/TEMPORAL_ACCEPTANCE/temporal_acceptance.py",
+    "parallel/TEMPORAL_ACCEPTANCE/test_temporal_acceptance.py",
+    "~/Documents/WOF_RESULTS/ALPHA_P24_TEMPORAL_ACCEPTANCE/ALPHA_CANONICAL_TEMPORAL_CONTINUITY_EVIDENCE.json",
+    "~/Documents/WOF_RESULTS/ALPHA_P24_TEMPORAL_ACCEPTANCE/ALPHA_CANONICAL_TEMPORAL_CONTINUITY_EVIDENCE.md"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "legacySpatialFallback": false,
+    "interpolation": false,
+    "oldCoordinateReuse": false,
+    "spatialIdentityInference": false,
+    "nearestObjectInference": false,
+    "rowOrderIdentityInference": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "p22OwnershipTouched": false,
+    "p23OwnershipTouched": false,
+    "p21OwnershipTouched": false,
+    "p20OwnershipTouched": false,
+    "p19OwnershipTouched": false,
+    "p18OwnershipTouched": false,
+    "w3OwnershipTouched": false,
+    "alphaLiveMoved": false,
+    "visibleProof": "NOT_PROVEN"
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "alphaLiveMoved": false,
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_FINAL_ACCEPTANCE_P22_P23_P24_LONG_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P24_CANONICAL_TEMPORAL_STABILITY_CONTINUITY_ACCEPTANCE_RESULT.md"
+}
