@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P27_P21_STAGED_RUNTIME_CANONICAL_FEED_EXPOSURE",
+  "dedupKey": "alpha.v1.product-takeover.p21-staged-runtime-canonical-feed-exposure-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.p21-staged-runtime-canonical-feed-exposure-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.p21-staged-runtime-canonical-feed-exposure-v1.json",
+  "claimToken": "ee254ee086ca56d8ae140aab3c3d26b3",
+  "state": "ACTIVE",
+  "startCommit": "aa862708c6d9662ba38170f590a6ef7bab669072"
+}
