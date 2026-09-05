@@ -55,12 +55,7 @@ def _accepted(choice)->bool:
     return bool(choice.page and choice.worker and choice.worker_probe and choice.worker_probe.get("moduleOk") is True and choice.identity and choice.identity.get("ok") is True)
 
 def _zero_click_identity_evidence(remote:Any)->dict[str,Any]|None:
-    """Accept only an explicit read-only semantic-evidence envelope.
-
-    Current exact-runtime capture may legitimately provide no such envelope; in
-    that case the W2 tracker gate fails closed and only its bounded one-click
-    fallback may be offered. Lifecycle.type is never copied into HUD evidence.
-    """
+    """Accept only an explicit read-only semantic-evidence envelope."""
     if not isinstance(remote,dict):
         return None
     evidence=remote.get("p1ZeroClickEvidence")
@@ -85,6 +80,16 @@ def _owner_click_pending(visual:Any)->bool:
     except (TypeError,ValueError):
         return True
     return count<maximum
+
+def _zero_click_still_running(visual:Any)->bool:
+    if not isinstance(visual,dict) or str(visual.get("state") or "")!="HEAD_ACQUIRING":
+        return False
+    try:
+        attempts=int(visual.get("autoSeedAttemptCount") or 0)
+        maximum=max(1,int(visual.get("autoSeedMaximumFrames") or 1))
+    except (TypeError,ValueError):
+        return True
+    return attempts<maximum
 
 def run(root:Path,output_root:Path,host:str="127.0.0.1",port:int=9223,browser:str="auto",browser_path:str|None=None,game_url:str|None=None,status_callback:Callable[[str,dict[str,Any]],None]|None=None,stop_event:threading.Event|None=None)->int:
     root=root.resolve();output_root=output_root.resolve();stop_event=stop_event or threading.Event();live_acceptance_hold=os.environ.get(LIVE_ACCEPTANCE_HOLD_ENV)=="1"
@@ -158,6 +163,10 @@ def run(root:Path,output_root:Path,host:str="127.0.0.1",port:int=9223,browser:st
             if terminal_capture is None and isinstance(capture_result,dict):
                 terminal_capture=capture_result;terminal_seen_at=None;event("CAPTURE_CORE_COMPLETE",sampleCount=sample_count,candidateCount=candidate_count,captureState=polled.get("state"))
             if terminal_capture is not None:
+                if _zero_click_still_running(v):
+                    terminal_seen_at=None
+                    publish("HEAD_ACQUIRING",visual=v,productionOverlay=overlay_status,productionOverlayVisible=False,sampleCount=sample_count,candidateCount=candidate_count,zeroClickAcquisitionInProgress=True)
+                    time.sleep(0.18);continue
                 if _owner_click_pending(v):
                     terminal_seen_at=None;publish("ONE_CLICK_REQUIRED",visual=v,productionOverlay=overlay_status,productionOverlayVisible=False,sampleCount=sample_count,candidateCount=candidate_count,ownerActionRequired="CLICK_P1_REAL_HEAD_ONCE");time.sleep(0.18);continue
                 if terminal_seen_at is None:
@@ -176,7 +185,7 @@ def run(root:Path,output_root:Path,host:str="127.0.0.1",port:int=9223,browser:st
                     publish("RUNNING",visual=v,productionOverlay=overlay_status,productionOverlayVisible=overlay_status.get("visible") is True,sampleCount=sample_count,candidateCount=candidate_count,p1LiveGateReady=True,liveAcceptancePhase=LIVE_ACCEPTANCE_PHASE,relativeEnemy=overlay_status.get("relativeEnemy"));time.sleep(0.18);continue
                 if terminal_seen_at is not None and time.monotonic()-terminal_seen_at>=VISUAL_GRACE_SECONDS:
                     if visual.qualified() and not overlay.visible_and_drawn():reason="P1 tracker 已达到门槛，但 maintained Alpha production HUD 在有界窗口内未观察到真实 WebGL 头顶 draw；不能宣称 Owner 可见。"
-                    else:reason="P1 头部视觉 authority 在有界窗口内未达到安全多样本/连续跟踪门槛。"
+                    else:reason="P1 头部视觉 authority 在自动获取/点击 fallback 完成后仍未达到安全多样本/连续跟踪门槛。"
                     final_visual=_visual_with_overlay(visual.result(),overlay.status());_write(session_dir/"P1_HEAD_VISUAL_RESULT.json",final_visual);_write(session_dir/"PRODUCTION_P1_OVERLAY_RESULT.json",overlay.status());return blocked(reason,9,visual=final_visual,productionOverlay=overlay.status(),sampleCount=sample_count,candidateCount=candidate_count)
                 publish("RUNNING",visual=v,productionOverlay=overlay_status,productionOverlayVisible=overlay_status.get("visible") is True,sampleCount=sample_count,candidateCount=candidate_count)
             time.sleep(0.18)
