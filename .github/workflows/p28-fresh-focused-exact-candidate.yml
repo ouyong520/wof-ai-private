@@ -1,0 +1,67 @@
+name: P28 Fresh Focused Exact Candidate
+on:
+  push:
+    branches:
+      - codex/p28-fresh-focused-69884841
+    paths:
+      - .github/workflows/p28-fresh-focused-exact-candidate.yml
+permissions:
+  contents: read
+jobs:
+  p28-fresh-focused:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact P28 candidate
+        uses: actions/checkout@v4
+        with:
+          ref: 5e373a21292f22be46ce8b311af9b1ec606b6874
+          fetch-depth: 1
+      - name: Bind exact commit tree and six blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "5e373a21292f22be46ce8b311af9b1ec606b6874"
+          test "$(git rev-parse HEAD^{tree})" = "dce2ab917f6bcf9a6536d6a33f735b24074272aa"
+          test "$(git rev-parse HEAD:parallel/OWNER_ACCEPTANCE_PROVENANCE/README.md)" = "eaf3ac35a3371ca9f1bd4512b945e612ae449935"
+          test "$(git rev-parse HEAD:parallel/OWNER_ACCEPTANCE_PROVENANCE/WOF_ALPHA_VERIFY_ACCEPTANCE_PROVENANCE.cmd)" = "41a6dbd2ee7290165085be825e0fc96ebf1813f2"
+          test "$(git rev-parse HEAD:parallel/OWNER_ACCEPTANCE_PROVENANCE/provenance_chain.py)" = "f2f36bf33384f5e9f8169327875b0984d01cdc6f"
+          test "$(git rev-parse HEAD:parallel/OWNER_ACCEPTANCE_PROVENANCE/test_provenance_chain.py)" = "a72f9a9c7c76a00b43031d71d9cb92a7e34e4e33"
+          test "$(git rev-parse HEAD:parallel/OWNER_ACCEPTANCE_PROVENANCE/durable_session.py)" = "70f000034eeee87ab5cb45e1ea4f99cd924ea660"
+          test "$(git rev-parse HEAD:parallel/OWNER_ACCEPTANCE_PROVENANCE/test_durable_session.py)" = "da3a86a94091686ed33e4145f87efc1ffbc53505"
+          echo "P28_EXACT_CANDIDATE_BINDING=PASS"
+      - name: Compile syntax exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            parallel/OWNER_ACCEPTANCE_PROVENANCE/provenance_chain.py \
+            parallel/OWNER_ACCEPTANCE_PROVENANCE/durable_session.py \
+            parallel/OWNER_ACCEPTANCE_PROVENANCE/test_provenance_chain.py \
+            parallel/OWNER_ACCEPTANCE_PROVENANCE/test_durable_session.py
+          echo "P28_COMPILE_SYNTAX=PASS"
+      - name: Fresh durable-session focused tests
+        shell: bash
+        working-directory: parallel/OWNER_ACCEPTANCE_PROVENANCE
+        run: |
+          set -euo pipefail
+          python -m unittest -v test_durable_session.py
+      - name: Fresh compatibility provenance focused tests
+        shell: bash
+        working-directory: parallel/OWNER_ACCEPTANCE_PROVENANCE
+        run: |
+          set -euo pipefail
+          python -m unittest -v test_provenance_chain.py
+      - name: Safety static boundary assertion
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          base = Path('parallel/OWNER_ACCEPTANCE_PROVENANCE')
+          text = '\n'.join((base / p).read_text(encoding='utf-8') for p in ('durable_session.py','provenance_chain.py','WOF_ALPHA_VERIFY_ACCEPTANCE_PROVENANCE.cmd')).lower()
+          forbidden = ('writeprocessmemory','virtualallocex','sendinput(','setcursorpos(','pyautogui.click','git push --force','alpha-live:refs/heads/alpha-live')
+          hit = [x for x in forbidden if x in text]
+          if hit:
+              raise SystemExit(f'forbidden runtime primitive(s): {hit}')
+          print('P28_SAFETY_STATIC_SCAN=PASS')
+          PY
