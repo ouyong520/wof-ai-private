@@ -8,6 +8,10 @@ root.WOFAlphaPlayerHeadWarning=api;
 
 const VERSION='wof-alpha-player-head-warning-v1';
 const GEOMETRY_VERSION='wof-alpha-player-head-geometry-v2';
+const CANONICAL_GEOMETRY_VERSION='wof-alpha-player-danger-canonical-anchor-v1';
+const CANONICAL_ANCHOR_SCHEMA='wof-render-object-anchor-v1';
+const CANONICAL_NATIVE_WIDTH=384;
+const CANONICAL_NATIVE_HEIGHT=224;
 const PROFILE_SCHEMA='wof-alpha-player-head-projection-v2';
 const PROJECTION_KIND='world-camera-y-sign-z-head-clearance-v2';
 const Y_MODELS=new Set(['Y-Z','Y+Z','Y']);
@@ -17,6 +21,7 @@ const EPOCH_RE=/^[0-9a-f]{32}$/;
 const MAX_PLAYER_AGE_MS=80;
 const MAX_PROJECTION_AGE_MS=80;
 const MAX_DRAWING_BUFFER_AGE_MS=250;
+const DEFAULT_CANONICAL_ANCHOR_MAX_AGE_MS=80;
 const DEFAULT_BOX_WIDTH=84;
 const DEFAULT_BOX_HEIGHT=26;
 
@@ -192,6 +197,153 @@ function resolveAnchor({player,playerState,projection,drawingBufferState,nowMs,w
     mappingKey};
 }
 
+function validAuthorityBinding(binding){
+  return!!binding&&typeof binding.authorityKey==='string'&&binding.authorityKey.length>0&&
+    typeof binding.runtimeEpoch==='string'&&binding.runtimeEpoch.length>=16&&
+    typeof binding.rendererEpoch==='string'&&binding.rendererEpoch.length>=16;
+}
+
+function canonicalSampleOf(value){
+  if(value&&typeof value==='object'&&value.canonicalAnchor&&typeof value.canonicalAnchor==='object'){
+    return{anchor:value.canonicalAnchor,sampleAt:value.sampleAt};
+  }
+  return{anchor:value,sampleAt:value?.sampleAt};
+}
+
+function failCanonicalAnchor(player,reason,metadata={}){
+  return{ok:false,player,reason,xDb:null,yDb:null,confidence:0,generation:metadata.generation??null,
+    ageMs:metadata.ageMs??Infinity,sampleAt:metadata.sampleAt??null,mappingKey:metadata.mappingKey??null};
+}
+
+function resolveCanonicalAnchor({
+  player,anchorSample,expectedGeneration,authorityBinding,drawingBufferState,nowMs,warningSampleAt,
+  anchorMaxAgeMs=DEFAULT_CANONICAL_ANCHOR_MAX_AGE_MS
+}={}){
+  if(!PLAYER_SET.has(player))return failCanonicalAnchor(player,'INVALID_PLAYER');
+  if(typeof warningSampleAt!=='number'||!finite(warningSampleAt))return failCanonicalAnchor(player,'INVALID_WARNING_SAMPLE_TIME');
+  if(!Number.isInteger(expectedGeneration)||expectedGeneration<0)return failCanonicalAnchor(player,'EXPECTED_GENERATION_MISSING');
+  if(!validAuthorityBinding(authorityBinding))return failCanonicalAnchor(player,'CANONICAL_AUTHORITY_INVALID',{generation:expectedGeneration});
+
+  const sample=canonicalSampleOf(anchorSample);
+  const anchor=sample.anchor;
+  if(!anchor||typeof anchor!=='object')return failCanonicalAnchor(player,'CANONICAL_ANCHOR_MISSING',{generation:expectedGeneration});
+  if(anchor.schema!==CANONICAL_ANCHOR_SCHEMA)return failCanonicalAnchor(player,'CANONICAL_ANCHOR_SCHEMA_MISMATCH',{generation:expectedGeneration});
+  if(anchor.state!=='READY'){
+    const reason=typeof anchor.reason==='string'&&anchor.reason?anchor.reason:'CANONICAL_ANCHOR_SUPPRESSED';
+    return failCanonicalAnchor(player,reason,{generation:expectedGeneration,sampleAt:sample.sampleAt});
+  }
+  if(anchor.actor!==player)return failCanonicalAnchor(player,'CANONICAL_ACTOR_MISMATCH',{generation:expectedGeneration,sampleAt:sample.sampleAt});
+  if(anchor.generation!==expectedGeneration)return failCanonicalAnchor(player,'CANONICAL_GENERATION_MISMATCH',{generation:expectedGeneration,sampleAt:sample.sampleAt});
+  if(anchor.nativeWidth!==CANONICAL_NATIVE_WIDTH||anchor.nativeHeight!==CANONICAL_NATIVE_HEIGHT){
+    return failCanonicalAnchor(player,'CANONICAL_NATIVE_SIZE_MISMATCH',{generation:expectedGeneration,sampleAt:sample.sampleAt});
+  }
+  if(anchor.readOnly!==true||anchor.ramWrites!==0||anchor.inputInjection!==false){
+    return failCanonicalAnchor(player,'CANONICAL_SAFETY_INVALID',{generation:expectedGeneration,sampleAt:sample.sampleAt});
+  }
+  if(anchor.unsafe===true)return failCanonicalAnchor(player,'CANONICAL_ANCHOR_UNSAFE',{generation:expectedGeneration,sampleAt:sample.sampleAt});
+  if(anchor.ambiguous===true||anchor.association?.ambiguous===true){
+    return failCanonicalAnchor(player,'CANONICAL_ANCHOR_AMBIGUOUS',{generation:expectedGeneration,sampleAt:sample.sampleAt});
+  }
+  if(anchor.proven===false||anchor.sourceProven===false||anchor.rendererSource?.proven===false||
+    (anchor.association&&anchor.association.proven!==true)){
+    return failCanonicalAnchor(player,'CANONICAL_ANCHOR_UNPROVEN',{generation:expectedGeneration,sampleAt:sample.sampleAt});
+  }
+  if(anchor.authorityKey!==authorityBinding.authorityKey||
+    anchor.runtimeEpoch!==authorityBinding.runtimeEpoch||
+    anchor.rendererEpoch!==authorityBinding.rendererEpoch){
+    return failCanonicalAnchor(player,'CANONICAL_AUTHORITY_EPOCH_MISMATCH',{generation:expectedGeneration,sampleAt:sample.sampleAt});
+  }
+
+  if(!finite(sample.sampleAt))return failCanonicalAnchor(player,'CANONICAL_SAMPLE_TIME_MISSING',{generation:expectedGeneration});
+  const anchorAge=ageMs(nowMs,sample.sampleAt);
+  if(anchorAge>anchorMaxAgeMs){
+    return failCanonicalAnchor(player,'STALE_CANONICAL_ANCHOR',{generation:expectedGeneration,ageMs:anchorAge,sampleAt:sample.sampleAt});
+  }
+  if(sample.sampleAt<warningSampleAt){
+    return failCanonicalAnchor(player,'CANONICAL_ANCHOR_BEFORE_WARNING_SAMPLE',{generation:expectedGeneration,ageMs:anchorAge,sampleAt:sample.sampleAt});
+  }
+
+  const native=anchor.anchor;
+  if(!native||![native.x,native.y].every(finite)){
+    return failCanonicalAnchor(player,'CANONICAL_NATIVE_ANCHOR_INVALID',{generation:expectedGeneration,ageMs:anchorAge,sampleAt:sample.sampleAt});
+  }
+  if(native.x<0||native.x>CANONICAL_NATIVE_WIDTH||native.y<0||native.y>CANONICAL_NATIVE_HEIGHT){
+    return failCanonicalAnchor(player,'CANONICAL_NATIVE_ANCHOR_OUT_OF_BOUNDS',{generation:expectedGeneration,ageMs:anchorAge,sampleAt:sample.sampleAt});
+  }
+
+  const rect=contentRectOf(drawingBufferState);
+  if(!rect)return failCanonicalAnchor(player,'INVALID_DRAWING_BUFFER',{generation:expectedGeneration,ageMs:anchorAge,sampleAt:sample.sampleAt});
+  const dbAge=ageMs(nowMs,drawingBufferState?.sampleAt);
+  if(dbAge>MAX_DRAWING_BUFFER_AGE_MS){
+    return failCanonicalAnchor(player,'STALE_DRAWING_BUFFER',{generation:expectedGeneration,ageMs:Math.max(anchorAge,dbAge),sampleAt:sample.sampleAt});
+  }
+  if(confidenceValue(drawingBufferState?.confidence)===null){
+    return failCanonicalAnchor(player,'INVALID_DRAWING_BUFFER_CONFIDENCE',{generation:expectedGeneration,ageMs:Math.max(anchorAge,dbAge),sampleAt:sample.sampleAt});
+  }
+  if(Object.prototype.hasOwnProperty.call(drawingBufferState||{},'runtimeEpoch')&&drawingBufferState.runtimeEpoch!==authorityBinding.runtimeEpoch){
+    return failCanonicalAnchor(player,'DRAWING_BUFFER_RUNTIME_EPOCH_MISMATCH',{generation:expectedGeneration,ageMs:Math.max(anchorAge,dbAge),sampleAt:sample.sampleAt});
+  }
+  if(Object.prototype.hasOwnProperty.call(drawingBufferState||{},'rendererEpoch')&&drawingBufferState.rendererEpoch!==authorityBinding.rendererEpoch){
+    return failCanonicalAnchor(player,'DRAWING_BUFFER_RENDERER_EPOCH_MISMATCH',{generation:expectedGeneration,ageMs:Math.max(anchorAge,dbAge),sampleAt:sample.sampleAt});
+  }
+
+  const xDb=rect.x+native.x/CANONICAL_NATIVE_WIDTH*rect.width;
+  const yDb=rect.y+native.y/CANONICAL_NATIVE_HEIGHT*rect.height;
+  if(![xDb,yDb].every(finite)){
+    return failCanonicalAnchor(player,'DRAWING_BUFFER_CANONICAL_MAP_NONFINITE',{generation:expectedGeneration,ageMs:Math.max(anchorAge,dbAge),sampleAt:sample.sampleAt});
+  }
+  const mappingKey=[
+    drawingBufferState.width,drawingBufferState.height,rect.x,rect.y,rect.width,rect.height,
+    drawingBufferState.mappingVersion??'',drawingBufferState.fullscreen?'fs':'win',
+    authorityBinding.authorityKey,authorityBinding.runtimeEpoch,authorityBinding.rendererEpoch
+  ].join(':');
+  return{
+    ok:true,player,reason:null,generation:expectedGeneration,xDb,yDb,
+    nativeX:native.x,nativeY:native.y,nativeWidth:CANONICAL_NATIVE_WIDTH,nativeHeight:CANONICAL_NATIVE_HEIGHT,
+    authorityKey:authorityBinding.authorityKey,runtimeEpoch:authorityBinding.runtimeEpoch,rendererEpoch:authorityBinding.rendererEpoch,
+    confidence:drawingBufferState.confidence,ageMs:Math.max(anchorAge,dbAge),sampleAt:Math.min(sample.sampleAt,drawingBufferState.sampleAt),
+    mappingKey,source:'canonical-render-object-anchor'
+  };
+}
+
+function buildCanonicalPlan({
+  warnings,canonicalAnchors,playerGenerations,authorityBinding,drawingBufferState,nowMs,warningSampleAt,
+  anchorMaxAgeMs=DEFAULT_CANONICAL_ANCHOR_MAX_AGE_MS,boxWidth=DEFAULT_BOX_WIDTH,boxHeight=DEFAULT_BOX_HEIGHT
+}={}){
+  const now=finite(nowMs)?nowMs:Date.now();
+  const {groups,invalid}=warningGroups(warnings);
+  const anchored=[],suppressed=[];
+  for(const warning of invalid){
+    suppressed.push({player:null,warning,warnings:[warning],warningCount:1,reason:'INVALID_TARGET'});
+  }
+  for(const player of PLAYERS){
+    const rows=groups.get(player);
+    if(!rows.length)continue;
+    const anchor=resolveCanonicalAnchor({
+      player,anchorSample:canonicalAnchors?.[player],expectedGeneration:playerGenerations?.[player],
+      authorityBinding,drawingBufferState,nowMs:now,warningSampleAt,anchorMaxAgeMs
+    });
+    if(!anchor.ok){
+      suppressed.push({player,warnings:rows,warning:rows[0],warningCount:rows.length,reason:anchor.reason});
+      continue;
+    }
+    const rect=contentRectOf(drawingBufferState);
+    const width=finite(boxWidth)&&boxWidth>0?Math.min(boxWidth,rect.width):Math.min(DEFAULT_BOX_WIDTH,rect.width);
+    const height=finite(boxHeight)&&boxHeight>0?Math.min(boxHeight,rect.height):Math.min(DEFAULT_BOX_HEIGHT,rect.height);
+    const x=Math.min(rect.x+rect.width-width,Math.max(rect.x,anchor.xDb-width/2));
+    const y=Math.min(rect.y+rect.height-height,Math.max(rect.y,anchor.yDb-height/2));
+    if(![x,y,width,height].every(finite)){
+      suppressed.push({player,warnings:rows,warning:rows[0],warningCount:rows.length,reason:'INVALID_DRAW_RECT'});
+      continue;
+    }
+    anchored.push({player,warnings:rows,warning:rows[0],warningCount:rows.length,anchor,drawRectDb:{x,y,width,height}});
+  }
+  return{
+    mode:'canonical-render-anchor',coordinateSpace:'webgl-drawing-buffer',anchored,fixed:[],suppressed,
+    holdMs:0,smoothing:false,fallback:'NONE',maxCanonicalAnchorAgeMs:anchorMaxAgeMs,maxDrawingBufferAgeMs:MAX_DRAWING_BUFFER_AGE_MS
+  };
+}
+
 function warningGroups(warnings){
   const groups=new Map(PLAYERS.map(player=>[player,[]]));
   const invalid=[];
@@ -235,7 +387,8 @@ function buildPlan({warnings,players,projection,drawingBufferState,nowMs,warning
 }
 
 return{
-  VERSION,GEOMETRY_VERSION,PROFILE_SCHEMA,PROJECTION_KIND,Y_MODELS,PLAYERS,MAX_PLAYER_AGE_MS,MAX_PROJECTION_AGE_MS,MAX_DRAWING_BUFFER_AGE_MS,
-  validateProofProfile,buildProjectionSnapshot,resolveAnchor,buildPlan
+  VERSION,GEOMETRY_VERSION,CANONICAL_GEOMETRY_VERSION,CANONICAL_ANCHOR_SCHEMA,CANONICAL_NATIVE_WIDTH,CANONICAL_NATIVE_HEIGHT,
+  PROFILE_SCHEMA,PROJECTION_KIND,Y_MODELS,PLAYERS,MAX_PLAYER_AGE_MS,MAX_PROJECTION_AGE_MS,MAX_DRAWING_BUFFER_AGE_MS,DEFAULT_CANONICAL_ANCHOR_MAX_AGE_MS,
+  validateProofProfile,buildProjectionSnapshot,resolveAnchor,validAuthorityBinding,resolveCanonicalAnchor,buildCanonicalPlan,buildPlan
 };
 });
