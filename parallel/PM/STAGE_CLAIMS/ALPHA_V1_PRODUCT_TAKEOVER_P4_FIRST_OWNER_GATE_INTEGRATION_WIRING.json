@@ -5,6 +5,13 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.first-owner-gate.integration-wiring-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.first-owner-gate.integration-wiring-v1.json",
   "claimToken": "od43xqay5c1_UceGAPfhQNjtPwbe0hq-mDaraeNP_sA",
-  "state": "ACTIVE",
-  "startCommit": "6316f451fe178b414ac1515cf64f5d13cdeb97d4"
+  "state": "COMPLETE",
+  "startCommit": "6316f451fe178b414ac1515cf64f5d13cdeb97d4",
+  "implementationCommits": [
+    "5b5c61f9f0b91c48ba77031fbbb9637ef60d3575"
+  ],
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P4_FIRST_OWNER_GATE_INTEGRATION_WIRING_RESULT.json",
+  "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P4_FIRST_OWNER_GATE_INTEGRATION_WIRING_RESULT.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P4_FIRST_OWNER_GATE_INTEGRATION_WIRING_RESULT.md",
+  "resultCommit": "a5ccf49a9020d070806d0691284e75a2f971b4b1"
 }
