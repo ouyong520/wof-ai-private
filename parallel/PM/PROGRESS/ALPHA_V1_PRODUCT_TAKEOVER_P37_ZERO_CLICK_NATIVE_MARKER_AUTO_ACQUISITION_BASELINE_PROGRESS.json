@@ -3,13 +3,13 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P37_ZERO_CLICK_NATIVE_MARKER_AUTO_ACQUISITION_BASELINE",
   "dedupKey": "alpha.v1.product-takeover.zero-click-native-marker-auto-acquisition-baseline-v1",
   "claimToken": "57010fdf7998a29bdac7fa51194b9edc",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "PUBLISHING",
-  "overallPercent": 96,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
   "implementationState": "DONE_CANDIDATE_READBACK_BOUND",
   "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
-  "resultPublicationState": "IN_PROGRESS",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "DONE",
+  "claimCloseState": "DONE",
   "startCommit": "64ce273207e647e769f462f07a2707f5089fd65f",
   "lastKnownGoodCommit": "64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530",
   "testedCandidateCommit": "64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530",
@@ -25,36 +25,36 @@
     "parallel/AUTO_MARKER_BASELINE/README.md": "092ddd78f12ffad359c054479ee3750115239de2"
   },
   "completed": [
-    "P37 implementation is durable and isolated under parallel/AUTO_MARKER_BASELINE/**",
-    "Exact GitHub readback is bound to candidate 64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530 / tree ea78cd46a7270f53804c22eef7b62d396a9a3956",
-    "Fresh terminal-significant focused suite on exact candidate bytes passes 6/6",
-    "Zero-click P1/P2/P3 acquisition/reacquisition, left/right/up/down orientation, no Y inversion, ambiguity fail-closed and permanent authority boundary are covered",
-    "No real WOF run, Owner visual action, P36 ownership edit, P38 candidate edit, promotion, RAM write or input injection was performed",
-    "Canonical and stage claims were re-read immediately before publication and still match exact ACTIVE claimToken 57010fdf7998a29bdac7fa51194b9edc"
+    "Recovered historical automatic native-color 1P/2P/3P + down-arrow diagnostic tracking without restoring manual click/player seed",
+    "Implemented isolated zero-click P1/P2/P3 acquisition, bounded continuity and automatic reacquisition in native 384x224",
+    "Verified left/right/up/down deterministic behavior and explicit TOP_LEFT_POSITIVE_DOWN Y orientation with no inversion",
+    "Verified ambiguity fail-closed with no x/y when multiple structural candidates exist",
+    "Bound exact candidate 64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530/tree ea78cd46a7270f53804c22eef7b62d396a9a3956 and exact file blobs",
+    "Fresh terminal-significant deterministic suite passed 6/6 on exact readback-matched bytes",
+    "Published COMPLETE RESULT while preserving UNVERIFIED_AUTO_BASELINE, rendererSourceProof=null and all P29/P32/P36/P34/promotion eligibility false",
+    "Closed canonical and stage claims with exact claimToken"
   ],
-  "remaining": [
-    "Atomically publish RESULT.json + RESULT.md, close canonical/stage claims COMPLETE and set terminal PROGRESS"
-  ],
+  "remaining": [],
   "tests": [
     {
-      "name": "node parallel/AUTO_MARKER_BASELINE/test_native_marker_auto_acquisition_baseline.js",
+      "name": "P37 deterministic baseline exact-candidate suite",
       "result": "PASS",
-      "detail": "6/6 PASS on exact durable candidate bytes"
+      "detail": "6/6 PASS: zero-click startup/P1-P3 distinction, L/R/U/D and no Y inversion, jump/short loss/automatic reacquire, ambiguity fail-closed, proof boundary, invalid frame"
     },
     {
       "name": "GitHub exact candidate readback",
       "result": "PASS",
-      "detail": "All three P37 file blob IDs match the tested local mirror"
+      "detail": "All three P37 tested blob identities matched before terminal rerun"
     },
     {
-      "name": "real WOF / Owner visual run",
+      "name": "real WOF / Owner visual acceptance",
       "result": "NOT_RUN",
-      "detail": "Forbidden by P37 scope"
+      "detail": "Explicitly outside P37 Worker scope"
     }
   ],
   "blocker": null,
-  "nextAction": "Publish one terminal WORKER_RESULT commit containing both result artifacts, exact-token claim closure and terminal progress state.",
+  "nextAction": "PM may use P37 only as non-authoritative correlation input for P36 or a later bounded diagnostic; no retry or promotion is authorized by P37.",
   "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P37_ZERO_CLICK_NATIVE_MARKER_AUTO_ACQUISITION_BASELINE_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:57:54Z"
+  "updatedAtUtc": "2026-09-05T17:00:11Z"
 }

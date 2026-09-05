@@ -1,0 +1,103 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P37_ZERO_CLICK_NATIVE_MARKER_AUTO_ACQUISITION_BASELINE",
+  "dedupKey": "alpha.v1.product-takeover.zero-click-native-marker-auto-acquisition-baseline-v1",
+  "claimToken": "57010fdf7998a29bdac7fa51194b9edc",
+  "state": "COMPLETE",
+  "classification": "UNVERIFIED_AUTO_BASELINE",
+  "verdict": "Durable exact-byte-tested zero-click diagnostic baseline now auto-acquires/reacquires P1/P2/P3 native label+down-arrow fixtures in 384x224 with deterministic non-inverted Y orientation and ambiguity fail-closed, while remaining non-authoritative.",
+  "startCommit": "64ce273207e647e769f462f07a2707f5089fd65f",
+  "testedCommit": "64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530",
+  "testedTree": "ea78cd46a7270f53804c22eef7b62d396a9a3956",
+  "implementationCommits": [
+    "b19fd2f264badbc137f1ab5660a30b45a8e763a2",
+    "0f466dc9ac401a71ec923f4d9b7337ea529dc304",
+    "64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530"
+  ],
+  "integrationReady": true,
+  "integrationScope": "DIAGNOSTIC_ONLY_P37_BASELINE",
+  "retryEligible": false,
+  "changedFiles": [
+    "parallel/AUTO_MARKER_BASELINE/native_marker_auto_acquisition_baseline.js",
+    "parallel/AUTO_MARKER_BASELINE/test_native_marker_auto_acquisition_baseline.js",
+    "parallel/AUTO_MARKER_BASELINE/README.md"
+  ],
+  "testedBlobMap": {
+    "parallel/AUTO_MARKER_BASELINE/native_marker_auto_acquisition_baseline.js": "2a0094b3588d4a27c8c7a6f9940b8a3b1941f8c4",
+    "parallel/AUTO_MARKER_BASELINE/test_native_marker_auto_acquisition_baseline.js": "ed0a4135d7f4ba00f8bad04f0112655aba7ff228",
+    "parallel/AUTO_MARKER_BASELINE/README.md": "092ddd78f12ffad359c054479ee3750115239de2"
+  },
+  "tests": [
+    {
+      "name": "P37 deterministic baseline exact-candidate suite",
+      "result": "PASS",
+      "detail": "6/6 PASS: zero-click startup/P1-P3 distinction; left/right/up/down and no Y inversion; jump/short loss/automatic reacquire; ambiguity fail-closed; proof-boundary rejection; invalid-frame fail-closed."
+    },
+    {
+      "name": "GitHub exact candidate readback",
+      "result": "PASS",
+      "detail": "Candidate 64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530 tree ea78cd46a7270f53804c22eef7b62d396a9a3956 matched all three recorded Git blob identities before the terminal-significant rerun."
+    },
+    {
+      "name": "real WOF / Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Explicitly outside P37 Worker authority; no real game run or Owner YES/NO was performed."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_PROVEN",
+    "detail": "Only deterministic functional/diagnostic fixture behavior is proven. Real WOF visible correctness, displayed renderer/object causality, actor-generation authority, and rendererSourceProof remain unproven and belong to P36/P29/P32 authority."
+  },
+  "zeroClickContract": {
+    "startupAutomatic": true,
+    "manualAvatarClickRequired": false,
+    "manualPortraitSeedRequired": false,
+    "manualPlayerSelectionRequired": false,
+    "automaticPlayers": [
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "automaticReacquire": true
+  },
+  "coordinateContract": {
+    "nativeWidth": 384,
+    "nativeHeight": 224,
+    "origin": "TOP_LEFT",
+    "xPositive": "RIGHT",
+    "yPositive": "DOWN",
+    "up": "LOWER_NATIVE_Y",
+    "down": "HIGHER_NATIVE_Y",
+    "viewportYInversion": false
+  },
+  "authorityBoundary": {
+    "rendererSourceProof": null,
+    "p29Pass": false,
+    "p32NativeMarkerQualification": false,
+    "p36RendererSourceTrace": false,
+    "p34RetryReadiness": false,
+    "promotionEligibility": false
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM may use P37 only as non-authoritative correlation input for P36 or a later bounded diagnostic; P37 itself must not authorize retry or promotion.",
+  "evidencePaths": [
+    "parallel/AUTO_MARKER_BASELINE/native_marker_auto_acquisition_baseline.js",
+    "parallel/AUTO_MARKER_BASELINE/test_native_marker_auto_acquisition_baseline.js",
+    "parallel/AUTO_MARKER_BASELINE/README.md",
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P37_ZERO_CLICK_NATIVE_MARKER_AUTO_ACQUISITION_BASELINE_PROGRESS.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "realWofRun": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "promotionPerformed": false,
+  "alphaLiveMoved": false
+}
