@@ -5,6 +5,9 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.first-owner-gate.owner-feedback-acceptance-harness-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.first-owner-gate.owner-feedback-acceptance-harness-v1.json",
   "claimToken": "HvNCecAxtr4hSaBVmFoJB1KVsnYXnlDA395c7ZA-n9M",
-  "state": "ACTIVE",
-  "startCommit": "2b42df0821713c623f5e871de54bab929d04ea98"
+  "state": "COMPLETE",
+  "startCommit": "2b42df0821713c623f5e871de54bab929d04ea98",
+  "implementationCommit": "5a8927dd83de07959d070d30ea3dcdb8feeab094",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P3_OWNER_FEEDBACK_ACCEPTANCE_HARNESS_SUBRESULT.md",
+  "resultCommit": "40f4b1818f80c7b446be673103acfca2c1946fbf"
 }
