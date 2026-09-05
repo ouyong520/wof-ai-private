@@ -1,0 +1,75 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P17_OWNER_FINAL_ACCEPTANCE_ORCHESTRATOR",
+  "dedupKey": "alpha.v1.product-takeover.owner-final-acceptance-orchestrator-v1",
+  "claimToken": "2B-9eCzghY3ChQ8TSSZ1LQ_hwxcHOWeV",
+  "state": "COMPLETE",
+  "verdict": "P17 is repository-ready: one Windows-friendly acceptance command now invokes the existing bounded W3 qualification runner, consumes P16 canonical runtime evidence and optional P18 maintained draw evidence, enforces fail-closed cross-evidence identity/safety consistency, and writes deterministic final JSON/Markdown acceptance bundles. Automatic evidence can advance only to READY_FOR_OWNER_VISUAL_CONFIRMATION; visibleProof remains NOT_PROVEN until the later Owner screen confirmation.",
+  "startCommit": "ef3a7df93859f0a81787762d7de3e7b08c3a2d6b",
+  "implementationCommits": [
+    "663abef54e4f2249bf102d77101d0222d56dbc0d",
+    "1688bf11a436d6a3728a13e496fc78d2751ce943"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/OWNER_ACCEPTANCE/final_acceptance_orchestrator.py",
+    "parallel/OWNER_ACCEPTANCE/test_final_acceptance_orchestrator.py",
+    "parallel/OWNER_ACCEPTANCE/WOF_ALPHA_FINAL_ACCEPTANCE.cmd",
+    "parallel/OWNER_ACCEPTANCE/README.md"
+  ],
+  "tests": [
+    {
+      "name": "P17 Python parse/compile",
+      "result": "PASS",
+      "detail": "final_acceptance_orchestrator.py and test_final_acceptance_orchestrator.py compile successfully."
+    },
+    {
+      "name": "Focused final acceptance orchestrator self-check",
+      "result": "PASS",
+      "detail": "6 unittest cases passed: synthetic W3 PASS + P16 HUD_INGEST_ACCEPTED + P18 CANONICAL_DRAW_ACKNOWLEDGED reaches READY_FOR_OWNER_VISUAL_CONFIRMATION only; W3 INCONCLUSIVE does not advance; renderer/runtime mismatch fails closed; missing P18 yields WAITING_DRAW_EVIDENCE; fixed-timestamp JSON/Markdown bundle writes are deterministic; Windows wrapper invokes the intended orchestrator without DevTools/manual JSON editing."
+    },
+    {
+      "name": "Committed blob integrity",
+      "result": "PASS",
+      "detail": "Final committed P17 file blob SHAs match the exact locally compiled/tested files; final_acceptance_orchestrator.py blob is bd97ea24b1669c03020b9d16ea0e43cdd100b7f0."
+    },
+    {
+      "name": "real-WOF / Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Deliberately not run by this implementation stage. P17 never promotes W3/P16/P18 repository/runtime evidence into visible PASS."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Repository implementation and focused fixtures prove the deterministic orchestration/state machine, one-command W3 invocation seam, P16/P18 evidence readers, mismatch rejection, atomic deterministic bundle output, and fail-closed visible-proof boundary. They do not prove a real WOF overlay was visible."
+  },
+  "productProofBoundary": "P15 checked-in candidate metadata -> existing W3 bounded qualification subprocess/offline report -> P16 ALPHA_CANONICAL_ACCEPTANCE_EVIDENCE.json -> optional P18 ALPHA_CANONICAL_DRAW_EVIDENCE.json -> exact World/page/authority/runtime/renderer/package consistency -> ALPHA_FINAL_ACCEPTANCE_BUNDLE.json/.md -> highest automatic state READY_FOR_OWNER_VISUAL_CONFIRMATION. visibleProof remains NOT_PROVEN and final visual PASS is external Owner confirmation only.",
+  "ownerGate": {
+    "required": true,
+    "question": "After PM refreshes the final selected candidate to include P15 + P16 + P17 + P18, run parallel\\OWNER_ACCEPTANCE\\WOF_ALPHA_FINAL_ACCEPTANCE.cmd once, play WOF normally during the bounded W3 sample, then visually confirm whether the overlay follows the correct actors.",
+    "reason": "The remaining renderer-source causal proof and final on-screen visibility are intrinsically live facts; repository/runtime/draw acknowledgement cannot manufacture visual PASS.",
+    "command": "parallel\\OWNER_ACCEPTANCE\\WOF_ALPHA_FINAL_ACCEPTANCE.cmd"
+  },
+  "blocker": null,
+  "nextAction": "PM should integrate/refresh one final candidate containing P15 + P16 + P17 + P18 without moving alpha-live, then perform the single bounded W3/Owner acceptance round. If W3 remains INCONCLUSIVE or evidence identities disagree, retain fail-closed state and do not guess coordinates/addresses.",
+  "evidencePaths": [
+    "parallel/OWNER_ACCEPTANCE/final_acceptance_orchestrator.py",
+    "parallel/OWNER_ACCEPTANCE/test_final_acceptance_orchestrator.py",
+    "parallel/OWNER_ACCEPTANCE/WOF_ALPHA_FINAL_ACCEPTANCE.cmd",
+    "parallel/OWNER_ACCEPTANCE/README.md"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "guessedAddresses": false,
+    "alphaLiveMoved": false
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_FINALIZATION_P15_P17_P18_LONG_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P17_OWNER_FINAL_ACCEPTANCE_ORCHESTRATOR_RESULT.md",
+  "completedAtUtc": "2026-09-05T08:19:31Z"
+}
