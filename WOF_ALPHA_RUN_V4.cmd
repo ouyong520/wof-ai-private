@@ -90,9 +90,13 @@ if not exist "%REPO%\parallel\PYLAUNCH\render_authority_measurement_entry.py" (
   exit /b 96
 )
 
-for /f "delims=" %%H in ('"%GITEXE%" -C "%REPO%" rev-parse HEAD 2^>nul') do set "HEADSHA=%%H"
 echo Exact main:
-echo %HEADSHA%
+"%GITEXE%" -C "%REPO%" rev-parse --verify HEAD
+if errorlevel 1 (
+  echo ERROR: Could not read managed repo HEAD.
+  pause
+  exit /b 97
+)
 echo.
 echo Starting WOF Alpha...
 echo Keep the game open.
