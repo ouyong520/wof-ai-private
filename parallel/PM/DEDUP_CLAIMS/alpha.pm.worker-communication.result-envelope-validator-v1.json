@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.pm.worker-communication.result-envelope-validator-v1",
+  "effectiveDedupKey": "alpha.pm.worker-communication.result-envelope-validator-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C1_RESULT_ENVELOPE_VALIDATOR",
+  "promptPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C1_RESULT_ENVELOPE_VALIDATOR_START_PROMPT.md",
+  "owner": "chatgpt-alpha-c1-worker",
+  "claimToken": "aa1ede4f535444049927a3007b178fdb",
+  "state": "ACTIVE",
+  "startCommit": "5a8927dd83de07959d070d30ea3dcdb8feeab094"
+}
