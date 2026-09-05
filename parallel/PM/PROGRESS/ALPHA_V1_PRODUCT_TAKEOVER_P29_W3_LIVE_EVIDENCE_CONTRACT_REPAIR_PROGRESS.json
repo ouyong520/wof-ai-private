@@ -4,11 +4,11 @@
   "dedupKey": "alpha.v1.product-takeover.w3-live-evidence-contract-repair-v1",
   "claimToken": "1a9d5b6b5eb5b60053235f48db39e116",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
-  "overallPercent": 92,
+  "workState": "PUBLISHING",
+  "overallPercent": 97,
   "implementationState": "DONE_CANDIDATE_DURABLE",
   "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
-  "resultPublicationState": "PENDING",
+  "resultPublicationState": "IN_PROGRESS",
   "claimCloseState": "PENDING",
   "startCommit": "07eb648a5842afd1e8e4b09af4c83f0f8cedcb9a",
   "lastKnownGoodCommit": "c02f7e108e73665f22eb950573622acb6f452732",
@@ -26,15 +26,15 @@
     "structural-only evidence remains INCONCLUSIVE unless a legitimate rendererSourceProof satisfies the existing direct displayed-frame proof contract",
     "stale runtimeEpoch/rendererEpoch/authorityKey mismatches remain REJECTED",
     "focused regressions updated without fabricating rendererSourceProof",
-    "durable terminal-significant candidate bound before focused self-check: c02f7e108e73665f22eb950573622acb6f452732",
-    "exact candidate blob identities re-read/reconstructed and matched before test execution",
+    "durable tested candidate bound: c02f7e108e73665f22eb950573622acb6f452732 / tree a7b6d2ef443a004e1b3f93723b4139e33df6dc59",
+    "exact candidate blob identities matched GitHub blobs before testing",
     "fresh focused Python analyzer regressions passed 10/10",
     "fresh focused Node capture-worker selftest passed"
   ],
   "remaining": [
-    "publish RESULT.json and RESULT.md for repo-side W3 repair only",
-    "close canonical and stage claims as COMPLETE",
-    "publish terminal PROGRESS and final WORKER_RESULT commit"
+    "publish RESULT.json and RESULT.md bound to tested commit c02f7e108e73665f22eb950573622acb6f452732",
+    "close canonical and stage claims as COMPLETE with the exact matching claimToken",
+    "read back both closed claims, then publish terminal PROGRESS in final WORKER_RESULT commit"
   ],
   "tests": [
     {
@@ -42,14 +42,14 @@
       "command": "python -m unittest -v test_qualification_analyzer.py",
       "candidateCommit": "c02f7e108e73665f22eb950573622acb6f452732",
       "result": "PASS",
-      "summary": "10/10 passed; covers structural-only INCONCLUSIVE, direct-proof-only PASS, dual BE16/LE16 same-offset INCONCLUSIVE, and runtime/renderer/authority mismatch REJECTED"
+      "summary": "10/10 passed; structural-only INCONCLUSIVE, direct-proof-only PASS, dual BE16/LE16 same-offset INCONCLUSIVE, stale runtime/renderer/authority mismatch REJECTED"
     },
     {
       "name": "render authority capture worker selftest",
       "command": "node selftest.mjs",
       "candidateCommit": "c02f7e108e73665f22eb950573622acb6f452732",
       "result": "PASS",
-      "summary": "candidateTimeline frames carry exact runtimeEpoch/rendererEpoch/authorityKey and result contains no fabricated rendererSourceProof"
+      "summary": "candidateTimeline frames carry exact runtimeEpoch/rendererEpoch/authorityKey and no rendererSourceProof is fabricated"
     },
     {
       "name": "exact candidate blob identity check",
@@ -65,8 +65,12 @@
     }
   ],
   "blocker": null,
-  "nextAction": "Publish terminal RESULT for the tested repo-side W3 contract repair, then close both matching claims and write terminal PROGRESS.",
-  "terminalResultPath": null,
+  "nextAction": "Publish the P29 RESULT pair, close both exact-token claims, then publish terminal PROGRESS. No implementation bytes may change without a new candidate and retest.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P29_W3_LIVE_EVIDENCE_CONTRACT_REPAIR_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T15:25:00Z"
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "updatedAtUtc": "2026-09-05T15:29:00Z"
 }
