@@ -1,0 +1,54 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P5_P1_CANONICAL_RENDER_ANCHOR_WIRING",
+  "dedupKey": "alpha.v1.product-takeover.p1-canonical-render-anchor-wiring-v1",
+  "claimToken": "f4a00ab4765152053e7fc0309b9f9240",
+  "state": "COMPLETE",
+  "verdict": "P5 now has a canonical-only P1 production bridge from DeterministicRenderObjectAnchor into the maintained ProductionP1Overlay/WebGL HUD path. Only canonical READY coordinates on the exact native 384x224 surface are forwarded; SUPPRESSED, unproven renderer source, runtime/renderer authority mismatch, generation change, invalid layout and explicit revoke clear/hide the P1 marker. No screenshot/template, world/camera projection, Y/Y-Z/Y+Z, click calibration, nearest-sprite or guessed-constant position fallback is present.",
+  "startCommit": "df1abb3809b1e00bcb7e3eac83917bb53429e2a8",
+  "implementationCommits": [
+    "b4c9daf4ccf7ca1d0662db5dd0bd04e48d6aba31",
+    "6963da58227c8d6c6ebf93f53a263b60f2251225"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PYLAUNCH/wof_launcher/canonical_p1_production_bridge.py",
+    "parallel/RENDER_AUTHORITY_V2/canonical_p1_production_bridge_selftest.py"
+  ],
+  "tests": [
+    {
+      "name": "Python syntax parse of exact submitted canonical_p1_production_bridge.py source",
+      "result": "PASS",
+      "detail": "The exact submitted bridge source parsed successfully with Python ast.parse."
+    },
+    {
+      "name": "Focused canonical P1 production bridge fixture",
+      "result": "PASS",
+      "detail": "Using the exact submitted bridge source with an isolated maintained-HUD fake backend: canonical READY forwarded native center [108.0,86.0] with frame size 384x224; RENDERER_SOURCE_UNPROVEN and stale renderer epoch cleared visibility; actor generation change cleared visibility immediately; fixed-draw sentinel state remained untouched. The committed self-check encodes the same focused cases against the repository DeterministicRenderObjectAnchor module."
+    }
+  ],
+  "productProof": {
+    "status": "IMPLEMENTATION_READY",
+    "classification": "IMPLEMENTATION_PROOF_ONLY",
+    "detail": "The product-side canonical wiring is implemented and fail-closed. W3 renderer/object source qualification remains unproven in real WOF, so current W3 frames cannot truthfully produce a canonical READY product marker and no real-WOF/Owner-visible PASS is claimed."
+  },
+  "productProofBoundary": "proven wof-render-object-frame-v1 -> DeterministicRenderObjectAnchor READY P1 -> CanonicalP1ProductionBridge -> maintained ProductionP1Overlay/WebGL HUD. Until W3 rendererSource.proven is true under exact World/runtime/renderer authority, the resolver returns SUPPRESSED and P1 remains hidden.",
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM may consume this bridge when W3 produces a qualified renderer/object frame. Do not enable any legacy projection/screenshot fallback while W3 remains unproven; the current correct product behavior is hidden/SUPPRESSED.",
+  "evidencePaths": [
+    "parallel/PYLAUNCH/wof_launcher/canonical_p1_production_bridge.py",
+    "parallel/RENDER_AUTHORITY_V2/canonical_p1_production_bridge_selftest.py",
+    "parallel/PYLAUNCH/wof_launcher/render_object_anchor.py",
+    "parallel/PYLAUNCH/wof_launcher/production_p1_overlay.py"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
