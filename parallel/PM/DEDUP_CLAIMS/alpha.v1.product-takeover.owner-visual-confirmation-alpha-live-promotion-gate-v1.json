@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.product-takeover.owner-visual-confirmation-alpha-live-promotion-gate-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.owner-visual-confirmation-alpha-live-promotion-gate-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P20_OWNER_VISUAL_CONFIRMATION_ALPHA_LIVE_PROMOTION_GATE",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P20_OWNER_VISUAL_CONFIRMATION_ALPHA_LIVE_PROMOTION_GATE_START_PROMPT.md",
+  "owner": "chatgpt-p20-worker",
+  "claimToken": "537e9a5df83747fba30be3d3aec4274b",
+  "state": "ACTIVE",
+  "startCommit": "d6d8a89d8eb36eaac75c7b04c9f0e98bd4975b3e"
+}
