@@ -4,10 +4,10 @@
   "dedupKey": "alpha.v1.product-takeover.final-acceptance-composite-capture-integration-v1",
   "claimToken": "1a8e410f279e1450057986f7e8212959",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "SELF_CHECK",
-  "overallPercent": 91,
+  "workState": "READY_TO_PUBLISH",
+  "overallPercent": 96,
   "implementationState": "DONE",
-  "selfCheckState": "IN_PROGRESS",
+  "selfCheckState": "PASS",
   "resultPublicationState": "PENDING",
   "claimCloseState": "PENDING",
   "startCommit": "d59bc3135286cc23caba8711c475db7cbf12acf9",
@@ -31,36 +31,48 @@
     "11 focused fixtures passed",
     "forbidden source scan passed",
     "terminal P27 COMPLETE at 33f0621ca39c144e6d21a685ca608cd9d1fd1e6f resolved the previously recorded P21 staged canonical-feed exposure blocker",
-    "continuation fresh-read canonical and stage claims on latest main; both remain ACTIVE with exact claimToken 1a8e410f279e1450057986f7e8212959"
+    "continuation fresh-read canonical and stage claims on latest main; both remain ACTIVE with exact claimToken 1a8e410f279e1450057986f7e8212959",
+    "post-P27 committed seam readback PASS: P21 wraps the runtime command after build_runtime_command returns, so the P25 tee builder cannot bypass P27",
+    "post-P27 committed publisher readback PASS: P27 injects validated maintained P10 canonical status into canonicalCoordinator and alpha_status.canonicalOverlay before delegated P25 tee snapshots the store",
+    "post-P27 P25 consumer readback PASS: extract_canonical_status consumes canonicalOverlay/canonicalCoordinator with schema wof-alpha-canonical-runtime-coordinator-v1 and retains fail-closed safety/identity validation",
+    "tested-byte readback PASS: all five current P25-owned blobs exactly match durable tested candidate d56d9b69aa682f5f49eeff8fe367ee68097f3c0f"
   ],
   "remaining": [
-    "re-read terminal P27 RESULT and committed staged canonical-feed seam under the same existing P25 claim",
-    "perform minimum deterministic post-P27 revalidation that the existing P25 composite path consumes same-session maintained P10 canonical coordinator status and no longer fails solely with NOT_EXPOSED_BY_STAGED_RUNTIME_STATUS",
-    "publish truthful terminal RESULT.json and RESULT.md as COMPLETE/integrationReady=true if repository-level revalidation succeeds, otherwise record any new precise blocker",
+    "publish truthful terminal RESULT.json and RESULT.md as COMPLETE/integrationReady=true for repository-level implementation/integration readiness only",
     "close matching canonical and stage claims using the same claimToken",
     "set PROGRESS TERMINAL/100 only after RESULT and claim closeout",
-    "write WORKER_RESULT terminal commit"
+    "write final WORKER_RESULT terminal commit"
   ],
   "tests": [
     {
       "name": "Python compile",
       "result": "PASS",
-      "detail": "P25 implementation compiled in the original interrupted worker run."
+      "detail": "P25 implementation compiled against durable tested candidate d56d9b69aa682f5f49eeff8fe367ee68097f3c0f."
     },
     {
       "name": "focused composite acceptance fixtures",
       "result": "PASS",
-      "detail": "11 focused fixtures passed before P27; a narrow post-P27 seam revalidation is still required."
+      "detail": "11 focused fixtures passed against the durable P25 candidate; current P25-owned blob map is unchanged from that candidate."
     },
     {
       "name": "forbidden source scan",
       "result": "PASS",
-      "detail": "No screenshot/world-projection/W3-world-coordinate production fallback introduced."
+      "detail": "No screenshot/world-projection/W3-world-coordinate production fallback introduced; current P25-owned blobs are unchanged."
+    },
+    {
+      "name": "post-P27 supported staged-path deterministic readback",
+      "result": "PASS",
+      "detail": "Committed P21/P27/P25 call-chain readback proves P27 wraps after the P25 builder, patches the candidate MeasurementPublisher before delegated P25 tee execution, exposes validated maintained P10 coordinator status, and P25 consumes that same-session canonical surface. The old NOT_EXPOSED_BY_STAGED_RUNTIME_STATUS condition is no longer a structural P21 seam blocker."
     },
     {
       "name": "real WOF acceptance",
       "result": "NOT_RUN",
-      "detail": "Still not run; P25 continuation is repository-level revalidation only."
+      "detail": "Deliberately not run under P25 continuation authority."
+    },
+    {
+      "name": "Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "No P22/P24/W3/Owner visual evidence was manufactured or claimed."
     }
   ],
   "blocker": null,
@@ -68,14 +80,14 @@
     "code": "P21_STAGED_RUNTIME_CANONICAL_FEED_NOT_EXPOSED",
     "resolvedByStage": "ALPHA_V1_PRODUCT_TAKEOVER_P27_P21_STAGED_RUNTIME_CANONICAL_FEED_EXPOSURE",
     "resolvedByTerminalCommit": "33f0621ca39c144e6d21a685ca608cd9d1fd1e6f",
-    "resolution": "P27 exposes the maintained exact-candidate P10 canonical coordinator status through the P21 staged publisher while keeping W3/V3 measurement separate and fail-closed."
+    "resolution": "P27 exposes the maintained exact-candidate P10 canonical coordinator status through the P21 staged publisher while keeping W3/V3 measurement separate and fail-closed; deterministic committed readback confirms the existing P25 tee/consumer path receives that supported same-session surface."
   },
-  "nextAction": "Re-read terminal P27 RESULT and committed staged canonical-feed seam, then perform the minimum deterministic post-P27 repository-level revalidation without running real WOF or widening P25 ownership.",
+  "nextAction": "Publish terminal P25 COMPLETE result, close the same-token canonical/stage claims, then write TERMINAL/100 progress and the final WORKER_RESULT commit without running real WOF.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
   "realWofAcceptance": "NOT_RUN",
   "ownerVisualAcceptance": "NOT_RUN",
   "visibleProof": "NOT_PROVEN",
   "alphaLiveMoved": false,
-  "updatedAtUtc": "2026-09-05T14:13:58Z"
+  "updatedAtUtc": "2026-09-05T14:15:00Z"
 }
