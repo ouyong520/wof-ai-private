@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P20_OWNER_VISUAL_CONFIRMATION_ALPHA_LIVE_PROMOTION_GATE",
+  "dedupKey": "alpha.v1.product-takeover.owner-visual-confirmation-alpha-live-promotion-gate-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.owner-visual-confirmation-alpha-live-promotion-gate-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.owner-visual-confirmation-alpha-live-promotion-gate-v1.json",
+  "claimToken": "537e9a5df83747fba30be3d3aec4274b",
+  "state": "ACTIVE",
+  "startCommit": "d6d8a89d8eb36eaac75c7b04c9f0e98bd4975b3e"
+}
