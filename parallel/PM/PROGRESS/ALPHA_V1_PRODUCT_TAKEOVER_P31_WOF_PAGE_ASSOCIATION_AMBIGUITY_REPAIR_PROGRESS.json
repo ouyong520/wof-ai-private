@@ -1,0 +1,39 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P31_WOF_PAGE_ASSOCIATION_AMBIGUITY_REPAIR",
+  "dedupKey": "alpha.v1.product-takeover.wof-page-association-ambiguity-repair-v1",
+  "claimToken": "VEkVz7A8-x51yPL_-F9ctvlyf_LBDuuTmp09V7W3aYE",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 8,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "3f1079452cc46dbe47d242ac2796465fb1be2afb",
+  "lastKnownGoodCommit": null,
+  "implementationCommits": [],
+  "completed": [
+    "read P31 START prompt, dispatch, AGENTS, product governance, dedup/progress/result protocols",
+    "confirmed P31 canonical claim, stage claim, and terminal RESULT were absent before claim creation",
+    "created dedup-v2 exclusive canonical claim from latest main authority and fresh-read exact claimToken ACTIVE",
+    "created stage claim with the same exact claimToken and fresh-read both canonical and stage claims ACTIVE"
+  ],
+  "remaining": [
+    "inspect current Page/Worker/WASM discovery and live-gate association seam",
+    "implement deterministic authoritative association with stale/duplicate rejection and fail-closed ambiguity",
+    "create durable implementation candidate before terminal-significant focused tests",
+    "run focused exact-candidate self-check without real game",
+    "publish RESULT, close canonical/stage claims, and publish terminal PROGRESS"
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "Inspect the current WOF Page/Worker/WASM discovery implementation and identify the minimal authoritative association seam for P31.",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "updatedAtUtc": "2026-09-05T15:21:00Z"
+}
