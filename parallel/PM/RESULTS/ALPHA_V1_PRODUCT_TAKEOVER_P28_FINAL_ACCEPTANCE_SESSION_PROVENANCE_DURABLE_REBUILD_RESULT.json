@@ -1,0 +1,134 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P28_FINAL_ACCEPTANCE_SESSION_PROVENANCE_DURABLE_REBUILD",
+  "dedupKey": "alpha.v1.product-takeover.final-acceptance-session-provenance-durable-rebuild-v1",
+  "claimToken": "69884841cf571855163ab7db0ac663dc",
+  "state": "COMPLETE",
+  "verdict": "P28 rebuilt the final-acceptance session provenance chain on durable Git bytes, bound fresh focused evidence to exact tested commit 5e373a21292f22be46ce8b311af9b1ec606b6874 / tree dce2ab917f6bcf9a6536d6a33f735b24074272aa, and is integration-ready without claiming real WOF or Owner-visible acceptance.",
+  "startCommit": "5c4562b884ef76a934ef5ad26206cbca537c1f5e",
+  "testedCommit": "5e373a21292f22be46ce8b311af9b1ec606b6874",
+  "testedTree": "dce2ab917f6bcf9a6536d6a33f735b24074272aa",
+  "implementationCommits": [
+    "31841f5fb824cca525264e70fc620a60c5011359",
+    "ea7e55cd33bdb27d0d00922f2c84fc829abbadfe",
+    "152251437bd5c51b39d1716ecfefa27e9682c009",
+    "9a02856edf9be1768cd0fc8b8235cb13ac3b4cfd",
+    "765c08d676709b094b993849b048948aa74c2d58",
+    "a50001989429163489d3ff463d541c561977933f",
+    "9224cc995305eef5920ec100a94ccdc5ea729f91",
+    "963c094d27493e4be7b9aa4cb14ed2d209549c4d",
+    "5e373a21292f22be46ce8b311af9b1ec606b6874"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/README.md",
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/WOF_ALPHA_VERIFY_ACCEPTANCE_PROVENANCE.cmd",
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/provenance_chain.py",
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/test_provenance_chain.py",
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/durable_session.py",
+    "parallel/OWNER_ACCEPTANCE_PROVENANCE/test_durable_session.py"
+  ],
+  "candidateReadback": {
+    "state": "PASS",
+    "candidateCommit": "5e373a21292f22be46ce8b311af9b1ec606b6874",
+    "treeSha": "dce2ab917f6bcf9a6536d6a33f735b24074272aa",
+    "candidateImplementationBytesChangedAfterTest": false,
+    "blobMap": {
+      "parallel/OWNER_ACCEPTANCE_PROVENANCE/README.md": "eaf3ac35a3371ca9f1bd4512b945e612ae449935",
+      "parallel/OWNER_ACCEPTANCE_PROVENANCE/WOF_ALPHA_VERIFY_ACCEPTANCE_PROVENANCE.cmd": "41a6dbd2ee7290165085be825e0fc96ebf1813f2",
+      "parallel/OWNER_ACCEPTANCE_PROVENANCE/provenance_chain.py": "f2f36bf33384f5e9f8169327875b0984d01cdc6f",
+      "parallel/OWNER_ACCEPTANCE_PROVENANCE/test_provenance_chain.py": "a72f9a9c7c76a00b43031d71d9cb92a7e34e4e33",
+      "parallel/OWNER_ACCEPTANCE_PROVENANCE/durable_session.py": "70f000034eeee87ab5cb45e1ea4f99cd924ea660",
+      "parallel/OWNER_ACCEPTANCE_PROVENANCE/test_durable_session.py": "da3a86a94091686ed33e4145f87efc1ffbc53505"
+    }
+  },
+  "tests": [
+    {
+      "name": "exact candidate/tree/6-file blob readback",
+      "result": "PASS",
+      "detail": "Fresh test harness checked out exact commit 5e373a21292f22be46ce8b311af9b1ec606b6874, asserted tree dce2ab917f6bcf9a6536d6a33f735b24074272aa, and matched all six recorded implementation blob SHAs."
+    },
+    {
+      "name": "compile/syntax",
+      "result": "PASS",
+      "detail": "Fresh exact-candidate compile/syntax checks passed for provenance_chain.py, durable_session.py, test_provenance_chain.py and test_durable_session.py; Windows CMD contract is covered by focused tests."
+    },
+    {
+      "name": "durable-session focused",
+      "result": "PASS",
+      "detail": "16/16 fresh deterministic tests passed against the exact tested candidate."
+    },
+    {
+      "name": "compatibility provenance focused",
+      "result": "PASS",
+      "detail": "20/20 fresh deterministic compatibility tests passed against the exact tested candidate."
+    },
+    {
+      "name": "safety/static scan",
+      "result": "PASS",
+      "detail": "Forbidden runtime primitives found: 0; no alpha-live mutation, input injection, process-memory write, screenshot/world projection production coordinates, or guessed-coordinate fallback is introduced by P28."
+    },
+    {
+      "name": "real WOF acceptance",
+      "result": "NOT_RUN",
+      "detail": "Deliberately not run under P28 authority."
+    },
+    {
+      "name": "Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Deliberately not requested or run under P28 authority."
+    }
+  ],
+  "testProvenance": {
+    "freshExactCandidate": true,
+    "workflowRunId": 33969758327,
+    "workflowJobId": 101316062575,
+    "durableSessionFocused": "16/16 PASS",
+    "compatibilityProvenanceFocused": "20/20 PASS",
+    "compileSyntax": "PASS",
+    "safetyStaticScan": "PASS",
+    "oldP26Historical13Of13Reused": false,
+    "superseded9a02856EvidenceReused": false,
+    "candidateImplementationBytesChangedAfterTest": false
+  },
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "visibleProof": "NOT_PROVEN",
+    "detail": "P28 proves a durable, exact-tested provenance/session-chain implementation and fail-closed evidence-consistency behavior. It does not prove real WOF visibility, Owner visual acceptance, promotion success, or alpha-live behavior."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "resolvedBlockers": [
+    {
+      "code": "P28_LIVE_CLAIM_FILES_NOT_MOUNTED_IN_CURRENT_CONNECTED_EXECUTION_ENVIRONMENT",
+      "state": "RESOLVED",
+      "detail": "PM fresh-read the Git-governed canonical and stage claims on latest main; the continuing P28 worker independently live-read both and confirmed exact claimToken 69884841cf571855163ab7db0ac663dc remained ACTIVE before terminal publication."
+    }
+  ],
+  "nextAction": "PM may consume P28 as the integration-ready durable provenance/session-chain implementation. Real WOF, Owner visual acceptance, promotion, and alpha-live movement remain outside P28 and must be handled only by their separately authorized gates.",
+  "evidencePaths": [
+    "parallel/PM/ALPHA_V1_P28_GIT_CLAIM_READBACK_RESOLVED_TERMINAL_CONTINUATION.md",
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P28_FINAL_ACCEPTANCE_SESSION_PROVENANCE_DURABLE_REBUILD_PROGRESS.json",
+    "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P28_FINAL_ACCEPTANCE_SESSION_PROVENANCE_DURABLE_REBUILD_START_PROMPT.md"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "guessedCoordinates": false,
+    "alphaLiveMoved": false
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P28_FINAL_ACCEPTANCE_SESSION_PROVENANCE_DURABLE_REBUILD_RESULT.md",
+  "completedAtUtc": "2026-09-05T13:57:00Z"
+}
