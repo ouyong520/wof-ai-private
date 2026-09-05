@@ -1,0 +1,34 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP",
+  "dedupKey": "alpha.v1.product-takeover.post-repair-final-candidate-rebuild-prep-v1",
+  "claimToken": "9f07f3681dba3d6721ee23ff82df41fd",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 8,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "24cbf440a676c8b086c43b8bbb614a620409e88f",
+  "lastKnownGoodCommit": null,
+  "implementationCommits": [],
+  "completed": [
+    "read authoritative P33 START_PROMPT, root AGENTS, dedup-v2, progress checkpoint, and terminal-result protocols",
+    "confirmed P33 canonical and stage claim paths were absent before claim attempt",
+    "created and re-read canonical and stage claims with exact matching claimToken 9f07f3681dba3d6721ee23ff82df41fd"
+  ],
+  "remaining": [
+    "read current dispatch/final live gate and terminal P29/P30/P31/P32 RESULT authority",
+    "read P19/final canonical candidate authority and OWNER_ONECLICK build/manifest implementation plus focused tests",
+    "implement minimal deterministic fail-closed rebuild mechanism for exact source commit and required accepted tested-commit containment",
+    "create durable implementation candidate and bind PROGRESS before terminal-significant self-check",
+    "run focused deterministic exact-candidate self-checks and publish terminal RESULT plus claim closeout"
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "Read exact terminal repair authority and current OWNER_ONECLICK final-candidate build/manifest path before implementation.",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "updatedAtUtc": "2026-09-05T16:16:00Z"
+}
