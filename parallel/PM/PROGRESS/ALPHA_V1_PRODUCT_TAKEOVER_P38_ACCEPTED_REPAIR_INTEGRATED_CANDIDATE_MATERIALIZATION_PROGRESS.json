@@ -1,0 +1,33 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P38_ACCEPTED_REPAIR_INTEGRATED_CANDIDATE_MATERIALIZATION",
+  "dedupKey": "alpha.v1.product-takeover.accepted-repair-integrated-candidate-materialization-v1",
+  "claimToken": "d8d6f273a87aadf9fc2e3e84a84824e8",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 10,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "a9eba304aaae591b14a9dbadb5c37453a9e53ae0",
+  "lastKnownGoodCommit": null,
+  "implementationCommits": [],
+  "completed": [
+    "Read P38 START_PROMPT, root AGENTS.md, product governance, dedup-v2 guard, progress protocol, result protocol",
+    "Confirmed no pre-existing P38 canonical or stage claim",
+    "Created and exact-read verified canonical + stage claims with matching claimToken"
+  ],
+  "remaining": [
+    "Read terminal P33/P35 authority, P33 rebuild implementation/tests, P35 provenance, current candidate/manifest/runtime pins, P34 readiness contract",
+    "Materialize fresh deterministic integrated candidate/provenance from exact P35 source",
+    "Run focused deterministic checks and exact readback",
+    "Publish terminal RESULT and close claims"
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "Read P33/P35/P34 authority and deterministic rebuild contract, then materialize only the authorized P38 candidate/provenance artifact.",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "updatedAtUtc": "2026-09-05T16:48:30Z"
+}
