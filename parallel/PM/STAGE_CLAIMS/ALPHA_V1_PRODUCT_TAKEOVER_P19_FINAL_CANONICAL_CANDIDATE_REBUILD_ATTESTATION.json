@@ -5,6 +5,14 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.final-canonical-candidate-rebuild-attestation-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.final-canonical-candidate-rebuild-attestation-v1.json",
   "claimToken": "3e28a1bd02b7616eeb5fa68eb4284c25",
-  "state": "ACTIVE",
-  "startCommit": "ff30d9d5cbb6e0a1964161e7ab8b6166d7e3a422"
+  "state": "COMPLETE",
+  "startCommit": "ff30d9d5cbb6e0a1964161e7ab8b6166d7e3a422",
+  "implementationCommits": [
+    "9916ddc1e3b7186dcd78928094c4aaa75a34cd56",
+    "0752796369f1687435a1b1647e66ea0b5ab07688",
+    "fe00d3927d928604efd2abef40bfea50edd7db0e"
+  ],
+  "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P19_FINAL_CANONICAL_CANDIDATE_REBUILD_ATTESTATION_RESULT.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P19_FINAL_CANONICAL_CANDIDATE_REBUILD_ATTESTATION_RESULT.md",
+  "completedAtUtc": "2026-09-05T08:43:00Z"
 }

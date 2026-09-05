@@ -1,0 +1,148 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P19_FINAL_CANONICAL_CANDIDATE_REBUILD_ATTESTATION",
+  "dedupKey": "alpha.v1.product-takeover.final-canonical-candidate-rebuild-attestation-v1",
+  "claimToken": "3e28a1bd02b7616eeb5fa68eb4284c25",
+  "state": "COMPLETE",
+  "verdict": "P19 rebuilt and attested one exact final canonical package candidate only after terminal P18 evidence was present. The candidate pins P15/P16/P17/P18 durable results and implementation ancestry, verifies every selected Git blob at one immutable source commit, exposes a stable latest pointer for P21/P20 consumers, preserves W3 INCONCLUSIVE and Owner visual NOT_RUN truthfully, and does not move alpha-live.",
+  "startCommit": "ff30d9d5cbb6e0a1964161e7ab8b6166d7e3a422",
+  "implementationCommits": [
+    "9916ddc1e3b7186dcd78928094c4aaa75a34cd56",
+    "0752796369f1687435a1b1647e66ea0b5ab07688",
+    "fe00d3927d928604efd2abef40bfea50edd7db0e"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/OWNER_ONECLICK/final_canonical_candidate.py",
+    "parallel/OWNER_ONECLICK/test_final_canonical_candidate.py",
+    "parallel/OWNER_ONECLICK/WOF_ALPHA_BUILD_FINAL_CANONICAL_CANDIDATE.cmd",
+    ".github/workflows/alpha-p19-final-canonical-candidate.yml",
+    "parallel/OWNER_ONECLICK/CANDIDATES/FINAL_CANONICAL/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_0752796369f1.json",
+    "parallel/OWNER_ONECLICK/CANDIDATES/FINAL_CANONICAL/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_0752796369f1.attestation.json",
+    "parallel/OWNER_ONECLICK/CANDIDATES/LATEST_FINAL_CANONICAL_CANDIDATE.json"
+  ],
+  "tests": [
+    {
+      "name": "P19 Python compile",
+      "result": "PASS",
+      "detail": "final_canonical_candidate.py and test_final_canonical_candidate.py compiled under Python 3.12 in focused workflow run 33955965163."
+    },
+    {
+      "name": "Focused deterministic candidate fixtures",
+      "result": "PASS",
+      "detail": "4 tests passed: P18 missing leaves latest pointer untouched and emits no candidate; fixed-source rebuild is deterministic; non-ancestor implementation commit is rejected; mutated blob pin is rejected."
+    },
+    {
+      "name": "Exact-source final candidate build + verify",
+      "result": "PASS",
+      "detail": "Workflow run 33955965163 built and verified package source 0752796369f1687435a1b1647e66ea0b5ab07688, 90 selected files, candidate SHA256 d7835982ef3210b605c0f90b25e859bf013c7d16be541f7f09f6ba7d4410a150, and attestation SHA256 6d6796fa5b447150f160d0d06351119a77cf9f3af86bddc52539de738f6828bd."
+    },
+    {
+      "name": "P15/P16/P17/P18 ancestry and blob integrity",
+      "result": "PASS",
+      "detail": "All 11 declared P15-P18 implementation commits are ancestors of the exact source commit and all 90 selected package blobs, including 23 critical runtime/acceptance blobs, resolve exactly at that source."
+    },
+    {
+      "name": "alpha-live post-build ref verification",
+      "result": "PASS",
+      "detail": "alpha-live remained d664618403b1ae83f6880ca4d3833202c299415f before/after candidate generation and on independent post-build ref read."
+    },
+    {
+      "name": "real-WOF / Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "P19 is release-candidate integration only. W3 remains INCONCLUSIVE and Owner visual confirmation is intentionally deferred; no repository or draw acknowledgement is promoted to visible PASS."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "RELEASE_CANDIDATE_INTEGRITY_PROOF",
+    "detail": "P19 proves exact-source package reconstruction, durable P15-P18 result pinning, implementation ancestry, selected-file Git blob integrity, attestation binding, stable latest-pointer integrity, and alpha-live non-mutation. It does not prove the missing W3 live renderer causal edge or Owner-visible correctness."
+  },
+  "productProofBoundary": "P15/P16/P17/P18 COMPLETE durable results -> exact source commit 0752796369f1687435a1b1647e66ea0b5ab07688 -> canonical package selection + P16/P17/P18/W3 acceptance dependencies -> 90 exact Git blobs -> candidate SHA256 + attestation SHA256 -> stable LATEST_FINAL_CANONICAL_CANDIDATE.json. W3 live qualification remains INCONCLUSIVE; ownerVisualAcceptance and realWofAcceptance remain NOT_RUN; alpha-live is not promoted.",
+  "candidate": {
+    "state": "READY",
+    "sourceCommit": "0752796369f1687435a1b1647e66ea0b5ab07688",
+    "packageVersion": "2026.09.05.0752796369f1",
+    "path": "parallel/OWNER_ONECLICK/CANDIDATES/FINAL_CANONICAL/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_0752796369f1.json",
+    "sha256": "d7835982ef3210b605c0f90b25e859bf013c7d16be541f7f09f6ba7d4410a150",
+    "gitBlobSha": "a1f2be25ff3a0e23f32aeba6509903d7def573b1",
+    "selectedFileCount": 90,
+    "attestationPath": "parallel/OWNER_ONECLICK/CANDIDATES/FINAL_CANONICAL/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_0752796369f1.attestation.json",
+    "attestationSha256": "6d6796fa5b447150f160d0d06351119a77cf9f3af86bddc52539de738f6828bd",
+    "attestationGitBlobSha": "c4be0374fdbc096afcad69ee41a5fbd21723be32",
+    "latestPointerPath": "parallel/OWNER_ONECLICK/CANDIDATES/LATEST_FINAL_CANONICAL_CANDIDATE.json",
+    "latestPointerGitBlobSha": "765c83064b2b4b4787d277897f3704d85a9f2c2d"
+  },
+  "stagePins": {
+    "P15": {
+      "state": "COMPLETE",
+      "integrationReady": true,
+      "resultGitBlobSha": "1f65c94495f41caf9bc03f4a68f8b07024da77b6"
+    },
+    "P16": {
+      "state": "COMPLETE",
+      "integrationReady": true,
+      "resultGitBlobSha": "966f152474b74a0e6e5e2f84c3482ed8469f9994"
+    },
+    "P17": {
+      "state": "COMPLETE",
+      "integrationReady": true,
+      "resultGitBlobSha": "e2aea34ae5ec28733b14e6a569cebb0934c94a76"
+    },
+    "P18": {
+      "state": "COMPLETE",
+      "integrationReady": true,
+      "resultGitBlobSha": "6b096ca830abffe4675d9117632badab1ee7e77a"
+    }
+  },
+  "ancestry": {
+    "verified": true,
+    "requiredImplementationCommitCount": 11,
+    "allAncestors": true
+  },
+  "blobIntegrity": {
+    "verified": true,
+    "selectedFileCount": 90,
+    "criticalRuntimeBlobCount": 23
+  },
+  "w3": {
+    "resultState": "SUBCOMPLETE",
+    "integrationReady": false,
+    "liveQualification": "INCONCLUSIVE",
+    "proofStatus": "LIVE_EVIDENCE_REQUIRED"
+  },
+  "ownerGate": {
+    "required": true,
+    "question": "Use the exact P19 candidate through the pre-promotion staging/acceptance path, run the bounded W3 normal-play qualification, then perform the later single Owner visual confirmation before any P20 alpha-live promotion.",
+    "reason": "The final package is cryptographically pinned and integration-ready, but W3 displayed-frame renderer/object causal proof and final visible correctness are live facts that P19 must not fabricate."
+  },
+  "blocker": null,
+  "nextAction": "P21 may consume parallel/OWNER_ONECLICK/CANDIDATES/LATEST_FINAL_CANONICAL_CANDIDATE.json to stage the exact P19 candidate without moving alpha-live. W3 bounded qualification, Owner visual confirmation, and any P20 promotion remain later fail-closed gates.",
+  "evidencePaths": [
+    "parallel/OWNER_ONECLICK/final_canonical_candidate.py",
+    "parallel/OWNER_ONECLICK/WOF_ALPHA_BUILD_FINAL_CANONICAL_CANDIDATE.cmd",
+    "parallel/OWNER_ONECLICK/CANDIDATES/LATEST_FINAL_CANONICAL_CANDIDATE.json",
+    "parallel/OWNER_ONECLICK/CANDIDATES/FINAL_CANONICAL/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_0752796369f1.json",
+    "parallel/OWNER_ONECLICK/CANDIDATES/FINAL_CANONICAL/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_0752796369f1.attestation.json",
+    ".github/workflows/alpha-p19-final-canonical-candidate.yml"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "legacySpatialFallback": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "guessedAddresses": false,
+    "alphaLiveMoved": false
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "alphaLivePromoted": false,
+  "alphaLiveCommitObserved": "d664618403b1ae83f6880ca4d3833202c299415f",
+  "workflowRunId": 33955965163,
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_RELEASE_P19_P20_P21_LONG_3_WORKER_V1.json",
+  "previousDispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_RELEASE_P18_P19_P20_LONG_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P19_FINAL_CANONICAL_CANDIDATE_REBUILD_ATTESTATION_RESULT.md",
+  "completedAtUtc": "2026-09-05T08:43:00Z"
+}
