@@ -1,0 +1,20 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_FINAL_ACCEPTANCE_P29_LIVE_EVIDENCE_REPAIR_LONG_1_WORKER_V1",
+  "createdAtUtc": "2026-09-05T15:02:00Z",
+  "authorityCommit": "753c666279322279f6630d88beee13854297a01d",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P29_FINAL_LIVE_EVIDENCE_CONTRACT_REPAIR",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P29_FINAL_LIVE_EVIDENCE_CONTRACT_REPAIR_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.final-live-evidence-contract-repair-v1",
+      "claimMode": "NEW_DEDUP_V2_EXCLUSIVE_AFTER_PREFLIGHT",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P29_FINAL_LIVE_EVIDENCE_CONTRACT_REPAIR_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P29_FINAL_LIVE_EVIDENCE_CONTRACT_REPAIR_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P29_FINAL_LIVE_EVIDENCE_CONTRACT_REPAIR"
+    }
+  ]
+}
