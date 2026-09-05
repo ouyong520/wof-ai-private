@@ -17,6 +17,18 @@ SOURCE = "product/alpha/wof_alpha_hud.js"
 SCHEMA = "wof-alpha-production-p1-overlay-adapter-v1"
 SAFETY = {"readOnly": True, "ramWrites": 0, "inputInjection": False, "productionOverlayEnabled": True}
 
+FIXED_SMOKE_SCHEMA = "wof-alpha-fixed-draw-smoke-probe-v1"
+FIXED_SMOKE_STATUS_KEY = "__WOF_ALPHA_FIXED_DRAW_SMOKE_STATUS_V1"
+FIXED_SMOKE_STATES = {
+    "HUD_INJECTION_MISSING",
+    "GAME_CANVAS_CONTEXT_MISSING",
+    "DRAW_HOOK_NOT_FIRING",
+    "DRAWING_BUFFER_INVALID",
+    "FIXED_TEST_ACTUALLY_DRAWN",
+    "DRAW_FAILED",
+    "DISABLED",
+}
+
 _DIAGNOSTIC_SUPPRESS_EXPR = r"""
 (()=>{const b=window.WOFHEADVISUALV3;
 if(!b||typeof b.showMarker!=='function')return false;
@@ -202,3 +214,159 @@ class ProductionP1Overlay:
             "hudSource": SOURCE,
             **SAFETY,
         }
+
+
+class ProductionHudFixedDrawSmoke:
+    """Strictly opt-in fixed TEST probe using the maintained production WebGL HUD."""
+
+    def __init__(self, verified_text: Callable[[str], str]) -> None:
+        self._verified_text = verified_text
+        self._session: CdpSession | None = None
+        self._owns_hud = False
+        self._install_mode = "UNBOUND"
+        self._last = self._base("DISABLED")
+
+    @staticmethod
+    def _base(state: str, **extra: Any) -> dict[str, Any]:
+        return {
+            "schema": FIXED_SMOKE_SCHEMA,
+            "state": state,
+            "enabled": state != "DISABLED",
+            "hudInjected": False,
+            "gameCanvasContextPresent": False,
+            "drawHooked": False,
+            "drawCount": 0,
+            "callbackCount": 0,
+            "label": "TEST",
+            "nativeWidth": 384,
+            "nativeHeight": 224,
+            "nativeX": 192,
+            "nativeY": 112,
+            "drawingBuffer": None,
+            "lastError": None,
+            "hudSource": SOURCE,
+            "readOnly": True,
+            "ramWrites": 0,
+            "inputInjection": False,
+            **extra,
+        }
+
+    @staticmethod
+    def _normalize(remote: Any) -> dict[str, Any]:
+        if not isinstance(remote, dict):
+            return ProductionHudFixedDrawSmoke._base("HUD_INJECTION_MISSING")
+        state = str(remote.get("state") or "HUD_INJECTION_MISSING")
+        if state not in FIXED_SMOKE_STATES:
+            state = "HUD_INJECTION_MISSING"
+        return ProductionHudFixedDrawSmoke._base(
+            state,
+            enabled=remote.get("enabled") is True,
+            hudInjected=remote.get("hudInjected") is True,
+            gameCanvasContextPresent=remote.get("gameCanvasContextPresent") is True,
+            drawHooked=remote.get("drawHooked") is True,
+            drawCount=int(remote.get("drawCount") or 0),
+            callbackCount=int(remote.get("callbackCount") or 0),
+            nativeWidth=int(remote.get("nativeWidth") or 384),
+            nativeHeight=int(remote.get("nativeHeight") or 224),
+            nativeX=int(remote.get("nativeX") or 192),
+            nativeY=int(remote.get("nativeY") or 112),
+            drawingBuffer=remote.get("drawingBuffer"),
+            lastError=remote.get("lastError"),
+        )
+
+    @staticmethod
+    def _remote_status_expr(enable: bool | None = None) -> str:
+        action = "h.setFixedDrawSmokeEnabled(true)" if enable is True else "h.setFixedDrawSmokeEnabled(false)" if enable is False else "h.fixedDrawSmokeStatus()"
+        return f"""(()=>{{const h=window.WOFALPHAHUD;if(!h||typeof h.fixedDrawSmokeStatus!=='function'||typeof h.setFixedDrawSmokeEnabled!=='function'){{const s=window[{json.dumps(FIXED_SMOKE_STATUS_KEY)}];return s&&s.state==='GAME_CANVAS_CONTEXT_MISSING'?s:null;}}{action};return h.fixedDrawSmokeStatus();}})()"""
+
+    def enable(self, client: CdpClient, page_target_id: str, runtime_epoch: str) -> dict[str, Any]:
+        self.dispose()
+        self._session = client.attach(page_target_id)
+        self._session.request("Runtime.enable")
+        try:
+            pre = self._session.evaluate(
+                "(()=>{const c=window.I_GF1TC||document.getElementById('whathis'),g=window.I_fdC8Q;return {canvas:!!c,context:!!(g&&typeof g.drawArrays==='function')};})()",
+                timeout=5.0,
+            )
+            if not isinstance(pre, dict) or pre.get("canvas") is not True or pre.get("context") is not True:
+                self._last = self._base("GAME_CANVAS_CONTEXT_MISSING", enabled=True)
+                return self.status()
+
+            compatible = self._session.evaluate(
+                "!!(window.WOFALPHAHUD&&typeof window.WOFALPHAHUD.fixedDrawSmokeStatus==='function'&&typeof window.WOFALPHAHUD.setFixedDrawSmokeEnabled==='function')",
+                timeout=5.0,
+            )
+            if compatible is not True:
+                prep = f"""(()=>{{const c=window.__WOF_ALPHA_CONFIG,t=window.__WOF_ALPHA_TRANSPORT_V1;const ok=!!(c&&c.release==='wof-alpha-rc3'&&typeof c.session==='string'&&c.session.length>=16&&typeof c.channel==='string'&&t&&t.version==='wof-alpha-safe-transport-v1'&&typeof t.matches==='function');if(ok)return 'PRESERVED_CONFIG';const session={json.dumps(runtime_epoch)},channel={json.dumps('wof-alpha-w2-fixed-smoke-'+runtime_epoch)};window.__WOF_ALPHA_CONFIG={{release:'wof-alpha-rc3',session,channel}};window.__WOF_ALPHA_TRANSPORT_V1={{version:'wof-alpha-safe-transport-v1',matches:m=>!!m&&m.session===session}};return 'DIRECT_CONFIG';}})()"""
+                self._install_mode = str(self._session.evaluate(prep, timeout=5.0) or "DIRECT_CONFIG")
+                self._owns_hud = self._install_mode == "DIRECT_CONFIG"
+                for rel in HUD_SOURCES:
+                    self._session.evaluate(f"(0,eval)({json.dumps(self._verified_text(rel))});true", timeout=15.0)
+            else:
+                self._install_mode = "EXISTING_PRODUCTION_HUD"
+                self._owns_hud = False
+
+            remote = self._session.evaluate(self._remote_status_expr(True), timeout=5.0)
+            self._last = self._normalize(remote)
+            self._last["installMode"] = self._install_mode
+            if self._last["state"] == "HUD_INJECTION_MISSING":
+                self._last["enabled"] = True
+        except Exception as exc:
+            remote = None
+            try:
+                if self._session:
+                    remote = self._session.evaluate(self._remote_status_expr(), timeout=3.0)
+            except Exception:
+                pass
+            self._last = self._normalize(remote)
+            if self._last["state"] not in {"GAME_CANVAS_CONTEXT_MISSING", "DRAWING_BUFFER_INVALID"}:
+                self._last = self._base("HUD_INJECTION_MISSING", enabled=True, lastError=str(exc))
+        return self.status()
+
+    def poll(self) -> dict[str, Any]:
+        if not self._session:
+            return self.status()
+        try:
+            remote = self._session.evaluate(self._remote_status_expr(), timeout=5.0)
+            self._last = self._normalize(remote)
+            self._last["installMode"] = self._install_mode
+        except Exception as exc:
+            self._last = self._base("HUD_INJECTION_MISSING", enabled=True, lastError=str(exc))
+        return self.status()
+
+    def status(self) -> dict[str, Any]:
+        return dict(self._last)
+
+    def fixed_test_actually_drawn(self) -> bool:
+        return bool(
+            self._last.get("state") == "FIXED_TEST_ACTUALLY_DRAWN"
+            and self._last.get("hudInjected") is True
+            and self._last.get("gameCanvasContextPresent") is True
+            and self._last.get("drawHooked") is True
+            and int(self._last.get("drawCount") or 0) > 0
+            and self._last.get("label") == "TEST"
+            and self._last.get("nativeWidth") == 384
+            and self._last.get("nativeHeight") == 224
+            and self._last.get("nativeX") == 192
+            and self._last.get("nativeY") == 112
+        )
+
+    def dispose(self) -> None:
+        if self._session:
+            try:
+                self._session.evaluate(self._remote_status_expr(False), timeout=3.0)
+            except Exception:
+                pass
+            try:
+                if self._owns_hud:
+                    self._session.evaluate("window.WOFALPHAHUD?.dispose?.();true", timeout=3.0)
+            except Exception:
+                pass
+            try:
+                self._session.close()
+            except Exception:
+                pass
+        self._session = None
+        self._owns_hud = False
+        self._install_mode = "UNBOUND"
+        self._last = self._base("DISABLED")
