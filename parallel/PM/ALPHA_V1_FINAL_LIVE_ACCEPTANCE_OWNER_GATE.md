@@ -1,90 +1,21 @@
 # Alpha V1 Final Live Acceptance — Owner Gate
 
-Status: ACTIVE OWNER GATE
-Scope ceiling: P24. P25/P26 are cancelled historical dispatch artifacts and are not executable authority.
+Status: DEFERRED UNTIL P25/P26 TERMINAL
 
-## Current authoritative state
+The Owner has explicitly clarified that P25 and P26 are currently being worked on. The later authority `parallel/PM/ALPHA_V1_P25_P26_OWNER_REACTIVATION_DECISION.md` supersedes the prior cancellation decision for those two stages.
 
-- Development scope ends at P24.
-- P19 final candidate is READY at source commit `0752796369f1687435a1b1647e66ea0b5ab07688`, package `2026.09.05.0752796369f1`.
-- P21 exact-candidate staging harness is COMPLETE/integration-ready.
-- W3 repository work is SUBCOMPLETE with live qualification `INCONCLUSIVE`; this is the current hard gate.
-- P20 Owner visual confirmation/promotion gate is COMPLETE as implementation only; real Owner visual verdict is NOT_RUN and alpha-live has not moved.
-- P23 close harness is COMPLETE as implementation only; current close state is `WAITING_FOR_W3_LIVE_PASS`.
-- P22 and P24 passive analyzers are COMPLETE as repository modules; any live coverage must remain same-session and truthful. Missing rare states stay NOT_OBSERVED/UNPROVEN and must never be guessed.
+Current in-flight implementation authority:
+- P25 Final Acceptance Composite Capture Integration
+- P26 Final Acceptance Session Provenance Chain
 
-## Step 1 — exact-candidate live acceptance
+Do not begin the real-WOF final acceptance/release sequence while either P25 or P26 is still non-terminal. Do not create P27+ merely to occupy workers.
 
-On the Owner Windows machine, from the repository root, run exactly:
+After P25 and P26 terminalize and PM validates their RESULT evidence, resume this existing release path:
 
-```cmd
-parallel\OWNER_STAGING\WOF_ALPHA_STAGE_FINAL_ACCEPTANCE.cmd
-```
+1. Stage the exact P19 candidate using `parallel\OWNER_STAGING\WOF_ALPHA_STAGE_FINAL_ACCEPTANCE.cmd`.
+2. Require W3 bounded normal-play qualification to reach explicit PASS/proven renderer source; otherwise STOP fail-closed.
+3. Only when P17 reaches exact `READY_FOR_OWNER_VISUAL_CONFIRMATION`, run `parallel\OWNER_RELEASE\WOF_ALPHA_FINAL_RELEASE_GATE.cmd` and answer the real Owner YES/NO question.
+4. A real YES only creates the bound visual receipt/promotion plan; promotion remains a separate guarded PM action with exact hashes, alpha-live CAS, fast-forward-only and no force push.
+5. After confirmed promotion, converge the permanent W1 channel and run `parallel\OWNER_RELEASE_POSTVERIFY\WOF_ALPHA_POST_PROMOTION_VERIFY.cmd`; P23 alone owns `ALPHA_V1_FINAL_COMPLETE`.
 
-Then play World 921031 normally for the bounded interval requested by the harness. Do not edit coordinates, hashes, actor identities, generations, runtime/renderer epochs, or evidence JSON.
-
-P21 must stage the immutable P19 candidate without moving `alpha-live`, invoke the existing bounded W3 qualification/P16/P18/P17 path, preserve read-only safety, and stop at most at `READY_FOR_OWNER_VISUAL_CONFIRMATION`.
-
-## Gate A — W3 result
-
-After the staged run, PM must inspect the produced W3 qualification evidence.
-
-- If W3 is `PASS` with a proven exact displayed-frame renderer/object causal source, continue.
-- If W3 is `INCONCLUSIVE`, `FAIL`, missing, stale, ambiguous, or identity-mismatched: STOP. Keep canonical output suppressed and do not guess an address or coordinate source.
-
-No later Owner visual confirmation, promotion, or project close is allowed while W3 is not PASS.
-
-## Step 2 — Owner visual gate
-
-Only when P17 for the same staged candidate reaches exactly `READY_FOR_OWNER_VISUAL_CONFIRMATION`, run:
-
-```cmd
-parallel\OWNER_RELEASE\WOF_ALPHA_FINAL_RELEASE_GATE.cmd
-```
-
-Answer only the real observation question:
-
-`游戏里的提示是否稳定跟随正确的人物/怪物？`
-
-- `NO` blocks promotion for that receipt/bundle.
-- `YES` creates the real bound visual receipt and promotion plan, but does not itself move `alpha-live`.
-
-Do not treat P18 draw acknowledgement, screenshots, fixtures, module load, or repository tests as visual PASS.
-
-## Step 3 — PM promotion
-
-Promotion is a separate PM action after a real Owner YES receipt and a READY exact P20 promotion plan exist.
-
-Requirements remain:
-- exact candidate/bundle/receipt/plan hashes unchanged;
-- immediate compare-and-swap re-read of current `alpha-live`;
-- target is fast-forward descendant;
-- no force push / force-with-lease / `+refspec`;
-- W1 permanent required files present;
-- promotion result recorded only after confirmed ref movement.
-
-Until this gate is explicitly applied, `alpha-live` must remain unchanged.
-
-## Step 4 — post-promotion close
-
-After confirmed promotion:
-
-1. Run the existing permanent `Desktop\WOF_ALPHA_TEST.cmd` once so W1 converges to the promoted commit.
-2. Preserve truthful P22 dynamic-state coverage from the real acceptance session; unsupported HIT/DOWN/RECOVERY/JUMP/DEATH remain UNPROVEN/NOT_OBSERVED.
-3. Consume P24 temporal evidence only from time-ordered exact canonical observations from the relevant live session; never repair gaps with interpolation or old coordinates.
-4. Run:
-
-```cmd
-parallel\OWNER_RELEASE_POSTVERIFY\WOF_ALPHA_POST_PROMOTION_VERIFY.cmd
-```
-
-P23 may emit `ALPHA_V1_FINAL_COMPLETE` only when its existing real-evidence close contract is fully satisfied.
-
-## Safety / non-goals
-
-- No new P25/P26/P27 stage.
-- No change to permanent W1 updater during this gate.
-- No screenshot/world-projection production coordinates.
-- No guessed addresses.
-- `readOnly=true`, `ramWrites=0`, `inputInjection=false`.
-- Missing evidence means WAITING/SUPPRESSED, never synthetic PASS.
+Safety remains unchanged: readOnly=true, ramWrites=0, inputInjection=false, no guessed addresses, no screenshot/world-projection production coordinates, and no alpha-live movement before the guarded promotion action.
