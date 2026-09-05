@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P23_POST_PROMOTION_VERIFICATION_PROJECT_CLOSE_HARNESS",
+  "dedupKey": "alpha.v1.product-takeover.post-promotion-verification-project-close-harness-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.post-promotion-verification-project-close-harness-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.post-promotion-verification-project-close-harness-v1.json",
+  "claimToken": "p23-7d4c843cc0c449a3bf5e0ddab5045c3b",
+  "state": "ACTIVE",
+  "startCommit": "e0975f9ffcafd9af465d32758afcdbcda986050a"
+}
