@@ -1,0 +1,71 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C4_DISPATCH_PACKAGE_BUILDER",
+  "dedupKey": "alpha.pm.worker-communication.dispatch-package-builder-v1",
+  "claimToken": "bfbe7d8407010688672f988f8c8b6716bce982c3e1a7f674",
+  "state": "COMPLETE",
+  "verdict": "Alpha PM can now turn a compact 1-3 worker spec into deterministic C2/C3-valid prompts, one immutable manifest, exact RESULT paths, short chat handoffs, and fail-closed create-only package output.",
+  "startCommit": "10c778ce2337d913fda733da83c9a714db36f3dd",
+  "implementationCommits": [
+    "c07cedd7bf5390385f9689f87dc6b10203f47902",
+    "b01e99810f54506b3edfefdd242ae91420823207",
+    "5877d17ac7ba3d8fc0aa94dd5deb114c86c50902",
+    "e75b8649f34f41d8e6e2397c5ac997fc5e089272",
+    "c547723f729c834a8a8ac483c86f656e7e67b48a"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PM/schemas/alpha_dispatch_spec_v1.schema.json",
+    "parallel/PM/templates/alpha_dispatch_spec_v1.json",
+    "parallel/PM/tools/alpha_pm_dispatch_builder.py",
+    "parallel/PM/tests/test_alpha_pm_dispatch_builder.py",
+    "parallel/PM/ALPHA_PM_DISPATCH_BUILDER_PROTOCOL_V1.md"
+  ],
+  "tests": [
+    {
+      "name": "python -m unittest discover -s parallel/PM/tests -p test_alpha_pm_dispatch_builder.py",
+      "result": "PASS",
+      "detail": "12 focused tests passed in an isolated local mirror of the committed C4 files, covering valid 1/2/3-worker specs, deterministic repeated output, duplicate identities, traversal, existing-target refusal, malformed authority, invalid worker counts, RESULT path drift, final-manifest compatibility, C3 prompt/manifest handoff, create-only output, independent-validation metadata, and short terminal chat policy."
+    },
+    {
+      "name": "python -m py_compile parallel/PM/tools/alpha_pm_dispatch_builder.py parallel/PM/tests/test_alpha_pm_dispatch_builder.py",
+      "result": "PASS",
+      "detail": "Builder and focused test module compile successfully in the isolated local mirror."
+    },
+    {
+      "name": "python -m json.tool alpha_dispatch_spec_v1 schema/template",
+      "result": "PASS",
+      "detail": "The new compact spec schema and template are valid JSON."
+    },
+    {
+      "name": "C2/C3 public validator composition",
+      "result": "PASS",
+      "detail": "Focused tests exercise generated final manifests through validate_manifest_data and every generated prompt/manifest pair through validate_entry_against_prompt; the builder imports alpha_worker_dispatch_contract rather than reimplementing the final manifest/prompt truth rules."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_APPLICABLE",
+    "detail": "Coordination-only Git tooling; no Alpha runtime or Owner-visible product behavior was changed."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM should create a compact alpha_dispatch_spec_v1 JSON, run the builder validate/render gate, then use build with an explicit output root and dispatch only after the generated C2/C3 package passes.",
+  "evidencePaths": [
+    "parallel/PM/ALPHA_PM_DISPATCH_BUILDER_PROTOCOL_V1.md",
+    "parallel/PM/tools/alpha_pm_dispatch_builder.py",
+    "parallel/PM/tests/test_alpha_pm_dispatch_builder.py",
+    "parallel/PM/schemas/alpha_dispatch_spec_v1.schema.json",
+    "parallel/PM/templates/alpha_dispatch_spec_v1.json",
+    "parallel/PM/ALPHA_PM_DISPATCH_CONTRACT_V1.md",
+    "parallel/PM/tools/alpha_worker_dispatch_contract.py"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
