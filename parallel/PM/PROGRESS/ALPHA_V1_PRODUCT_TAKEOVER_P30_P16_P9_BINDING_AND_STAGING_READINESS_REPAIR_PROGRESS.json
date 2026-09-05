@@ -3,13 +3,13 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR",
   "dedupKey": "alpha.v1.product-takeover.p16-p9-binding-staging-readiness-repair-v1",
   "claimToken": "07c4ebfe2077a52b842c5c53d2f3cd05",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
-  "overallPercent": 94,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
   "implementationState": "DONE",
   "selfCheckState": "PASS",
-  "resultPublicationState": "PENDING",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "DONE",
+  "claimCloseState": "DONE",
   "startCommit": "c97603ef0c217a859d0ae230ade62fcfee4844e8",
   "lastKnownGoodCommit": "90094a656ab311f18b0a758716dc97c3f8df092d",
   "implementationCommits": [
@@ -36,22 +36,14 @@
     }
   },
   "completed": [
-    "Diagnosed staged P9/P1/P16 blockers and reconciled P16/P17/P18/P21/P25/P27/P28 authority boundaries",
-    "Added staging-only exact P19 candidate manifest copy + SHA-256 readback + explicit WOF_ALPHA_PACKAGE_MANIFEST binding without mutating detached checkout or permanent manifest",
-    "Added AlphaRuntimeManager explicit staged manifest identity validation so exact candidate P9/P8 pins are available to runtime",
-    "Added P9 then P8 before maintained HUD in ProductionP1Overlay fallback source order; missing P9 remains fail-closed with exact path in binding error",
-    "Tightened staged P16 usability: exact accepted World SHA, page/worker targets, non-early canonical state, runtimeEpoch, authorityKey, rendererEpoch, rendererAuthority, and safety are all required",
-    "Added focused P30 staging and P9/P1 regression suites",
-    "Created durable implementation candidate 90094a656ab311f18b0a758716dc97c3f8df092d / tree efcc1b3e517c488ea1e8aa6b6bddcf9efcfea2ed and recorded seven-file blob map before terminal-significant tests",
-    "Fresh exact-candidate readback matched the recorded commit/tree and all seven recorded blob SHAs",
-    "Fresh focused regression execution passed 9/9 checks covering staged manifest copy/hash/binding, tamper rejection, VERIFYING_WORLD rejection, complete P16 authority requirements, staged wait behavior, P9->P8->HUD order, exact P9 fail-closed diagnostics, and explicit staged manifest identity validation",
-    "Static safety/proof-boundary readback preserved readOnly=true, ramWrites=0, inputInjection=false, real/Owner visual acceptance NOT_RUN, and no alpha-live promotion"
+    "Repo-side P9/P1 binding and P16 staged-readiness repair implemented on the durable candidate",
+    "Fresh exact-candidate readback matched commit/tree and all seven recorded blob SHAs",
+    "Fresh focused deterministic regression passed 9/9 P30 seam checks",
+    "Static safety/proof-boundary readback preserved readOnly=true, ramWrites=0, inputInjection=false, real/Owner visual acceptance NOT_RUN, visibleProof NOT_PROVEN, and alphaLiveMoved=false",
+    "Terminal RESULT JSON/MD published under parallel/PM/RESULTS",
+    "Canonical and stage claims closed COMPLETE with the original exact claimToken"
   ],
-  "remaining": [
-    "Publish terminal RESULT JSON/MD with exact tested candidate and bounded proof claims",
-    "Close canonical and stage claims with the same claimToken",
-    "Terminalize PROGRESS after durable RESULT and claim closeout"
-  ],
+  "remaining": [],
   "tests": [
     {
       "name": "P30 exact durable candidate identity readback",
@@ -61,22 +53,28 @@
     {
       "name": "P30 focused deterministic regression",
       "result": "PASS",
-      "detail": "Fresh isolated execution of the P30-owned deterministic seam checks passed 9/9; no game/browser/runtime launch was performed."
+      "detail": "Fresh isolated deterministic execution passed 9/9 P30 seam checks; no game/browser/runtime launch was performed."
     },
     {
       "name": "P30 static safety and proof-boundary check",
       "result": "PASS",
-      "detail": "Exact candidate staging/runtime seams retain read-only/no-input-injection boundaries and explicit no-promotion / NOT_RUN live-proof semantics."
+      "detail": "Exact candidate retains staged/prepromotion, read-only, no-input-injection, no-promotion, and bounded product-proof semantics."
     },
     {
-      "name": "Real WOF / Owner visual acceptance",
+      "name": "Real WOF acceptance",
       "result": "NOT_RUN",
-      "detail": "Intentionally not run by P30 authority."
+      "detail": "Intentionally not run under P30 authority."
+    },
+    {
+      "name": "Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Intentionally not requested or run under P30 authority."
     }
   ],
   "blocker": null,
-  "nextAction": "Publish P30 terminal RESULT, close the matching canonical/stage claims, then write the terminal PROGRESS checkpoint.",
-  "terminalResultPath": null,
+  "nextAction": "PM may consume the P30 COMPLETE result for a separately authorized integration/live retry; no P30 work remains.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR_RESULT.json",
+  "resultCommit": "e560883aebf7d3cc4b9127a05a0c165e3e530dd3",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T15:44:00Z"
+  "updatedAtUtc": "2026-09-05T15:48:00Z"
 }
