@@ -1,0 +1,72 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P16_OWNER_CANONICAL_STATUS_ACCEPTANCE_EVIDENCE",
+  "dedupKey": "alpha.v1.product-takeover.owner-canonical-status-acceptance-evidence-v1",
+  "claimToken": "84fcf962fdd039a2d1e6bbcc854ee528",
+  "state": "COMPLETE",
+  "verdict": "P16 now normalizes the launcher and P15 canonicalOverlay lifecycle into one fail-closed Owner-facing status model, records bounded canonical StatusStore transitions with exact runtime/renderer/authority evidence, presents canonical-first Chinese tray/diagnostic UX, and atomically writes a deterministic Owner acceptance snapshot whose visibleProof remains NOT_PROVEN until a separate real visual gate.",
+  "startCommit": "db10fe39aef1b4357f1dac7541a54ef689224c39",
+  "implementationCommits": [
+    "aa54dd5159df70be2ff7c3ca6d97c035887ea715"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PYLAUNCH/wof_launcher/canonical_owner_status.py",
+    "parallel/PYLAUNCH/wof_launcher/canonical_acceptance_evidence.py",
+    "parallel/PYLAUNCH/wof_launcher/state.py",
+    "parallel/PYLAUNCH/wof_launcher/tray.py",
+    "parallel/PYLAUNCH/tests/test_alpha_p16_canonical_owner_status.py"
+  ],
+  "tests": [
+    {
+      "name": "P16 Python parse/compile",
+      "result": "PASS",
+      "detail": "canonical_owner_status.py, canonical_acceptance_evidence.py, state.py, tray.py, and the focused P16 test compile successfully."
+    },
+    {
+      "name": "Focused canonical Owner status module self-check",
+      "result": "PASS",
+      "detail": "6 unittest cases passed: fail-closed normalized states, exact current P15 canonicalOverlay WAITING/HUD READY contract mapping, StatusStore transition dedup/revoke evidence, bounded timeline, canonical-first tray wording, and atomic acceptance evidence with visibleProof=NOT_PROVEN."
+    },
+    {
+      "name": "Implementation write-boundary diff",
+      "result": "PASS",
+      "detail": "0a976981ef670ce65fa349551e2c937829bf7a48..aa54dd5159df70be2ff7c3ca6d97c035887ea715 changes only the two new P16 helpers, state.py, tray.py, and the focused P16 test. No P15 runtime/package file, W3 producer, HUD JS, or alpha-live file changed."
+    },
+    {
+      "name": "real-WOF / Owner visible acceptance",
+      "result": "NOT_RUN",
+      "detail": "Deliberately not claimed by repository fixtures. P16 records runtime/HUD acceptance evidence automatically but hard-codes visibleProof=NOT_PROVEN; a later real visual gate remains required for visible PASS."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Repository implementation and focused fixtures prove deterministic state normalization, bounded transition evidence, Chinese Owner UX precedence, atomic evidence persistence, and fail-closed visible-proof semantics. They do not prove an actual WOF overlay was visible."
+  },
+  "productProofBoundary": "LauncherStatus + current P15 alpha_status.canonicalOverlay -> WAITING_WOF / VERIFYING_WORLD / CANONICAL_STACK_READY / WAITING_RENDERER_SOURCE / IDENTITY_SUPPRESSED / ANCHORS_SUPPRESSED / ANCHORS_READY / HUD_INGEST_ACCEPTED / CANONICAL_RUNTIME_ERROR -> bounded canonical-state-transition evidence -> tray/diagnostics Chinese UX -> ~/Documents/WOF_RESULTS/ALPHA_CANONICAL_ACCEPTANCE_EVIDENCE.json. HUD_INGEST_ACCEPTED is not VISIBLE/DRAWN/PASS.",
+  "ownerGate": {
+    "required": true,
+    "question": "After the final selected package includes P16 and W3 supplies a qualified real renderer frame, run one normal WOF session and use the automatic evidence snapshot plus a separate visual acceptance gate to prove actual on-screen visibility.",
+    "reason": "The current P15 candidate was pinned before the P16 implementation commit, and P16 intentionally leaves visibleProof=NOT_PROVEN even when canonical anchors are READY or HUD ingest is accepted."
+  },
+  "blocker": null,
+  "nextAction": "PM/integration should compose or refresh the final canonical package candidate from a commit that includes P16 (without moving alpha-live), then perform the bounded real-WOF Owner run when W3 renderer-source qualification is available. Read ALPHA_CANONICAL_ACCEPTANCE_EVIDENCE.json for exact World/page/worker/runtime/renderer/HUD evidence; do not promote runtime evidence alone to visible PASS.",
+  "evidencePaths": [
+    "parallel/PYLAUNCH/wof_launcher/canonical_owner_status.py",
+    "parallel/PYLAUNCH/wof_launcher/canonical_acceptance_evidence.py",
+    "parallel/PYLAUNCH/wof_launcher/state.py",
+    "parallel/PYLAUNCH/wof_launcher/tray.py",
+    "parallel/PYLAUNCH/tests/test_alpha_p16_canonical_owner_status.py",
+    "parallel/PYLAUNCH/wof_launcher/canonical_runtime_coordinator.py",
+    "parallel/PYLAUNCH/wof_launcher/alpha_runtime.py",
+    "parallel/OWNER_ONECLICK/CANDIDATES/ALPHA_V1_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_PRODUCT_CONVERGENCE_P15_W3_P16_LONG_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P16_OWNER_CANONICAL_STATUS_ACCEPTANCE_EVIDENCE_RESULT.md"
+}
