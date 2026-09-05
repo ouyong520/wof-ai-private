@@ -5,6 +5,13 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.owner-final-acceptance-orchestrator-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.owner-final-acceptance-orchestrator-v1.json",
   "claimToken": "2B-9eCzghY3ChQ8TSSZ1LQ_hwxcHOWeV",
-  "state": "ACTIVE",
-  "startCommit": "ef3a7df93859f0a81787762d7de3e7b08c3a2d6b"
+  "state": "COMPLETE",
+  "startCommit": "ef3a7df93859f0a81787762d7de3e7b08c3a2d6b",
+  "implementationCommits": [
+    "663abef54e4f2249bf102d77101d0222d56dbc0d",
+    "1688bf11a436d6a3728a13e496fc78d2751ce943"
+  ],
+  "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P17_OWNER_FINAL_ACCEPTANCE_ORCHESTRATOR_RESULT.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P17_OWNER_FINAL_ACCEPTANCE_ORCHESTRATOR_RESULT.md",
+  "completedAtUtc": "2026-09-05T08:20:00Z"
 }
