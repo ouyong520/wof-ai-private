@@ -5,6 +5,10 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.p16-p9-binding-staging-readiness-repair-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.p16-p9-binding-staging-readiness-repair-v1.json",
   "claimToken": "07c4ebfe2077a52b842c5c53d2f3cd05",
-  "state": "ACTIVE",
-  "startCommit": "c97603ef0c217a859d0ae230ade62fcfee4844e8"
+  "state": "COMPLETE",
+  "startCommit": "c97603ef0c217a859d0ae230ade62fcfee4844e8",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR_RESULT.json",
+  "resultCommit": "e560883aebf7d3cc4b9127a05a0c165e3e530dd3",
+  "testedCommit": "90094a656ab311f18b0a758716dc97c3f8df092d",
+  "closedAtUtc": "2026-09-05T15:47:00Z"
 }
