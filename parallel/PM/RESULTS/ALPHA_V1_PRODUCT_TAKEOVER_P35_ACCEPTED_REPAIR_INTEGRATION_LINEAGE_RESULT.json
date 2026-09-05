@@ -1,0 +1,181 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P35_ACCEPTED_REPAIR_INTEGRATION_LINEAGE",
+  "dedupKey": "alpha.v1.product-takeover.accepted-repair-integration-lineage-v1",
+  "claimToken": "8097ec89dc1679df79aa5299942ef78e86b252b6d30666cb",
+  "state": "COMPLETE",
+  "verdict": "P35 produced one durable deterministic integration source whose Git ancestry contains the exact PM-accepted P29/P30/P31 tested commits and whose 13 accepted repair-owned blobs fresh-read exactly to their terminal tested identities, without semantic hand-edit, promotion, or alpha-live movement.",
+  "startCommit": "510516c569f5439ca567984cbf72e811815d3aab",
+  "testedCommit": "82b0b09ecd902f502ae5509bcb3ee5a713f43fee",
+  "testedTree": "e5dba33a2cd579826704d3f78ec2587ee2305a5a",
+  "sourceCommit": "82b0b09ecd902f502ae5509bcb3ee5a713f43fee",
+  "sourceTree": "e5dba33a2cd579826704d3f78ec2587ee2305a5a",
+  "candidateBranch": "worker/p35-accepted-repair-integration-lineage",
+  "latestMainBase": "cc0da35480b7b89c40525254d52601b18b001a92",
+  "latestMainBaseTree": "12a836a618c87206cf95a9dc19b021c4059bba8e",
+  "mergeParents": [
+    "cc0da35480b7b89c40525254d52601b18b001a92",
+    "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731"
+  ],
+  "implementationCommits": [
+    "82b0b09ecd902f502ae5509bcb3ee5a713f43fee"
+  ],
+  "integrationReady": true,
+  "integrationReadyScope": "P35 source-lineage integration only; this does not resolve P32, authorize an Owner retry, rebuild a final package, promote, or move alpha-live.",
+  "changedFiles": [
+    "parallel/PYLAUNCH/wof_launcher/discovery_v2.py",
+    "parallel/PYLAUNCH/tests/test_p31_page_association_authority.py"
+  ],
+  "requiredTestedCommits": {
+    "P29": "c02f7e108e73665f22eb950573622acb6f452732",
+    "P30": "90094a656ab311f18b0a758716dc97c3f8df092d",
+    "P31": "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731"
+  },
+  "ancestryProof": {
+    "P29": {
+      "requiredCommit": "c02f7e108e73665f22eb950573622acb6f452732",
+      "sourceCommit": "82b0b09ecd902f502ae5509bcb3ee5a713f43fee",
+      "compareStatus": "ahead",
+      "behindBy": 0,
+      "mergeBase": "c02f7e108e73665f22eb950573622acb6f452732",
+      "result": "PASS_EXACT_ANCESTOR"
+    },
+    "P30": {
+      "requiredCommit": "90094a656ab311f18b0a758716dc97c3f8df092d",
+      "sourceCommit": "82b0b09ecd902f502ae5509bcb3ee5a713f43fee",
+      "compareStatus": "ahead",
+      "behindBy": 0,
+      "mergeBase": "90094a656ab311f18b0a758716dc97c3f8df092d",
+      "result": "PASS_EXACT_ANCESTOR"
+    },
+    "P31": {
+      "requiredCommit": "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731",
+      "sourceCommit": "82b0b09ecd902f502ae5509bcb3ee5a713f43fee",
+      "compareStatus": "ahead",
+      "behindBy": 0,
+      "mergeBase": "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731",
+      "result": "PASS_EXACT_ANCESTOR"
+    }
+  },
+  "acceptedRepairBlobReadback": {
+    "state": "PASS",
+    "matched": 13,
+    "total": 13,
+    "blobMap": {
+      "parallel/RENDER_AUTHORITY_V2/qualification_analyzer.py": "a412faa31ac8d946e25f72868a57ae234d92b4b2",
+      "parallel/RENDER_AUTHORITY_V2/test_qualification_analyzer.py": "d243efbc092dac9fe80c0cfa8c517d9685d5272e",
+      "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js": "fa3642388d7bf89d77334a86f8091858ff8ad2c2",
+      "parallel/RENDER_AUTHORITY_V2/selftest.mjs": "588a3781a37a9cc9e390e545328b4812c47cfa7f",
+      "parallel/OWNER_STAGING/p21_acceptance.py": "b14f0e8967093b8a35512321965e4b646573bef1",
+      "parallel/OWNER_STAGING/p21_runtime.py": "28a8f19f1b4bb27719c1e09f70fc91bf2ebdcce5",
+      "parallel/OWNER_STAGING/exact_candidate_staging_acceptance.py": "613caade29ab6cb7f35192f90a6a57aa53f2289c",
+      "parallel/PYLAUNCH/wof_launcher/alpha_runtime.py": "c90c5aeb631a3f4109d1132389a612379d17782d",
+      "parallel/PYLAUNCH/wof_launcher/production_p1_overlay.py": "32312651c983d23714b71018505e3e43fb1990ae",
+      "parallel/OWNER_STAGING/test_p30_p16_p9_binding_staging_readiness.py": "b0639a9dd602c57b63147a3ef28bd08d18f2d858",
+      "parallel/PYLAUNCH/tests/test_alpha_p30_p9_p1_binding.py": "288d77b0714f975638fd6071dd35bae13e201991",
+      "parallel/PYLAUNCH/wof_launcher/discovery_v2.py": "518c290aed5f1a06a4b981a11160ee1d95693a56",
+      "parallel/PYLAUNCH/tests/test_p31_page_association_authority.py": "6e898ae26e8eaff96c95de00b8e02b7634085d47"
+    }
+  },
+  "mergeConflictProof": {
+    "state": "PASS_NO_SEMANTIC_CONFLICT",
+    "p31BranchBase": "433bb26b3804f927901a4f898a4d403e29694276",
+    "discoveryBlobAtP31BranchBase": "210702e1be775c39381d77a3b815a10eaa34be6f",
+    "discoveryBlobAtLatestMainBase": "210702e1be775c39381d77a3b815a10eaa34be6f",
+    "p31TestAtLatestMainBase": "ABSENT",
+    "detail": "The existing P31-owned discovery path was byte-identical between P31 branch base and P35 latest-main base, and the P31 test path did not exist on the P35 base, so exact P31 tested bytes were merged without semantic hand-editing."
+  },
+  "focusedIntegrationDelta": {
+    "base": "cc0da35480b7b89c40525254d52601b18b001a92",
+    "head": "82b0b09ecd902f502ae5509bcb3ee5a713f43fee",
+    "status": "PASS",
+    "changedFiles": [
+      "parallel/PYLAUNCH/wof_launcher/discovery_v2.py",
+      "parallel/PYLAUNCH/tests/test_p31_page_association_authority.py"
+    ],
+    "ownershipSurfacesUntouched": ["P33 OWNER_ONECLICK rebuild", "P34 readiness gate", "P36 renderer source trace"]
+  },
+  "p32BlockedContext": {
+    "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION_RESULT.json",
+    "testedCommit": "bd75c3b5f7fd20fe004fae21142a0fa19942e076",
+    "terminalState": "BLOCKED",
+    "integrationReady": false,
+    "acceptedRepair": false,
+    "countedInRequiredAcceptedSet": false,
+    "inheritedFromLatestMainBase": true,
+    "blockerCode": "NATIVE_PLAYER_MARKER_DIRECT_RENDERER_CAUSAL_EDGE_NOT_CHECKED_IN",
+    "detail": "P32 already exists in the latest-main ancestry, but P35 does not count it as accepted, does not use it to satisfy required repair containment, and does not rewrite its BLOCKED authority."
+  },
+  "tests": [
+    {
+      "name": "P31 semantic conflict precheck",
+      "result": "PASS",
+      "detail": "P31 branch-base and P35 latest-main-base discovery blobs were identical and the P31 test path was absent, so no semantic hand-edit was required."
+    },
+    {
+      "name": "accepted repair exact blob readback",
+      "result": "PASS",
+      "detail": "13/13 accepted P29/P30/P31 repair-owned paths at source commit 82b0b09e exactly matched terminal tested blob identities."
+    },
+    {
+      "name": "exact tested commit ancestry regression",
+      "result": "PASS",
+      "detail": "P29, P30 and P31 each compare to source commit 82b0b09e with behind_by=0 and merge-base equal to the exact required tested commit."
+    },
+    {
+      "name": "candidate branch/tree exact readback",
+      "result": "PASS",
+      "detail": "The dedicated branch resolves to source commit 82b0b09e, tree e5dba33a, with parents P35 latest-main base cc0da354 and exact P31 tested commit 423c9c6c."
+    },
+    {
+      "name": "focused integration delta regression",
+      "result": "PASS",
+      "detail": "Latest-main-base to source candidate changes only the two P31-owned paths and does not modify P33/P34/P36 ownership surfaces."
+    },
+    {
+      "name": "real WOF acceptance",
+      "result": "NOT_RUN",
+      "detail": "Forbidden by P35 scope; no real game/browser acceptance was run."
+    },
+    {
+      "name": "promotion / alpha-live movement",
+      "result": "NOT_RUN",
+      "detail": "P35 has no promotion authority; no promotion or alpha-live movement occurred."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "INTEGRATION_LINEAGE_PROOF",
+    "visibleProof": "NOT_PROVEN",
+    "detail": "Repository/Git evidence proves only the deterministic accepted-repair integration lineage and exact accepted byte coexistence. It does not prove P32 resolved, final retry readiness, a rebuilt final package, real-WOF behavior, or Owner-visible correctness."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM/P33 may consume source commit 82b0b09ecd902f502ae5509bcb3ee5a713f43fee as the exact accepted-repair integration source for a separately authorized deterministic rebuild/readiness flow; P32/P36 remains separate and P35 itself authorizes no Owner retry.",
+  "evidencePaths": [
+    "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P35_ACCEPTED_REPAIR_INTEGRATION_LINEAGE_START_PROMPT.md",
+    "parallel/PM/ALPHA_V1_FINAL_ACCEPTANCE_POST_REPAIR_LONG_3_WORKER_DISPATCH.md",
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P35_ACCEPTED_REPAIR_INTEGRATION_LINEAGE_PROGRESS.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P29_W3_LIVE_EVIDENCE_CONTRACT_REPAIR_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P31_WOF_PAGE_ASSOCIATION_AMBIGUITY_REPAIR_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION_RESULT.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "realGameRun": false,
+    "promotion": false,
+    "alphaLiveMoved": false
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "completedAtUtc": "2026-09-05T16:25:00Z"
+}
