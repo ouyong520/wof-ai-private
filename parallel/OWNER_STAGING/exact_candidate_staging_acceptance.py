@@ -18,8 +18,8 @@ from p21_runtime import (
     RUNTIME_REL, cleanup_staging_worktree, collect_p18_from_p16, create_staging_worktree,
     default_permanent_repo, default_results_dir, default_staging_root, discover_browser_websocket,
     discover_permanent_alpha_runtimes, resolve_python, restart_permanent_runtime,
-    runtime_environment, build_runtime_command, start_runtime, stop_permanent_alpha_runtimes,
-    stop_runtime,
+    runtime_environment, build_runtime_command, stage_candidate_manifest, start_runtime,
+    stop_permanent_alpha_runtimes, stop_runtime,
 )
 from p21_acceptance import P17_REL, archive_existing, run_p17, wait_for_staged_p16
 
@@ -95,17 +95,19 @@ def run_staged_acceptance(*, repo_root: Path, pointer_path: Path | None, staging
 
         staging = create_staging_worktree(repo, str(candidate["sourceCommit"]), staging_root)
         checkout = Path(staging["checkout"]); receipt["staging"] = staging
+        staged_manifest = stage_candidate_manifest(candidate, Path(staging["runDir"]))
+        receipt["stagedPackageManifest"] = {"path": str(staged_manifest), "sha256": sha256_file(staged_manifest)}
         owner_results, archive_dir = default_results_dir(), output_root / "preexisting"
         default_p16, default_p18 = owner_results / P16_NAME, owner_results / P18_NAME
         prior_p16, prior_p18 = archive_existing(default_p16, archive_dir), archive_existing(default_p18, archive_dir)
         receipt["preexistingEvidence"] = {"p16": prior_p16, "p18": prior_p18}
 
-        env = runtime_environment(candidate); runtime_log = output_root / "P21_STAGED_RUNTIME.log"
+        env = runtime_environment(candidate, package_manifest=staged_manifest); runtime_log = output_root / "P21_STAGED_RUNTIME.log"
         runtime_cmd = _wrap_staged_runtime_command(
             build_runtime_command(python_exe, checkout, owner_results, browser), checkout
         )
         runtime_started = time.time(); runtime = start_runtime(runtime_cmd, env, runtime_log)
-        receipt["runtime"] = {"started": True, "pid": runtime.pid, "command": runtime_cmd, "logPath": str(runtime_log), "stagingMode": env["WOF_ALPHA_ACCEPTANCE_MODE"], "sourceCommit": env["WOF_ALPHA_ACCEPTANCE_COMMIT"], "packageVersion": env["WOF_ALPHA_ACCEPTANCE_PACKAGE_VERSION"], "browserPreserved": env["WOF_ALPHA_OWNER_NAVIGATES"] == "1", "inputInjection": False, "stopped": False}
+        receipt["runtime"] = {"started": True, "pid": runtime.pid, "command": runtime_cmd, "logPath": str(runtime_log), "stagingMode": env["WOF_ALPHA_ACCEPTANCE_MODE"], "sourceCommit": env["WOF_ALPHA_ACCEPTANCE_COMMIT"], "packageVersion": env["WOF_ALPHA_ACCEPTANCE_PACKAGE_VERSION"], "packageManifest": env["WOF_ALPHA_PACKAGE_MANIFEST"], "browserPreserved": env["WOF_ALPHA_OWNER_NAVIGATES"] == "1", "inputInjection": False, "stopped": False}
 
         run_p16, run_p18, w3_root = output_root / "ALPHA_CANONICAL_ACCEPTANCE_EVIDENCE.STAGED.json", output_root / "ALPHA_CANONICAL_DRAW_EVIDENCE.STAGED.json", output_root / "w3"
         first = run_p17(python_exe, checkout, candidate, output_root / "p17-initial", run_p16, run_p18, invoke_w3=True, w3_output_root=w3_root)
