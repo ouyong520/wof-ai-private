@@ -4,11 +4,11 @@
   "dedupKey": "alpha.v1.product-takeover.post-repair-final-candidate-rebuild-prep-v1",
   "claimToken": "9f07f3681dba3d6721ee23ff82df41fd",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "SELF_CHECK",
-  "overallPercent": 78,
-  "implementationState": "DONE_DURABLE_CANDIDATE_BOUND",
-  "selfCheckState": "READY_FOR_FRESH_EXACT_CANDIDATE_TESTS",
-  "resultPublicationState": "NOT_STARTED",
+  "workState": "READY_TO_PUBLISH",
+  "overallPercent": 96,
+  "implementationState": "DONE_CANDIDATE_READBACK_BOUND",
+  "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
+  "resultPublicationState": "PENDING",
   "claimCloseState": "PENDING",
   "startCommit": "24cbf440a676c8b086c43b8bbb614a620409e88f",
   "lastKnownGoodCommit": "c8c61112efbccdef5794ee68cd27767eacb72e96",
@@ -17,6 +17,12 @@
   ],
   "candidateCommit": "c8c61112efbccdef5794ee68cd27767eacb72e96",
   "candidateTree": "70329cbceffa8b17bfc88fc753b28648f4cbf6fc",
+  "candidateBlobMap": {
+    "parallel/OWNER_ONECLICK/post_repair_final_candidate_rebuild.py": "77eab756a65b3ee1e2bae21f6f73e98400d87b8a",
+    "parallel/OWNER_ONECLICK/test_post_repair_final_candidate_rebuild.py": "f179dd0d8a6ed743948f586636d4f045594a7053",
+    "parallel/OWNER_ONECLICK/WOF_ALPHA_BUILD_FINAL_CANONICAL_CANDIDATE.cmd": "1855a97cc5bef3a842be992ff0ea259582a70188",
+    ".github/workflows/alpha-p19-final-canonical-candidate.yml": "59a6700aa0f7e20bb66dea89c34b002b096f913b"
+  },
   "completed": [
     "read authoritative P33 START_PROMPT, dispatch, final live gate, root governance, dedup/progress/result protocols",
     "created and exact-token verified P33 canonical and stage claims before implementation",
@@ -29,24 +35,48 @@
     "hardened Windows entrypoint to require an explicit exact source SHA instead of implicit HEAD",
     "hardened the existing final-candidate workflow to read-only contract verification so ordinary main pushes cannot silently regenerate/publish stale candidate bytes",
     "published durable implementation candidate c8c61112efbccdef5794ee68cd27767eacb72e96 with tree 70329cbceffa8b17bfc88fc753b28648f4cbf6fc",
+    "fresh-read all four implementation blobs from the exact durable candidate and matched recorded Git blob identities",
+    "ran exact-candidate GitHub Actions rebuild-contract run 33977914719/job 101337774061 to terminal SUCCESS",
+    "exact-candidate Python compile passed and focused deterministic rebuild regression passed 14/14 tests",
+    "exact-candidate CI confirmed no repository CANDIDATES bytes were emitted or changed by contract verification",
     "did not generate/overwrite LATEST_FINAL_CANONICAL_CANDIDATE.json, did not promote, and did not move alpha-live",
     "P35 independently terminalized its separate integration-lineage stream while P33 remained within rebuild-mechanism ownership"
   ],
   "remaining": [
-    "fresh-read exact implementation file/blob identities from durable candidate",
-    "run terminal-significant focused regression against the exact durable candidate and inspect workflow result",
-    "publish terminal RESULT JSON+Markdown, close exact-token claims, and terminalize PROGRESS"
+    "publish terminal RESULT JSON+Markdown",
+    "close canonical and stage claims with the original exact token",
+    "publish terminal PROGRESS checkpoint"
   ],
   "tests": [
     {
-      "name": "P33 pre-durable isolated synthetic graph regression",
+      "name": "P33 exact durable candidate blob identity readback",
       "result": "PASS",
-      "detail": "Nonterminal implementation dry-run covered 10 focused cases: exact containing source, missing required ancestry, symbolic/abbreviated source rejection, stale P19 source/pointer rejection, manifest/candidate/source/package mismatches, deterministic repeated metadata, P32 exclusion, and alpha-live non-movement. Final authority still requires fresh exact-candidate CI."
+      "detail": "4/4 implementation file Git blob SHAs at c8c61112efbccdef5794ee68cd27767eacb72e96 exactly matched the recorded candidate blob map."
+    },
+    {
+      "name": "P33 exact-candidate compile",
+      "result": "PASS",
+      "detail": "GitHub Actions run 33977914719 compiled final_canonical_candidate.py, test_final_canonical_candidate.py, post_repair_final_candidate_rebuild.py, and test_post_repair_final_candidate_rebuild.py under Python 3.12.14."
+    },
+    {
+      "name": "P33 focused deterministic rebuild regression",
+      "result": "PASS",
+      "detail": "GitHub Actions run 33977914719/job 101337774061 passed 14/14 exact-candidate tests, including 10 new P33 cases and 4 existing P19 final-candidate integrity cases."
+    },
+    {
+      "name": "P33 no candidate side-effect assertion",
+      "result": "PASS",
+      "detail": "Exact-candidate CI ran git diff --exit-code on parallel/OWNER_ONECLICK/CANDIDATES and passed; contract verification emitted no repository candidate changes."
+    },
+    {
+      "name": "Real WOF / Owner retry / promotion",
+      "result": "NOT_RUN",
+      "detail": "Forbidden by P33 scope. No real game run, Owner retry, promotion, or alpha-live movement was performed."
     }
   ],
   "blocker": null,
-  "nextAction": "Fresh-read candidate blobs and run the focused workflow regression on durable commit c8c61112efbccdef5794ee68cd27767eacb72e96.",
-  "terminalResultPath": null,
+  "nextAction": "Publish terminal P33 RESULT and close the exact-token claims. P33 mechanism is ready for a separately authorized exact integrated source; it does not consume P34/P35/P36 ownership.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:28:00Z"
+  "updatedAtUtc": "2026-09-05T16:31:00Z"
 }
