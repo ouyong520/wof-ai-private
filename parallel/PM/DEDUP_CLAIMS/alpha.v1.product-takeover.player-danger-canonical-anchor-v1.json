@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.product-takeover.player-danger-canonical-anchor-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.player-danger-canonical-anchor-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR_START_PROMPT.md",
+  "owner": "chatgpt-gpt-5.6-sol-p7-worker",
+  "claimToken": "615ac7ba7b347e5e60d1faa6d8887a745f9ff62cdbef7bde",
+  "state": "ACTIVE",
+  "startCommit": "000beefe0210535ce5dcc5ca4e0a5792990ab8b2"
+}
