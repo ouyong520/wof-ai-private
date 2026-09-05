@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import os
+import tempfile
 import threading
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +20,9 @@ from wof_launcher.state import StatusStore
 
 ATTACH_ONLY_ENV = "WOF_ALPHA_MENU6_ATTACH_ONLY"
 OWNER_NAVIGATES_ENV = "WOF_ALPHA_OWNER_NAVIGATES"
+FEEDBACK_OUTPUT_NAME = "LATEST_ALPHA_FEEDBACK.txt"
+FIXED_STATUS_NAME = "ALPHA_FIXED_DRAW_STATUS.json"
+FIXED_FEEDBACK_MODE = "fixed-draw-first-gate"
 
 
 def _load_runner(root: Path):
@@ -84,6 +89,85 @@ def _choose_runner_port(host: str, preferred: int, owner_navigates: bool = True)
     raise RuntimeError("no free local CDP port available for program-owned WOF browser")
 
 
+def _single_line(value: object) -> str:
+    return " ".join(str(value).splitlines()).strip()
+
+
+def _write_feedback_integration_failure(
+    output_root: Path,
+    *,
+    release_sha: str | None,
+    runtime_state: str,
+    payload: dict[str, Any] | None,
+    error: BaseException,
+) -> Path:
+    output_root.mkdir(parents=True, exist_ok=True)
+    output = output_root / FEEDBACK_OUTPUT_NAME
+    fixed_payload = payload.get("fixedDrawSmoke") if isinstance(payload, dict) else None
+    fixed_state = (
+        str(fixed_payload.get("fixedSmokeState") or fixed_payload.get("state") or "").strip()
+        if isinstance(fixed_payload, dict)
+        else ""
+    )
+    reason = _single_line(f"{type(error).__name__}: {error}") or type(error).__name__
+    lines = [
+        "WOF Alpha Owner Feedback",
+        "artifactSchema=wof-alpha-owner-feedback-integration-error-v1",
+        f"generatedAt={datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')}",
+        f"currentReleaseSha={release_sha or 'unknown'}",
+        "alphaLive=alpha-live",
+        f"liveMode={FIXED_FEEDBACK_MODE}",
+        f"runtimeState={runtime_state or 'unknown'}",
+        f"fixedSmokeStatusPath={output_root / FIXED_STATUS_NAME}",
+        f"fixedSmokeState={fixed_state or 'unknown'}",
+        "machineDrawProof=UNKNOWN",
+        "ownerVisualConfirmation=NOT_RECORDED",
+        "routingClassification=FEEDBACK_INPUT_MALFORMED",
+        f"routingReason=OWNER_FEEDBACK_REFRESH_FAILED: {reason}",
+    ]
+    text = "\n".join(lines) + "\n"
+    fd, temp_name = tempfile.mkstemp(prefix=".LATEST_ALPHA_FEEDBACK.p4.", suffix=".tmp", dir=output_root)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(text)
+        os.replace(temp_name, output)
+    finally:
+        try:
+            Path(temp_name).unlink(missing_ok=True)
+        except OSError:
+            pass
+    return output
+
+
+def _refresh_fixed_owner_feedback(
+    output_root: Path,
+    repo_root: Path,
+    *,
+    release_sha: str | None,
+    runtime_state: str,
+    payload: dict[str, Any] | None,
+) -> tuple[str | None, str | None]:
+    try:
+        from wof_launcher.owner_feedback_acceptance import write_feedback
+
+        _, classification = write_feedback(output_root, repo_root=repo_root)
+        return classification, None
+    except Exception as exc:
+        detail = _single_line(f"{type(exc).__name__}: {exc}") or type(exc).__name__
+        try:
+            _write_feedback_integration_failure(
+                output_root,
+                release_sha=release_sha,
+                runtime_state=runtime_state,
+                payload=payload,
+                error=exc,
+            )
+        except Exception as fallback_exc:
+            fallback_detail = _single_line(f"{type(fallback_exc).__name__}: {fallback_exc}") or type(fallback_exc).__name__
+            detail = f"{detail}; FALLBACK_WRITE_FAILED: {fallback_detail}"
+        return "FEEDBACK_INPUT_MALFORMED", detail
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="WOF Render Authority V3 owner-visible entry")
     p.add_argument("--root", required=True)
@@ -113,6 +197,7 @@ def main() -> int:
     publisher.on_change = tray.refresh
     source_commit = str(os.environ.get("WOF_ALPHA_ACCEPTANCE_COMMIT") or "").strip()
     source_label = source_commit[:8] if source_commit else "runtime"
+    fixed_mode_active = fixed_draw_gate_enabled()
 
     def notify_blocked(reason: object) -> None:
         text = str(reason or "当前路径已 BLOCKED").strip()
@@ -125,9 +210,22 @@ def main() -> int:
             pass
 
     def forward_status(state: str, payload: dict[str, Any]) -> None:
-        publisher.publish(state, **payload)
+        routed_payload = dict(payload)
+        if fixed_mode_active:
+            feedback_state, feedback_error = _refresh_fixed_owner_feedback(
+                output_root,
+                root,
+                release_sha=source_commit or None,
+                runtime_state=state,
+                payload=routed_payload,
+            )
+            routed_payload["ownerFeedbackClassification"] = feedback_state
+            routed_payload["ownerFeedbackRefreshOk"] = feedback_error is None
+            if feedback_error is not None:
+                routed_payload["ownerFeedbackRefreshError"] = feedback_error
+        publisher.publish(state, **routed_payload)
         if state == "BLOCKED":
-            notify_blocked(payload.get("blockedReason"))
+            notify_blocked(routed_payload.get("blockedReason"))
 
     publisher.publish(
         "STARTING",
@@ -151,7 +249,7 @@ def main() -> int:
         os.environ.pop(ATTACH_ONLY_ENV, None)
         os.environ[OWNER_NAVIGATES_ENV] = "1"
         try:
-            if fixed_draw_gate_enabled():
+            if fixed_mode_active:
                 result["code"] = int(
                     run_fixed_draw_runtime_gate(
                         root,
@@ -207,6 +305,22 @@ def main() -> int:
             notify_blocked(reason)
             result["code"] = 12
         finally:
+            if fixed_mode_active:
+                feedback_state, feedback_error = _refresh_fixed_owner_feedback(
+                    output_root,
+                    root,
+                    release_sha=source_commit or None,
+                    runtime_state="STOPPED",
+                    payload=None,
+                )
+                if feedback_error is not None:
+                    publisher.publish(
+                        "BLOCKED",
+                        blockedReason=f"Owner feedback integration failed closed: {feedback_error}",
+                        ownerFeedbackClassification=feedback_state,
+                        ownerFeedbackRefreshOk=False,
+                        ownerFeedbackRefreshError=feedback_error,
+                    )
             if previous_attach_only is None:
                 os.environ.pop(ATTACH_ONLY_ENV, None)
             else:
