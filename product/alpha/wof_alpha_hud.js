@@ -3,6 +3,9 @@
 const VERSION='wof-alpha-hud-rc5';
 const SCHEMA='wof-alpha-v2';
 const CANONICAL_INPUT_SCHEMA='wof-alpha-canonical-anchor-runtime-envelope-input-v1';
+const CANONICAL_DRAW_EVIDENCE_SCHEMA='wof-alpha-maintained-hud-canonical-draw-evidence-v1';
+const CANONICAL_DRAW_EVIDENCE_VERSION='wof-alpha-maintained-hud-canonical-draw-acknowledgement-v1';
+const CANONICAL_DRAW_LEDGER_LIMIT=128;
 const FIXED_SMOKE_SCHEMA='wof-alpha-fixed-draw-smoke-v1';
 const FIXED_SMOKE_STATUS_KEY='__WOF_ALPHA_FIXED_DRAW_SMOKE_STATUS_V1';
 const FIXED_NATIVE_W=384,FIXED_NATIVE_H=224,FIXED_NATIVE_X=192,FIXED_NATIVE_Y=112;
@@ -90,6 +93,7 @@ let lastPlayerMsg=null,lastPlayerRx=0,lastPlayerPlan=null,playerWarningDrawCount
 let p1TrackerAuthority=null,p1Tracker=null,p1TrackerRx=0,p1TrackerDrawCount=0,p1TrackerHideReason='NOT_BOUND';
 let canonicalOverlayBinding=null,canonicalOverlayPayload=null,canonicalOverlayEnvelope=null,canonicalOverlayPlan=null,canonicalOverlayRx=0;
 let canonicalOverlayState='SUPPRESSED',canonicalOverlayReason='NOT_BOUND';
+let canonicalDrawSequence=0,canonicalDrawEvidenceGeneration=0,canonicalDrawLedger=[],canonicalDrawLatestReason='NOT_BOUND';
 
 function snapGL(){
   const active=gl.getParameter(gl.ACTIVE_TEXTURE),activeTex=gl.getParameter(gl.TEXTURE_BINDING_2D);
@@ -306,6 +310,77 @@ function canonicalOverlayStatus(now=Date.now()){
     fallback:'NONE',readOnly:true,ramWrites:0,inputInjection:false
   };
 }
+function resetCanonicalDrawEvidence(reason){
+  canonicalDrawEvidenceGeneration++;canonicalDrawLedger=[];canonicalDrawLatestReason=String(reason||'CANONICAL_DRAW_EVIDENCE_RESET');
+}
+function currentCanonicalSampleIdentity(){
+  const records=Array.isArray(canonicalOverlayPayload?.records)?canonicalOverlayPayload.records:[];
+  const samples=records.map(row=>row?.sampleAt).filter(Number.isFinite);
+  const sampleAt=samples.length&&new Set(samples).size===1?samples[0]:null;
+  const transportSequence=Number.isInteger(canonicalOverlayPayload?.sequence)?canonicalOverlayPayload.sequence:null;
+  return{transportSequence,sampleAt,envelopeReceivedAt:canonicalOverlayRx||null};
+}
+function canonicalWarningIdentity(item){
+  const warning=item?.warning;
+  if(!warning||typeof warning!=='object')return null;
+  const out={};
+  for(const key of ['target','kind','type','code','reason'])if(typeof warning[key]==='string'&&warning[key])out[key]=warning[key];
+  return Object.keys(out).length?out:null;
+}
+function canonicalEvidenceFields(kind,item){
+  if(!canonicalOverlayBinding||!item||typeof item!=='object')return null;
+  const rect=item.drawRectDb;
+  if(!rect||![rect.x,rect.y,rect.width,rect.height].every(Number.isFinite)||rect.width<=0||rect.height<=0)return null;
+  const anchor=kind==='enemy-target-label'?item.anchorNative:item.anchor;
+  const nativeX=kind==='enemy-target-label'?anchor?.x:anchor?.nativeX;
+  const nativeY=kind==='enemy-target-label'?anchor?.y:anchor?.nativeY;
+  if(!Number.isFinite(nativeX)||!Number.isFinite(nativeY))return null;
+  const actor=kind==='enemy-target-label'?(item.actor||item.sourceId||null):(item.player||anchor?.player||null);
+  const generation=Number.isInteger(item.generation)?item.generation:(Number.isInteger(anchor?.generation)?anchor.generation:null);
+  const authoritySource=kind==='enemy-target-label'?item:anchor;
+  for(const key of ['authorityKey','runtimeEpoch','rendererEpoch']){
+    if(authoritySource?.[key]!=null&&authoritySource[key]!==canonicalOverlayBinding[key])return null;
+  }
+  return{
+    actor:typeof actor==='string'&&actor?actor:null,generation,
+    sourceId:typeof item.sourceId==='string'&&item.sourceId?item.sourceId:null,
+    label:kind==='enemy-target-label'&&typeof item.label==='string'?item.label:null,
+    warningIdentity:kind==='player-danger-warning'?canonicalWarningIdentity(item):null,
+    nativeX,nativeY,nativeWidth:FIXED_NATIVE_W,nativeHeight:FIXED_NATIVE_H,
+    drawRectDb:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},
+    mappingKey:typeof item.mappingKey==='string'?item.mappingKey:(typeof anchor?.mappingKey==='string'?anchor.mappingKey:null)
+  };
+}
+function recordCanonicalDrawAcknowledgement(kind,item,primitive,now){
+  if(kind!=='enemy-target-label'&&kind!=='player-danger-warning')return false;
+  const fields=canonicalEvidenceFields(kind,item);if(!fields){canonicalDrawLatestReason='CANONICAL_DRAW_EVIDENCE_FIELDS_INVALID';return false;}
+  const row={
+    sequence:++canonicalDrawSequence,acknowledgedAt:Number.isFinite(now)?now:Date.now(),evidenceGeneration:canonicalDrawEvidenceGeneration,
+    kind,primitive,completed:true,...fields,authority:{...canonicalOverlayBinding},sampleIdentity:currentCanonicalSampleIdentity(),
+    coordinateAuthority:'canonical-render-object-only',screenshotAuthority:false,worldProjectionAuthority:false,visibleProof:'NOT_PROVEN'
+  };
+  canonicalDrawLedger.push(row);if(canonicalDrawLedger.length>CANONICAL_DRAW_LEDGER_LIMIT)canonicalDrawLedger.splice(0,canonicalDrawLedger.length-CANONICAL_DRAW_LEDGER_LIMIT);
+  canonicalDrawLatestReason='CANONICAL_DRAW_ACKNOWLEDGED';return true;
+}
+function cloneCanonicalDrawRow(row){
+  if(!row)return null;
+  return{...row,authority:row.authority?{...row.authority}:null,sampleIdentity:row.sampleIdentity?{...row.sampleIdentity}:null,
+    drawRectDb:row.drawRectDb?{...row.drawRectDb}:null,warningIdentity:row.warningIdentity?{...row.warningIdentity}:null};
+}
+function canonicalDrawEvidence(){
+  const entries=canonicalDrawLedger.map(cloneCanonicalDrawRow),latest=entries.length?entries[entries.length-1]:null;
+  const bound=!!canonicalOverlayBinding;
+  return{
+    schema:CANONICAL_DRAW_EVIDENCE_SCHEMA,version:CANONICAL_DRAW_EVIDENCE_VERSION,
+    evidenceState:bound?(entries.length?'CANONICAL_DRAW_ACKNOWLEDGED':'NO_CANONICAL_DRAW'):'NO_CANONICAL_DRAW',
+    reason:entries.length?null:(canonicalDrawLatestReason||canonicalOverlayReason||'NO_CANONICAL_DRAW'),
+    bound,authority:bound?{...canonicalOverlayBinding}:null,evidenceGeneration:canonicalDrawEvidenceGeneration,
+    maxEntries:CANONICAL_DRAW_LEDGER_LIMIT,entryCount:entries.length,entries,latestAcknowledgement:cloneCanonicalDrawRow(latest),
+    currentOverlay:{state:canonicalOverlayState,reason:canonicalOverlayReason,lastReceiveAt:canonicalOverlayRx||null},
+    safety:{readOnly:true,ramWrites:0,inputInjection:false,legacySpatialFallback:false,screenshotAuthority:false,worldProjectionAuthority:false,positionAuthority:false},
+    readOnly:true,ramWrites:0,inputInjection:false,visibleProof:'NOT_PROVEN'
+  };
+}
 function resetCanonicalOverlayPlan(reason,clearPayload=true){
   if(clearPayload)canonicalOverlayPayload=null;
   canonicalOverlayEnvelope=null;canonicalOverlayPlan=null;canonicalOverlayState='SUPPRESSED';canonicalOverlayReason=String(reason||'CANONICAL_OVERLAY_SUPPRESSED');
@@ -324,12 +399,12 @@ function normalizedCanonicalBinding(binding){
 }
 function bindCanonicalOverlayAuthority(binding){
   const normalized=normalizedCanonicalBinding(binding);
-  if(!normalized){canonicalOverlayBinding=null;canonicalOverlayRx=0;resetCanonicalOverlayPlan('CANONICAL_AUTHORITY_INVALID');return canonicalOverlayStatus();}
-  canonicalOverlayBinding={...normalized};canonicalOverlayRx=0;
+  if(!normalized){canonicalOverlayBinding=null;canonicalOverlayRx=0;resetCanonicalDrawEvidence('CANONICAL_AUTHORITY_INVALID');resetCanonicalOverlayPlan('CANONICAL_AUTHORITY_INVALID');return canonicalOverlayStatus();}
+  canonicalOverlayBinding={...normalized};canonicalOverlayRx=0;resetCanonicalDrawEvidence('BOUND_WAITING_FOR_DRAW');
   return resetCanonicalOverlayPlan('BOUND_WAITING_FOR_ENVELOPE');
 }
 function clearCanonicalOverlayAuthority(reason='AUTHORITY_REVOKED'){
-  canonicalOverlayBinding=null;canonicalOverlayRx=0;
+  canonicalOverlayBinding=null;canonicalOverlayRx=0;resetCanonicalDrawEvidence(String(reason||'AUTHORITY_REVOKED'));
   return resetCanonicalOverlayPlan(String(reason||'AUTHORITY_REVOKED'));
 }
 function normalizeCanonicalPayload(payload,now){
@@ -395,6 +470,7 @@ function ingestCanonicalAnchorEnvelope(payload){
   if(!normalized.ok)return resetCanonicalOverlayPlan(normalized.reason);
   canonicalOverlayPayload=payload;canonicalOverlayEnvelope=normalized.envelope;
   buildCanonicalOverlayPlanAt(canonicalOverlayRx);
+  if(!canonicalDrawLedger.length)canonicalDrawLatestReason=canonicalOverlayState==='READY'?'HUD_INGEST_ACCEPTED_WAITING_FOR_DRAW':String(canonicalOverlayReason||'NO_CANONICAL_DRAW');
   return canonicalOverlayStatus(canonicalOverlayRx);
 }
 function drawCanonicalOverlay(now){
@@ -404,8 +480,18 @@ function drawCanonicalOverlay(now){
     if(intent?.kind==='enemy-target-label'&&intent.payload)enemyLabels.push(intent.payload);
     else if(intent?.kind==='player-danger-warning'&&intent.payload)playerWarnings.push(intent.payload);
   }
-  if(enemyLabels.length)drawLabelPlan({labels:enemyLabels});
-  for(const item of playerWarnings){const r=item?.drawRectDb;if(!r)continue;drawTexture(r.x,r.y,r.width,r.height,warningTex);playerWarningDrawCount++;}
+  if(enemyLabels.length){
+    const eligible=enemyLabels.filter(item=>LABEL_ORDER.includes(item?.label)&&item?.drawRectDb).slice(0,MAX_LABELS);
+    const before=labelDrawCount;drawLabelPlan({labels:enemyLabels});const completed=labelDrawCount-before;
+    if(completed===eligible.length&&completed>0){for(const item of eligible)recordCanonicalDrawAcknowledgement('enemy-target-label',item,'maintained-labelTex-nativeDraw',now);}
+    else if(completed!==eligible.length)canonicalDrawLatestReason='CANONICAL_LABEL_PRIMITIVE_COUNT_MISMATCH';
+  }
+  for(const item of playerWarnings){
+    const r=item?.drawRectDb;if(!r)continue;
+    const ok=drawTexture(r.x,r.y,r.width,r.height,warningTex);
+    if(ok===true){playerWarningDrawCount++;recordCanonicalDrawAcknowledgement('player-danger-warning',item,'maintained-warningTex-drawTexture-nativeDraw',now);}
+  }
+  if(!enemyLabels.length&&!playerWarnings.length&&!canonicalDrawLedger.length)canonicalDrawLatestReason=String(plan.reason||'NO_CANONICAL_DRAW_INTENT');
   return plan;
 }
 function paintBox(title,lines){
@@ -476,7 +562,7 @@ bc.onmessage=e=>{
   if(m.kind==='diag'){lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;lastPlayerMsg=null;lastPlayerRx=0;lastPlayerPlan=null;lastDirectP1WarningCount=0;}
 };
 
-function transportReset(){lastMsg=null;lastRx=0;lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;lastPlayerMsg=null;lastPlayerRx=0;lastPlayerPlan=null;lastDirectP1WarningCount=0;lastDiag=null;lastKey='';if(canonicalOverlayBinding){canonicalOverlayPayload=null;canonicalOverlayEnvelope=null;canonicalOverlayPlan=null;canonicalOverlayState='SUPPRESSED';canonicalOverlayReason='TRANSPORT_RESET';canonicalOverlayRx=0;}}
+function transportReset(){lastMsg=null;lastRx=0;lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;lastPlayerMsg=null;lastPlayerRx=0;lastPlayerPlan=null;lastDirectP1WarningCount=0;lastDiag=null;lastKey='';if(canonicalOverlayBinding){canonicalOverlayPayload=null;canonicalOverlayEnvelope=null;canonicalOverlayPlan=null;canonicalOverlayState='SUPPRESSED';canonicalOverlayReason='TRANSPORT_RESET';canonicalOverlayRx=0;resetCanonicalDrawEvidence('TRANSPORT_RESET');}}
 function dispose(){
   if(disposed)return;disposed=true;clearCanonicalOverlayAuthority('HUD_DISPOSED');clearP1HeadTrackerAuthority('HUD_DISPOSED');setFixedDrawSmokeEnabled(false);
   if(bridge.callback===drawHud)bridge.callback=null;
@@ -486,7 +572,7 @@ function dispose(){
 window.WOFALPHAHUD={
   version:VERSION,session:SESSION,show(){visible=true;lastKey='';},hide(){visible=false;lastKey='';},transportReset,dispose,
   bindP1HeadTrackerAuthority,setP1HeadTracker,clearP1HeadTracker,clearP1HeadTrackerAuthority,p1HeadTrackerStatus:p1TrackerStatus,
-  bindCanonicalOverlayAuthority,ingestCanonicalAnchorEnvelope,clearCanonicalOverlayAuthority,canonicalOverlayStatus,
+  bindCanonicalOverlayAuthority,ingestCanonicalAnchorEnvelope,clearCanonicalOverlayAuthority,canonicalOverlayStatus,canonicalDrawEvidence,
   setFixedDrawSmokeEnabled,fixedDrawSmokeStatus,
   status(){
     const now=Date.now(),fresh=!!lastRx&&now-lastRx<=STALE_MS;
