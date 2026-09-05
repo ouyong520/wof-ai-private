@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P8_CANONICAL_OVERLAY_PRODUCT_PLAN",
+  "dedupKey": "alpha.v1.product-takeover.canonical-overlay-product-plan-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.canonical-overlay-product-plan-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.canonical-overlay-product-plan-v1.json",
+  "claimToken": "e6577fbdd88be2575cd71a41edb17f423fdc7607afaf86f5",
+  "state": "ACTIVE",
+  "startCommit": "fed0b516208937ea84ca1a3f48e15bb721ccd28a"
+}
