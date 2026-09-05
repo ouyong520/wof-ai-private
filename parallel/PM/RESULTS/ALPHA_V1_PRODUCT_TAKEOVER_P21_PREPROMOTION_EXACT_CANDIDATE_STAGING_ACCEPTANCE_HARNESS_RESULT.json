@@ -1,0 +1,155 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P21_PREPROMOTION_EXACT_CANDIDATE_STAGING_ACCEPTANCE_HARNESS",
+  "dedupKey": "alpha.v1.product-takeover.prepromotion-exact-candidate-staging-acceptance-harness-v1",
+  "claimToken": "6a6a9f08ed3a819c0c69a4d06c865be3",
+  "state": "COMPLETE",
+  "verdict": "P21 staging/acceptance harness implementation is complete and integration-ready. It resolves only the exact READY P19 candidate, verifies candidate/attestation hashes plus P15-P18 ancestry and critical Git blobs, creates an isolated detached staging worktree, launches the candidate runtime with explicit staged identity, bridges same-candidate P17/W3/P16/P18 evidence, emits a bounded receipt, and restores/cleans up without mutating alpha-live or the permanent W1 updater. No real WOF or Owner visual acceptance was run in this worker stage.",
+  "startCommit": "2bb1431d62d6ed5ab487fc8cda61c510284f766e",
+  "implementationCommits": [
+    "7f35b04a781682de0f72e97aea90b8ad4e3f48ec"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/OWNER_STAGING/p21_candidate.py",
+    "parallel/OWNER_STAGING/p21_runtime.py",
+    "parallel/OWNER_STAGING/p21_acceptance.py",
+    "parallel/OWNER_STAGING/exact_candidate_staging_acceptance.py",
+    "parallel/OWNER_STAGING/test_exact_candidate_staging_acceptance.py",
+    "parallel/OWNER_STAGING/WOF_ALPHA_STAGE_FINAL_ACCEPTANCE.cmd",
+    "parallel/OWNER_STAGING/README.md"
+  ],
+  "tests": [
+    {
+      "name": "P21 Python compile",
+      "result": "PASS",
+      "detail": "python -m py_compile passed for the four P21 implementation modules plus the focused fixture module."
+    },
+    {
+      "name": "Focused P21 unittest fixture",
+      "result": "PASS",
+      "detail": "7 tests passed: exact candidate resolution/hash/ancestry/blob verification, P19 missing fail-closed, WAITING_FOR_P19 receipt with unchanged alpha-live/no staging, hash mismatch rejection, exact detached worktree + idempotent cleanup, staged runtime command/environment identity, and P17 same-candidate binding."
+    },
+    {
+      "name": "Forbidden alpha-live mutation source scan",
+      "result": "PASS",
+      "detail": "No update-ref, branch -f, reset --hard alpha-live, push alpha-live, or checkout alpha-live mutation path exists in the P21 implementation/wrapper. Exact candidate fetch is by immutable SHA only when missing."
+    },
+    {
+      "name": "P19 exact maintained candidate compatibility",
+      "result": "PASS",
+      "detail": "Official P19 RESULT is COMPLETE/integration-ready and maintains source 0752796369f1687435a1b1647e66ea0b5ab07688, package 2026.09.05.0752796369f1, 90 files, candidate SHA256 d7835982ef3210b605c0f90b25e859bf013c7d16be541f7f09f6ba7d4410a150, attestation SHA256 6d6796fa5b447150f160d0d06351119a77cf9f3af86bddc52539de738f6828bd, P15-P18 COMPLETE, W3 INCONCLUSIVE, and no visual/promotion claim."
+    },
+    {
+      "name": "Committed implementation reread",
+      "result": "PASS",
+      "detail": "parallel/OWNER_STAGING/exact_candidate_staging_acceptance.py was reread from main at blob b1fd5f0cd1c0d36fbcb6a68481aa9784e4a0663b after fast-forwarding implementation commit 7f35b04a781682de0f72e97aea90b8ad4e3f48ec."
+    },
+    {
+      "name": "Real staged WOF / Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Deliberately not run by P21 implementation stage authority. Fixture/runtime-command proof is not real product-visible proof."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Focused fixtures prove fail-closed exact-candidate resolution, immutable detached staging, cleanup/restoration contracts, staged runtime identity, and same-candidate P17 bridge behavior. They do not prove real WOF correctness, W3 PASS, P18 live draw acknowledgement, or Owner-visible correctness."
+  },
+  "candidateAtCompletion": {
+    "p19State": "READY",
+    "sourceCommit": "0752796369f1687435a1b1647e66ea0b5ab07688",
+    "packageVersion": "2026.09.05.0752796369f1",
+    "selectedFileCount": 90,
+    "candidatePath": "parallel/OWNER_ONECLICK/CANDIDATES/FINAL_CANONICAL/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_0752796369f1.json",
+    "candidateSha256": "d7835982ef3210b605c0f90b25e859bf013c7d16be541f7f09f6ba7d4410a150",
+    "attestationPath": "parallel/OWNER_ONECLICK/CANDIDATES/FINAL_CANONICAL/ALPHA_V1_FINAL_CANONICAL_CANDIDATE_0752796369f1.attestation.json",
+    "attestationSha256": "6d6796fa5b447150f160d0d06351119a77cf9f3af86bddc52539de738f6828bd",
+    "stageStates": {
+      "P15": "COMPLETE",
+      "P16": "COMPLETE",
+      "P17": "COMPLETE",
+      "P18": "COMPLETE"
+    },
+    "w3LiveQualification": "INCONCLUSIVE",
+    "ownerVisualAcceptance": "NOT_RUN",
+    "alphaLivePromoted": false
+  },
+  "harness": {
+    "entrypoint": "parallel/OWNER_STAGING/WOF_ALPHA_STAGE_FINAL_ACCEPTANCE.cmd",
+    "stagingRoot": "%LOCALAPPDATA%\\WOF_ALPHA_STAGING\\<candidate-run-id>",
+    "checkoutMode": "git worktree add --detach <exact P19 sourceCommit>",
+    "runtimeEntry": "parallel/PYLAUNCH/render_authority_measurement_entry.py",
+    "runtimeIdentity": [
+      "WOF_ALPHA_ACCEPTANCE_COMMIT",
+      "WOF_ALPHA_ACCEPTANCE_PACKAGE_VERSION",
+      "WOF_ALPHA_ACCEPTANCE_MODE=STAGED_PREPROMOTION"
+    ],
+    "browserPolicy": "preserve existing Browser/WOF when safe; stop/restart only Alpha-owned runtime processes",
+    "acceptanceBridge": "staged candidate P17 -> bounded W3 -> fresh same-package P16 -> read-only P18 when exact identity/browser endpoint available -> final P17 bundle",
+    "maximumAutomaticState": "READY_FOR_OWNER_VISUAL_CONFIRMATION",
+    "receipt": "ALPHA_P21_STAGING_RECEIPT.json under Documents/WOF_RESULTS/ALPHA_P21_STAGING_ACCEPTANCE/<run>",
+    "cleanup": "stop staged runtime; bounded worktree remove; verify source/permanent state and alpha-live unchanged; restore prior permanent runtime only through deterministic W1 runtime contract"
+  },
+  "dependencies": {
+    "P19": {
+      "state": "COMPLETE",
+      "integrationReady": true,
+      "candidateState": "READY"
+    },
+    "P20": {
+      "state": "COMPLETE",
+      "integrationReady": true,
+      "ownerVisualVerdict": "NOT_RUN",
+      "alphaLiveMoved": false,
+      "relationship": "P21 does not execute or duplicate P20 promotion logic; after a real P21/P17 READY boundary, P20 remains the single Owner YES/NO and promotion gate."
+    },
+    "W3": {
+      "resultState": "SUBCOMPLETE",
+      "liveQualification": "INCONCLUSIVE",
+      "relationship": "P21 invokes/reuses the existing bounded W3 qualification only; it does not change W3 ownership or fabricate renderer-source PASS."
+    },
+    "W1": {
+      "state": "SUBCOMPLETE",
+      "integrationReady": true,
+      "controlledAlphaLive": "d664618403b1ae83f6880ca4d3833202c299415f",
+      "relationship": "P21 preserves the W1 updater/installer and only reuses the proven runtime command contract for deterministic restore."
+    }
+  },
+  "alphaLive": {
+    "observedBeforeP21Implementation": "d664618403b1ae83f6880ca4d3833202c299415f",
+    "beforeEvidence": "P20 terminal RESULT observed alpha-live unchanged immediately before the P21 implementation commit was based on that mainline.",
+    "observedAfterP21Implementation": "d664618403b1ae83f6880ca4d3833202c299415f",
+    "movedByP21": false
+  },
+  "ownerGate": {
+    "required": true,
+    "nextOwnerAction": "On the Owner Windows machine, run parallel\\OWNER_STAGING\\WOF_ALPHA_STAGE_FINAL_ACCEPTANCE.cmd once and play normally for the bounded W3/acceptance interval. P21 must stop at the automatic evidence boundary; if P17 reaches READY_FOR_OWNER_VISUAL_CONFIRMATION, use the already-implemented P20 single YES/NO visual gate rather than promoting alpha-live inside P21.",
+    "proofBoundary": "P21 COMPLETE means the staging/acceptance harness is implemented and fixture-verified only. A later real run must supply live W3/P16/P18/P17 evidence; Owner visual PASS is exclusively a later P20 fact."
+  },
+  "blocker": null,
+  "nextAction": "Run the P21 one-command staging harness on the Owner Windows machine against the maintained exact P19 candidate. Keep alpha-live unchanged. If W3 remains INCONCLUSIVE or live evidence is incomplete, preserve the P21 receipt and remain fail-closed; only after P17 reaches READY_FOR_OWNER_VISUAL_CONFIRMATION may P20 ask the single Owner visual question.",
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "legacySpatialFallback": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "guessedAddresses": false,
+    "forcePushUsed": false,
+    "p19OwnershipTouched": false,
+    "p20OwnershipTouched": false,
+    "w3OwnershipTouched": false,
+    "permanentW1UpdaterModified": false,
+    "alphaLiveMoved": false,
+    "visibleProof": "NOT_PROVEN"
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "alphaLiveMoved": false,
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_FINAL_ACCEPTANCE_P21_P22_P23_LONG_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P21_PREPROMOTION_EXACT_CANDIDATE_STAGING_ACCEPTANCE_HARNESS_RESULT.md",
+  "completedAtUtc": "2026-09-05T08:57:23Z",
+  "previousDispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_RELEASE_P19_P20_P21_LONG_3_WORKER_V1.json"
+}
