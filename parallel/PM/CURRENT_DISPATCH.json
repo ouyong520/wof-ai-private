@@ -2,17 +2,17 @@
   "schema": "wof-alpha-current-dispatch-v1",
   "pmOwned": true,
   "repository": "ouyong520/wof-ai-private",
-  "dispatchId": "ALPHA_V1_FINAL_ACCEPTANCE_P25_RESUME_P26_TERMINAL_AFTER_P27_LONG_2_WORKER_V1",
-  "manifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_FINAL_ACCEPTANCE_P25_RESUME_P26_TERMINAL_AFTER_P27_LONG_2_WORKER_V1.json",
-  "manifestAuthorityCommit": "809e6f73aaa8727e6c8e09022fc8ad9cdd44cfc1",
-  "manifestSha256": "86d2fd65a40edfc5d574acaa0135777c9feca8fff5594a72211b4148114810be",
-  "updatedAtUtc": "2026-09-05T11:23:00Z",
-  "revision": 18,
+  "dispatchId": "ALPHA_V1_FINAL_ACCEPTANCE_P25_RESUME_P28_PROVENANCE_REBUILD_LONG_2_WORKER_V1",
+  "manifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_FINAL_ACCEPTANCE_P25_RESUME_P28_PROVENANCE_REBUILD_LONG_2_WORKER_V1.json",
+  "manifestAuthorityCommit": "90239678012e1914121e6babf1fd81e5ab61be81",
+  "manifestSha256": "1ac6b016cc55a0314d4eedb893b7ab27ccab0f6fba41c2fce51f38abd3a20666",
+  "updatedAtUtc": "2026-09-05T11:35:00Z",
+  "revision": 19,
   "previousDispatch": {
-    "dispatchId": "ALPHA_V1_FINAL_ACCEPTANCE_P25_CLOSE_P26_CLOSE_P27_P21_FEED_LONG_3_WORKER_V1",
-    "manifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_FINAL_ACCEPTANCE_P25_CLOSE_P26_CLOSE_P27_P21_FEED_LONG_3_WORKER_V1.json",
-    "manifestAuthorityCommit": "4f12a376071852d9ff3250acec10667067c95f2a",
-    "manifestSha256": "0b864abbe932e130c32f17486808a646103c87e077fa5b059e9aa4c2002920db",
-    "revision": 17
+    "dispatchId": "ALPHA_V1_FINAL_ACCEPTANCE_P25_RESUME_P26_TERMINAL_AFTER_P27_LONG_2_WORKER_V1",
+    "manifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_FINAL_ACCEPTANCE_P25_RESUME_P26_TERMINAL_AFTER_P27_LONG_2_WORKER_V1.json",
+    "manifestAuthorityCommit": "809e6f73aaa8727e6c8e09022fc8ad9cdd44cfc1",
+    "manifestSha256": "86d2fd65a40edfc5d574acaa0135777c9feca8fff5594a72211b4148114810be",
+    "revision": 18
   }
 }
