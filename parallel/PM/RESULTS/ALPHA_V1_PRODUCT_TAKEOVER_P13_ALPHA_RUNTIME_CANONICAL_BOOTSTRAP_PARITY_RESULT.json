@@ -1,0 +1,81 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P13_ALPHA_RUNTIME_CANONICAL_BOOTSTRAP_PARITY",
+  "dedupKey": "alpha.v1.product-takeover.alpha-runtime-canonical-bootstrap-parity-v1",
+  "claimToken": "96b25761873f9dfc3072a21a2b239a1d",
+  "state": "COMPLETE",
+  "verdict": "P13 makes the package-selected AlphaRuntime page bootstrap load P9 canonical anchor envelope and P8 unified overlay plan before the maintained P11 HUD, then fail closed unless the canonical globals and required P11 HUD APIs exist while recording an unbound canonical-overlay capability status.",
+  "startCommit": "50956a05e582b8911cf1564b2f1bafdc7110da1e",
+  "implementationCommits": [
+    "12c8b73bf91fc4af81203b1f9c3772e59b995321"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PYLAUNCH/wof_launcher/alpha_runtime.py"
+  ],
+  "tests": [
+    {
+      "name": "Python compile/AST parse of exact committed alpha_runtime.py blob",
+      "result": "PASS",
+      "detail": "The locally compiled/reparsed source produced git blob 19203d281c7f3b8127946e39ed5f3c7d3d145aee, exactly matching GitHub content_sha for implementation commit 12c8b73bf91fc4af81203b1f9c3772e59b995321."
+    },
+    {
+      "name": "focused controlled AlphaRuntime _page_install source-order/capability fixture",
+      "result": "PASS",
+      "detail": "The exact committed module loaded and injected bootstrap -> HUD model -> P6 enemy planner -> P7 player warning planner -> P9 canonical anchor envelope -> P8 canonical overlay plan -> P11 HUD in order, returned canonicalOverlayCapable=true, and retained the initial canonical HUD status bound=false/state=SUPPRESSED/reason=NOT_BOUND."
+    },
+    {
+      "name": "focused missing canonical dependency/API fail-closed fixture",
+      "result": "PASS",
+      "detail": "Missing P9 or P8 package-selected text raised precise AlphaRuntimeError messages naming the unpinned file; a missing ingestCanonicalAnchorEnvelope HUD API raised a precise canonical HUD capability AlphaRuntimeError instead of allowing a legacy-success page runtime."
+    },
+    {
+      "name": "fixed TEST API preservation inspection",
+      "result": "PASS",
+      "detail": "P13 changed only alpha_runtime.py; the maintained HUD remains unchanged by P13 and still exports setFixedDrawSmokeEnabled/fixedDrawSmokeStatus alongside the canonical APIs. No fixed smoke semantics or P5 direct P1 path were modified."
+    },
+    {
+      "name": "real-WOF / Owner visual acceptance / package rebuild",
+      "result": "NOT_RUN",
+      "detail": "Explicitly outside P13 authority. No real-WOF run, Owner test, Fresh QA, package rebuild, updater change, W3 qualification, or alpha-live movement was performed."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Repository implementation plus narrow controlled fixtures prove AlphaRuntime bootstrap dependency parity, canonical API capability gating, fail-closed behavior, and capability-status reporting only. They do not prove P10 transport, W3 renderer/object qualification, real-WOF machine draw, or Owner-visible persistence."
+  },
+  "productProofBoundary": "Package-selected AlphaRuntime page bootstrap -> verified P9 source -> verified P8 source -> maintained P11 HUD -> positive canonical API/status capability check. P13 does not bind canonical authority or ingest envelopes; P10 owns transport/binding and W3 owns renderer-source qualification.",
+  "packageBoundary": {
+    "manifestPath": "parallel/OWNER_ONECLICK/package_manifest.json",
+    "currentPackageVersion": "2026.09.03.65422137bc1e",
+    "p9Pinned": false,
+    "p8Pinned": false,
+    "p13AlphaRuntimePinned": false,
+    "p11CanonicalHudPinned": false,
+    "detail": "The currently pinned package predates P13/P11 and does not include P9/P8. This is a later package-promotion dependency, not a reason to weaken _verified_text or load arbitrary main files. Until a PM-approved candidate pins the integrated canonical stack, the canonical-capable package-selected path correctly fails closed."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM should integrate P13 with P10/P11, then promote a later pinned package candidate containing the integrated alpha_runtime.py plus P9/P8/P11 canonical HUD files before any alpha-live movement or real-WOF canonical acceptance.",
+  "evidencePaths": [
+    "parallel/PYLAUNCH/wof_launcher/alpha_runtime.py",
+    "product/alpha/wof_alpha_canonical_anchor_envelope.js",
+    "product/alpha/wof_alpha_canonical_overlay_plan.js",
+    "product/alpha/wof_alpha_hud.js",
+    "parallel/OWNER_ONECLICK/package_manifest.json",
+    "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P13_ALPHA_RUNTIME_CANONICAL_BOOTSTRAP_PARITY_START_PROMPT.md",
+    "parallel/PM/ALPHA_V1_CANONICAL_RUNTIME_P10_P12_P13_CONTINUATION_3_WORKER_DISPATCH.md"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_RUNTIME_P10_P12_P13_CONTINUATION_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P13_ALPHA_RUNTIME_CANONICAL_BOOTSTRAP_PARITY_RESULT.md"
+}
