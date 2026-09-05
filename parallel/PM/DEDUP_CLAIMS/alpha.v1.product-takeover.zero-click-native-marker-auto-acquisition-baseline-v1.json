@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.product-takeover.zero-click-native-marker-auto-acquisition-baseline-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.zero-click-native-marker-auto-acquisition-baseline-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P37_ZERO_CLICK_NATIVE_MARKER_AUTO_ACQUISITION_BASELINE",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P37_ZERO_CLICK_NATIVE_MARKER_AUTO_ACQUISITION_BASELINE_START_PROMPT.md",
+  "owner": "GPT-5.6 Sol P37 worker",
+  "claimToken": "57010fdf7998a29bdac7fa51194b9edc",
+  "state": "ACTIVE",
+  "startCommit": "64ce273207e647e769f462f07a2707f5089fd65f"
+}
