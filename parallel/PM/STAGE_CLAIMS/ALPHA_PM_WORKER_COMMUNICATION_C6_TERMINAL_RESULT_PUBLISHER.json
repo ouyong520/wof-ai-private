@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C6_TERMINAL_RESULT_PUBLISHER",
+  "dedupKey": "alpha.pm.worker-communication.terminal-result-publisher-v1",
+  "effectiveDedupKey": "alpha.pm.worker-communication.terminal-result-publisher-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.pm.worker-communication.terminal-result-publisher-v1.json",
+  "claimToken": "c6-46f3c2b2d59c6bc5e87e0434fccc4779",
+  "state": "ACTIVE",
+  "startCommit": "7f4be30176bc0fec02d4a52c86d34741bbad3b93"
+}
