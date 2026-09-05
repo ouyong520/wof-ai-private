@@ -1,0 +1,60 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P8_CANONICAL_OVERLAY_PRODUCT_PLAN",
+  "dedupKey": "alpha.v1.product-takeover.canonical-overlay-product-plan-v1",
+  "claimToken": "e6577fbdd88be2575cd71a41edb17f423fdc7607afaf86f5",
+  "state": "COMPLETE",
+  "verdict": "P8 now exposes one pure fail-closed canonical overlay product plan that calls the completed P6 enemy-label and P7 player-danger canonical planners and returns one maintained-HUD-consumable draw-intent contract with no legacy fallback.",
+  "startCommit": "fed0b516208937ea84ca1a3f48e15bb721ccd28a",
+  "implementationCommits": [
+    "729892ec397aff0b8e445d92faa754b26a5c466b"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "product/alpha/wof_alpha_canonical_overlay_plan.js"
+  ],
+  "tests": [
+    {
+      "name": "node --check product/alpha/wof_alpha_canonical_overlay_plan.js candidate payload",
+      "result": "PASS",
+      "detail": "The P8 module parsed successfully under Node before commit; GitHub re-read verified the committed module at implementation commit 729892ec397aff0b8e445d92faa754b26a5c466b."
+    },
+    {
+      "name": "focused canonical-overlay composition fixture",
+      "result": "PASS",
+      "detail": "The composition seam invoked P6/P7 buildCanonicalPlan interfaces: one valid P6 1P label plus one valid P7 danger warning produced one READY product plan with two typed draw intents; unproven enemy and mixed-renderer-epoch player fixtures produced zero affected draw intents with fallback NONE; poison legacy projection/player getters were not accessed."
+    },
+    {
+      "name": "real-WOF / Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Explicitly outside P8 authority; W3 renderer/object source qualification remains unproven and P8 does not own maintained HUD wiring."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Repository implementation plus narrow synthetic composition fixtures prove the P8 pure product-plan contract only. No renderer-source qualification, maintained-HUD machine draw, real-WOF run, or Owner-visible PASS is claimed."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "P5/maintained-HUD integration may consume WOFAlphaCanonicalOverlayPlan.buildCanonicalPlan as the single product draw plan; runtime must continue supplying only W3-qualified canonical READY anchors and the matching authority/runtime/renderer binding, otherwise P8 returns no affected draw intents and fallback NONE.",
+  "evidencePaths": [
+    "product/alpha/wof_alpha_canonical_overlay_plan.js",
+    "product/alpha/wof_alpha_enemy_target_labels.js",
+    "product/alpha/wof_alpha_player_head_warning.js",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P6_ENEMY_CANONICAL_RENDER_ANCHOR_LABELS_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR_RESULT.json",
+    "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P8_CANONICAL_OVERLAY_PRODUCT_PLAN_START_PROMPT.md"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_RENDER_ANCHOR_P5_P8_P9_CONTINUATION_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P8_CANONICAL_OVERLAY_PRODUCT_PLAN_RESULT.md"
+}
