@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.product-takeover.canonical-anchor-runtime-envelope-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.canonical-anchor-runtime-envelope-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P9_CANONICAL_ANCHOR_RUNTIME_ENVELOPE",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P9_CANONICAL_ANCHOR_RUNTIME_ENVELOPE_START_PROMPT.md",
+  "owner": "chatgpt-p9-worker-20260905",
+  "claimToken": "51d37e82c89f2ceb7325ec4e10a8d9d3402e44c27fe4e514",
+  "state": "ACTIVE",
+  "startCommit": "d462dbae63946aeca992c2d49d60e90b5f924a17"
+}
