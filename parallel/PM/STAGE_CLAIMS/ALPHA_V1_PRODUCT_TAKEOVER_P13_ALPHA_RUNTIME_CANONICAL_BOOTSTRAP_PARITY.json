@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P13_ALPHA_RUNTIME_CANONICAL_BOOTSTRAP_PARITY",
+  "dedupKey": "alpha.v1.product-takeover.alpha-runtime-canonical-bootstrap-parity-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.alpha-runtime-canonical-bootstrap-parity-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.alpha-runtime-canonical-bootstrap-parity-v1.json",
+  "claimToken": "96b25761873f9dfc3072a21a2b239a1d",
+  "state": "ACTIVE",
+  "startCommit": "50956a05e582b8911cf1564b2f1bafdc7110da1e"
+}
