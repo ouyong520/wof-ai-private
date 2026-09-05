@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.product-takeover.alpha-runtime-canonical-bootstrap-parity-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.alpha-runtime-canonical-bootstrap-parity-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P13_ALPHA_RUNTIME_CANONICAL_BOOTSTRAP_PARITY",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P13_ALPHA_RUNTIME_CANONICAL_BOOTSTRAP_PARITY_START_PROMPT.md",
+  "owner": "chatgpt-p13-worker",
+  "claimToken": "96b25761873f9dfc3072a21a2b239a1d",
+  "state": "ACTIVE",
+  "startCommit": "50956a05e582b8911cf1564b2f1bafdc7110da1e"
+}
