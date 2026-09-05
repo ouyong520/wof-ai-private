@@ -172,7 +172,7 @@ def _timeline_diagnostics(capture: dict[str, Any]) -> tuple[dict[str, Any], list
     if any(frame_times[i] >= frame_times[i + 1] for i in range(len(frame_times) - 1)):
         rejects.append("candidate timeline cadence is non-monotonic")
     if any(len(byte_orders) > 1 for byte_orders in orders.values()):
-        rejects.append("same heap offset appears with inconsistent byte order")
+        gaps.append("same heap offset was explored in both BE16/LE16 diagnostic byte orders; structure alone does not qualify byte order")
 
     frames = len(timeline)
     stable = sorted(key for key, count in seen.items() if frames and count == frames)
