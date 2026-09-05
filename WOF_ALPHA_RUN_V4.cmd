@@ -42,7 +42,7 @@ goto :update_repo
 echo First run: downloading the Alpha source...
 echo A GitHub sign-in window may appear once.
 echo.
-"%GITEXE%" clone --origin origin --branch main --single-branch "%REMOTE%" "%REPO%"
+"%GITEXE%" -c http.version=HTTP/1.1 clone --origin origin --branch main --single-branch "%REMOTE%" "%REPO%"
 if errorlevel 1 (
   echo.
   echo ERROR: Could not download the private GitHub repository.
@@ -56,15 +56,28 @@ goto :repo_ready
 :update_repo
 echo Updating managed Alpha source to latest main...
 "%GITEXE%" -C "%REPO%" remote set-url origin "%REMOTE%" >nul 2>&1
-"%GITEXE%" -C "%REPO%" fetch --quiet origin main
-if errorlevel 1 (
-  echo.
-  echo ERROR: Could not fetch latest main from GitHub.
-  echo Check the network or GitHub sign-in and run again.
-  echo.
-  pause
-  exit /b 93
+set "FETCH_OK="
+for %%R in (1 2 3) do (
+  if not defined FETCH_OK (
+    echo GitHub fetch attempt %%R/3...
+    "%GITEXE%" -c http.version=HTTP/1.1 -C "%REPO%" fetch --quiet origin main
+    if not errorlevel 1 (
+      set "FETCH_OK=1"
+    ) else (
+      if not %%R==3 timeout /t 2 /nobreak >nul
+    )
+  )
 )
+
+if not defined FETCH_OK (
+  echo.
+  echo WARNING: GitHub connection failed after 3 attempts.
+  echo Using the last cached Alpha source so testing can continue.
+  echo No redownload is required.
+  echo.
+  goto :repo_ready
+)
+
 "%GITEXE%" -C "%REPO%" reset --hard origin/main >nul
 if errorlevel 1 (
   echo.
@@ -77,20 +90,20 @@ if errorlevel 1 (
 :repo_ready
 if not exist "%REPO%\parallel\PYLAUNCH\start_alpha_current_main.ps1" (
   echo.
-  echo ERROR: Current main does not contain the Alpha launcher script.
+  echo ERROR: Current cached source does not contain the Alpha launcher script.
   echo.
   pause
   exit /b 95
 )
 if not exist "%REPO%\parallel\PYLAUNCH\render_authority_measurement_entry.py" (
   echo.
-  echo ERROR: Current main does not contain the Alpha runtime entry.
+  echo ERROR: Current cached source does not contain the Alpha runtime entry.
   echo.
   pause
   exit /b 96
 )
 
-echo Exact main:
+echo Running commit:
 "%GITEXE%" -C "%REPO%" rev-parse --verify HEAD
 if errorlevel 1 (
   echo ERROR: Could not read managed repo HEAD.
