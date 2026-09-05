@@ -42,8 +42,6 @@ def worker(n=1, **overrides):
         "slot": n,
         "promptPath": f"parallel/PM/ALPHA_EXAMPLE_WORKER_{n}_START_PROMPT.md",
         "dedupKey": f"alpha.example.worker-{n}",
-        "dedupProtocol": "v2",
-        "dedupMode": "exclusive",
         "resultProtocol": MODULE.RESULT_PROTOCOL,
         **contract,
     }
@@ -92,6 +90,7 @@ class PromptValidationTests(unittest.TestCase):
         errors = MODULE.validate_prompt_text(text)
         self.assertTrue(any("terminalReporting" in error for error in errors))
 
+
     def test_optional_manifest_link_mismatch_rejected(self):
         errors = MODULE.validate_prompt_text(
             prompt_text(stage()),
@@ -118,9 +117,13 @@ class ManifestValidationTests(unittest.TestCase):
         data["repository"] = "ouyong520/wof-ai-private"
         data["authorityPath"] = "parallel/PM/ALPHA_EXAMPLE_DISPATCH.md"
         data["workers"][0].pop("slot")
-        data["workers"][0].pop("dedupProtocol")
-        data["workers"][0].pop("dedupMode")
         self.assertEqual([], MODULE.validate_manifest_data(data))
+
+    def test_final_manifest_rejects_extra_properties(self):
+        data = manifest(1)
+        data["repository"] = "ouyong520/wof-ai-private"
+        errors = MODULE.validate_manifest_data(data)
+        self.assertTrue(any("unexpected field in final C2 manifest contract" in error for error in errors))
 
     def test_final_manifest_requires_slots_one_through_worker_count(self):
         data = manifest(2)
