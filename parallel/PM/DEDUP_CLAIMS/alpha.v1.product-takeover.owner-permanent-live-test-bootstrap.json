@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.product-takeover.owner-permanent-live-test-bootstrap",
+  "effectiveDedupKey": "alpha.v1.product-takeover.owner-permanent-live-test-bootstrap",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_W1_OWNER_PERMANENT_LIVE_TEST_BOOTSTRAP",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_W1_OWNER_PERMANENT_LIVE_TEST_BOOTSTRAP_START_PROMPT.md",
+  "owner": "chatgpt-w1-owner-permanent-live-test-bootstrap",
+  "claimToken": "c29f25d52e01adf75dbb47f5f1f121485863b3864becb50d",
+  "state": "ACTIVE",
+  "startCommit": "1f634b668339b093961aab8d8b5ad31784ed825d"
+}
