@@ -1,0 +1,97 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P27_P21_STAGED_RUNTIME_CANONICAL_FEED_EXPOSURE",
+  "dedupKey": "alpha.v1.product-takeover.p21-staged-runtime-canonical-feed-exposure-v1",
+  "claimToken": "ee254ee086ca56d8ae140aab3c3d26b3",
+  "state": "COMPLETE",
+  "verdict": "P27 is implementation-complete and integration-ready. The P21 exact-candidate staged runtime is now wrapped after its runtime-command builder so the staged process can feed only exact W3 actor-slot/generation identity into the maintained exact-candidate P12->P10 canonical coordinator and expose the resulting real wof-alpha-canonical-runtime-coordinator-v1 status through the existing staged publisher. Current W3 renderer-source qualification remains unproven, so P10 truthfully emits coordinate-free SUPPRESSED/RENDERER_SOURCE_UNPROVEN records rather than upgrading W3/V3 measurement coordinates into canonical coordinates.",
+  "startCommit": "aa862708c6d9662ba38170f590a6ef7bab669072",
+  "implementationCommits": [
+    "2eddd1194a886c80629e3b115587754d6279a74a",
+    "32e4b9f31cf6ba10118282bb0ef78166a11d7c41",
+    "291919841dd673ec1363565410f0431e88ac0e66"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/OWNER_STAGING/p27_canonical_feed_interposer.py",
+    "parallel/OWNER_STAGING/test_p27_canonical_feed_interposer.py",
+    "parallel/OWNER_STAGING/exact_candidate_staging_acceptance.py"
+  ],
+  "canonicalFeedExposure": {
+    "schema": "wof-alpha-canonical-runtime-coordinator-v1",
+    "producer": "maintained exact-candidate P10 CanonicalRuntimeCoordinator",
+    "identity": [
+      "worldSha256",
+      "pageTargetId",
+      "authorityKey",
+      "runtimeEpoch",
+      "rendererEpoch"
+    ],
+    "inputBoundary": "Only W3 exact runtime actor slot/name plus generation identity is translated into the P12 frame identity contract. W3 x/y/z, candidate regions, screenshots, world projection, structural-row positions and guessed coordinates are not copied.",
+    "rendererSourceProven": false,
+    "currentAnchorPolicy": "SUPPRESSED/RENDERER_SOURCE_UNPROVEN and coordinate-free until a separately legitimate renderer-source proof exists",
+    "replayPolicy": "duplicate sampleAt plus identical identity signature is not accepted as a new canonical cycle; conflicting replay, stale/out-of-order sample, renderer mismatch and generation regression fail closed",
+    "replacementPolicy": "authority/replacement rebind revokes and clears the previous coordinator feed before activating the new exact identity",
+    "publisherSurface": "existing P21 staged MeasurementPublisher payload canonicalCoordinator plus alpha_status.canonicalOverlay; renderAuthorityV3 remains a separate non-canonical diagnostic surface"
+  },
+  "tests": [
+    {
+      "name": "P27 focused canonical-feed adapter self-check",
+      "result": "PASS",
+      "detail": "6/6 deterministic checks passed in the worker sandbox: no W3 x/y/z/candidate coordinates are copied; exposed status uses the real P10 coordinator schema; duplicate replay is not accepted as a new cycle; stale renderer epoch and actor-generation regression revoke old feed; coordinate-bearing SUPPRESSED output is rejected."
+    },
+    {
+      "name": "Committed P21 seam readback",
+      "result": "PASS",
+      "detail": "The committed P21 exact-candidate acceptance module was reread from main and confirms P27 wraps the runtime command after build_runtime_command returns, so P25's runtime-command override cannot bypass the P27 seam while the detached exact-candidate checkout remains immutable."
+    },
+    {
+      "name": "Committed P27 publisher/coordinator readback",
+      "result": "PASS",
+      "detail": "The committed interposer was reread from main and confirms the staged publisher adds canonicalCoordinator/canonicalOverlay only from CanonicalFeedExposure.exposed(), whose value is validated output returned by the candidate P10 CanonicalRuntimeCoordinator; V3 status is retained separately and is never relabeled as canonical."
+    },
+    {
+      "name": "Real staged WOF / Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Deliberately not run under P27 authority. Implementation/focused proof does not claim product-visible correctness or a real same-session Owner playthrough."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "visibleProof": "NOT_PROVEN",
+    "detail": "P27 proves the staged publisher seam now exposes a genuine maintained P10 coordinator status and preserves fail-closed identity/suppression boundaries. It does not prove real WOF visibility, W3 renderer-source qualification, P22/P24 dynamic/stability coverage, or P25 final composite acceptance."
+  },
+  "ownership": {
+    "p21StagedRuntimeSeamModified": true,
+    "p25OwnershipTouched": false,
+    "p26OwnershipTouched": false,
+    "p22OwnershipTouched": false,
+    "p24OwnershipTouched": false,
+    "w3ProducerOwnershipTouched": false,
+    "permanentW1UpdaterModified": false
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "legacySpatialFallback": false,
+    "w3V3MeasurementMasqueradedAsCanonical": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "guessedCoordinates": false,
+    "guessedAddresses": false,
+    "exactCandidateCheckoutMutated": false,
+    "alphaLiveMoved": false,
+    "visibleProof": "NOT_PROVEN"
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "blocker": null,
+  "nextAction": "After P25/P26 terminal publication is settled, rerun the existing exact-candidate P21/P25 staged acceptance path against the same maintained P19 candidate. Downstream consumers must use only same-session P10 coordinator cycles surfaced by P27 and remain fail-closed if renderer-source proof or required dynamic/stability evidence is absent.",
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_FINAL_ACCEPTANCE_P25_CLOSE_P26_CLOSE_P27_P21_FEED_LONG_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P27_P21_STAGED_RUNTIME_CANONICAL_FEED_EXPOSURE_RESULT.md",
+  "completedAtUtc": "2026-09-05T11:16:00Z"
+}
