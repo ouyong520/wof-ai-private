@@ -1,0 +1,48 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_FINAL_ACCEPTANCE_POST_REPAIR_LONG_3_WORKER_V1",
+  "repository": "ouyong520/wof-ai-private",
+  "generatedAtUtc": "2026-09-05T16:13:00Z",
+  "pmIntent": "Use three newly available ChatGPT Worker slots after fresh terminal-state readback; keep existing P34 ACTIVE worker continuing separately.",
+  "existingActive": [
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P34_FINAL_RETRY_READINESS_GATE",
+      "action": "CONTINUE_EXISTING_ACTIVE_CLAIM",
+      "duplicateAllowed": false
+    }
+  ],
+  "workers": [
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP",
+      "dedupKey": "alpha.v1.product-takeover.post-repair-final-candidate-rebuild-prep-v1",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P33_POST_REPAIR_FINAL_CANDIDATE_REBUILD_PREP_START_PROMPT.md",
+      "purpose": "Deterministic fail-closed final canonical candidate rebuild mechanism."
+    },
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P35_ACCEPTED_REPAIR_INTEGRATION_LINEAGE",
+      "dedupKey": "alpha.v1.product-takeover.accepted-repair-integration-lineage-v1",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P35_ACCEPTED_REPAIR_INTEGRATION_LINEAGE_START_PROMPT.md",
+      "purpose": "Assemble and prove one source lineage containing exact PM-accepted P29/P30/P31 tested commits."
+    },
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P36_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE",
+      "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-submit-source-trace-v1",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P36_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE_START_PROMPT.md",
+      "purpose": "Successor to P32 BLOCKED; implement direct displayed-frame native marker renderer submit source trace/proof producer."
+    }
+  ],
+  "terminalAuthority": {
+    "P31": {
+      "state": "COMPLETE",
+      "testedCommit": "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731"
+    },
+    "P32": {
+      "state": "BLOCKED",
+      "testedCommit": "bd75c3b5f7fd20fe004fae21142a0fa19942e076",
+      "integrationReady": false
+    }
+  },
+  "ownerRetryAuthorized": false,
+  "imageResearch": "PAUSED",
+  "codexRole": "LOCAL_WINDOWS_DEPLOYMENT_ONLY"
+}
