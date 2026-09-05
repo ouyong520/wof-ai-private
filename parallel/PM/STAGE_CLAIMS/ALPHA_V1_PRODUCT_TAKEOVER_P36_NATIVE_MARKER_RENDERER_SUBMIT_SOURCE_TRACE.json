@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P36_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE",
+  "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-submit-source-trace-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.native-marker-renderer-submit-source-trace-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.native-marker-renderer-submit-source-trace-v1.json",
+  "claimToken": "222df9c7af3d836a06c928105d5d3419",
+  "state": "ACTIVE",
+  "startCommit": "6af80330fbf5eed3c62e82b8ebf4a3e5257d1cba"
+}
