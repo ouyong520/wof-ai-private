@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR",
+  "dedupKey": "alpha.v1.product-takeover.player-danger-canonical-anchor-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.player-danger-canonical-anchor-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.player-danger-canonical-anchor-v1.json",
+  "claimToken": "615ac7ba7b347e5e60d1faa6d8887a745f9ff62cdbef7bde",
+  "state": "ACTIVE",
+  "startCommit": "000beefe0210535ce5dcc5ca4e0a5792990ab8b2"
+}
