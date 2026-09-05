@@ -8,6 +8,8 @@
   "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_W1_OWNER_PERMANENT_LIVE_TEST_BOOTSTRAP_START_PROMPT.md",
   "owner": "chatgpt-w1-owner-permanent-live-test-bootstrap",
   "claimToken": "c29f25d52e01adf75dbb47f5f1f121485863b3864becb50d",
-  "state": "ACTIVE",
-  "startCommit": "1f634b668339b093961aab8d8b5ad31784ed825d"
+  "state": "BLOCKED",
+  "startCommit": "1f634b668339b093961aab8d8b5ad31784ed825d",
+  "blockedAtMain": "4d170caf04e56ad3cf56ce6a1624d5506d0d811c",
+  "blocker": "DEDUP_V2_STAGE_CLAIM_CREATE_RACE: canonical claim was create-only acquired and exact claimToken verified, but create-only stage claim failed with GitHub 409 because main advanced from 1b10655e7cfc03f65f64e3e7d93c0c13a8a77591 to unrelated concurrent W3 commit 4d170caf04e56ad3cf56ce6a1624d5506d0d811c. STAGE_DEDUP_GUARD.md requires fail-closed on any stage-claim create failure; no implementation or tests may start and worker may not retry/invent a recovery key. The stage claim path remains absent. PM must repair/authorize the inconsistent canonical-without-stage ownership state under dedup-v2 before W1 can resume."
 }
