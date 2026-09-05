@@ -3,13 +3,13 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P31_WOF_PAGE_ASSOCIATION_AMBIGUITY_REPAIR",
   "dedupKey": "alpha.v1.product-takeover.wof-page-association-ambiguity-repair-v1",
   "claimToken": "VEkVz7A8-x51yPL_-F9ctvlyf_LBDuuTmp09V7W3aYE",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
-  "overallPercent": 94,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
   "implementationState": "DONE",
   "selfCheckState": "PASS",
-  "resultPublicationState": "PENDING",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "DONE",
+  "claimCloseState": "DONE",
   "startCommit": "3f1079452cc46dbe47d242ac2796465fb1be2afb",
   "lastKnownGoodCommit": "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731",
   "implementationCommits": [
@@ -19,34 +19,34 @@
     "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731"
   ],
   "completed": [
-    "read P31 START prompt, dispatch, AGENTS, product governance, dedup/progress/result protocols",
-    "created and verified the original dedup-v2 exclusive canonical/stage claim and reattached the same exact ACTIVE token without recovery",
-    "localized the blocker to parallel/PYLAUNCH/wof_launcher/discovery_v2.py direct Page/Worker association fallback",
-    "implemented exact targetId deduplication with conflicting duplicate rejection rather than order selection",
-    "implemented stale/unattachable Page and Worker rejection before association",
-    "preserved deterministic authority hierarchy: valid parentId first, unique parentFrameId second, then browser-context/runtime gameSurface evidence",
-    "restricted multi-page fallback so URL/title/alphaBootstrap hints remain diagnostic only and never select among multiple pages",
-    "added focused P31 fixtures for two-page authoritative selection, parentId precedence, duplicate/conflicting target rejection, stale rejection, unresolved ambiguity, URL-only fail-closed behavior, and order invariance",
-    "persisted replacement exact candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731 before terminal-significant tests",
-    "fresh-read exact candidate blobs and matched discovery_v2.py=518c290aed5f1a06a4b981a11160ee1d95693a56, P31 fixture=6e898ae26e8eaff96c95de00b8e02b7634085d47, existing parentFrame authority fixture=1ed144a003bc54246ff12f75db5f5f886028029a",
-    "ran exact-candidate focused deterministic self-check: 13/13 PASS across P31 authority fixtures and existing parentFrame authority regression",
-    "verified candidate diff from branch base touches only discovery_v2.py and test_p31_page_association_authority.py"
+    "reattached the existing P31 claim with exact token and no recovery/new claim",
+    "localized and repaired the Page/Worker/WASM association seam in discovery_v2.py",
+    "implemented deterministic targetId deduplication, conflicting duplicate fail-closed handling, and stale/unattachable Page/Worker rejection",
+    "preserved deterministic authority hierarchy: valid parentId, then unique parentFrameId, then browser-context/runtime gameSurface evidence",
+    "prohibited URL/title/alphaBootstrap, first/last/list-order/timing selection between multiple live pages",
+    "added focused deterministic P31 fixtures and preserved existing parentFrame authority contract",
+    "persisted exact tested candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731 before final tests",
+    "fresh-read exact candidate blobs and passed 13/13 focused deterministic checks",
+    "verified candidate diff touches only P31-owned discovery_v2.py and test_p31_page_association_authority.py",
+    "published RESULT JSON/Markdown under fast-feedback protocol",
+    "closed canonical and stage claims COMPLETE with the same exact claimToken and fresh-read both COMPLETE"
   ],
-  "remaining": [
-    "publish P31 RESULT JSON and Markdown with testedCommit=423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731",
-    "close canonical and stage claims with the same exact claimToken",
-    "publish terminal PROGRESS after fresh claim readback"
-  ],
+  "remaining": [],
   "tests": [
     {
       "name": "P31 exact candidate blob identity readback",
       "result": "PASS",
-      "detail": "Fresh candidate readback matched discovery_v2.py blob 518c290aed5f1a06a4b981a11160ee1d95693a56 and P31 fixture blob 6e898ae26e8eaff96c95de00b8e02b7634085d47; existing parentFrame fixture matched 1ed144a003bc54246ff12f75db5f5f886028029a."
+      "detail": "discovery_v2.py=518c290aed5f1a06a4b981a11160ee1d95693a56; P31 fixture=6e898ae26e8eaff96c95de00b8e02b7634085d47; existing parentFrame fixture=1ed144a003bc54246ff12f75db5f5f886028029a."
     },
     {
       "name": "P31 focused deterministic discovery regression",
       "result": "PASS",
-      "detail": "13/13 PASS against exact durable candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731: 8 P31 authority/duplicate/stale/fail-closed fixtures plus 5 existing parentFrame authority regressions."
+      "detail": "13/13 PASS against exact durable candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731."
+    },
+    {
+      "name": "Candidate scope diff readback",
+      "result": "PASS",
+      "detail": "Only parallel/PYLAUNCH/wof_launcher/discovery_v2.py and parallel/PYLAUNCH/tests/test_p31_page_association_authority.py differ from candidate branch base."
     },
     {
       "name": "Real WOF acceptance",
@@ -60,7 +60,7 @@
     }
   ],
   "blocker": null,
-  "nextAction": "Publish terminal P31 result artifacts, close the exact-token canonical/stage claims, then mark PROGRESS TERMINAL.",
+  "nextAction": "PM may integrate exact tested candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731 and retry the separately authorized live acceptance flow.",
   "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P31_WOF_PAGE_ASSOCIATION_AMBIGUITY_REPAIR_RESULT.json",
   "writerRole": "WORKER",
   "realWofAcceptance": "NOT_RUN",
@@ -73,5 +73,8 @@
     "parallel/PYLAUNCH/wof_launcher/discovery_v2.py": "518c290aed5f1a06a4b981a11160ee1d95693a56",
     "parallel/PYLAUNCH/tests/test_p31_page_association_authority.py": "6e898ae26e8eaff96c95de00b8e02b7634085d47"
   },
-  "updatedAtUtc": "2026-09-05T16:02:10Z"
+  "resultCommit": "dd0c1d494e01ee9b0bab8526bbcc265600d10267",
+  "canonicalClaimCloseCommit": "05ab32af44e73f16d6711c9426138697416ad8a7",
+  "stageClaimCloseCommit": "e337d97e68d715a23aaba8a23382eda020730f71",
+  "updatedAtUtc": "2026-09-05T16:04:05Z"
 }
