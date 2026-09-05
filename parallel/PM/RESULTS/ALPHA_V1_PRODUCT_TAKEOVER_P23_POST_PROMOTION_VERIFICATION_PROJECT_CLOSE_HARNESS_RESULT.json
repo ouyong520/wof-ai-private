@@ -1,0 +1,141 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P23_POST_PROMOTION_VERIFICATION_PROJECT_CLOSE_HARNESS",
+  "dedupKey": "alpha.v1.product-takeover.post-promotion-verification-project-close-harness-v1",
+  "claimToken": "p23-7d4c843cc0c449a3bf5e0ddab5045c3b",
+  "state": "COMPLETE",
+  "verdict": "P23 repository implementation is complete and integration-ready: a verification-only post-promotion harness now fail-closed verifies the exact P19 candidate/attestation, explicit W3 live PASS artifact, P17/P16/P18 identity chain, real P20 Owner visual PASS, immutable promotion plan/result, current alpha-live, rollback ancestry/W1 required files, permanent W1 managed-repo convergence, P22 dynamic coverage, and a separate real post-promotion Owner confirmation before it can emit ALPHA_V1_FINAL_COMPLETE. The current real project-close state remains WAITING_FOR_W3_LIVE_PASS; no live promotion or real PASS was fabricated.",
+  "startCommit": "e0975f9ffcafd9af465d32758afcdbcda986050a",
+  "implementationCommits": [
+    "aea8efc6f714da5d19e4a8ac819fb77bdd84cd27",
+    "220cd3b3c68054b786f2c147b1544ff337f031af",
+    "436b434986af3b9b2cdcdb03dd2e6f8ef19e3fe7",
+    "13b5cd79b5e058a72dbbe15e616b26b36b92c51b"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/OWNER_RELEASE_POSTVERIFY/README.md",
+    "parallel/OWNER_RELEASE_POSTVERIFY/WOF_ALPHA_POST_PROMOTION_VERIFY.cmd",
+    "parallel/OWNER_RELEASE_POSTVERIFY/post_promotion_verify.py",
+    "parallel/OWNER_RELEASE_POSTVERIFY/test_post_promotion_verify.py"
+  ],
+  "tests": [
+    {
+      "name": "P23 Python compile",
+      "result": "PASS",
+      "detail": "post_promotion_verify.py and test_post_promotion_verify.py compiled successfully."
+    },
+    {
+      "name": "Focused deterministic post-promotion verifier fixtures",
+      "result": "PASS",
+      "detail": "11 unittest cases passed: W3/visual/promotion/permanent waiting states, exact candidate/promotion/alpha-live chain, stale plan/result rejection, P21 staging-vs-permanent disambiguation, rollback consistency, fixture confirmation cannot reach FINAL COMPLETE, safety fail-closed, P22 NOT_OBSERVED gap retention, and deterministic receipt hash independent of observation timestamp."
+    },
+    {
+      "name": "Windows verification-only wrapper static safety",
+      "result": "PASS",
+      "detail": "WOF_ALPHA_POST_PROMOTION_VERIFY.cmd only invokes the P23 verifier; focused static scan found no git push, update-ref, reset, rollback execution, or alpha-live mutation command."
+    },
+    {
+      "name": "Committed blob parity",
+      "result": "PASS",
+      "detail": "GitHub blob SHAs for the committed verifier/test/CMD/README exactly match the locally compiled/tested blobs: verifier 06e2cf259679519da7b5aee5e638bf96be7c9f60; test ab54e922771367f6da038be2822ca1189b78d3b7; CMD 618b53f482bf4d677f73bd727bd813992b99987a; README 3a8407b0c87dfdab904c68557ccd6596bcf536fe."
+    },
+    {
+      "name": "Real WOF / promotion / post-promotion acceptance",
+      "result": "NOT_RUN",
+      "detail": "Deliberately not run. P23 is implementation-only in this turn and cannot manufacture W3 PASS, P20 Owner visual PASS, alpha-live promotion, permanent W1 convergence, or real post-promotion Owner confirmation."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Repository fixtures prove the deterministic fail-closed close-state machine, exact hashes/identity/CAS/rollback/permanent-channel checks, P22 gap preservation, output hashing, and the hard fixture/non-real barrier before ALPHA_V1_FINAL_COMPLETE. They do not prove the future real promotion or post-promotion runtime state."
+  },
+  "currentCloseState": "WAITING_FOR_W3_LIVE_PASS",
+  "currentEvidenceSnapshot": {
+    "P19": {
+      "state": "READY",
+      "sourceCommit": "0752796369f1687435a1b1647e66ea0b5ab07688",
+      "packageVersion": "2026.09.05.0752796369f1",
+      "candidateSha256": "d7835982ef3210b605c0f90b25e859bf013c7d16be541f7f09f6ba7d4410a150",
+      "attestationSha256": "6d6796fa5b447150f160d0d06351119a77cf9f3af86bddc52539de738f6828bd"
+    },
+    "W3": {
+      "state": "SUBCOMPLETE",
+      "liveQualification": "INCONCLUSIVE",
+      "proofStatus": "LIVE_EVIDENCE_REQUIRED"
+    },
+    "P20": {
+      "implementationState": "COMPLETE",
+      "ownerVisualAcceptance": "NOT_RUN",
+      "alphaLiveMoved": false
+    },
+    "P22": {
+      "terminalResultObserved": false,
+      "realDynamicCoverage": "NOT_OBSERVED_IN_P23_TURN"
+    },
+    "alphaLive": {
+      "observedCommit": "d664618403b1ae83f6880ca4d3833202c299415f",
+      "matchesP19Candidate": false,
+      "movementExpectedNow": false
+    },
+    "permanentW1Convergence": "NOT_APPLICABLE_BEFORE_REAL_PROMOTION",
+    "postPromotionOwnerConfirmation": "NOT_RUN"
+  },
+  "closeContract": {
+    "finalState": "ALPHA_V1_FINAL_COMPLETE",
+    "requiresRealEvidence": true,
+    "requires": [
+      "exact P19 candidate + attestation hashes",
+      "explicit W3 live PASS artifact with exact authority/runtime/renderer identity",
+      "P17 READY_FOR_OWNER_VISUAL_CONFIRMATION with exact P16/P18 evidence",
+      "real non-fixture P20 Owner visual PASS bound to the same candidate and P17 bundle",
+      "P20 PROMOTED result bound to the exact promotion plan hash and non-force fast-forward CAS",
+      "current alpha-live == promoted candidate commit",
+      "rollback previous commit exact, distinct, ancestor, and W1-compatible",
+      "permanent W1 managed repo HEAD == promoted commit and existing Desktop launcher retained",
+      "truthful P22 dynamic-state coverage with NOT_OBSERVED/UNPROVEN_SIGNAL gaps preserved",
+      "separate non-fixture real post-promotion Owner confirmation bound to the promoted/permanent identity"
+    ],
+    "fixtureCanReachFinalComplete": false
+  },
+  "ownerGate": {
+    "required": true,
+    "question": "Complete the existing W3 bounded normal-play live qualification first; only after W3 PASS should the established P17/P20 promotion flow continue. After real promotion, run the existing Desktop WOF_ALPHA_TEST.cmd once to converge the permanent W1 repo, then run the P23 post-promotion verifier with the real P22/post-promotion evidence.",
+    "reason": "The checked-in W3 result is still INCONCLUSIVE and P20 has not recorded a real Owner visual PASS or promotion. alpha-live correctly remains on the prior W1 baseline."
+  },
+  "blocker": null,
+  "nextAction": "Single next gate: run the existing W3 bounded normal-play qualification once and require an explicit PASS/proven renderer source. Do not promote or close Alpha V1 while W3 remains INCONCLUSIVE.",
+  "evidencePaths": [
+    "parallel/OWNER_RELEASE_POSTVERIFY/post_promotion_verify.py",
+    "parallel/OWNER_RELEASE_POSTVERIFY/WOF_ALPHA_POST_PROMOTION_VERIFY.cmd",
+    "parallel/OWNER_RELEASE_POSTVERIFY/test_post_promotion_verify.py",
+    "parallel/OWNER_RELEASE_POSTVERIFY/README.md",
+    "parallel/OWNER_ONECLICK/CANDIDATES/LATEST_FINAL_CANONICAL_CANDIDATE.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P19_FINAL_CANONICAL_CANDIDATE_REBUILD_ATTESTATION_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P20_OWNER_VISUAL_CONFIRMATION_ALPHA_LIVE_PROMOTION_GATE_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_LIVE_ACCEPTANCE_RENDER_AUTHORITY_SPRITE_COORDINATE_RECOVERY_V2_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P17_OWNER_FINAL_ACCEPTANCE_ORCHESTRATOR_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P18_MAINTAINED_HUD_CANONICAL_DRAW_ACKNOWLEDGEMENT_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P16_OWNER_CANONICAL_STATUS_ACCEPTANCE_EVIDENCE_RESULT.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "legacySpatialFallback": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "guessedAddresses": false,
+    "alphaLiveMovedByP23": false,
+    "permanentW1UpdaterTouched": false,
+    "rollbackAutoExecuted": false,
+    "fixtureRealPassFabricated": false
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "realWofPostPromotionAcceptance": "NOT_RUN",
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_FINAL_ACCEPTANCE_P21_P22_P23_LONG_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P23_POST_PROMOTION_VERIFICATION_PROJECT_CLOSE_HARNESS_RESULT.md",
+  "completedAtUtc": "2026-09-05T09:13:52Z"
+}
