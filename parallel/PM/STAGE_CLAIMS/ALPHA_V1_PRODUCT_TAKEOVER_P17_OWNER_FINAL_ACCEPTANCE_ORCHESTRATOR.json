@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P17_OWNER_FINAL_ACCEPTANCE_ORCHESTRATOR",
+  "dedupKey": "alpha.v1.product-takeover.owner-final-acceptance-orchestrator-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.owner-final-acceptance-orchestrator-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.owner-final-acceptance-orchestrator-v1.json",
+  "claimToken": "2B-9eCzghY3ChQ8TSSZ1LQ_hwxcHOWeV",
+  "state": "ACTIVE",
+  "startCommit": "ef3a7df93859f0a81787762d7de3e7b08c3a2d6b"
+}
