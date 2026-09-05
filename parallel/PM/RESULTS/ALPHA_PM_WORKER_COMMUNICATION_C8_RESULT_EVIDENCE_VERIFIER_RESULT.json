@@ -1,0 +1,67 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C8_RESULT_EVIDENCE_VERIFIER",
+  "dedupKey": "alpha.pm.worker-communication.result-evidence-verifier-v1",
+  "claimToken": "ggEEjp4gM_k1LgFlAomHQyBZ4t_VKL3aloZLV7MTcwA",
+  "state": "COMPLETE",
+  "verdict": "C8 now provides a read-only PM verifier that reuses C1 envelope validation and checks declared implementation commits, changed files, ancestry, omissions, and paperwork-only false greens against Git evidence.",
+  "startCommit": "995c2e72efbda3d5f5aec7970b40d9cc1d153c01",
+  "implementationCommits": [
+    "b4652fd9bc2611287c39bdeea0303383e038d9b3",
+    "6c4db70721c5fb8eb201e6bd0f12b7f09b955508"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PM/tools/alpha_pm_result_evidence.py",
+    "parallel/PM/ALPHA_PM_RESULT_EVIDENCE_PROTOCOL_V1.md"
+  ],
+  "tests": [
+    {
+      "name": "C1 real RESULT Git evidence cross-check",
+      "result": "PASS",
+      "detail": "The real C1 RESULT was checked against GitHub evidence: all four declared implementation SHAs resolve, each declared file is the exact material path of its implementation commit, and startCommit is an ancestor of all four commits."
+    },
+    {
+      "name": "synthetic local Git valid-result verifier check",
+      "result": "PASS",
+      "detail": "A temporary local Git repo with one implementation-bearing commit produced acceptableForIntegration=true and exit 0 for a matching RESULT fixture."
+    },
+    {
+      "name": "synthetic missing/fake implementation commit rejection",
+      "result": "PASS",
+      "detail": "A fake 40-hex implementation SHA produced acceptableForIntegration=false and IMPLEMENTATION_COMMIT_MISSING."
+    },
+    {
+      "name": "synthetic changedFiles mismatch rejection",
+      "result": "PASS",
+      "detail": "A declared path not touched by the implementation commit produced DECLARED_CHANGED_FILES_NOT_TOUCHED plus MATERIAL_FILES_OMITTED_FROM_RESULT."
+    },
+    {
+      "name": "synthetic paperwork-only false-green rejection",
+      "result": "PASS",
+      "detail": "An integrationReady=true RESULT whose declared implementation commit only changed parallel/PM/RESULTS paperwork produced DECLARED_IMPLEMENTATION_COMMIT_IS_PAPERWORK_ONLY and PAPERWORK_ONLY_FALSE_GREEN."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_APPLICABLE",
+    "classification": "NOT_APPLICABLE",
+    "detail": "C8 is PM/Worker coordination-only structural Git verification; it never infers runtime, renderer, machine-draw, or Owner-visible product PASS."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM may run alpha_pm_result_evidence.py verify on each incoming RESULT.json before accepting it for integration review.",
+  "evidencePaths": [
+    "parallel/PM/tools/alpha_pm_result_evidence.py",
+    "parallel/PM/ALPHA_PM_RESULT_EVIDENCE_PROTOCOL_V1.md",
+    "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C1_RESULT_ENVELOPE_VALIDATOR_RESULT.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
