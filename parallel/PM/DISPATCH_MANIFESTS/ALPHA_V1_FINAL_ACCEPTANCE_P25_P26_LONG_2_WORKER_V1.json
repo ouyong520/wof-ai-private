@@ -1,0 +1,29 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_FINAL_ACCEPTANCE_P25_P26_LONG_2_WORKER_V1",
+  "createdAtUtc": "2026-09-05T09:18:00Z",
+  "authorityCommit": "2008179bb91cba91254b10dd902c3595a3d85abb",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.final-acceptance-composite-capture-integration-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION"
+    },
+    {
+      "slot": 2,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P26_FINAL_ACCEPTANCE_SESSION_PROVENANCE_CHAIN",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P26_FINAL_ACCEPTANCE_SESSION_PROVENANCE_CHAIN_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.final-acceptance-session-provenance-chain-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P26_FINAL_ACCEPTANCE_SESSION_PROVENANCE_CHAIN_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P26_FINAL_ACCEPTANCE_SESSION_PROVENANCE_CHAIN_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P26_FINAL_ACCEPTANCE_SESSION_PROVENANCE_CHAIN"
+    }
+  ]
+}
