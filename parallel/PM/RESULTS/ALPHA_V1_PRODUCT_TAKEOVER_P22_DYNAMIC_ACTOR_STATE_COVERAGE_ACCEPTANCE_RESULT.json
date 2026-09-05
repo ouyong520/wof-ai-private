@@ -1,0 +1,147 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P22_DYNAMIC_ACTOR_STATE_COVERAGE_ACCEPTANCE",
+  "dedupKey": "alpha.v1.product-takeover.dynamic-actor-state-coverage-acceptance-v1",
+  "claimToken": "ab4eda208d544ec2bc22f79b65aa5dd4",
+  "state": "COMPLETE",
+  "verdict": "P22 implementation is complete and integration-ready: a bounded passive recorder/analyzer now consumes only exact P21 candidate identity, P12/P10 canonical actor-generation-anchor records, optional P18 canonical draw acknowledgements, and existing projection-independent presence/target semantics. It tracks movement, renderer-qualified body geometry, suppression/re-entry, generation rebuilds, P2/P3 join/leave, enemy target changes, and runtime/renderer replacement while rejecting stale identities/generations. HIT/DOWN/RECOVERY/JUMP/DEATH remain UNPROVEN_SIGNAL unless a maintained exact semantic producer exists. No real WOF or Owner visual acceptance was run.",
+  "startCommit": "e0975f9ffcafd9af465d32758afcdbcda986050a",
+  "implementationCommits": [
+    "232572dac518a76c658e834823248dce1535b6d7",
+    "9fb161ef8ddc9bef8b608e85ad27203dfaeefe23",
+    "33f9f6d0f1bab45feecae83c42c72900089816e8",
+    "2fc7ba36026172db003738b5a0d5ca2efdba6aaf"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/OWNER_ACCEPTANCE_STATE/README.md",
+    "parallel/OWNER_ACCEPTANCE_STATE/WOF_ALPHA_DYNAMIC_STATE_COVERAGE.cmd",
+    "parallel/OWNER_ACCEPTANCE_STATE/dynamic_actor_state_coverage.py",
+    "parallel/OWNER_ACCEPTANCE_STATE/test_dynamic_actor_state_coverage.py"
+  ],
+  "tests": [
+    {
+      "name": "P22 Python compile",
+      "result": "PASS",
+      "detail": "Authored dynamic_actor_state_coverage.py and focused test module compiled successfully with python -m py_compile before Git publication."
+    },
+    {
+      "name": "Focused dynamic actor state coverage self-check",
+      "result": "PASS",
+      "detail": "11 focused unittest cases passed. Coverage includes bounded ledger behavior; deterministic fixed-input output; same actor/generation movement; renderer-qualified body geometry changes; P2/P3 presence join/leave; offscreen suppression and current-generation re-entry; actor generation replacement; stale retired-generation READY rejection; renderer/runtime replacement; stale P18 rejection; cumulative P18 acknowledgement deduplication; enemy 0/4/8 target switching and current-generation label linkage; no guessed disappearance; no legacy/suppressed coordinates; rare named states remaining UNPROVEN_SIGNAL; Windows wrapper contract."
+    },
+    {
+      "name": "Git publication readback / write-boundary check",
+      "result": "PASS",
+      "detail": "Each implementation commit was reread from Git and changes exactly one P22-owned file under parallel/OWNER_ACCEPTANCE_STATE/. No P21/P20/P19/P18/P17/W3 or permanent W1 file was modified by these implementation commits."
+    },
+    {
+      "name": "real-WOF dynamic coverage acceptance",
+      "result": "NOT_RUN",
+      "detail": "Forbidden by P22 implementation-stage authority. No real WOF, live screenshots, gameplay capture, or Owner visual verdict was used to claim implementation completion."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Focused fixtures prove the bounded deterministic recorder/analyzer behavior, stale generation/runtime/renderer rejection, semantic-only lifecycle/target handling, P10-only position authority, P18 draw-link proof boundary, and deterministic output contract. They do not prove that any dynamic state has already occurred in real WOF."
+  },
+  "productProofBoundary": "exact P19/P21 candidate identity -> existing AlphaRuntime/CanonicalRuntimeCoordinator status -> P12 actor+generation records -> P10 wof-render-object-anchor-v1 READY/SUPPRESSED native 384x224 evidence -> optional exact-identity P18 acknowledgement + semantic-only field-adapter presence/target envelopes -> bounded per-actor/generation tracks -> explicit OBSERVED_PROVEN/OBSERVED_PARTIAL/NOT_OBSERVED/UNPROVEN_SIGNAL/SUPPRESSED_SAFELY matrix -> ALPHA_DYNAMIC_STATE_COVERAGE.json/.md. No new RAM/renderer/coordinate producer and no visible PASS inference are introduced.",
+  "coverageImplementation": {
+    "outputSchema": "wof-alpha-dynamic-actor-state-coverage-v1",
+    "inputBundleSchema": "wof-alpha-p22-cycle-bundle-v1",
+    "defaultLedgerLimit": 256,
+    "maximumLedgerLimit": 2048,
+    "acceptedCoverageStates": [
+      "OBSERVED_PROVEN",
+      "OBSERVED_PARTIAL",
+      "NOT_OBSERVED",
+      "UNPROVEN_SIGNAL",
+      "SUPPRESSED_SAFELY"
+    ],
+    "coreAcceptanceSet": [
+      "P1 same-generation canonical anchor movement",
+      "P1 renderer-qualified body geometry change",
+      "enemy current-generation target-label continuity when an enemy target semantic is present"
+    ],
+    "rareNamedStatesRequired": false,
+    "rareNamedStatesAtImplementationBoundary": {
+      "HIT": "UNPROVEN_SIGNAL",
+      "DOWN": "UNPROVEN_SIGNAL",
+      "RECOVERY": "UNPROVEN_SIGNAL",
+      "JUMP": "UNPROVEN_SIGNAL",
+      "DEATH": "UNPROVEN_SIGNAL"
+    },
+    "enemySpawnPolicy": "First semantic/canonical sighting may be reported only as OBSERVED_PARTIAL for the spawn edge unless an explicit lifecycle producer proves the edge.",
+    "enemyDisappearPolicy": "Absence is not promoted to disappearance; without an explicit lifecycle signal the disappearance edge remains NOT_OBSERVED.",
+    "sameSessionCallable": "DynamicActorStateCoverageRecorder.record_cycle(...)"
+  },
+  "ownerIntegration": {
+    "entrypoint": "parallel\\OWNER_ACCEPTANCE_STATE\\WOF_ALPHA_DYNAMIC_STATE_COVERAGE.cmd",
+    "input": "P21/P17 same-session wof-alpha-p22-cycle-bundle-v1 containing original accepted evidence objects; Owner should not hand-author coordinates or state labels.",
+    "defaultOutputJson": "%USERPROFILE%\\Documents\\WOF_RESULTS\\ALPHA_DYNAMIC_STATE_COVERAGE.json",
+    "defaultOutputMarkdown": "%USERPROFILE%\\Documents\\WOF_RESULTS\\ALPHA_DYNAMIC_STATE_COVERAGE.md",
+    "ownerInstructionLater": "Play normally during the bounded P21/P17 acceptance session; P22 observes passively. Rare states are optional coverage, not mandatory session blockers."
+  },
+  "invariants": {
+    "identityNeverSelectedBySpatialProximityOrOrder": true,
+    "candidateIdentityBound": true,
+    "generationBoundaryEnforced": true,
+    "crossRuntimeRendererEpochMergeForbidden": true,
+    "nativeCoordinateContract": "384x224 P10 canonical anchor only",
+    "retiredGenerationReadyRejected": true,
+    "staleP18Rejected": true,
+    "semanticPresenceTargetCannotAuthorizePosition": true,
+    "legacyProjectionOrScreenshotPositionAuthority": false,
+    "p18AcknowledgementIsVisibleProof": false,
+    "rareNamedStatesGuessed": false,
+    "fixedInputDeterministic": true
+  },
+  "candidateAtImplementation": {
+    "sourceCommit": "0752796369f1687435a1b1647e66ea0b5ab07688",
+    "packageVersion": "2026.09.05.0752796369f1",
+    "candidateSha256": "d7835982ef3210b605c0f90b25e859bf013c7d16be541f7f09f6ba7d4410a150",
+    "p21State": "COMPLETE",
+    "w3LiveQualification": "INCONCLUSIVE",
+    "ownerVisualAcceptance": "NOT_RUN",
+    "alphaLivePromoted": false
+  },
+  "ownerGate": {
+    "required": true,
+    "question": "During the later exact-candidate P21/P17 real acceptance session, feed the same-session accepted canonical/P18/semantic evidence cycles to P22 while the Owner plays normally, then review ALPHA_DYNAMIC_STATE_COVERAGE.json/.md. Do not convert missing rare states into PASS.",
+    "reason": "Repository fixtures prove implementation behavior only. Dynamic movement/body/lifecycle coverage and final visible correctness remain live facts."
+  },
+  "blocker": null,
+  "nextAction": "Integrate the P22 record_cycle seam into the later same P21/P17 bounded acceptance invocation without changing permanent install paths or any P21/P17/P18/W3 authority. On a real run, preserve exact candidate/runtime/renderer/generation binding and leave unsupported HIT/DOWN/RECOVERY/JUMP/DEATH as UNPROVEN_SIGNAL/NOT_OBSERVED. P20 remains the separate Owner visual gate.",
+  "evidencePaths": [
+    "parallel/OWNER_ACCEPTANCE_STATE/dynamic_actor_state_coverage.py",
+    "parallel/OWNER_ACCEPTANCE_STATE/test_dynamic_actor_state_coverage.py",
+    "parallel/OWNER_ACCEPTANCE_STATE/WOF_ALPHA_DYNAMIC_STATE_COVERAGE.cmd",
+    "parallel/OWNER_ACCEPTANCE_STATE/README.md"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "legacySpatialFallback": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "guessedAddresses": false,
+    "identityFromCoordinates": false,
+    "p21OwnershipTouched": false,
+    "p20OwnershipTouched": false,
+    "p19OwnershipTouched": false,
+    "p18OwnershipTouched": false,
+    "p17OwnershipTouched": false,
+    "w3OwnershipTouched": false,
+    "permanentW1UpdaterModified": false,
+    "alphaLiveMoved": false,
+    "visibleProof": "NOT_PROVEN"
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_FINAL_ACCEPTANCE_P21_P22_P23_LONG_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P22_DYNAMIC_ACTOR_STATE_COVERAGE_ACCEPTANCE_RESULT.md"
+}
