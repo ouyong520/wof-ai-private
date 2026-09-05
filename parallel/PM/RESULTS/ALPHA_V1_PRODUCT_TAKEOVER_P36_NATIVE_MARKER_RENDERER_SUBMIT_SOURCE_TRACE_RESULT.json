@@ -1,0 +1,63 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P36_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE",
+  "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-submit-source-trace-v1",
+  "claimToken": "222df9c7af3d836a06c928105d5d3419",
+  "state": "COMPLETE",
+  "verdict": "A durable exact-byte-tested zero-click read-only native-marker renderer-submit source-trace/proof producer now exists and preserves the unchanged P29/P32 fail-closed authority contract; real live marker authority was not claimed.",
+  "startCommit": "6af80330fbf5eed3c62e82b8ebf4a3e5257d1cba",
+  "testedCommit": "162e50b6c65fd1d3901ad694854563b686b2ce22",
+  "testedTree": "5d059ad40b0bdb806a441e19441d28ee17b71265",
+  "implementationCommits": ["162e50b6c65fd1d3901ad694854563b686b2ce22"],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/RENDER_AUTHORITY_V2/native_marker_renderer_submit_source_trace.py",
+    "parallel/RENDER_AUTHORITY_V2/native_marker_renderer_submit_source_trace_worker.js",
+    "parallel/RENDER_AUTHORITY_V2/test_native_marker_renderer_submit_source_trace.py",
+    "parallel/RENDER_AUTHORITY_V2/test_native_marker_renderer_submit_source_trace_worker.mjs",
+    "parallel/RENDER_AUTHORITY_V2/NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE.md"
+  ],
+  "candidateBlobMap": {
+    "parallel/RENDER_AUTHORITY_V2/native_marker_renderer_submit_source_trace.py": "98cccbf245cf20e21a91c0a135791bce369acd77",
+    "parallel/RENDER_AUTHORITY_V2/native_marker_renderer_submit_source_trace_worker.js": "c188d1b34fe45c295a24a1dd012a9b671e604bfb",
+    "parallel/RENDER_AUTHORITY_V2/test_native_marker_renderer_submit_source_trace.py": "c06cf688c1fddc4c2c6d056982af9f453865ebf9",
+    "parallel/RENDER_AUTHORITY_V2/test_native_marker_renderer_submit_source_trace_worker.mjs": "2b3eb45873db9335898c140c22be05058d7d57bb",
+    "parallel/RENDER_AUTHORITY_V2/NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE.md": "7eeb87540a4823f1fb386109904af4f1683ca700"
+  },
+  "tests": [
+    {"name": "P36 producer plus exact P32 qualifier regression", "result": "PASS", "detail": "python -m unittest -v test_native_marker_renderer_submit_source_trace.py test_native_player_marker_anchor_qualification.py => 15/15 PASS; exact P32 qualifier blob dd1cf633193312d65bc241b86eb23dace0656508 and exact P32 test blob 1131c5c24b5558d5419b90cec24fa82b34219fef were used."},
+    {"name": "Bounded renderer-submit source observer self-test", "result": "PASS", "detail": "node test_native_marker_renderer_submit_source_trace_worker.mjs => PASS, covering zero-source BLOCKED, exact direct source observation, stale binding REJECTED, ambiguity BLOCKED and teardown."},
+    {"name": "Python compile check", "result": "PASS", "detail": "python -m py_compile native_marker_renderer_submit_source_trace.py test_native_marker_renderer_submit_source_trace.py native_player_marker_anchor_qualification.py => PASS."},
+    {"name": "Durable candidate exact-byte readback", "result": "PASS", "detail": "All five P36 candidate files were fresh-read from tested commit 162e50b6c65fd1d3901ad694854563b686b2ce22 and matched the recorded blob map."},
+    {"name": "Real WOF bounded live renderer-source verification", "result": "NOT_RUN", "detail": "The P36 task explicitly forbids a real game run. No fixture or structural HEAP evidence is represented as live renderer authority."}
+  ],
+  "implementationProof": {
+    "status": "PROVEN",
+    "detail": "The repo-side producer is bound to a durable tested commit and only converts one explicit source-traced renderer-submit surface into the existing P32 evidence contract. Exact P1/P2/P3 generation binding, native 384x224 coordinates, runtimeEpoch/rendererEpoch/authorityKey, zero-click operation, structural/visual rejection and fail-closed ambiguity handling are covered by focused tests."
+  },
+  "productProof": {
+    "status": "NOT_PROVEN",
+    "detail": "A real WOF native marker has not been proven live in this task. The runtime must still expose one unique actual displayed renderer-submit source and the unchanged P32 qualifier must accept its direct events during a later bounded live verification."
+  },
+  "ownerGate": {
+    "required": true,
+    "question": "During one bounded zero-click real-WOF verification, does one unique exact displayed renderer-submit source produce direct P1/P2/P3 marker events that the existing P32 qualifier accepts?",
+    "reason": "P36 intentionally did not run the real game. The later verification requires no avatar click, player selection, manual seed, screenshot coordinate, OCR, template, nearest-object, list-order or timing selection."
+  },
+  "blocker": null,
+  "nextAction": "PM should integrate the tested P36 candidate and schedule one bounded zero-click live verification; if the exact renderer source is absent, stale or ambiguous, the producer remains fail-closed under the original P32 blocker.",
+  "evidencePaths": [
+    "parallel/RENDER_AUTHORITY_V2/native_marker_renderer_submit_source_trace.py",
+    "parallel/RENDER_AUTHORITY_V2/native_marker_renderer_submit_source_trace_worker.js",
+    "parallel/RENDER_AUTHORITY_V2/test_native_marker_renderer_submit_source_trace.py",
+    "parallel/RENDER_AUTHORITY_V2/test_native_marker_renderer_submit_source_trace_worker.mjs",
+    "parallel/RENDER_AUTHORITY_V2/NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE.md",
+    "parallel/RENDER_AUTHORITY_V2/native_player_marker_anchor_qualification.py",
+    "parallel/RENDER_AUTHORITY_V2/test_native_player_marker_anchor_qualification.py",
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P36_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE_PROGRESS.json"
+  ],
+  "zeroClick": {"ownerSelectionRequired": false, "manualSeedRequired": false},
+  "liveAuthorityClaimed": false,
+  "safety": {"readOnly": true, "ramWrites": 0, "inputInjection": false},
+  "publishedAtUtc": "2026-09-05T17:06:30Z"
+}

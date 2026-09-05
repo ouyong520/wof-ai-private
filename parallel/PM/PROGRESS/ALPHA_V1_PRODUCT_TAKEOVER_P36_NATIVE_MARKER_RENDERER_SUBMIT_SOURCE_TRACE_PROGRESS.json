@@ -3,20 +3,18 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P36_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE",
   "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-submit-source-trace-v1",
   "claimToken": "222df9c7af3d836a06c928105d5d3419",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
-  "overallPercent": 96,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
   "implementationState": "DONE_DURABLE_CANDIDATE_READBACK_BOUND",
   "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
-  "resultPublicationState": "PENDING",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "DONE",
+  "claimCloseState": "DONE",
   "startCommit": "6af80330fbf5eed3c62e82b8ebf4a3e5257d1cba",
   "lastKnownGoodCommit": "162e50b6c65fd1d3901ad694854563b686b2ce22",
   "candidateCommit": "162e50b6c65fd1d3901ad694854563b686b2ce22",
   "candidateTree": "5d059ad40b0bdb806a441e19441d28ee17b71265",
-  "implementationCommits": [
-    "162e50b6c65fd1d3901ad694854563b686b2ce22"
-  ],
+  "implementationCommits": ["162e50b6c65fd1d3901ad694854563b686b2ce22"],
   "candidateBlobMap": {
     "parallel/RENDER_AUTHORITY_V2/native_marker_renderer_submit_source_trace.py": "98cccbf245cf20e21a91c0a135791bce369acd77",
     "parallel/RENDER_AUTHORITY_V2/native_marker_renderer_submit_source_trace_worker.js": "c188d1b34fe45c295a24a1dd012a9b671e604bfb",
@@ -25,33 +23,31 @@
     "parallel/RENDER_AUTHORITY_V2/NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE.md": "7eeb87540a4823f1fb386109904af4f1683ca700"
   },
   "completed": [
-    "All P36 governance/authority inputs and P29/P32 contracts fresh-read",
-    "Bounded zero-click read-only source observer implemented; exact source absence/ambiguity remains fail-closed",
-    "Producer adapter emits unchanged P32 direct evidence contract and invokes exact P32 qualifier",
-    "Direct P1/P2/P3, zero-click, structural/visual rejection, stale/mixed binding, ambiguity and native-boundary coverage implemented",
-    "Durable implementation candidate 162e50b6c65fd1d3901ad694854563b686b2ce22 created",
-    "Fresh Python producer + exact P32 qualifier regression: 15 tests PASS",
-    "Fresh Node bounded source-observer self-test: PASS",
-    "Fresh Python py_compile: PASS",
-    "Exact P32 qualifier local test byte SHA dd1cf633193312d65bc241b86eb23dace0656508 matched repo blob",
-    "Exact P32 test byte SHA 1131c5c24b5558d5419b90cec24fa82b34219fef matched repo blob",
-    "All five candidate blob SHAs fresh-read from candidate and matched tested bytes",
-    "Candidate commit is an ancestor of current main"
+    "Fresh P36/P29/P32 governance and authority inputs read",
+    "Canonical and stage claims acquired with exact-token readback",
+    "Checked-in renderer/runtime surfaces reverse-traced without promoting structural W3 evidence",
+    "Bounded zero-click read-only source observer implemented with exact-source absence and ambiguity fail-closed behavior",
+    "Producer adapter implemented to emit the existing P32 evidence schema and call the unchanged P32 qualifier",
+    "Focused P1/P2/P3, zero-click, stale/mixed authority, structural/visual rejection, ambiguity and native-boundary checks implemented",
+    "Durable tested candidate 162e50b6c65fd1d3901ad694854563b686b2ce22 created and exact blobs recorded",
+    "Fresh Python producer plus exact P32 qualifier regression PASS 15/15",
+    "Fresh Node bounded source-observer self-test PASS",
+    "Fresh Python py_compile PASS",
+    "All five candidate blobs fresh-read and matched tested bytes",
+    "Terminal RESULT JSON and Markdown published",
+    "Stage and canonical claims closed COMPLETE atomically with terminal publication"
   ],
-  "remaining": [
-    "Publish terminal RESULT while claim is ACTIVE",
-    "Publish terminal PROGRESS",
-    "Close stage claim then canonical claim"
-  ],
+  "remaining": [],
   "tests": [
     "python -m unittest -v test_native_marker_renderer_submit_source_trace.py test_native_player_marker_anchor_qualification.py => PASS (15/15)",
     "node test_native_marker_renderer_submit_source_trace_worker.mjs => PASS",
     "python -m py_compile native_marker_renderer_submit_source_trace.py test_native_marker_renderer_submit_source_trace.py native_player_marker_anchor_qualification.py => PASS",
-    "candidate blob readback => PASS"
+    "candidate blob readback => PASS",
+    "real WOF bounded live renderer-source verification => NOT_RUN by P36 scope"
   ],
   "blocker": null,
-  "nextAction": "Publish PASS RESULT without claiming real live marker authority; one bounded zero-click live verification remains outside this no-real-game task.",
-  "terminalResultPath": null,
+  "nextAction": "PM reads the terminal RESULT, integrates tested commit 162e50b6c65fd1d3901ad694854563b686b2ce22, and schedules one bounded zero-click live verification.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P36_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T17:09:00Z"
+  "updatedAtUtc": "2026-09-05T17:06:30Z"
 }
