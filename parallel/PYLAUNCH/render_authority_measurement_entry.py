@@ -10,6 +10,7 @@ from typing import Any
 from wof_launcher import discovery_v2 as discovery_module
 from wof_launcher.browser import probe_endpoint_diagnostic
 from wof_launcher.cdp import CdpClient
+from wof_launcher.fixed_draw_runtime_gate import fixed_draw_gate_enabled, run_fixed_draw_runtime_gate
 from wof_launcher.probe_v2 import IDENTITY_PROBE as FIELD_IDENTITY_PROBE
 from wof_launcher.reentry_discovery import recover_page_only
 from wof_launcher.render_measurement_ui import MeasurementPublisher, MeasurementTrayApp
@@ -150,6 +151,23 @@ def main() -> int:
         os.environ.pop(ATTACH_ONLY_ENV, None)
         os.environ[OWNER_NAVIGATES_ENV] = "1"
         try:
+            if fixed_draw_gate_enabled():
+                result["code"] = int(
+                    run_fixed_draw_runtime_gate(
+                        root,
+                        output_root,
+                        args.host,
+                        args.port,
+                        args.browser,
+                        args.browser_path,
+                        forward_status,
+                        stop,
+                        acceptance_sha=source_commit or None,
+                    )
+                    or 0
+                )
+                return
+
             runner = _load_runner(root)
             run_port, entry_source = _choose_runner_port(args.host, args.port, owner_navigates=True)
             browser_already_running = entry_source in {"reuse-existing-exact-wof", "reuse-existing-alpha-browser"}
