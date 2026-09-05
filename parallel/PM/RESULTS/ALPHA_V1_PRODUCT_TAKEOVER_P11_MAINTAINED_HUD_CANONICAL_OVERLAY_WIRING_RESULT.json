@@ -1,0 +1,67 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P11_MAINTAINED_HUD_CANONICAL_OVERLAY_WIRING",
+  "dedupKey": "alpha.v1.product-takeover.maintained-hud-canonical-overlay-wiring-v1",
+  "claimToken": "67b75598cf68a979fd6c10a547b44170838323ccbbe257dd",
+  "state": "COMPLETE",
+  "verdict": "P11 now wires the maintained production WebGL HUD to consume the P10 transport wrapper through P9 normalizeEnvelope and P8 buildCanonicalPlan, then renders P8 enemy-target-label and player-danger-warning intents with the existing label/warning WebGL primitives; once canonical overlay authority is bound, enemy/player legacy spatial placement is not an eligible fallback and invalid, stale or mismatched canonical input clears both channels with fallback NONE.",
+  "startCommit": "1c2de21594f0c43dae5d0722c7c8108baf77510c",
+  "implementationCommits": [
+    "421d589da1b6bca1ee379b69a63b0d3028fa94ad",
+    "ee15c657a1577be57a6303789e6cc09b303a3875"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "product/alpha/wof_alpha_hud.js",
+    "product/alpha/maintained_hud_canonical_overlay_selfcheck.mjs"
+  ],
+  "tests": [
+    {
+      "name": "node --check exact committed product/alpha/wof_alpha_hud.js blob copy",
+      "result": "PASS",
+      "detail": "The locally parsed candidate had git blob ae17a82c94a0b3ee3fe0a5ff195cc0c393b24959, exactly matching the committed GitHub HUD content blob from implementation commit 421d589da1b6bca1ee379b69a63b0d3028fa94ad."
+    },
+    {
+      "name": "node --check product/alpha/maintained_hud_canonical_overlay_selfcheck.mjs",
+      "result": "PASS",
+      "detail": "The focused maintained-HUD canonical overlay seam fixture parsed successfully; GitHub re-read confirmed committed blob ff17373ca4211075fb4b64df6306cc820cdbb312."
+    },
+    {
+      "name": "node product/alpha/maintained_hud_canonical_overlay_selfcheck.mjs",
+      "result": "PASS",
+      "detail": "Focused synthetic HUD seam proved bind + READY transport calls P9 normalization and P8 planning, reaches the existing label and warning WebGL draw primitives with one enemy and one player intent, mixed renderer-epoch input immediately suppresses both channels with fallback NONE and no legacy spatial draw, and the fixed TEST smoke path remains callable and draws."
+    },
+    {
+      "name": "real-WOF / Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Explicitly outside P11 authority and dispatch cadence; W3 exact displayed-frame renderer/object source remains a separate qualification dependency, so no real-WOF or Owner-visible PASS is claimed."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Repository code plus the narrow maintained-HUD seam fixture prove the browser-side P9 -> P8 -> maintained WebGL draw wiring and fail-closed takeover behavior only. They do not prove the W3 renderer/object producer in real WOF or Owner-visible persistence."
+  },
+  "productProofBoundary": "P10-compatible canonical payload -> P9 normalizeEnvelope -> P9 P6/P7 adapters plus existing marker/warning semantics -> P8 buildCanonicalPlan -> existing maintained HUD labelTex/warningTex WebGL primitives. W3 source qualification remains external; unproven or invalid canonical input stays hidden with fallback NONE.",
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "P10 may call the exact maintained HUD bindCanonicalOverlayAuthority / ingestCanonicalAnchorEnvelope / clearCanonicalOverlayAuthority interface after injecting P9 and P8 before the HUD; PM should then integrate the parallel results and keep W3-unproven canonical records SUPPRESSED until renderer/object source qualification exists.",
+  "evidencePaths": [
+    "product/alpha/wof_alpha_hud.js",
+    "product/alpha/maintained_hud_canonical_overlay_selfcheck.mjs",
+    "product/alpha/wof_alpha_canonical_anchor_envelope.js",
+    "product/alpha/wof_alpha_canonical_overlay_plan.js",
+    "parallel/PM/ALPHA_V1_CANONICAL_OVERLAY_RUNTIME_HUD_PARALLEL_2_WORKER_DISPATCH.md"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_OVERLAY_RUNTIME_HUD_PARALLEL_2_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P11_MAINTAINED_HUD_CANONICAL_OVERLAY_WIRING_RESULT.md"
+}
