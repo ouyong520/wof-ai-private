@@ -4,31 +4,41 @@
   "dedupKey": "alpha.v1.product-takeover.zero-click-native-marker-auto-acquisition-baseline-v1",
   "claimToken": "57010fdf7998a29bdac7fa51194b9edc",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 12,
-  "implementationState": "NOT_STARTED",
-  "selfCheckState": "NOT_RUN",
+  "workState": "IMPLEMENTING",
+  "overallPercent": 48,
+  "implementationState": "IN_PROGRESS",
+  "selfCheckState": "WORKSPACE_NONTERMINAL_PASS",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "64ce273207e647e769f462f07a2707f5089fd65f",
-  "lastKnownGoodCommit": null,
-  "implementationCommits": [],
+  "lastKnownGoodCommit": "b19fd2f264badbc137f1ab5660a30b45a8e763a2",
+  "implementationCommits": [
+    "b19fd2f264badbc137f1ab5660a30b45a8e763a2"
+  ],
   "completed": [
     "Read P37 START_PROMPT, dispatch, AGENTS.md, product governance, dedup-v2 guard, progress protocol and result protocol",
-    "Confirmed no pre-existing P37 canonical claim or equivalent P37 implementation/result",
     "Created and exact-read verified canonical + stage claims with matching fresh claimToken",
-    "Read P32 terminal blocker/P36 ownership boundary and historical commits 6eeebf4a00ce7751ce9ba6008982e8136d1c4290 and d30a071c668c716cd8d9b5d02932808c76c7a3a7"
+    "Recovered exact historical native-color label + down-arrow component scan, bounded velocity continuity and two-observation reacquisition mechanics from 6eeebf4a00ce7751ce9ba6008982e8136d1c4290 without restoring its F6/F7/manual click seed path",
+    "Confirmed current native coordinate contract is 384x224 and P37 must remain outside the P32/P36 renderer authority seam",
+    "Durably added isolated zero-click P1/P2/P3 auto-acquisition/reacquisition baseline at parallel/AUTO_MARKER_BASELINE/native_marker_auto_acquisition_baseline.js",
+    "Workspace deterministic suite currently passes 6/6; this is nonterminal until the final durable candidate/readback is bound and rerun"
   ],
   "remaining": [
-    "Recover exact historical tracker mechanics and current native 384x224 coordinate conventions without restoring click/manual seed behavior",
-    "Implement isolated zero-click P1/P2/P3 acquisition/reacquisition baseline with ambiguity fail-closed and UNVERIFIED_AUTO_BASELINE boundary",
-    "Add deterministic fixtures for startup, distinction, movement/jump/reacquire, left/right and explicit non-inverted Y orientation, ambiguity and proof-boundary rejection",
-    "Create durable implementation candidate, exact-readback tested bytes, run focused self-check, publish terminal RESULT and close claims"
+    "Durably add focused deterministic tests and authority/Y-axis boundary documentation",
+    "Bind PROGRESS to final durable candidate commit/tree and exact implementation blob identities",
+    "Rerun terminal-significant Node suite against exact durable bytes/readback",
+    "Publish terminal RESULT artifacts and close both claims"
   ],
-  "tests": [],
+  "tests": [
+    {
+      "name": "workspace node parallel/AUTO_MARKER_BASELINE/test_native_marker_auto_acquisition_baseline.js",
+      "result": "PASS",
+      "detail": "6/6 nonterminal workspace checks pass; final durable-candidate rerun still required"
+    }
+  ],
   "blocker": null,
-  "nextAction": "Implement only parallel/AUTO_MARKER_BASELINE isolated baseline and focused deterministic tests from the recovered historical mechanics.",
+  "nextAction": "Add the deterministic test/document files, exact-read them back, bind the final durable candidate, then rerun the terminal-significant focused suite.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:49:25Z"
+  "updatedAtUtc": "2026-09-05T16:54:10Z"
 }
