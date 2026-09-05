@@ -5,6 +5,13 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.native-player-marker-renderer-anchor-qualification-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.native-player-marker-renderer-anchor-qualification-v1.json",
   "claimToken": "e4269802dd6ed3ea1c9854d05108494f",
-  "state": "ACTIVE",
-  "startCommit": "54826e0bf1f45f93007665914ccef981fa808123"
+  "state": "BLOCKED",
+  "startCommit": "54826e0bf1f45f93007665914ccef981fa808123",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION_RESULT.json",
+  "resultCommit": "c60d6b6697b6f757c69bc0fd7bec46b6f01f3b48",
+  "testedCommit": "bd75c3b5f7fd20fe004fae21142a0fa19942e076",
+  "blocker": {
+    "code": "NATIVE_PLAYER_MARKER_DIRECT_RENDERER_CAUSAL_EDGE_NOT_CHECKED_IN",
+    "detail": "No checked-in source-traced pointer, direct renderer hook, or exported renderer pointer proves displayed CPS1 renderer/object submission -> exact native 1P/2P/3P marker object/cluster identity + explicit actor generation association."
+  }
 }
