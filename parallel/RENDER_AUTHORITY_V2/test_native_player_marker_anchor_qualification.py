@@ -80,6 +80,28 @@ class QualificationTests(unittest.TestCase):
         self.assertEqual("wof-renderer-source-proof-v1", out["rendererSourceProof"]["schema"])
         self.assertEqual(3, out["rendererSourceProof"]["directFrameSamples"])
 
+    def test_all_player_slots_and_single_object_contract(self):
+        for player, label in (("P1", "1P"), ("P2", "2P"), ("P3", "3P")):
+            value = evidence()
+            for sample in value["samples"]:
+                sample["actorAssociation"] = {"player": player, "generation": 7}
+                sample["markers"] = [marker(
+                    player=player,
+                    generation=7,
+                    cluster=f"cluster:{player.lower()}:g7",
+                    members=[{
+                        "memberKey": "composite-marker",
+                        "semanticRole": "DOWN_ARROW",
+                        "clusterKey": f"cluster:{player.lower()}:g7",
+                        "guessed": False,
+                        "anchorPoint": {"x": 96, "y": 64},
+                    }],
+                )]
+            out = qualify_native_player_marker(value, player=player, generation=7, binding=BINDING)
+            self.assertEqual(QUALIFIED, out["state"], player)
+            self.assertEqual(player, out["anchor"]["player"])
+            self.assertEqual(label, out["rendererSourceProof"]["nativePlayerMarker"]["labelSemantic"])
+
     def test_multi_object_row_order_is_not_authority(self):
         a = evidence()
         b = evidence()
