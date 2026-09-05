@@ -1,0 +1,82 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P31_WOF_PAGE_ASSOCIATION_AMBIGUITY_REPAIR",
+  "dedupKey": "alpha.v1.product-takeover.wof-page-association-ambiguity-repair-v1",
+  "claimToken": "VEkVz7A8-x51yPL_-F9ctvlyf_LBDuuTmp09V7W3aYE",
+  "state": "COMPLETE",
+  "verdict": "Repo-side WOF Page/Worker/WASM discovery now resolves multiple page targets only from deterministic runtime authority, rejects stale/duplicate targets, and remains fail-closed when authoritative association is unresolved.",
+  "startCommit": "3f1079452cc46dbe47d242ac2796465fb1be2afb",
+  "testedCommit": "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731",
+  "candidateBranch": "worker/p31-wof-page-association-ambiguity-repair",
+  "implementationCommits": [
+    "88a6e855c04ea8e461ae1a8c072270aa02749a80",
+    "7dc35e490ec6d2e9d0b604c0be80dde1921c9352",
+    "074f16b19e0ebebb5aef57a6fcf52cde4a864130",
+    "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PYLAUNCH/wof_launcher/discovery_v2.py",
+    "parallel/PYLAUNCH/tests/test_p31_page_association_authority.py"
+  ],
+  "candidateFileBlobs": {
+    "parallel/PYLAUNCH/wof_launcher/discovery_v2.py": "518c290aed5f1a06a4b981a11160ee1d95693a56",
+    "parallel/PYLAUNCH/tests/test_p31_page_association_authority.py": "6e898ae26e8eaff96c95de00b8e02b7634085d47"
+  },
+  "tests": [
+    {
+      "name": "P31 exact candidate blob identity readback",
+      "result": "PASS",
+      "detail": "Fresh candidate readback matched discovery_v2.py blob 518c290aed5f1a06a4b981a11160ee1d95693a56 and P31 fixture blob 6e898ae26e8eaff96c95de00b8e02b7634085d47; existing parentFrame authority fixture matched 1ed144a003bc54246ff12f75db5f5f886028029a."
+    },
+    {
+      "name": "P31 focused deterministic discovery regression",
+      "result": "PASS",
+      "detail": "13/13 PASS on exact durable candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731: 8 P31 authority/duplicate/stale/fail-closed fixtures plus 5 existing parentFrame authority regressions."
+    },
+    {
+      "name": "Candidate scope diff readback",
+      "result": "PASS",
+      "detail": "Diff from branch base 433bb26b3804f927901a4f898a4d403e29694276 to tested candidate touches only discovery_v2.py and test_p31_page_association_authority.py."
+    },
+    {
+      "name": "Real WOF acceptance",
+      "result": "NOT_RUN",
+      "detail": "Intentionally not run under P31 authority."
+    },
+    {
+      "name": "Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Intentionally not requested or run under P31 authority."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_PROVEN",
+    "detail": "Focused deterministic checks prove the repo-side Page/Worker/WASM association repair only; no real-WOF or Owner-visible live acceptance was performed."
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM may integrate the tested P31 candidate and retry the separately authorized live acceptance flow; P31 itself performs no real-game run, promotion, or alpha-live move.",
+  "evidencePaths": [
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P31_WOF_PAGE_ASSOCIATION_AMBIGUITY_REPAIR_PROGRESS.json",
+    "parallel/PYLAUNCH/wof_launcher/discovery_v2.py",
+    "parallel/PYLAUNCH/tests/test_p31_page_association_authority.py",
+    "parallel/PYLAUNCH/tests/test_parentframe_authority.py"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "realGameRun": false,
+    "promotion": false,
+    "alphaLiveMoved": false
+  }
+}
