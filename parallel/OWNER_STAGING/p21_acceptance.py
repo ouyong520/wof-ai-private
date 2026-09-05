@@ -10,6 +10,8 @@ from p21_candidate import StagingError, load_json, sha256_file
 
 P17_REL = Path("parallel/OWNER_ACCEPTANCE/final_acceptance_orchestrator.py")
 P17_BUNDLE_NAME = "ALPHA_FINAL_ACCEPTANCE_BUNDLE.json"
+EXPECTED_WORLD_SHA256 = "5c369ce2de4f53d8cef87eca5623a1f0d39a779e885532d6f185b81357878f62"
+EARLY_P16_STATES = frozenset({"WAITING_WOF", "VERIFYING_WORLD"})
 
 
 def archive_existing(path: Path, archive_dir: Path) -> dict[str, Any] | None:
@@ -20,6 +22,60 @@ def archive_existing(path: Path, archive_dir: Path) -> dict[str, Any] | None:
     return {"source": str(path), "copy": str(target), "sha256": sha256_file(path), "mtime": path.stat().st_mtime}
 
 
+def _nonempty_string(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _renderer_authority_present(value: Any) -> bool:
+    return _nonempty_string(value) or (isinstance(value, Mapping) and bool(value))
+
+
+def staged_p16_readiness(raw: Mapping[str, Any], candidate: Mapping[str, Any]) -> tuple[bool, str]:
+    """Return whether a fresh P16 snapshot is usable by staged P17/P18.
+
+    Fresh file metadata alone is not authority. The staged bridge may copy P16 only
+    after exact World acceptance and the runtime/renderer identity required by the
+    downstream P17/P18 contracts is present. VERIFYING_WORLD is therefore a waiting
+    state, never terminal staged evidence.
+    """
+    if raw.get("schema") != "wof-alpha-canonical-owner-acceptance-evidence-v1" or raw.get("version") != 1:
+        return False, "P16_SCHEMA_OR_VERSION_MISMATCH"
+    if raw.get("packageVersion") != candidate.get("packageVersion"):
+        return False, "P16_PACKAGE_MISMATCH"
+    if raw.get("visibleProof") != "NOT_PROVEN":
+        return False, "P16_VISIBLE_PROOF_BOUNDARY_MISMATCH"
+
+    world = raw.get("world") if isinstance(raw.get("world"), Mapping) else {}
+    runtime = raw.get("runtime") if isinstance(raw.get("runtime"), Mapping) else {}
+    canonical = raw.get("canonical") if isinstance(raw.get("canonical"), Mapping) else {}
+    safety = raw.get("safety") if isinstance(raw.get("safety"), Mapping) else {}
+
+    if world.get("accepted") is not True:
+        return False, "P16_WORLD_NOT_ACCEPTED"
+    if world.get("sha256") != EXPECTED_WORLD_SHA256:
+        return False, "P16_WORLD_IDENTITY_MISMATCH"
+    if not _nonempty_string(world.get("pageTargetId")):
+        return False, "P16_PAGE_TARGET_MISSING"
+    if not _nonempty_string(world.get("workerTargetId")):
+        return False, "P16_WORKER_TARGET_MISSING"
+
+    state = canonical.get("state")
+    if not _nonempty_string(state) or state in EARLY_P16_STATES:
+        return False, f"P16_CANONICAL_STATE_NOT_USABLE:{state or 'MISSING'}"
+    if not _nonempty_string(runtime.get("epoch")):
+        return False, "P16_RUNTIME_EPOCH_MISSING"
+    if not _nonempty_string(runtime.get("authorityKey")):
+        return False, "P16_AUTHORITY_KEY_MISSING"
+    if not _nonempty_string(runtime.get("rendererEpoch")):
+        return False, "P16_RENDERER_EPOCH_MISSING"
+    if not _renderer_authority_present(runtime.get("rendererAuthority")):
+        return False, "P16_RENDERER_AUTHORITY_MISSING"
+
+    if safety.get("readOnly") is not True or safety.get("ramWrites") != 0 or safety.get("inputInjection") is not False:
+        return False, "P16_SAFETY_MISMATCH"
+    return True, "USABLE"
+
+
 def wait_for_staged_p16(default_path: Path, output_path: Path, candidate: Mapping[str, Any], started_epoch: float, prior: Mapping[str, Any] | None, timeout: float) -> dict[str, Any] | None:
     deadline, prior_sha = time.time() + max(0.0, timeout), prior.get("sha256") if isinstance(prior, Mapping) else None
     while True:
@@ -27,9 +83,10 @@ def wait_for_staged_p16(default_path: Path, output_path: Path, candidate: Mappin
             try:
                 raw, digest = load_json(default_path), sha256_file(default_path)
                 fresh = default_path.stat().st_mtime >= started_epoch - 1.0 and digest != prior_sha
-                if raw.get("schema") == "wof-alpha-canonical-owner-acceptance-evidence-v1" and raw.get("version") == 1 and raw.get("packageVersion") == candidate.get("packageVersion") and raw.get("visibleProof") == "NOT_PROVEN" and fresh:
+                usable, readiness = staged_p16_readiness(raw, candidate)
+                if fresh and usable:
                     output_path.parent.mkdir(parents=True, exist_ok=True); shutil.copy2(default_path, output_path)
-                    return {"path": str(output_path), "sha256": sha256_file(output_path), "canonicalState": ((raw.get("canonical") or {}).get("state")), "packageVersion": raw.get("packageVersion"), "world": raw.get("world"), "runtime": raw.get("runtime")}
+                    return {"path": str(output_path), "sha256": sha256_file(output_path), "canonicalState": ((raw.get("canonical") or {}).get("state")), "packageVersion": raw.get("packageVersion"), "world": raw.get("world"), "runtime": raw.get("runtime"), "readiness": readiness}
             except (OSError, ValueError):
                 pass
         if time.time() >= deadline: return None
