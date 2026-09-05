@@ -4,34 +4,46 @@
   "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-submit-source-trace-v1",
   "claimToken": "222df9c7af3d836a06c928105d5d3419",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "IMPLEMENTING",
-  "overallPercent": 28,
-  "implementationState": "SOURCE_TRACE_CONTRACT_IDENTIFIED",
-  "selfCheckState": "NOT_RUN",
+  "workState": "SELF_CHECK",
+  "overallPercent": 82,
+  "implementationState": "DONE_DURABLE_CANDIDATE_BOUND",
+  "selfCheckState": "READY_FOR_FRESH_EXACT_CANDIDATE_TESTS",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "6af80330fbf5eed3c62e82b8ebf4a3e5257d1cba",
-  "lastKnownGoodCommit": null,
-  "implementationCommits": [],
+  "lastKnownGoodCommit": "162e50b6c65fd1d3901ad694854563b686b2ce22",
+  "candidateCommit": "162e50b6c65fd1d3901ad694854563b686b2ce22",
+  "candidateTree": "5d059ad40b0bdb806a441e19441d28ee17b71265",
+  "implementationCommits": [
+    "162e50b6c65fd1d3901ad694854563b686b2ce22"
+  ],
+  "candidateBlobMap": {
+    "parallel/RENDER_AUTHORITY_V2/native_marker_renderer_submit_source_trace.py": "98cccbf245cf20e21a91c0a135791bce369acd77",
+    "parallel/RENDER_AUTHORITY_V2/native_marker_renderer_submit_source_trace_worker.js": "c188d1b34fe45c295a24a1dd012a9b671e604bfb",
+    "parallel/RENDER_AUTHORITY_V2/test_native_marker_renderer_submit_source_trace.py": "c06cf688c1fddc4c2c6d056982af9f453865ebf9",
+    "parallel/RENDER_AUTHORITY_V2/test_native_marker_renderer_submit_source_trace_worker.mjs": "2b3eb45873db9335898c140c22be05058d7d57bb",
+    "parallel/RENDER_AUTHORITY_V2/NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE.md": "7eeb87540a4823f1fb386109904af4f1683ca700"
+  },
   "completed": [
-    "Fresh main read and P36 START_PROMPT read",
+    "Fresh main and all required P36/P29/P32 governance/authority inputs read",
     "Canonical/stage claims acquired and exact-token readback verified",
-    "P29 terminal evidence contract and P32 terminal blocker read",
-    "P32 qualifier implementation and focused tests read",
-    "Checked-in renderer capture/launcher surfaces inspected",
-    "Confirmed no existing checked-in direct displayed renderer submit causal edge may be promoted from structural HEAP"
+    "Checked-in renderer/runtime surfaces reverse-traced; structural W3 explicitly not promoted",
+    "Bounded zero-click read-only source observer implemented with exact source-surface discovery and ambiguity rejection",
+    "Producer adapter implemented to emit the existing P32 evidence schema and call the unchanged P32 qualifier",
+    "Focused Python and Node tests added for P1/P2/P3 direct source, zero-click, structural/visual rejection, stale binding, ambiguity and bounded teardown",
+    "Five implementation/test/doc blobs created with exact local tested blob SHA equality",
+    "Durable candidate commit/tree created"
   ],
   "remaining": [
-    "Implement bounded zero-click read-only displayed renderer submit source-trace producer",
-    "Implement strict producer-side contract adapter into existing P32 qualifier",
-    "Add focused fail-closed tests including P1/P2/P3, epoch/authority mismatch, no structural fallback and bounded teardown",
-    "Create durable tested candidate and run terminal-significant focused self-check",
-    "Publish RESULT and close claims"
+    "Run fresh exact-candidate Python tests against exact P32 qualifier bytes",
+    "Run fresh exact-candidate Node source-observer tests",
+    "Fresh-read candidate files/blob SHAs and confirm no post-test implementation byte changes",
+    "Publish terminal RESULT then terminal PROGRESS and close stage/canonical claims"
   ],
   "tests": [],
   "blocker": null,
-  "nextAction": "Implement the narrow producer so only an explicit source-traced renderer submit hook/export can mint P32 direct evidence; absence or ambiguity remains fail-closed without visual/HEAP fallback.",
+  "nextAction": "Run fresh terminal-significant tests against candidate 162e50b6c65fd1d3901ad694854563b686b2ce22, using exact P32 qualifier blob dd1cf633193312d65bc241b86eb23dace0656508.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:55:00Z"
+  "updatedAtUtc": "2026-09-05T17:04:00Z"
 }
