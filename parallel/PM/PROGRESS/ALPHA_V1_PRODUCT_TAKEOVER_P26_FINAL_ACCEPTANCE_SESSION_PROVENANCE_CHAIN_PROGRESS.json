@@ -1,0 +1,67 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P26_FINAL_ACCEPTANCE_SESSION_PROVENANCE_CHAIN",
+  "dedupKey": "alpha.v1.product-takeover.final-acceptance-session-provenance-chain-v1",
+  "claimToken": "d60b10ee92743c2181969d475ac93164",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "READY_TO_PUBLISH",
+  "overallPercent": 95,
+  "implementationState": "DONE",
+  "selfCheckState": "PASS",
+  "resultPublicationState": "PENDING",
+  "claimCloseState": "PENDING",
+  "startCommit": "8ef71613834221d48031974dd3ee052be87e69f1",
+  "lastKnownGoodCommit": "d59bc3135286cc23caba8711c475db7cbf12acf9",
+  "implementationCommits": [],
+  "completed": [
+    "canonical dedup claim acquired and verified",
+    "durable stage claim created",
+    "final acceptance session/provenance manifest implementation completed in worker workspace",
+    "artifact ledger and P19->P21->W3/P16/P18->P22/P24->P17->P20->P23 causal binding implemented",
+    "deterministic chain digest and explicit runtime/renderer epoch transition handling implemented",
+    "cross-candidate/session/run/World/page/authority/epoch mismatch fail-closed handling implemented",
+    "P17 dependency hash validation implemented",
+    "P20 receipt/plan/result and CAS binding implemented",
+    "P23 promoted candidate/session binding implemented",
+    "fixture/production isolation and terminal manifest atomic immutability implemented",
+    "Python compile passed",
+    "13/13 deterministic focused tests passed",
+    "static scan found no Git ref mutation, input injection, or process-memory write path",
+    "implementation blobs were SHA readback-checked; an erroneous temporary blob was never referenced by any tree/commit"
+  ],
+  "remaining": [
+    "assemble the verified implementation/test blobs into the final tree",
+    "integrate onto latest main with non-force semantics",
+    "read back final file SHAs, changed-files, and ownership",
+    "publish the specified RESULT.json and RESULT.md with state=COMPLETE and integrationReady=true",
+    "close matching canonical and stage claims using the same claimToken",
+    "write WORKER_RESULT terminal commit"
+  ],
+  "tests": [
+    {
+      "name": "Python compile",
+      "result": "PASS",
+      "detail": "P26 implementation compiled in the interrupted worker run."
+    },
+    {
+      "name": "deterministic provenance focused tests",
+      "result": "PASS",
+      "detail": "13/13 passed, covering identity mismatches, epoch transitions, stale P18, P22/P24 cross-run rejection, P17 hash mismatch, fixture receipt isolation, promotion CAS/hash mismatch, P23 cross-session rejection, digest stability, and terminal atomic immutability."
+    },
+    {
+      "name": "real WOF acceptance",
+      "result": "NOT_RUN",
+      "detail": "Not run by P26 implementation authority."
+    }
+  ],
+  "blocker": null,
+  "nextAction": "Reattach the same P26 claimToken in a fresh worker chat and complete Git terminal publication only; do not redesign provenance or add features.",
+  "terminalResultPath": null,
+  "writerRole": "PM_RECONSTRUCTION",
+  "unpublishedImplementation": true,
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "updatedAtUtc": "2026-09-05T10:23:30Z"
+}
