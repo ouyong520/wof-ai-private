@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.product-takeover.final-acceptance-composite-capture-integration-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.final-acceptance-composite-capture-integration-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION_START_PROMPT.md",
+  "owner": "LongWorker-1",
+  "claimToken": "1a8e410f279e1450057986f7e8212959",
+  "state": "ACTIVE",
+  "startCommit": "d59bc3135286cc23caba8711c475db7cbf12acf9"
+}

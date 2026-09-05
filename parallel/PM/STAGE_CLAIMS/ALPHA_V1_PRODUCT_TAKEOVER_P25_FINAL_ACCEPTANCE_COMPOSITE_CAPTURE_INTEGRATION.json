@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION",
+  "dedupKey": "alpha.v1.product-takeover.final-acceptance-composite-capture-integration-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.final-acceptance-composite-capture-integration-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.final-acceptance-composite-capture-integration-v1.json",
+  "claimToken": "1a8e410f279e1450057986f7e8212959",
+  "state": "ACTIVE",
+  "startCommit": "d59bc3135286cc23caba8711c475db7cbf12acf9"
+}
