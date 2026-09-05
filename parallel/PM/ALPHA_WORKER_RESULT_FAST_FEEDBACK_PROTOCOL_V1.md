@@ -223,3 +223,43 @@ Every new Alpha worker start prompt should include:
 `Terminal reporting must follow parallel/PM/ALPHA_WORKER_RESULT_FAST_FEEDBACK_PROTOCOL_V1.md.`
 
 This requirement is additive to dedup-v2 and does not weaken any existing fail-closed, product-proof, scope-isolation, or Owner-intervention rules.
+
+## 16. Mandatory non-terminal progress checkpoints
+
+Terminal RESULT files are no longer sufficient by themselves for long-running work. Every PM-dispatched Alpha worker must also follow:
+
+`parallel/PM/ALPHA_WORKER_PROGRESS_CHECKPOINT_PROTOCOL_V1.md`
+
+and maintain:
+
+`parallel/PM/PROGRESS/<stageId>_PROGRESS.json`
+
+The checkpoint must exist after claim verification and before meaningful implementation, then be updated at the mandatory milestones defined by that protocol. This applies even when the worker expects to finish in one chat.
+
+If implementation is done but RESULT publication is pending, the progress file must say `READY_TO_PUBLISH`. If a real blocker is found but RESULT is not yet durable, it must say `BLOCKED_PENDING_RESULT`. If a worker intentionally stops before terminal closeout, it must say `INTERRUPTED` when it still has an opportunity to write the checkpoint.
+
+A worker that notices low tool/runtime/context budget must prioritize publishing/updating PROGRESS over optional extra implementation or tests.
+
+## 17. PM non-terminal fast-read override
+
+When no terminal RESULT exists, PM must not infer worker progress or live execution from `claim.state=ACTIVE`.
+
+Instead PM reads:
+
+1. canonical/stage claim;
+2. `parallel/PM/PROGRESS/<stageId>_PROGRESS.json`;
+3. recent commits newer than the checkpoint.
+
+`ACTIVE` means only "not terminally closed". It does **not** mean the worker chat is still running.
+
+If the Owner says a worker stopped while its claim remains ACTIVE, PM should treat the work as interrupted, read/reconstruct PROGRESS, and issue a same-token reattach continuation rather than inventing recovery or a duplicate claim.
+
+## 18. Prompt requirement after checkpoint hardening
+
+Every new Alpha prompt and every continuation of a non-terminal claimed stage must include both:
+
+`Terminal reporting must follow parallel/PM/ALPHA_WORKER_RESULT_FAST_FEEDBACK_PROTOCOL_V1.md.`
+
+and
+
+`Progress checkpointing must follow parallel/PM/ALPHA_WORKER_PROGRESS_CHECKPOINT_PROTOCOL_V1.md; keep parallel/PM/PROGRESS/<stageId>_PROGRESS.json current at mandatory milestones and before any non-terminal stop.`
