@@ -1,0 +1,61 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C2_DISPATCH_MANIFEST_FAST_READER",
+  "dedupKey": "alpha.pm.worker-communication.dispatch-manifest-fast-reader-v1",
+  "claimToken": "e48b93a2e10804cfe1dab70eecfba885ea20c02a64261b08",
+  "state": "COMPLETE",
+  "verdict": "Immutable Alpha dispatch manifest and deterministic PM fast reader are implemented and tested; PM can resolve Owner worker-slot shorthand directly to durable RESULT.json without chat-history reconstruction.",
+  "startCommit": "5a8927dd83de07959d070d30ea3dcdb8feeab094",
+  "implementationCommits": [
+    "f15614d550cde2735db4a6d7ae8ed6d5e6a4b656"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PM/schemas/alpha_dispatch_manifest_v1.schema.json",
+    "parallel/PM/templates/alpha_dispatch_manifest_v1.json",
+    "parallel/PM/tools/alpha_pm_result_inbox.py",
+    "parallel/PM/tests/test_alpha_pm_result_inbox.py",
+    "parallel/PM/ALPHA_PM_RESULT_INBOX_PROTOCOL_V1.md"
+  ],
+  "tests": [
+    {
+      "name": "unit: alpha_pm_result_inbox",
+      "result": "PASS",
+      "detail": "11 focused tests passed, covering mixed COMPLETE/BLOCKED/NOT_FINISHED, malformed and mismatched results, unsupported state/protocol, duplicate result paths, traversal, slot selection, unknown slot, deterministic paths, and the repository template."
+    },
+    {
+      "name": "cli smoke: template slots 1 3",
+      "result": "PASS",
+      "detail": "Fast reader exited 0 and deterministically summarized manifest slots 1 and 3 as NOT_FINISHED without chat reconstruction."
+    },
+    {
+      "name": "schema/template validation",
+      "result": "PASS",
+      "detail": "The repository manifest template validates against alpha_dispatch_manifest_v1.schema.json."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_APPLICABLE",
+    "classification": "NOT_APPLICABLE",
+    "detail": "Coordination-only Git protocol/tooling; no product-visible UI claim is part of this stage."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM can create one immutable manifest per Alpha worker dispatch and use --slots for Owner shorthand such as 1, 1 2, and 1 3.",
+  "evidencePaths": [
+    "parallel/PM/ALPHA_PM_RESULT_INBOX_PROTOCOL_V1.md",
+    "parallel/PM/tools/alpha_pm_result_inbox.py",
+    "parallel/PM/tests/test_alpha_pm_result_inbox.py",
+    "parallel/PM/schemas/alpha_dispatch_manifest_v1.schema.json",
+    "parallel/PM/templates/alpha_dispatch_manifest_v1.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
