@@ -4,9 +4,9 @@
   "dedupKey": "alpha.v1.product-takeover.p16-p9-binding-staging-readiness-repair-v1",
   "claimToken": "07c4ebfe2077a52b842c5c53d2f3cd05",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 8,
-  "implementationState": "NOT_STARTED",
+  "workState": "IMPLEMENTING",
+  "overallPercent": 35,
+  "implementationState": "DIAGNOSED_READY_TO_PATCH",
   "selfCheckState": "NOT_RUN",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
@@ -15,20 +15,25 @@
   "implementationCommits": [],
   "completed": [
     "Read START_PROMPT, dispatch, product governance, AGENTS, dedup-v2, progress and result protocols",
-    "Verified canonical and stage claim paths were absent before claim",
-    "Created and read back canonical and stage claims with exact matching claimToken"
+    "Created and read back canonical/stage claims with exact claimToken",
+    "Read current final live gate plus P16/P17/P18/P21/P25/P27/P28 authority/results and focused staging/runtime sources",
+    "Diagnosed exact staged P9 failure: staged runtime environment does not bind the exact P19 candidate manifest, so AlphaRuntimeManager falls back to stale committed OWNER_ONECLICK/package_manifest.json without P9/P8",
+    "Diagnosed P1 fallback failure: ProductionP1Overlay HUD_SOURCES injects maintained HUD without first injecting P9/P8 canonical dependencies, causing the maintained HUD hard guard to fail",
+    "Diagnosed P16 early-acceptance defect: wait_for_staged_p16 accepts fresh schema/package evidence even when world.accepted=false / canonical.state=VERIFYING_WORLD and runtime authority is incomplete"
   ],
   "remaining": [
-    "Read current P9/P1/P16 implementation, staging code, authorities/results and focused tests",
-    "Implement minimal maintained P9/P1 binding and P16 readiness seam repair",
-    "Create durable tested candidate and bind progress",
-    "Run focused deterministic self-checks against exact durable candidate",
-    "Publish RESULT artifacts, close canonical/stage claims, and terminal progress"
+    "Implement staging-only exact candidate manifest binding without promotion or detached checkout mutation",
+    "Repair ProductionP1Overlay fallback source ordering and precise fail-closed P9/P8 diagnostics without HUD rewrite",
+    "Require exact World accepted/world SHA/runtime+renderer authority before staged P16 acceptance",
+    "Add focused deterministic regressions",
+    "Create durable tested candidate and bind PROGRESS",
+    "Run fresh focused self-checks against exact durable candidate",
+    "Publish RESULT artifacts, close canonical/stage claims, terminalize PROGRESS"
   ],
   "tests": [],
   "blocker": null,
-  "nextAction": "Inspect the exact maintained P9/P1 binding and P16 staging readiness call chain on current main.",
+  "nextAction": "Patch only p21 staged manifest/readiness seams and ProductionP1Overlay fallback dependency binding, then add focused regressions.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T15:12:28.513045Z"
+  "updatedAtUtc": "2026-09-05T15:20:00Z"
 }
