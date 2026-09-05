@@ -1,0 +1,12 @@
+{
+  "schema": "wof-alpha-current-dispatch-v1",
+  "pmOwned": true,
+  "repository": "ouyong520/wof-ai-private",
+  "dispatchId": "ALPHA_PM_WORKER_COMMUNICATION_C4_C5_2_WORKER_V1",
+  "manifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_PM_WORKER_COMMUNICATION_C4_C5_2_WORKER_V1.json",
+  "manifestAuthorityCommit": "a429da44b94e497302d3a774bf3587b12df98687",
+  "manifestSha256": "4e768654b175331be54eb9f25164a95f1a32bd2496c27ccd07210fec181d7ea0",
+  "updatedAtUtc": "2026-09-05T05:15:00Z",
+  "revision": 1,
+  "previousDispatch": null
+}
