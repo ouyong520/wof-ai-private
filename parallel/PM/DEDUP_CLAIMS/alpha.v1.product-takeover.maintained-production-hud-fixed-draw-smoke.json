@@ -8,6 +8,7 @@
   "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_W2_MAINTAINED_PRODUCTION_HUD_FIXED_DRAW_SMOKE_START_PROMPT.md",
   "owner": "gpt-5.6-sol-alpha-takeover-w2",
   "claimToken": "8462fb8a-7cf0-4c2d-8ddc-38fafd1120ea",
-  "state": "ACTIVE",
-  "startCommit": "4d170caf04e56ad3cf56ce6a1624d5506d0d811c"
+  "state": "BLOCKED",
+  "startCommit": "4d170caf04e56ad3cf56ce6a1624d5506d0d811c",
+  "blocker": "PM_COORDINATOR_CLAIM_ONLY_NO_IMPLEMENTATION: the PM coordination session acquired the W2 canonical/stage pair during dispatch but intentionally did not begin production changes or tests. PM is closing its own exact-token ownership pair before implementation so a dedicated worker can resume through an explicitly authorized execution-recovery key without stealing/reusing this occupied claim."
 }
