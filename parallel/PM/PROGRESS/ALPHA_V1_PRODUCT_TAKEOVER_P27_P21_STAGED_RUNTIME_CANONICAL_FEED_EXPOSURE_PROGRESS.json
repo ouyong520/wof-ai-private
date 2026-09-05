@@ -1,0 +1,40 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P27_P21_STAGED_RUNTIME_CANONICAL_FEED_EXPOSURE",
+  "dedupKey": "alpha.v1.product-takeover.p21-staged-runtime-canonical-feed-exposure-v1",
+  "claimToken": "ee254ee086ca56d8ae140aab3c3d26b3",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 8,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "aa862708c6d9662ba38170f590a6ef7bab669072",
+  "lastKnownGoodCommit": "69c193a53b2f858e42b4030fe7e96fa8987af9f8",
+  "implementationCommits": [],
+  "completed": [
+    "read P27 START prompt, dispatch authority, manifest, governance, progress/result protocols and P25 blocker checkpoint",
+    "traced P21 staged runtime entry and maintained P10/P12 canonical authority contracts",
+    "acquired and re-read exclusive dedup-v2 canonical claim with exact claimToken",
+    "created and re-read matching P27 stage claim with exact claimToken"
+  ],
+  "remaining": [
+    "trace the maintained runtime coordinator instance/call chain that owns P10 canonical feed",
+    "implement the narrow P21 staged runtime/status canonical-feed tee without W3/V3 substitution",
+    "add and run minimal deterministic focused self-checks for identity, suppression, stale/replay/replacement behavior",
+    "publish truthful COMPLETE or precise BLOCKED RESULT.json and RESULT.md",
+    "close canonical/stage claims using the exact claimToken",
+    "write terminal WORKER_RESULT commit and update PROGRESS to TERMINAL/100"
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "Trace the maintained P10 coordinator producer/status API used by the runtime, then wire only that truth into the P21 staged publisher seam.",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "updatedAtUtc": "2026-09-05T10:59:28Z"
+}
