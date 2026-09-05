@@ -5,6 +5,14 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.canonical-anchor-runtime-envelope-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.canonical-anchor-runtime-envelope-v1.json",
   "claimToken": "51d37e82c89f2ceb7325ec4e10a8d9d3402e44c27fe4e514",
-  "state": "ACTIVE",
-  "startCommit": "d462dbae63946aeca992c2d49d60e90b5f924a17"
+  "state": "COMPLETE",
+  "startCommit": "d462dbae63946aeca992c2d49d60e90b5f924a17",
+  "implementationCommits": [
+    "3c3abc59c0afb70cd5fa9a7ed58ec12165ebe5f7",
+    "9ab1528bf699cce9fd194b17654ae97ae68f66c2"
+  ],
+  "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P9_CANONICAL_ANCHOR_RUNTIME_ENVELOPE_RESULT.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P9_CANONICAL_ANCHOR_RUNTIME_ENVELOPE_RESULT.md",
+  "resultCommit": "e481c619cd90c4eea6f5f45037d3e20f509da8ad",
+  "resultMdCommit": "d46a633891a7d94ef540e64e85d4303625cf5d09"
 }
