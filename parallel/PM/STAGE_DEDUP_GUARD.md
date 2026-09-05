@@ -1,6 +1,6 @@
 # WOF PM Stage Dedup / Canonical Claim Guard
 
-Updated: 2026-09-02
+Updated: 2026-09-05
 
 Status: **AUTHORITATIVE — MANDATORY FOR ALL NEW PM START PROMPTS**
 
@@ -216,3 +216,23 @@ Before PM creates any new QA, retest, cross-check or independent-validation prom
 - do not allocate extra independent-validation keys merely because worker slots are free or because additional confidence would be nice.
 
 `dedupMode: independent-validation` is an exception mechanism for a **justified additional independent opinion**, not a mechanism for manufacturing more QA generations.
+
+## 13. Durable progress checkpoint is mandatory after ownership
+
+After the canonical claim and stage claim are both created and re-read with the exact matching `claimToken`, every PM-dispatched Alpha worker must follow:
+
+`parallel/PM/ALPHA_WORKER_PROGRESS_CHECKPOINT_PROTOCOL_V1.md`
+
+Before meaningful implementation begins, create:
+
+`parallel/PM/PROGRESS/<stageId>_PROGRESS.json`
+
+Then keep that per-stage checkpoint current at the mandatory milestones defined by the protocol. This is part of the execution contract, not optional documentation.
+
+Important semantics:
+
+- the progress file is per-stage and therefore does not create a shared parallel-writer race;
+- `claim.state=ACTIVE` means only that the logical claim is not terminally closed; it does not prove that a worker chat is currently running;
+- if a worker stops with an ACTIVE claim, continuation should normally reattach the same exact claim/token and resume from PROGRESS; do not create a duplicate/recovery claim merely because the chat stopped;
+- if no progress file exists for already-running legacy/current work, PM may reconstruct only the progress file with `writerRole=PM_RECONSTRUCTION` from Git evidence and an explicit worker report; ownership remains unchanged;
+- terminal truth still requires the durable RESULT and correct claim closeout.
