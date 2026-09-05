@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P16_OWNER_CANONICAL_STATUS_ACCEPTANCE_EVIDENCE",
+  "dedupKey": "alpha.v1.product-takeover.owner-canonical-status-acceptance-evidence-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.owner-canonical-status-acceptance-evidence-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.owner-canonical-status-acceptance-evidence-v1.json",
+  "claimToken": "84fcf962fdd039a2d1e6bbcc854ee528",
+  "state": "ACTIVE",
+  "startCommit": "db10fe39aef1b4357f1dac7541a54ef689224c39"
+}
