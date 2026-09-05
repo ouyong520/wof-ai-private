@@ -5,6 +5,9 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.maintained-production-hud-fixed-draw-smoke.execution-recovery-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.maintained-production-hud-fixed-draw-smoke.execution-recovery-v1.json",
   "claimToken": "444405bb-8fb6-4b60-a8ee-6240151dd936",
-  "state": "ACTIVE",
-  "startCommit": "5093baa02d49b2c11285e0ad08ef5a7032494c09"
+  "state": "COMPLETE",
+  "startCommit": "5093baa02d49b2c11285e0ad08ef5a7032494c09",
+  "integrationReadyCommit": "9b4a99b445c9004f7c2d5dc41a3a7fa8878c9335",
+  "subresultPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_W2_FIXED_DRAW_SMOKE_EXECUTION_RECOVERY_V1_SUBRESULT.md",
+  "ownerLiveGate": "PENDING_NOT_RUN"
 }
