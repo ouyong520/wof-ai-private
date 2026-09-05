@@ -5,6 +5,19 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.final-acceptance-composite-capture-integration-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.final-acceptance-composite-capture-integration-v1.json",
   "claimToken": "1a8e410f279e1450057986f7e8212959",
-  "state": "ACTIVE",
-  "startCommit": "d59bc3135286cc23caba8711c475db7cbf12acf9"
+  "state": "COMPLETE",
+  "startCommit": "d59bc3135286cc23caba8711c475db7cbf12acf9",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION_START_PROMPT.md",
+  "owner": "LongWorker-1",
+  "result": "COMPLETE — P25 FINAL ACCEPTANCE COMPOSITE CAPTURE INTEGRATION — INTEGRATION READY",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P25_FINAL_ACCEPTANCE_COMPOSITE_CAPTURE_INTEGRATION_RESULT.md",
+  "resultCommit": "72cdaa16622e462512de2fdea1f9aee6fe929f67",
+  "testedCommit": "d56d9b69aa682f5f49eeff8fe367ee68097f3c0f",
+  "implementationCommits": [
+    "d6a0817bda6e0856ae71f1215d72dd0f6d6a7340",
+    "f20e4f9ae38e40124d23012ef40cf8048689bb93",
+    "0a1e99b247b3405186dabcc32b95462248a77ac3",
+    "95204c04bf7d48d78cdd1924c11fb7fdfa64bc54",
+    "d56d9b69aa682f5f49eeff8fe367ee68097f3c0f"
+  ]
 }
