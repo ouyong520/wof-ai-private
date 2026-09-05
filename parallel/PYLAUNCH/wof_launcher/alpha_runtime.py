@@ -22,6 +22,8 @@ PAGE_SOURCES = (
     "product/alpha/wof_alpha_hud_model.js",
     "product/alpha/wof_alpha_enemy_target_labels.js",
     "product/alpha/wof_alpha_player_head_warning.js",
+    "product/alpha/wof_alpha_canonical_anchor_envelope.js",
+    "product/alpha/wof_alpha_canonical_overlay_plan.js",
     "product/alpha/wof_alpha_hud.js",
 )
 WORKER_SOURCES = (
@@ -119,10 +121,14 @@ class AlphaRuntimeManager:
             session.close()
 
     def _page_install(self, client: CdpClient, page_id: str, pair_nonce: str) -> dict[str, Any]:
-        bootstrap, hud_model, labels, player_warning, hud = (self._verified_text(p) for p in PAGE_SOURCES)
+        page_sources = [(rel, self._verified_text(rel)) for rel in PAGE_SOURCES]
+        bootstrap_rel, bootstrap = page_sources[0]
         cleanup = """(()=>{try{window.WOFALPHAHUD?.dispose?.();}catch(_){}try{window.__WOF_ALPHA_TRANSPORT_V1?.reset?.();}catch(_){}for(const k of ['__WOF_ALPHA_BOOTSTRAP_RC5','__WOF_ALPHA_BOOTSTRAP_RC3','__WOF_ALPHA_TRANSPORT_V1','__WOF_ALPHA_CONFIG','WOFALPHA']){try{delete window[k];}catch(_){}}return true;})()"""
         self._evaluate(client, page_id, cleanup)
-        self._evaluate(client, page_id, f"(0,eval)({json.dumps(bootstrap)}); true")
+        try:
+            self._evaluate(client, page_id, f"(0,eval)({json.dumps(bootstrap)}); true")
+        except Exception as exc:
+            raise AlphaRuntimeError(f"package-selected Alpha page source injection failed: {bootstrap_rel}: {exc}") from exc
         base = self._evaluate(client, page_id, "(()=>{const s=window.__WOF_ALPHA_BOOTSTRAP_RC5,t=window.__WOF_ALPHA_TRANSPORT_V1;return {version:s?.version,session:s?.session,channel:s?.channel,transportVersion:t?.version,listenerReady:s?.listenerReady===true};})()")
         if not isinstance(base, dict) or base.get("listenerReady") is not True or base.get("transportVersion") != TRANSPORT:
             raise AlphaRuntimeError("package-selected Alpha bootstrap 未建立安全传输监听器")
@@ -132,12 +138,37 @@ class AlphaRuntimeManager:
         pair = self._evaluate(client, page_id, f"window.__WOF_ALPHA_TRANSPORT_V1.bind({json.dumps(pair_nonce)})")
         if not isinstance(pair, dict) or pair.get("bound") is not True or not isinstance(pair.get("pairGeneration"), int):
             raise AlphaRuntimeError("package-selected Alpha pair bind 失败")
-        for source in (hud_model, labels, player_warning, hud):
-            self._evaluate(client, page_id, f"(0,eval)({json.dumps(source)}); true", timeout=15.0)
-        hud_state = self._evaluate(client, page_id, "(()=>{const s=window.__WOF_ALPHA_BOOTSTRAP_RC5;if(s)s.hudLoaded=!!window.WOFALPHAHUD;return {hudLoaded:!!window.WOFALPHAHUD,transport:s?.attachState||null};})()")
+        for rel, source in page_sources[1:]:
+            try:
+                self._evaluate(client, page_id, f"(0,eval)({json.dumps(source)}); true", timeout=15.0)
+            except Exception as exc:
+                raise AlphaRuntimeError(f"package-selected Alpha page source injection failed: {rel}: {exc}") from exc
+        hud_state = self._evaluate(
+            client,
+            page_id,
+            """(()=>{const s=window.__WOF_ALPHA_BOOTSTRAP_RC5,e=window.WOFAlphaCanonicalAnchorEnvelope,p=window.WOFAlphaCanonicalOverlayPlan,h=window.WOFALPHAHUD;const missing=[];if(!e)missing.push('window.WOFAlphaCanonicalAnchorEnvelope');if(!p)missing.push('window.WOFAlphaCanonicalOverlayPlan');if(!h)missing.push('window.WOFALPHAHUD');for(const name of ['bindCanonicalOverlayAuthority','ingestCanonicalAnchorEnvelope','clearCanonicalOverlayAuthority','status'])if(typeof h?.[name]!=='function')missing.push('window.WOFALPHAHUD.'+name);const hudStatus=typeof h?.status==='function'?h.status():null;if(s)s.hudLoaded=!!h;return {hudLoaded:!!h,transport:s?.attachState||null,missingCanonical:missing,hudStatus};})()""",
+        )
         if not isinstance(hud_state, dict) or hud_state.get("hudLoaded") is not True:
             raise AlphaRuntimeError("package-selected Alpha HUD 未挂接")
-        return {"session": session, "channel": channel, "pairGeneration": pair["pairGeneration"], "pairNonce": pair_nonce}
+        missing = hud_state.get("missingCanonical")
+        if not isinstance(missing, list):
+            raise AlphaRuntimeError("package-selected Alpha canonical HUD capability probe 无效")
+        if missing:
+            raise AlphaRuntimeError("package-selected Alpha canonical HUD capability 缺失: " + ", ".join(str(item) for item in missing))
+        hud_status = hud_state.get("hudStatus")
+        if not isinstance(hud_status, dict):
+            raise AlphaRuntimeError("package-selected Alpha canonical HUD status API 返回无效")
+        canonical_status = hud_status.get("canonicalOverlay")
+        if not isinstance(canonical_status, dict) or canonical_status.get("bound") is not False:
+            raise AlphaRuntimeError("package-selected Alpha canonical HUD 初始未绑定状态无效")
+        return {
+            "session": session,
+            "channel": channel,
+            "pairGeneration": pair["pairGeneration"],
+            "pairNonce": pair_nonce,
+            "canonicalOverlayCapable": True,
+            "canonicalOverlayStatus": canonical_status,
+        }
 
     def _profiles_for_worker(self) -> dict[str, dict[str, Any]]:
         live = self._projection.profiles()
@@ -193,6 +224,10 @@ class AlphaRuntimeManager:
             pair = self._page_install(client, page_id, pair_nonce)
             worker_status = self._worker_install(client, worker_id, pair, choice.identity, runtime_epoch)
             page_status = self._evaluate(client, page_id, "(()=>({attachState:window.__WOF_ALPHA_BOOTSTRAP_RC5?.attachState||null,hudLoaded:!!window.WOFALPHAHUD,hudStatus:window.WOFALPHAHUD?.status?.()||null}))()")
+            if not isinstance(page_status, dict):
+                raise AlphaRuntimeError("package-selected Alpha page status 无效")
+            page_status["canonicalOverlayCapable"] = pair["canonicalOverlayCapable"]
+            page_status["canonicalOverlayStatus"] = pair["canonicalOverlayStatus"]
             projection_status = self._projection.status()
             if self._projection.profiles() is None:
                 projection_status = self._projection.ensure_started(client, choice, authority_key)
