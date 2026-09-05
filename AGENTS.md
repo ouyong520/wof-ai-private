@@ -42,6 +42,8 @@ Any agent acting as Product Manager, orchestrator, reviewer, or task issuer MUST
 - `parallel/PM/STAGE_DEDUP_GUARD.md`
 - `parallel/PM/TESTING_CADENCE_POLICY.md`
 - `parallel/PM/OWNER_INTERVENTION_GATE.md`
+- `parallel/PM/ALPHA_WORKER_PROGRESS_CHECKPOINT_PROTOCOL_V1.md`
+- `parallel/PM/ALPHA_WORKER_RESULT_FAST_FEEDBACK_PROTOCOL_V1.md`
 
 These rules survive chat/thread changes. A fresh PM chat must not rely on old chat memory; GitHub durable state is authoritative.
 
@@ -116,6 +118,38 @@ or
 
 followed by a concise note to the Owner stating that the pasted task is already in progress or already finished. PM then decides the actual next step from Git truth.
 
+## Mandatory durable worker progress / summary — unfinished work must never disappear into chat
+
+For every PM-dispatched Alpha worker, durable progress reporting is mandatory and is part of the execution contract, not optional documentation.
+
+Authoritative protocol:
+
+- `parallel/PM/ALPHA_WORKER_PROGRESS_CHECKPOINT_PROTOCOL_V1.md`
+- terminal reporting remains governed by `parallel/PM/ALPHA_WORKER_RESULT_FAST_FEEDBACK_PROTOCOL_V1.md`
+
+Rules:
+
+- After canonical dedup claim **and** stage claim are both created and re-read with the exact matching `claimToken`, the worker must create `parallel/PM/PROGRESS/<stageId>_PROGRESS.json` **before meaningful implementation begins**.
+- The progress file must be updated after the first durable implementation milestone, after each coherent material milestone, after focused self-check, immediately when a real blocker is discovered, immediately before terminal RESULT publication, and before any voluntary non-terminal stop.
+- If tool/runtime/context budget is visibly low, **writing the PROGRESS checkpoint takes priority over optional additional implementation or tests**.
+- A worker that must stop before terminal publication must durably record its state as `INTERRUPTED`, `READY_TO_PUBLISH`, or `BLOCKED_PENDING_RESULT` as appropriate, with exact completed work, remaining work, tests, blocker and next action. A chat-only summary is insufficient.
+- `ACTIVE` in a canonical/stage claim means only that the logical claim is not terminally closed. It must **never** be interpreted as proof that the worker chat is still running.
+- `overallPercent=100` is allowed only after durable terminal RESULT publication **and** matching canonical/stage claim closeout are complete. Code-complete or tests-pass alone is not 100%.
+- Terminal worker truth requires `RESULT.json` + `RESULT.md`, matching terminal claim closeout, final `WORKER_RESULT <stageId> <STATE>` commit, and a terminal PROGRESS checkpoint consistent with those artifacts.
+- A continuation of interrupted work must read the current PROGRESS checkpoint first, verify the exact existing claim token, reconcile newer Git commits, and continue the same logical claim. Do not create a new claim or recovery merely because the chat/window changed.
+- When the Owner asks for status, PM must read in this order: **terminal RESULT -> canonical/stage claim -> per-stage PROGRESS -> recent commits newer than the checkpoint**. PM must report the last durable checkpoint and must not guess live execution from `ACTIVE` alone.
+- If an older/current worker stopped before this protocol and no PROGRESS exists, PM may reconstruct only the progress file from Git evidence plus the worker's explicit report using `writerRole=PM_RECONSTRUCTION`; this does not close claims or fabricate unpublished work.
+
+Required lifecycle vocabulary:
+
+`CLAIMED -> IMPLEMENTING -> SELF_CHECK -> READY_TO_PUBLISH -> PUBLISHING -> TERMINAL`
+
+Exceptional non-terminal states:
+
+`BLOCKED_PENDING_RESULT` / `INTERRUPTED`
+
+The purpose is simple: **whether a worker finishes, blocks, times out, or loses its execution window, Git must still show exactly how far it got and what remains.**
+
 ## Testing cadence — batch by major version / coherent feature set
 
 Testing exists to protect product correctness, not to consume development time after every small edit.
@@ -149,6 +183,8 @@ Default PM-to-worker handoff:
 - ending: sustained-execution instruction; do not repeat long background already stored in Git.
 
 Every worker handoff must preserve duplicate preflight behavior: **先检查该逻辑任务是否已经 ACTIVE / COMPLETE / superseded；如果已在做或已完成，不重复执行，直接告诉 Owner 已认领/已完成并 NO EXECUTION。**
+
+Every Alpha worker handoff and non-terminal continuation must also preserve durable progress reporting: **claim/stage claim 验真后先建立或读取 `parallel/PM/PROGRESS/<stageId>_PROGRESS.json`；每个关键里程碑、测试、blocker、终态发布前和任何非终态停止前都必须更新；窗口不足时优先写 PROGRESS，禁止只在聊天里留总结。**
 
 For implementation/setup/recovery work, handoffs should end with the equivalent of:
 
