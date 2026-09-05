@@ -1,0 +1,34 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P30_P16_P9_BINDING_AND_STAGING_READINESS_REPAIR",
+  "dedupKey": "alpha.v1.product-takeover.p16-p9-binding-staging-readiness-repair-v1",
+  "claimToken": "07c4ebfe2077a52b842c5c53d2f3cd05",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 8,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "c97603ef0c217a859d0ae230ade62fcfee4844e8",
+  "lastKnownGoodCommit": "c97603ef0c217a859d0ae230ade62fcfee4844e8",
+  "implementationCommits": [],
+  "completed": [
+    "Read START_PROMPT, dispatch, product governance, AGENTS, dedup-v2, progress and result protocols",
+    "Verified canonical and stage claim paths were absent before claim",
+    "Created and read back canonical and stage claims with exact matching claimToken"
+  ],
+  "remaining": [
+    "Read current P9/P1/P16 implementation, staging code, authorities/results and focused tests",
+    "Implement minimal maintained P9/P1 binding and P16 readiness seam repair",
+    "Create durable tested candidate and bind progress",
+    "Run focused deterministic self-checks against exact durable candidate",
+    "Publish RESULT artifacts, close canonical/stage claims, and terminal progress"
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "Inspect the exact maintained P9/P1 binding and P16 staging readiness call chain on current main.",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "updatedAtUtc": "2026-09-05T15:12:28.513045Z"
+}
