@@ -7,9 +7,12 @@ $LiveBranch = 'alpha-live'
 $RemoteRef = 'origin/alpha-live'
 $Results = Join-Path $env:USERPROFILE 'Documents\WOF_RESULTS'
 $LatestFeedback = Join-Path $Results 'LATEST_ALPHA_FEEDBACK.txt'
+$LiveModeMarker = Join-Path $Repo 'parallel\PYLAUNCH\alpha_live_mode.txt'
 $PollSeconds = 6
 $SelfPath = $MyInvocation.MyCommand.Path
 $script:MutexReleased = $false
+$script:LiveMode = 'normal'
+$script:LiveModeReason = 'not resolved yet; fixed-draw smoke disabled'
 
 function Stop-Wof([string]$Message, [int]$Code = 1) {
     Write-Host ''
@@ -27,6 +30,49 @@ function Git-Text([string[]]$Args) {
     return (($out | Out-String).Trim())
 }
 
+function Resolve-AlphaLiveMode {
+    $script:LiveMode = 'normal'
+    $script:LiveModeReason = 'normal mode; fixed-draw smoke disabled'
+
+    if (-not (Test-Path -LiteralPath $LiveModeMarker)) {
+        $script:LiveModeReason = 'fail-closed: live-mode marker missing; fixed-draw smoke disabled'
+        return
+    }
+
+    try {
+        $markerLines = @(Get-Content -LiteralPath $LiveModeMarker -ErrorAction Stop)
+    } catch {
+        $script:LiveModeReason = 'fail-closed: live-mode marker unreadable; fixed-draw smoke disabled'
+        return
+    }
+
+    if ($markerLines.Count -ne 1) {
+        $script:LiveModeReason = 'fail-closed: live-mode marker must contain exactly one line; fixed-draw smoke disabled'
+        return
+    }
+
+    $requestedMode = [string]$markerLines[0]
+    if ($requestedMode -ne $requestedMode.Trim()) {
+        $script:LiveModeReason = 'fail-closed: live-mode marker contains surrounding whitespace; fixed-draw smoke disabled'
+        return
+    }
+
+    switch -CaseSensitive ($requestedMode) {
+        'normal' {
+            $script:LiveMode = 'normal'
+            $script:LiveModeReason = 'normal mode; fixed-draw smoke disabled'
+        }
+        'fixed-draw-first-gate' {
+            $script:LiveMode = 'fixed-draw-first-gate'
+            $script:LiveModeReason = 'controlled first Owner fixed-draw gate; runtime smoke enabled'
+        }
+        default {
+            $script:LiveMode = 'normal'
+            $script:LiveModeReason = "fail-closed: unsupported live-mode marker '$requestedMode'; fixed-draw smoke disabled"
+        }
+    }
+}
+
 function Write-LatestFeedback([string]$Status, [string]$Sha, [string]$Message) {
     try {
         New-Item -ItemType Directory -Path $Results -Force | Out-Null
@@ -34,6 +80,9 @@ function Write-LatestFeedback([string]$Status, [string]$Sha, [string]$Message) {
             'WOF Alpha latest feedback',
             ('status=' + $Status),
             ('alphaLiveCommit=' + $Sha),
+            ('currentSha=' + $Sha),
+            ('liveMode=' + $script:LiveMode),
+            ('liveModeReason=' + $script:LiveModeReason),
             ('updatedAt=' + (Get-Date).ToString('yyyy-MM-dd HH:mm:ss zzz')),
             ('resultsFolder=' + $Results),
             'updateChannel=alpha-live over GitHub SSH port 22',
@@ -99,6 +148,8 @@ function Start-AlphaRuntime([string]$Sha) {
     $workdir = Join-Path $Repo 'parallel\PYLAUNCH'
     if (-not (Test-Path $entry)) { Stop-Wof 'Alpha runtime entry is missing.' 35 }
 
+    Resolve-AlphaLiveMode
+
     New-Item -ItemType Directory -Path $Results -Force | Out-Null
     $env:WOF_ALPHA_CURRENT_MAIN_SOURCE = '1'
     $env:WOF_ALPHA_ACCEPTANCE_COMMIT = $Sha
@@ -109,14 +160,32 @@ function Start-AlphaRuntime([string]$Sha) {
     Write-Host ''
     Write-Host '--------------------------------------------------'
     Write-Host "Starting controlled Alpha live release: $Sha"
+    Write-Host "Current live mode: $script:LiveMode"
+    Write-Host "Live mode status: $script:LiveModeReason"
     Write-Host 'The Alpha runtime is restarting; keep the current Browser/WOF when possible.'
     Write-Host 'Latest feedback path: Documents\WOF_RESULTS\LATEST_ALPHA_FEEDBACK.txt'
     Write-Host '--------------------------------------------------'
     Write-Host ''
 
-    Start-Process -FilePath $script:Py `
-        -ArgumentList @($entry, '--root', $Repo, '--output-root', $Results, '--browser', 'chrome') `
-        -WorkingDirectory $workdir | Out-Null
+    $hadSmokeFlag = Test-Path Env:WOF_ALPHA_FIXED_DRAW_SMOKE
+    $previousSmokeFlag = $env:WOF_ALPHA_FIXED_DRAW_SMOKE
+    try {
+        if ($script:LiveMode -eq 'fixed-draw-first-gate') {
+            $env:WOF_ALPHA_FIXED_DRAW_SMOKE = '1'
+        } else {
+            Remove-Item Env:WOF_ALPHA_FIXED_DRAW_SMOKE -ErrorAction SilentlyContinue
+        }
+
+        Start-Process -FilePath $script:Py `
+            -ArgumentList @($entry, '--root', $Repo, '--output-root', $Results, '--browser', 'chrome') `
+            -WorkingDirectory $workdir | Out-Null
+    } finally {
+        if ($hadSmokeFlag) {
+            $env:WOF_ALPHA_FIXED_DRAW_SMOKE = $previousSmokeFlag
+        } else {
+            Remove-Item Env:WOF_ALPHA_FIXED_DRAW_SMOKE -ErrorAction SilentlyContinue
+        }
+    }
     Write-LatestFeedback 'RUNNING' $Sha 'Controlled Alpha runtime started.'
 }
 
@@ -218,6 +287,7 @@ try {
     $current = Git-Text @('-C', $Repo, 'rev-parse', '--verify', 'HEAD')
     if (-not $current) { Stop-Wof 'Could not read current Alpha commit.' 23 }
 
+    Resolve-AlphaLiveMode
     Write-LatestFeedback 'STARTING' $current 'Permanent controller started; checking alpha-live.'
     Stop-AlphaRuntime
     Start-AlphaRuntime $current
