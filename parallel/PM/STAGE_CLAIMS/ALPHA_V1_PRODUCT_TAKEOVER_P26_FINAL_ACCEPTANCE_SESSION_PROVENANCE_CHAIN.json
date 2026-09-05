@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P26_FINAL_ACCEPTANCE_SESSION_PROVENANCE_CHAIN",
+  "dedupKey": "alpha.v1.product-takeover.final-acceptance-session-provenance-chain-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.final-acceptance-session-provenance-chain-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.final-acceptance-session-provenance-chain-v1.json",
+  "claimToken": "d60b10ee92743c2181969d475ac93164",
+  "state": "ACTIVE",
+  "startCommit": "8ef71613834221d48031974dd3ee052be87e69f1"
+}
