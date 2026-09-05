@@ -4,31 +4,49 @@
   "dedupKey": "alpha.v1.product-takeover.post-repair-final-candidate-rebuild-prep-v1",
   "claimToken": "9f07f3681dba3d6721ee23ff82df41fd",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 8,
-  "implementationState": "NOT_STARTED",
-  "selfCheckState": "NOT_RUN",
+  "workState": "SELF_CHECK",
+  "overallPercent": 78,
+  "implementationState": "DONE_DURABLE_CANDIDATE_BOUND",
+  "selfCheckState": "READY_FOR_FRESH_EXACT_CANDIDATE_TESTS",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "24cbf440a676c8b086c43b8bbb614a620409e88f",
-  "lastKnownGoodCommit": null,
-  "implementationCommits": [],
+  "lastKnownGoodCommit": "c8c61112efbccdef5794ee68cd27767eacb72e96",
+  "implementationCommits": [
+    "c8c61112efbccdef5794ee68cd27767eacb72e96"
+  ],
+  "candidateCommit": "c8c61112efbccdef5794ee68cd27767eacb72e96",
+  "candidateTree": "70329cbceffa8b17bfc88fc753b28648f4cbf6fc",
   "completed": [
-    "read authoritative P33 START_PROMPT, root AGENTS, dedup-v2, progress checkpoint, and terminal-result protocols",
-    "confirmed P33 canonical and stage claim paths were absent before claim attempt",
-    "created and re-read canonical and stage claims with exact matching claimToken 9f07f3681dba3d6721ee23ff82df41fd"
+    "read authoritative P33 START_PROMPT, dispatch, final live gate, root governance, dedup/progress/result protocols",
+    "created and exact-token verified P33 canonical and stage claims before implementation",
+    "read terminal P29/P30/P31 COMPLETE PM-accepted RESULT authority and exact tested commits",
+    "read terminal P32 BLOCKED/integrationReady=false authority and preserved it outside the required accepted set",
+    "read historical P19 candidate pointer/source 0752796369f1687435a1b1647e66ea0b5ab07688 and existing OWNER_ONECLICK final-candidate builder/tests",
+    "implemented post-repair fail-closed rebuild wrapper requiring one exact 40-hex source commit and true P29/P30/P31 tested-commit ancestry",
+    "implemented exact sourceCommit/packageVersion/candidate SHA/attestation SHA/rebuild-manifest readback and deterministic metadata binding",
+    "implemented stale P19 pointer/source rejection and explicit P32 excluded-blocked metadata",
+    "hardened Windows entrypoint to require an explicit exact source SHA instead of implicit HEAD",
+    "hardened the existing final-candidate workflow to read-only contract verification so ordinary main pushes cannot silently regenerate/publish stale candidate bytes",
+    "published durable implementation candidate c8c61112efbccdef5794ee68cd27767eacb72e96 with tree 70329cbceffa8b17bfc88fc753b28648f4cbf6fc",
+    "did not generate/overwrite LATEST_FINAL_CANONICAL_CANDIDATE.json, did not promote, and did not move alpha-live",
+    "P35 independently terminalized its separate integration-lineage stream while P33 remained within rebuild-mechanism ownership"
   ],
   "remaining": [
-    "read current dispatch/final live gate and terminal P29/P30/P31/P32 RESULT authority",
-    "read P19/final canonical candidate authority and OWNER_ONECLICK build/manifest implementation plus focused tests",
-    "implement minimal deterministic fail-closed rebuild mechanism for exact source commit and required accepted tested-commit containment",
-    "create durable implementation candidate and bind PROGRESS before terminal-significant self-check",
-    "run focused deterministic exact-candidate self-checks and publish terminal RESULT plus claim closeout"
+    "fresh-read exact implementation file/blob identities from durable candidate",
+    "run terminal-significant focused regression against the exact durable candidate and inspect workflow result",
+    "publish terminal RESULT JSON+Markdown, close exact-token claims, and terminalize PROGRESS"
   ],
-  "tests": [],
+  "tests": [
+    {
+      "name": "P33 pre-durable isolated synthetic graph regression",
+      "result": "PASS",
+      "detail": "Nonterminal implementation dry-run covered 10 focused cases: exact containing source, missing required ancestry, symbolic/abbreviated source rejection, stale P19 source/pointer rejection, manifest/candidate/source/package mismatches, deterministic repeated metadata, P32 exclusion, and alpha-live non-movement. Final authority still requires fresh exact-candidate CI."
+    }
+  ],
   "blocker": null,
-  "nextAction": "Read exact terminal repair authority and current OWNER_ONECLICK final-candidate build/manifest path before implementation.",
+  "nextAction": "Fresh-read candidate blobs and run the focused workflow regression on durable commit c8c61112efbccdef5794ee68cd27767eacb72e96.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-05T16:16:00Z"
+  "updatedAtUtc": "2026-09-05T16:28:00Z"
 }
