@@ -5,6 +5,7 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.maintained-production-hud-fixed-draw-smoke",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.maintained-production-hud-fixed-draw-smoke.json",
   "claimToken": "8462fb8a-7cf0-4c2d-8ddc-38fafd1120ea",
-  "state": "ACTIVE",
-  "startCommit": "4d170caf04e56ad3cf56ce6a1624d5506d0d811c"
+  "state": "BLOCKED",
+  "startCommit": "4d170caf04e56ad3cf56ce6a1624d5506d0d811c",
+  "blocker": "PM_COORDINATOR_CLAIM_ONLY_NO_IMPLEMENTATION: PM closed its own exact-token W2 ownership pair before any production/test work so execution can resume only through PM-authorized recovery authority."
 }
