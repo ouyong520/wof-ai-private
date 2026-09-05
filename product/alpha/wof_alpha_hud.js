@@ -2,6 +2,7 @@
 'use strict';
 const VERSION='wof-alpha-hud-rc5';
 const SCHEMA='wof-alpha-v2';
+const CANONICAL_INPUT_SCHEMA='wof-alpha-canonical-anchor-runtime-envelope-input-v1';
 const FIXED_SMOKE_SCHEMA='wof-alpha-fixed-draw-smoke-v1';
 const FIXED_SMOKE_STATUS_KEY='__WOF_ALPHA_FIXED_DRAW_SMOKE_STATUS_V1';
 const FIXED_NATIVE_W=384,FIXED_NATIVE_H=224,FIXED_NATIVE_X=192,FIXED_NATIVE_Y=112;
@@ -21,8 +22,12 @@ if(!TRANSPORT||TRANSPORT.version!=='wof-alpha-safe-transport-v1'||typeof TRANSPO
 if(!window.WOFAlphaHudModel?.summarizeWarnings)throw new Error('WOF Alpha HUD model missing');
 if(!window.WOFAlphaEnemyTargetLabels?.buildPlan)throw new Error('WOF Alpha enemy target-label model missing');
 if(!window.WOFAlphaPlayerHeadWarning?.buildPlan)throw new Error('WOF Alpha player-head warning model missing');
+if(!window.WOFAlphaCanonicalAnchorEnvelope?.normalizeEnvelope||typeof window.WOFAlphaCanonicalAnchorEnvelope?.validateAuthorityBinding!=='function')throw new Error('WOF Alpha canonical anchor envelope P9 missing');
+if(!window.WOFAlphaCanonicalOverlayPlan?.buildCanonicalPlan)throw new Error('WOF Alpha canonical overlay plan P8 missing');
 const TARGET_LABELS=window.WOFAlphaEnemyTargetLabels;
 const PLAYER_WARNING=window.WOFAlphaPlayerHeadWarning;
+const CANONICAL_ENVELOPE=window.WOFAlphaCanonicalAnchorEnvelope;
+const CANONICAL_PLAN=window.WOFAlphaCanonicalOverlayPlan;
 
 try{
   const legacy=window.WOFHUD;
@@ -83,6 +88,8 @@ let disposed=false,visible=true,lastMsg=null,lastRx=0,lastDiag=null,lastKey='',d
 let lastMarkerMsg=null,lastMarkerRx=0,lastLabelPlan=null,labelDrawCount=0;
 let lastPlayerMsg=null,lastPlayerRx=0,lastPlayerPlan=null,playerWarningDrawCount=0,lastDirectP1WarningCount=0,p1TrackerWarningDrawCount=0;
 let p1TrackerAuthority=null,p1Tracker=null,p1TrackerRx=0,p1TrackerDrawCount=0,p1TrackerHideReason='NOT_BOUND';
+let canonicalOverlayBinding=null,canonicalOverlayPayload=null,canonicalOverlayEnvelope=null,canonicalOverlayPlan=null,canonicalOverlayRx=0;
+let canonicalOverlayState='SUPPRESSED',canonicalOverlayReason='NOT_BOUND';
 
 function snapGL(){
   const active=gl.getParameter(gl.ACTIVE_TEXTURE),activeTex=gl.getParameter(gl.TEXTURE_BINDING_2D);
@@ -289,6 +296,118 @@ function drawPlayerHeadWarnings(now,warnings){
   }
   return plan;
 }
+function canonicalOverlayStatus(now=Date.now()){
+  const emitted=canonicalOverlayPlan?.diagnostics?.emitted||{};
+  return{
+    schema:'wof-alpha-maintained-hud-canonical-overlay-status-v1',bound:!!canonicalOverlayBinding,state:canonicalOverlayState,reason:canonicalOverlayReason,
+    authority:canonicalOverlayBinding?{...canonicalOverlayBinding}:null,envelopeAgeMs:canonicalOverlayRx?Math.max(0,now-canonicalOverlayRx):null,lastReceiveAt:canonicalOverlayRx||null,
+    emittedEnemyLabelCount:Number.isInteger(emitted.enemyTargetLabels)?emitted.enemyTargetLabels:0,
+    emittedPlayerDangerCount:Number.isInteger(emitted.playerDangerWarnings)?emitted.playerDangerWarnings:0,
+    fallback:'NONE',readOnly:true,ramWrites:0,inputInjection:false
+  };
+}
+function resetCanonicalOverlayPlan(reason,clearPayload=true){
+  if(clearPayload)canonicalOverlayPayload=null;
+  canonicalOverlayEnvelope=null;canonicalOverlayPlan=null;canonicalOverlayState='SUPPRESSED';canonicalOverlayReason=String(reason||'CANONICAL_OVERLAY_SUPPRESSED');
+  lastLabelPlan=null;lastPlayerPlan=null;lastDirectP1WarningCount=0;
+  return canonicalOverlayStatus();
+}
+function sameCanonicalBinding(left,right){
+  if(!left||!right)return false;
+  for(const key of ['authorityKey','runtimeEpoch','rendererEpoch'])if(left[key]!==right[key])return false;
+  const lw=left.worldSha256??null,rw=right.worldSha256??null;
+  return lw===rw;
+}
+function normalizedCanonicalBinding(binding){
+  const result=CANONICAL_ENVELOPE.validateAuthorityBinding(binding);
+  return result?.ok===true?result.value:null;
+}
+function bindCanonicalOverlayAuthority(binding){
+  const normalized=normalizedCanonicalBinding(binding);
+  if(!normalized){canonicalOverlayBinding=null;canonicalOverlayRx=0;resetCanonicalOverlayPlan('CANONICAL_AUTHORITY_INVALID');return canonicalOverlayStatus();}
+  canonicalOverlayBinding={...normalized};canonicalOverlayRx=0;
+  return resetCanonicalOverlayPlan('BOUND_WAITING_FOR_ENVELOPE');
+}
+function clearCanonicalOverlayAuthority(reason='AUTHORITY_REVOKED'){
+  canonicalOverlayBinding=null;canonicalOverlayRx=0;
+  return resetCanonicalOverlayPlan(String(reason||'AUTHORITY_REVOKED'));
+}
+function normalizeCanonicalPayload(payload,now){
+  if(!canonicalOverlayBinding)return{ok:false,reason:'CANONICAL_AUTHORITY_NOT_BOUND'};
+  if(!payload||payload.schema!==CANONICAL_INPUT_SCHEMA)return{ok:false,reason:'CANONICAL_TRANSPORT_SCHEMA_INVALID'};
+  const payloadBinding=normalizedCanonicalBinding(payload.authorityBinding);
+  if(!payloadBinding||!sameCanonicalBinding(canonicalOverlayBinding,payloadBinding))return{ok:false,reason:'CANONICAL_AUTHORITY_BINDING_MISMATCH'};
+  const envelope=CANONICAL_ENVELOPE.normalizeEnvelope({records:payload.records,authorityBinding:payload.authorityBinding,nowMs:now});
+  if(!envelope?.ok)return{ok:false,reason:envelope?.reason||'CANONICAL_ENVELOPE_INVALID'};
+  const authority=envelope.authority||{};
+  for(const key of ['authorityKey','runtimeEpoch','rendererEpoch'])if(authority[key]!==canonicalOverlayBinding[key])return{ok:false,reason:'CANONICAL_NORMALIZED_AUTHORITY_MISMATCH'};
+  if(canonicalOverlayBinding.worldSha256&&authority.worldSha256!==canonicalOverlayBinding.worldSha256)return{ok:false,reason:'CANONICAL_WORLD_IDENTITY_MISMATCH'};
+  return{ok:true,envelope};
+}
+function canonicalDrawingBufferState(now){
+  if(!canonicalOverlayBinding)return null;
+  const db=drawingBufferState(now,canonicalOverlayBinding.runtimeEpoch);
+  return db?{...db,runtimeEpoch:canonicalOverlayBinding.runtimeEpoch,rendererEpoch:canonicalOverlayBinding.rendererEpoch}:null;
+}
+function canonicalEnemyInputs(envelope,now){
+  const anchors=CANONICAL_ENVELOPE.toEnemyAnchorArray(envelope);
+  if(!lastMarkerRx||now-lastMarkerRx>MARKER_STALE_MS)return{markers:[],anchors};
+  const bySlot=new Map();for(const row of anchors||[])if(Number.isInteger(row?.slot))bySlot.set(row.slot,row);
+  const markers=(Array.isArray(lastMarkerMsg?.markers)?lastMarkerMsg.markers:[]).map(marker=>{
+    const row=bySlot.get(marker?.slot);
+    return{...marker,
+      actor:typeof marker?.actor==='string'&&marker.actor?marker.actor:(row?.actor||((Number.isInteger(marker?.slot))?'enemy-slot-'+marker.slot:null)),
+      generation:Number.isInteger(marker?.generation)?marker.generation:row?.generation};
+  });
+  return{markers,anchors};
+}
+function canonicalPlayerGenerations(envelope){
+  const out={};for(const row of envelope?.records||[])if(row?.kind==='player'&&typeof row.actor==='string'&&Number.isInteger(row.generation))out[row.actor]=row.generation;return out;
+}
+function buildCanonicalOverlayPlanAt(now){
+  if(!canonicalOverlayBinding)return resetCanonicalOverlayPlan('CANONICAL_AUTHORITY_NOT_BOUND',false),null;
+  if(!canonicalOverlayPayload)return resetCanonicalOverlayPlan('BOUND_WAITING_FOR_ENVELOPE',false),null;
+  const normalized=normalizeCanonicalPayload(canonicalOverlayPayload,now);
+  if(!normalized.ok){resetCanonicalOverlayPlan(normalized.reason,false);return null;}
+  const envelope=normalized.envelope;
+  const enemy=canonicalEnemyInputs(envelope,now);
+  const fresh=!!lastRx&&now-lastRx<=STALE_MS;
+  const warnings=fresh&&Array.isArray(lastMsg?.warnings)?lastMsg.warnings:[];
+  const db=canonicalDrawingBufferState(now);
+  const plan=CANONICAL_PLAN.buildCanonicalPlan({
+    enemy:{markers:enemy.markers,canonicalAnchors:enemy.anchors},
+    player:{warnings,canonicalAnchors:CANONICAL_ENVELOPE.toPlayerAnchorSamples(envelope),playerGenerations:canonicalPlayerGenerations(envelope),warningSampleAt:lastMsg?.sampleAt},
+    canonicalAuthority:canonicalOverlayBinding,authorityBinding:envelope.authority,drawingBufferState:db,nowMs:now
+  });
+  if(!plan||plan.mode!=='canonical-render-anchor'||plan.coordinateSpace!=='webgl-drawing-buffer'||plan.fallback!=='NONE'){
+    resetCanonicalOverlayPlan('CANONICAL_PRODUCT_PLAN_INVALID',false);return null;
+  }
+  canonicalOverlayEnvelope=envelope;canonicalOverlayPlan=plan;canonicalOverlayState=plan.state==='READY'?'READY':'SUPPRESSED';canonicalOverlayReason=plan.reason||null;
+  lastLabelPlan={labels:Array.isArray(plan.enemyTargetLabels)?plan.enemyTargetLabels:[],suppressed:plan.suppression?.enemy||[],reason:plan.reason||null};
+  lastPlayerPlan={anchored:Array.isArray(plan.playerDangerWarnings)?plan.playerDangerWarnings:[],fixed:[],suppressed:plan.suppression?.player||[]};
+  lastDirectP1WarningCount=0;
+  return plan;
+}
+function ingestCanonicalAnchorEnvelope(payload){
+  canonicalOverlayRx=Date.now();
+  if(!canonicalOverlayBinding)return resetCanonicalOverlayPlan('CANONICAL_AUTHORITY_NOT_BOUND');
+  const normalized=normalizeCanonicalPayload(payload,canonicalOverlayRx);
+  if(!normalized.ok)return resetCanonicalOverlayPlan(normalized.reason);
+  canonicalOverlayPayload=payload;canonicalOverlayEnvelope=normalized.envelope;
+  buildCanonicalOverlayPlanAt(canonicalOverlayRx);
+  return canonicalOverlayStatus(canonicalOverlayRx);
+}
+function drawCanonicalOverlay(now){
+  const plan=buildCanonicalOverlayPlanAt(now);if(!plan)return plan;
+  const enemyLabels=[],playerWarnings=[];
+  for(const intent of Array.isArray(plan.drawIntents)?plan.drawIntents:[]){
+    if(intent?.kind==='enemy-target-label'&&intent.payload)enemyLabels.push(intent.payload);
+    else if(intent?.kind==='player-danger-warning'&&intent.payload)playerWarnings.push(intent.payload);
+  }
+  if(enemyLabels.length)drawLabelPlan({labels:enemyLabels});
+  for(const item of playerWarnings){const r=item?.drawRectDb;if(!r)continue;drawTexture(r.x,r.y,r.width,r.height,warningTex);playerWarningDrawCount++;}
+  return plan;
+}
 function paintBox(title,lines){
   const h=Math.min(hud.height,48+Math.max(1,lines.length)*20);
   const key=title+'|'+lines.join('|');if(key===lastKey)return h;lastKey=key;
@@ -311,12 +430,15 @@ function drawHud(){
   if(disposed)return;
   if(fixedSmoke.enabled)drawFixedSmoke();
   if(!visible)return;
-  const now=Date.now();drawEnemyTargetLabels(now);const trackerVisible=drawP1Tracker(now);
+  const now=Date.now();
+  if(canonicalOverlayBinding)drawCanonicalOverlay(now);else drawEnemyTargetLabels(now);
+  const trackerVisible=drawP1Tracker(now);
   const fresh=!!lastRx&&now-lastRx<=STALE_MS;
   if(fresh){
     const warnings=Array.isArray(lastMsg?.warnings)?lastMsg.warnings:[];
     const model=window.WOFAlphaHudModel.summarizeWarnings(warnings);
     if(model.count){
+      if(canonicalOverlayBinding)return;
       const direct=drawP1HeadWarningFromTracker(now,warnings);
       const plan=drawPlayerHeadWarnings(now,direct.remaining);
       const fixedWarnings=[];
@@ -328,7 +450,7 @@ function drawHud(){
       return;
     }
   }
-  lastDirectP1WarningCount=0;lastPlayerPlan=null;
+  lastDirectP1WarningCount=0;if(!canonicalOverlayBinding)lastPlayerPlan=null;
   if(lastDiag&&now-lastDiag.at<5000){
     const h=paintBox('Alpha 已禁用',[String(lastDiag.reason||'运行环境未通过身份校验')]);
     const W=gl.drawingBufferWidth||canvas.width,w=Math.min(520,W-8);drawTexture(Math.max(4,(W-w)/2),8,w,h);return;
@@ -354,9 +476,9 @@ bc.onmessage=e=>{
   if(m.kind==='diag'){lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;lastPlayerMsg=null;lastPlayerRx=0;lastPlayerPlan=null;lastDirectP1WarningCount=0;}
 };
 
-function transportReset(){lastMsg=null;lastRx=0;lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;lastPlayerMsg=null;lastPlayerRx=0;lastPlayerPlan=null;lastDirectP1WarningCount=0;lastDiag=null;lastKey='';}
+function transportReset(){lastMsg=null;lastRx=0;lastMarkerMsg=null;lastMarkerRx=0;lastLabelPlan=null;lastPlayerMsg=null;lastPlayerRx=0;lastPlayerPlan=null;lastDirectP1WarningCount=0;lastDiag=null;lastKey='';if(canonicalOverlayBinding){canonicalOverlayPayload=null;canonicalOverlayEnvelope=null;canonicalOverlayPlan=null;canonicalOverlayState='SUPPRESSED';canonicalOverlayReason='TRANSPORT_RESET';canonicalOverlayRx=0;}}
 function dispose(){
-  if(disposed)return;disposed=true;clearP1HeadTrackerAuthority('HUD_DISPOSED');setFixedDrawSmokeEnabled(false);
+  if(disposed)return;disposed=true;clearCanonicalOverlayAuthority('HUD_DISPOSED');clearP1HeadTrackerAuthority('HUD_DISPOSED');setFixedDrawSmokeEnabled(false);
   if(bridge.callback===drawHud)bridge.callback=null;
   try{bc.close();}catch(_){}
   try{gl.deleteTexture(tex);gl.deleteTexture(labelTex);gl.deleteTexture(warningTex);gl.deleteTexture(fixedSmokeTex);gl.deleteBuffer(buf);gl.deleteProgram(prog);}catch(_){}
@@ -364,6 +486,7 @@ function dispose(){
 window.WOFALPHAHUD={
   version:VERSION,session:SESSION,show(){visible=true;lastKey='';},hide(){visible=false;lastKey='';},transportReset,dispose,
   bindP1HeadTrackerAuthority,setP1HeadTracker,clearP1HeadTracker,clearP1HeadTrackerAuthority,p1HeadTrackerStatus:p1TrackerStatus,
+  bindCanonicalOverlayAuthority,ingestCanonicalAnchorEnvelope,clearCanonicalOverlayAuthority,canonicalOverlayStatus,
   setFixedDrawSmokeEnabled,fixedDrawSmokeStatus,
   status(){
     const now=Date.now(),fresh=!!lastRx&&now-lastRx<=STALE_MS;
@@ -371,14 +494,15 @@ window.WOFALPHAHUD={
     const playerFresh=!!lastPlayerRx&&now-lastPlayerRx<=PLAYER_SPATIAL_RX_STALE_MS;
     const summary=window.WOFAlphaHudModel.summarizeWarnings(fresh&&Array.isArray(lastMsg?.warnings)?lastMsg.warnings:[]);
     const fixedReasons=Array.isArray(lastPlayerPlan?.fixed)?lastPlayerPlan.fixed.map(x=>x.reason):[];
+    const canonical=canonicalOverlayStatus(now);
     return{version:VERSION,release:'wof-alpha-rc3',session:SESSION,connected:fresh,ageMs:lastRx?now-lastRx:null,warningCount:summary.count,
       groups:summary.groups,drawHooked:gl.drawArrays===bridge.wrapper,drawCount,callbackCount,lastError:bridge.lastError||null,researchHudDisposed:true,
-      fixedDrawSmoke:fixedDrawSmokeStatus(),
+      fixedDrawSmoke:fixedDrawSmokeStatus(),canonicalOverlay:canonical,
       p1HeadTracker:p1TrackerStatus(now),
-      playerHeadWarning:{connected:playerFresh||lastDirectP1WarningCount>0,ageMs:lastPlayerRx?now-lastPlayerRx:null,anchored:(lastPlayerPlan?.anchored?.length||0)+(lastDirectP1WarningCount>0?1:0),fixed:lastPlayerPlan?.fixed?.length||0,
-        directP1WarningCount:lastDirectP1WarningCount,directP1TrackerDrawCount:p1TrackerWarningDrawCount,fixedReasons,drawCount:playerWarningDrawCount,holdMs:0,smoothing:false,maxSpatialAgeMs:PLAYER_WARNING.MAX_PLAYER_AGE_MS},
-      enemyTargetLabels:{connected:markerFresh,ageMs:lastMarkerRx?now-lastMarkerRx:null,count:markerFresh?(lastLabelPlan?.labels?.length||0):0,suppressed:markerFresh?(lastLabelPlan?.suppressed?.length||0):0,
-        reason:markerFresh?(lastLabelPlan?.reason||null):'STALE_OR_MISSING_MARKERS',drawCount:labelDrawCount,holdMs:0,smoothing:false}};
+      playerHeadWarning:{connected:canonical.bound?canonical.emittedPlayerDangerCount>0:(playerFresh||lastDirectP1WarningCount>0),ageMs:canonical.bound?canonical.envelopeAgeMs:(lastPlayerRx?now-lastPlayerRx:null),anchored:canonical.bound?canonical.emittedPlayerDangerCount:((lastPlayerPlan?.anchored?.length||0)+(lastDirectP1WarningCount>0?1:0)),fixed:canonical.bound?0:(lastPlayerPlan?.fixed?.length||0),
+        directP1WarningCount:canonical.bound?0:lastDirectP1WarningCount,directP1TrackerDrawCount:p1TrackerWarningDrawCount,fixedReasons:canonical.bound?[]:fixedReasons,drawCount:playerWarningDrawCount,holdMs:0,smoothing:false,maxSpatialAgeMs:canonical.bound?CANONICAL_ENVELOPE.DEFAULT_MAX_AGE_MS:PLAYER_WARNING.MAX_PLAYER_AGE_MS,fallback:canonical.bound?'NONE':null},
+      enemyTargetLabels:{connected:canonical.bound?canonical.state==='READY':markerFresh,ageMs:canonical.bound?canonical.envelopeAgeMs:(lastMarkerRx?now-lastMarkerRx:null),count:canonical.bound?canonical.emittedEnemyLabelCount:(markerFresh?(lastLabelPlan?.labels?.length||0):0),suppressed:canonical.bound?(canonicalOverlayPlan?.suppression?.enemy?.length||0):(markerFresh?(lastLabelPlan?.suppressed?.length||0):0),
+        reason:canonical.bound?canonical.reason:(markerFresh?(lastLabelPlan?.reason||null):'STALE_OR_MISSING_MARKERS'),drawCount:labelDrawCount,holdMs:0,smoothing:false,fallback:canonical.bound?'NONE':null}};
   }
 };
 fixedSmoke.drawHooked=gl.drawArrays===bridge.wrapper&&bridge.callback===drawHud;
