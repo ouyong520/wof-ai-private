@@ -1,0 +1,62 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C1_RESULT_ENVELOPE_VALIDATOR",
+  "dedupKey": "alpha.pm.worker-communication.result-envelope-validator-v1",
+  "claimToken": "aa1ede4f535444049927a3007b178fdb",
+  "state": "COMPLETE",
+  "verdict": "C1 now provides a deterministic RESULT.json/RESULT.md contract, stdlib validator/CLI, proof classification, path verification, and focused false-green tests for PM machine reading.",
+  "startCommit": "5a8927dd83de07959d070d30ea3dcdb8feeab094",
+  "implementationCommits": [
+    "fcd0df6b01cbc3a18de8aade353f79551db4d034",
+    "24dfe86014b76a5d17974ea16a8732d581d42517",
+    "bf506e23a181bb9e52a0e36ca8e43ec24466fda8",
+    "4660f577ac17f2564d2ffcdd6ebdc284a1bbb62b"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PM/schemas/alpha_worker_result_v1.schema.json",
+    "parallel/PM/templates/alpha_worker_result_v1.json",
+    "parallel/PM/tools/alpha_worker_result.py",
+    "parallel/PM/tests/test_alpha_worker_result_protocol.py"
+  ],
+  "tests": [
+    {
+      "name": "python parallel/PM/tests/test_alpha_worker_result_protocol.py",
+      "result": "PASS",
+      "detail": "15 focused tests passed: valid COMPLETE/SUBCOMPLETE/BLOCKED, deterministic paths, malformed fields, unsupported state, terminal-evidence false-green rejection, proof classification, blocker flags, Owner-gate consistency, and CLI behavior."
+    },
+    {
+      "name": "alpha_worker_result.py validate alpha_worker_result_v1.json",
+      "result": "PASS",
+      "detail": "Canonical template validated as EXAMPLE_ALPHA_STAGE SUBCOMPLETE with the stdlib-only validator."
+    },
+    {
+      "name": "JSON Schema Draft 2020-12 self-check",
+      "result": "PASS",
+      "detail": "Draft202012Validator.check_schema accepted the canonical schema and the canonical template validated against it."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_APPLICABLE",
+    "classification": "NOT_APPLICABLE",
+    "detail": "C1 is coordination-only and makes no Alpha runtime, renderer, machine-draw, or Owner-visible product claim."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM may consume C1 as the canonical result-envelope contract and integrate it with the C2 dispatch-manifest fast reader.",
+  "evidencePaths": [
+    "parallel/PM/schemas/alpha_worker_result_v1.schema.json",
+    "parallel/PM/templates/alpha_worker_result_v1.json",
+    "parallel/PM/tools/alpha_worker_result.py",
+    "parallel/PM/tests/test_alpha_worker_result_protocol.py"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
