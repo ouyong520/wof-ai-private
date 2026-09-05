@@ -1,0 +1,39 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_CANONICAL_RUNTIME_P10_P12_P13_CONTINUATION_3_WORKER_V1",
+  "createdAtUtc": "2026-09-05T06:48:00Z",
+  "authorityCommit": "5e463f23d2f8ac1494bc5d5d8305c2f5100b903d",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P10_CANONICAL_ANCHOR_RUNTIME_TRANSPORT_BRIDGE",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P10_CANONICAL_ANCHOR_RUNTIME_TRANSPORT_BRIDGE_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.canonical-anchor-runtime-transport-bridge-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P10_CANONICAL_ANCHOR_RUNTIME_TRANSPORT_BRIDGE_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P10_CANONICAL_ANCHOR_RUNTIME_TRANSPORT_BRIDGE_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P10_CANONICAL_ANCHOR_RUNTIME_TRANSPORT_BRIDGE"
+    },
+    {
+      "slot": 2,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P12_CANONICAL_ACTOR_GENERATION_REGISTRY",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P12_CANONICAL_ACTOR_GENERATION_REGISTRY_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.canonical-actor-generation-registry-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P12_CANONICAL_ACTOR_GENERATION_REGISTRY_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P12_CANONICAL_ACTOR_GENERATION_REGISTRY_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P12_CANONICAL_ACTOR_GENERATION_REGISTRY"
+    },
+    {
+      "slot": 3,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P13_ALPHA_RUNTIME_CANONICAL_BOOTSTRAP_PARITY",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P13_ALPHA_RUNTIME_CANONICAL_BOOTSTRAP_PARITY_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.alpha-runtime-canonical-bootstrap-parity-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P13_ALPHA_RUNTIME_CANONICAL_BOOTSTRAP_PARITY_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P13_ALPHA_RUNTIME_CANONICAL_BOOTSTRAP_PARITY_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P13_ALPHA_RUNTIME_CANONICAL_BOOTSTRAP_PARITY"
+    }
+  ]
+}
