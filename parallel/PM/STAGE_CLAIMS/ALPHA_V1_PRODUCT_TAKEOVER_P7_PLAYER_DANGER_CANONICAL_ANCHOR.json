@@ -5,6 +5,10 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.player-danger-canonical-anchor-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.player-danger-canonical-anchor-v1.json",
   "claimToken": "615ac7ba7b347e5e60d1faa6d8887a745f9ff62cdbef7bde",
-  "state": "ACTIVE",
-  "startCommit": "000beefe0210535ce5dcc5ca4e0a5792990ab8b2"
+  "state": "COMPLETE",
+  "startCommit": "000beefe0210535ce5dcc5ca4e0a5792990ab8b2",
+  "implementationCommit": "2aa158577a11d8a75fb01f9c1fdf33e84576ce28",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR_RESULT.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P7_PLAYER_DANGER_CANONICAL_ANCHOR_RESULT.md",
+  "resultCommit": "9e6598139586eb6df20b2c73101a3ed070e3828a"
 }
