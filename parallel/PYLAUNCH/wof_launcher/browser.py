@@ -106,8 +106,8 @@ def known_owner_game_url(explicit: str | None = None) -> tuple[str | None, str |
     """Return only an explicitly supplied Owner URL; never mine persisted launch state.
 
     WOF_GAME_URL, Fleet settings and browser profile history are deliberately not
-    navigation authorities. Menu 6 is attach/reuse-only and must never resurrect
-    a stale ROM destination from previous sessions.
+    navigation authorities. The normal Owner Alpha flow leaves navigation to the
+    Owner and only observes the browser for a real WOF page.
     """
     value = str(explicit or "").strip()
     if not value:
@@ -124,9 +124,15 @@ def launch_debug_browser(executable: Path, *, host: str = "127.0.0.1", port: int
     if os.environ.get("WOF_ALPHA_MENU6_ATTACH_ONLY") == "1":
         raise RuntimeError("menu 6 is attach/reuse-only and cannot launch or restore a browser")
     if not is_loopback_host(host): raise ValueError("PYLAUNCH only permits loopback CDP endpoints")
+    owner_navigates = os.environ.get("WOF_ALPHA_OWNER_NAVIGATES") == "1"
+    if owner_navigates:
+        game_url = None
+        restore_last_session = False
     profile = (user_data_dir or default_profile_dir()).resolve(); profile.mkdir(parents=True, exist_ok=True)
     args = [str(executable), f"--remote-debugging-address={host}", f"--remote-debugging-port={port}", f"--user-data-dir={profile}", "--no-first-run", "--no-default-browser-check"]
-    if game_url:
+    if owner_navigates:
+        args.append("about:blank")
+    elif game_url:
         args.append(game_url)
     elif restore_last_session:
         args.extend(["--restore-last-session", "--disable-session-crashed-bubble"])
