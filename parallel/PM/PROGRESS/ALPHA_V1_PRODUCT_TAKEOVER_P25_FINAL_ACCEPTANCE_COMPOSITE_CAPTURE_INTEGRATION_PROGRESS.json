@@ -4,10 +4,10 @@
   "dedupKey": "alpha.v1.product-takeover.final-acceptance-composite-capture-integration-v1",
   "claimToken": "1a8e410f279e1450057986f7e8212959",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "INTERRUPTED",
-  "overallPercent": 90,
+  "workState": "SELF_CHECK",
+  "overallPercent": 91,
   "implementationState": "DONE",
-  "selfCheckState": "PASS",
+  "selfCheckState": "IN_PROGRESS",
   "resultPublicationState": "PENDING",
   "claimCloseState": "PENDING",
   "startCommit": "d59bc3135286cc23caba8711c475db7cbf12acf9",
@@ -30,7 +30,8 @@
     "Python compile passed",
     "11 focused fixtures passed",
     "forbidden source scan passed",
-    "terminal P27 COMPLETE at 33f0621ca39c144e6d21a685ca608cd9d1fd1e6f resolved the previously recorded P21 staged canonical-feed exposure blocker"
+    "terminal P27 COMPLETE at 33f0621ca39c144e6d21a685ca608cd9d1fd1e6f resolved the previously recorded P21 staged canonical-feed exposure blocker",
+    "continuation fresh-read canonical and stage claims on latest main; both remain ACTIVE with exact claimToken 1a8e410f279e1450057986f7e8212959"
   ],
   "remaining": [
     "re-read terminal P27 RESULT and committed staged canonical-feed seam under the same existing P25 claim",
@@ -69,12 +70,12 @@
     "resolvedByTerminalCommit": "33f0621ca39c144e6d21a685ca608cd9d1fd1e6f",
     "resolution": "P27 exposes the maintained exact-candidate P10 canonical coordinator status through the P21 staged publisher while keeping W3/V3 measurement separate and fail-closed."
   },
-  "nextAction": "Reattach the same P25 claimToken, update this checkpoint at start, revalidate the existing P25 composite path against terminal P27, and publish truthful COMPLETE or a new precise BLOCKED result without widening ownership.",
+  "nextAction": "Re-read terminal P27 RESULT and committed staged canonical-feed seam, then perform the minimum deterministic post-P27 repository-level revalidation without running real WOF or widening P25 ownership.",
   "terminalResultPath": null,
-  "writerRole": "PM_RECONSTRUCTION",
+  "writerRole": "WORKER",
   "realWofAcceptance": "NOT_RUN",
   "ownerVisualAcceptance": "NOT_RUN",
   "visibleProof": "NOT_PROVEN",
   "alphaLiveMoved": false,
-  "updatedAtUtc": "2026-09-05T11:24:00Z"
+  "updatedAtUtc": "2026-09-05T14:13:58Z"
 }
