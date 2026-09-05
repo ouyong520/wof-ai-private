@@ -1,0 +1,39 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_FINAL_ACCEPTANCE_P21_P22_P23_LONG_3_WORKER_V1",
+  "createdAtUtc": "2026-09-05T08:47:00Z",
+  "authorityCommit": "c2bf21a0fe0ce00ea2b3bd4fb253d114978970a1",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P21_PREPROMOTION_EXACT_CANDIDATE_STAGING_ACCEPTANCE_HARNESS",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P21_PREPROMOTION_EXACT_CANDIDATE_STAGING_ACCEPTANCE_HARNESS_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.prepromotion-exact-candidate-staging-acceptance-harness-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P21_PREPROMOTION_EXACT_CANDIDATE_STAGING_ACCEPTANCE_HARNESS_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P21_PREPROMOTION_EXACT_CANDIDATE_STAGING_ACCEPTANCE_HARNESS_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P21_PREPROMOTION_EXACT_CANDIDATE_STAGING_ACCEPTANCE_HARNESS"
+    },
+    {
+      "slot": 2,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P22_DYNAMIC_ACTOR_STATE_COVERAGE_ACCEPTANCE",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P22_DYNAMIC_ACTOR_STATE_COVERAGE_ACCEPTANCE_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.dynamic-actor-state-coverage-acceptance-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P22_DYNAMIC_ACTOR_STATE_COVERAGE_ACCEPTANCE_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P22_DYNAMIC_ACTOR_STATE_COVERAGE_ACCEPTANCE_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P22_DYNAMIC_ACTOR_STATE_COVERAGE_ACCEPTANCE"
+    },
+    {
+      "slot": 3,
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P23_POST_PROMOTION_VERIFICATION_PROJECT_CLOSE_HARNESS",
+      "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P23_POST_PROMOTION_VERIFICATION_PROJECT_CLOSE_HARNESS_START_PROMPT.md",
+      "dedupKey": "alpha.v1.product-takeover.post-promotion-verification-project-close-harness-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P23_POST_PROMOTION_VERIFICATION_PROJECT_CLOSE_HARNESS_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P23_POST_PROMOTION_VERIFICATION_PROJECT_CLOSE_HARNESS_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_V1_PRODUCT_TAKEOVER_P23_POST_PROMOTION_VERIFICATION_PROJECT_CLOSE_HARNESS"
+    }
+  ]
+}
