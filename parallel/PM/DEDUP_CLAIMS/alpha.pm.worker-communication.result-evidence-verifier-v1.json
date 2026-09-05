@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.pm.worker-communication.result-evidence-verifier-v1",
+  "effectiveDedupKey": "alpha.pm.worker-communication.result-evidence-verifier-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C8_RESULT_EVIDENCE_VERIFIER",
+  "promptPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C8_RESULT_EVIDENCE_VERIFIER_START_PROMPT.md",
+  "owner": "chatgpt-c8-result-evidence-worker",
+  "claimToken": "ggEEjp4gM_k1LgFlAomHQyBZ4t_VKL3aloZLV7MTcwA",
+  "state": "ACTIVE",
+  "startCommit": "995c2e72efbda3d5f5aec7970b40d9cc1d153c01"
+}
