@@ -1,0 +1,39 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "EXAMPLE_ALPHA_3_WORKER_DISPATCH_V1",
+  "createdAtUtc": "2026-01-01T00:00:00Z",
+  "authorityCommit": "0123456789abcdef0123456789abcdef01234567",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "EXAMPLE_ALPHA_WORKER_1",
+      "promptPath": "parallel/PM/EXAMPLE_ALPHA_WORKER_1_START_PROMPT.md",
+      "dedupKey": "example.alpha.worker-1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/EXAMPLE_ALPHA_WORKER_1_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/EXAMPLE_ALPHA_WORKER_1_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT EXAMPLE_ALPHA_WORKER_1"
+    },
+    {
+      "slot": 2,
+      "stageId": "EXAMPLE_ALPHA_WORKER_2",
+      "promptPath": "parallel/PM/EXAMPLE_ALPHA_WORKER_2_START_PROMPT.md",
+      "dedupKey": "example.alpha.worker-2",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/EXAMPLE_ALPHA_WORKER_2_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/EXAMPLE_ALPHA_WORKER_2_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT EXAMPLE_ALPHA_WORKER_2"
+    },
+    {
+      "slot": 3,
+      "stageId": "EXAMPLE_ALPHA_WORKER_3",
+      "promptPath": "parallel/PM/EXAMPLE_ALPHA_WORKER_3_START_PROMPT.md",
+      "dedupKey": "example.alpha.worker-3",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/EXAMPLE_ALPHA_WORKER_3_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/EXAMPLE_ALPHA_WORKER_3_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT EXAMPLE_ALPHA_WORKER_3"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wof.local/schemas/alpha_dispatch_manifest_v1.schema.json",
+  "title": "WOF Alpha immutable dispatch manifest v1",
+  "description": "Coordinator-created immutable mapping from dispatch slots to deterministic worker terminal result paths.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "dispatchId",
+    "createdAtUtc",
+    "authorityCommit",
+    "immutable",
+    "workers"
+  ],
+  "properties": {
+    "schema": {
+      "const": "wof-alpha-dispatch-manifest-v1"
+    },
+    "dispatchId": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9_.-]{2,127}$"
+    },
+    "createdAtUtc": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "authorityCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "immutable": {
+      "const": true
+    },
+    "workers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "slot",
+          "stageId",
+          "promptPath",
+          "dedupKey",
+          "resultProtocol",
+          "resultJsonPath",
+          "resultMdPath",
+          "terminalCommitPrefix"
+        ],
+        "properties": {
+          "slot": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99
+          },
+          "stageId": {
+            "type": "string",
+            "pattern": "^[A-Z0-9][A-Z0-9_]{2,127}$"
+          },
+          "promptPath": {
+            "type": "string",
+            "pattern": "^parallel/PM/(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+\\.md$"
+          },
+          "dedupKey": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9.-]{2,95}$"
+          },
+          "resultProtocol": {
+            "const": "wof-alpha-worker-result-v1"
+          },
+          "resultJsonPath": {
+            "type": "string",
+            "pattern": "^parallel/PM/RESULTS/[A-Z0-9][A-Z0-9_]{2,127}_RESULT\\.json$"
+          },
+          "resultMdPath": {
+            "type": "string",
+            "pattern": "^parallel/PM/RESULTS/[A-Z0-9][A-Z0-9_]{2,127}_RESULT\\.md$"
+          },
+          "terminalCommitPrefix": {
+            "type": "string",
+            "pattern": "^WORKER_RESULT [A-Z0-9][A-Z0-9_]{2,127}$"
+          }
+        }
+      }
+    }
+  }
+}
