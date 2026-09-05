@@ -1,0 +1,29 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_PM_WORKER_COMMUNICATION_C4_C5_2_WORKER_V1",
+  "createdAtUtc": "2026-09-05T05:15:00Z",
+  "authorityCommit": "a429da44b94e497302d3a774bf3587b12df98687",
+  "immutable": true,
+  "workers": [
+    {
+      "slot": 1,
+      "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C4_DISPATCH_PACKAGE_BUILDER",
+      "promptPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C4_DISPATCH_PACKAGE_BUILDER_START_PROMPT.md",
+      "dedupKey": "alpha.pm.worker-communication.dispatch-package-builder-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C4_DISPATCH_PACKAGE_BUILDER_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C4_DISPATCH_PACKAGE_BUILDER_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_PM_WORKER_COMMUNICATION_C4_DISPATCH_PACKAGE_BUILDER"
+    },
+    {
+      "slot": 2,
+      "stageId": "ALPHA_PM_WORKER_COMMUNICATION_C5_CURRENT_DISPATCH_POINTER_RESOLVER",
+      "promptPath": "parallel/PM/ALPHA_PM_WORKER_COMMUNICATION_C5_CURRENT_DISPATCH_POINTER_RESOLVER_START_PROMPT.md",
+      "dedupKey": "alpha.pm.worker-communication.current-dispatch-pointer-resolver-v1",
+      "resultProtocol": "wof-alpha-worker-result-v1",
+      "resultJsonPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C5_CURRENT_DISPATCH_POINTER_RESOLVER_RESULT.json",
+      "resultMdPath": "parallel/PM/RESULTS/ALPHA_PM_WORKER_COMMUNICATION_C5_CURRENT_DISPATCH_POINTER_RESOLVER_RESULT.md",
+      "terminalCommitPrefix": "WORKER_RESULT ALPHA_PM_WORKER_COMMUNICATION_C5_CURRENT_DISPATCH_POINTER_RESOLVER"
+    }
+  ]
+}
