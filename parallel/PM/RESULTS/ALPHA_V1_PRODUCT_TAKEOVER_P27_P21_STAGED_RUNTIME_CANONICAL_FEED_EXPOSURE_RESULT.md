@@ -51,6 +51,6 @@ Safety remains read-only: no RAM writes, no input injection, no legacy spatial f
 
 ## Owner / PM next action
 
-After P25/P26 terminal publication is settled, rerun the existing exact-candidate P21/P25 staged acceptance path against the maintained P19 candidate. P22/P24/P25 must consume only same-session P10 coordinator cycles surfaced through this P27 seam and remain fail-closed if renderer-source proof or required dynamic/stability evidence is still absent.
+PM/downstream can now rerun the existing exact-candidate P21/P25 staged acceptance path against the maintained P19 candidate. P22/P24/P25 must consume only same-session P10 coordinator cycles surfaced through this P27 seam and remain fail-closed if renderer-source proof or required dynamic/stability evidence is still absent.
 
 P27 itself does not run a real WOF session, does not claim visible proof, and does not promote `alpha-live`.
