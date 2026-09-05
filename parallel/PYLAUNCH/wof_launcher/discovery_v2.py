@@ -12,6 +12,18 @@ from .probe_v2 import IDENTITY_PROBE
 
 WORKER_TYPES = {"worker", "shared_worker", "service_worker"}
 WOF_HINT_RE = re.compile(r"\bwof\b|warriors.?of.?fate", re.I)
+_TARGET_IDENTITY_KEYS = (
+    "targetId",
+    "type",
+    "url",
+    "title",
+    "attached",
+    "parentId",
+    "openerId",
+    "parentFrameId",
+    "browserContextId",
+    "subtype",
+)
 
 
 @dataclass(frozen=True)
@@ -25,8 +37,7 @@ class TargetChoice:
 
 
 def _summary(t: dict[str, Any]) -> dict[str, Any]:
-    keys = ("targetId", "type", "url", "title", "attached", "parentId", "openerId", "parentFrameId", "browserContextId", "subtype")
-    return {k: t.get(k) for k in keys if t.get(k) not in (None, "")}
+    return {k: t.get(k) for k in _TARGET_IDENTITY_KEYS if t.get(k) not in (None, "")}
 
 
 def _url_scheme_hint(t: dict[str, Any]) -> str:
@@ -44,6 +55,43 @@ def _worker_compatible(t: dict[str, Any], *, related: bool = False) -> bool:
     if t.get("type") in WORKER_TYPES:
         return True
     return related and bool(GSTYPHOON_RE.search(str(t.get("url") or "")))
+
+
+def _deduplicate_targets(raw: list[Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+    by_id: dict[str, dict[str, Any]] = {}
+    rejected: list[dict[str, Any]] = []
+    conflicts: set[str] = set()
+    for item in raw:
+        if not isinstance(item, dict):
+            rejected.append({"reason": "malformed-target-info"})
+            continue
+        target = dict(item)
+        tid = str(target.get("targetId") or "")
+        if not tid:
+            rejected.append({"reason": "missing-targetId", "target": _summary(target)})
+            continue
+        if tid in conflicts:
+            rejected.append({"targetId": tid, "reason": "conflicting-duplicate-targetId", "target": _summary(target)})
+            continue
+        previous = by_id.get(tid)
+        if previous is None:
+            by_id[tid] = target
+            continue
+        if _summary(previous) == _summary(target):
+            rejected.append({"targetId": tid, "reason": "duplicate-targetId-identical"})
+            continue
+        conflicts.add(tid)
+        by_id.pop(tid, None)
+        rejected.append(
+            {
+                "targetId": tid,
+                "reason": "conflicting-duplicate-targetId",
+                "first": _summary(previous),
+                "second": _summary(target),
+            }
+        )
+    targets = sorted(by_id.values(), key=lambda t: (str(t.get("type") or ""), str(t.get("targetId") or "")))
+    return targets, rejected, sorted(conflicts)
 
 
 def _eval(session: CdpSession, expression: str, *, await_promise: bool = False, timeout: float = 8.0) -> Any:
@@ -84,6 +132,7 @@ def _probe_page(client: CdpClient, t: dict[str, Any]) -> dict[str, Any]:
     session: CdpSession | None = None
     try:
         session = client.attach(str(t.get("targetId") or ""))
+        out["cdpPageReachable"] = True
         try:
             value = _eval(session, PAGE_PROBE)
             if isinstance(value, dict):
@@ -97,6 +146,7 @@ def _probe_page(client: CdpClient, t: dict[str, Any]) -> dict[str, Any]:
         except CdpError as exc:
             out["frameIdentityError"] = str(exc)
     except CdpError as exc:
+        out["cdpPageReachable"] = False
         out["pageProbeError"] = str(exc)
         out["frameIdentityError"] = str(exc)
     finally:
@@ -118,17 +168,21 @@ def _page_score(p: dict[str, Any]) -> int:
 
 
 def _unique_page(pages: list[dict[str, Any]]) -> dict[str, Any] | None:
-    if not pages:
-        return None
-    scored = [(p, _page_score(p)) for p in pages]
-    best = max(score for _, score in scored)
-    winners = [p for p, score in scored if score == best and (score > 0 or len(pages) == 1)]
-    return winners[0] if len(winners) == 1 else None
+    if len(pages) == 1:
+        return pages[0]
+    # With multiple live pages, only the runtime page probe is selection authority.
+    # URL/title/alpha-bootstrap hints remain diagnostics and must never break a tie.
+    game_pages = [
+        page
+        for page in pages
+        if isinstance(page.get("wofPageProbe"), dict) and page["wofPageProbe"].get("gameSurface") is True
+    ]
+    return game_pages[0] if len(game_pages) == 1 else None
 
 
 def _unique_wof_page(pages: list[dict[str, Any]]) -> dict[str, Any] | None:
-    candidates = [p for p in pages if _page_score(p) > 0]
-    return candidates[0] if len(candidates) == 1 else None
+    # Backward-compatible helper name with strict P31 semantics.
+    return _unique_page(pages)
 
 
 def _identity_on_session(session: CdpSession, target_id: str, *, timeout: float, cache: dict[str, dict[str, Any]] | None) -> dict[str, Any]:
@@ -218,25 +272,40 @@ def _page_frame_ids(page: dict[str, Any]) -> set[str]:
 
 
 def _direct_page(worker: dict[str, Any], pages: list[dict[str, Any]]) -> dict[str, Any] | None:
+    # CDP target parentId is direct target authority and intentionally outranks
+    # frame ownership. This preserves the established authority hierarchy without
+    # using list order, timestamps, openerId, or URL guesses.
     parent_id = worker.get("parentId")
     if parent_id:
         linked = [p for p in pages if p.get("targetId") == parent_id]
-        if len(linked) == 1:
-            return linked[0]
+        return linked[0] if len(linked) == 1 else None
 
     parent_frame_id = worker.get("parentFrameId")
     if parent_frame_id:
         linked = [page for page in pages if parent_frame_id in _page_frame_ids(page)]
-        if len(linked) == 1:
-            return linked[0]
-        if len(linked) > 1:
+        return linked[0] if len(linked) == 1 else None
+
+    # Browser context is runtime scoping evidence. It may narrow the candidate set,
+    # but if more than one page remains only the gameSurface probe may select one.
+    browser_context_id = worker.get("browserContextId")
+    if browser_context_id:
+        contextual = [page for page in pages if page.get("browserContextId") == browser_context_id]
+        if not contextual:
             return None
+        return _unique_page(contextual)
 
     # openerId is intentionally not parent authority for Worker targets.
-    return _unique_wof_page(pages)
+    return _unique_page(pages)
 
 
-def _diag(targets: list[dict[str, Any]], pages: list[dict[str, Any]], *, path: str, topology: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+def _diag(
+    targets: list[dict[str, Any]],
+    pages: list[dict[str, Any]],
+    *,
+    path: str,
+    topology: list[dict[str, Any]] | None = None,
+    rejected: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     counts: dict[str, int] = {}
     for t in targets:
         kind = str(t.get("type") or "unknown")
@@ -256,9 +325,11 @@ def _diag(targets: list[dict[str, Any]], pages: list[dict[str, Any]], *, path: s
                 "probe": p.get("wofPageProbe"),
                 "frameIds": sorted(_page_frame_ids(p)),
                 "frameIdentityError": p.get("frameIdentityError"),
+                "cdpPageReachable": p.get("cdpPageReachable"),
             }
             for p in pages
         ],
+        "rejectedTargets": rejected or [],
         "relatedTopology": topology or [],
         "readOnly": True,
         "ramWrites": 0,
@@ -279,8 +350,26 @@ def discover(client: CdpClient, *, identity_timeout: float = 20.0, identity_cach
     raw = client.request("Target.getTargets").get("targetInfos") or []
     if not isinstance(raw, list):
         raise CdpError("Target.getTargets returned malformed targetInfos")
-    targets = [dict(t) for t in raw if isinstance(t, dict)]
-    pages = [_probe_page(client, t) for t in targets if t.get("type") == "page"]
+
+    targets, rejected, conflicts = _deduplicate_targets(raw)
+    if conflicts:
+        reason = f"conflicting duplicate CDP target identities: {', '.join(conflicts)}"
+        return TargetChoice(None, None, None, None, reason, _diag(targets, [], path="target-identity-conflict", rejected=rejected))
+
+    probed_pages = [_probe_page(client, t) for t in targets if t.get("type") == "page"]
+    pages: list[dict[str, Any]] = []
+    for page in probed_pages:
+        if page.get("cdpPageReachable") is True:
+            pages.append(page)
+        else:
+            rejected.append(
+                {
+                    "targetId": page.get("targetId"),
+                    "type": "page",
+                    "reason": "stale-or-unattachable-page-target",
+                    "detail": page.get("pageProbeError"),
+                }
+            )
 
     supported: list[tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]] = []
     incomplete: list[tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any] | None]] = []
@@ -297,13 +386,13 @@ def discover(client: CdpClient, *, identity_timeout: float = 20.0, identity_cach
 
     if len(supported) == 1:
         p, w, light, identity = supported[0]
-        return TargetChoice(p, w, light, identity, None, _diag(targets, pages, path="page-autoattach", topology=all_topology))
+        return TargetChoice(p, w, light, identity, None, _diag(targets, pages, path="page-autoattach", topology=all_topology, rejected=rejected))
     if len(supported) > 1:
-        return TargetChoice(None, None, None, None, f"ambiguous page/Worker World 921031 pairs: {len(supported)}", _diag(targets, pages, path="page-autoattach-ambiguous", topology=all_topology))
+        return TargetChoice(None, None, None, None, f"ambiguous page/Worker World 921031 pairs: {len(supported)}", _diag(targets, pages, path="page-autoattach-ambiguous", topology=all_topology, rejected=rejected))
     if len(incomplete) == 1:
         p, w, light, identity = incomplete[0]
         reason = "related WOF Worker found; WASM module/heap not ready" if light.get("moduleOk") is not True else str((identity or {}).get("reason") or "World 921031 identity not accepted")
-        return TargetChoice(p, w, light, identity, reason, _diag(targets, pages, path="page-autoattach-incomplete", topology=all_topology))
+        return TargetChoice(p, w, light, identity, reason, _diag(targets, pages, path="page-autoattach-incomplete", topology=all_topology, rejected=rejected))
 
     direct_rows: list[tuple[dict[str, Any], dict[str, Any], dict[str, Any] | None]] = []
     for worker in [t for t in targets if _worker_compatible(t)]:
@@ -317,7 +406,15 @@ def discover(client: CdpClient, *, identity_timeout: float = 20.0, identity_cach
             finally:
                 session.close()
         except CdpError as exc:
-            light, identity = {"moduleOk": False, "reason": str(exc), "readOnly": True, "ramWrites": 0, "inputInjection": False}, None
+            rejected.append(
+                {
+                    "targetId": tid,
+                    "type": worker.get("type"),
+                    "reason": "stale-or-unattachable-worker-target",
+                    "detail": str(exc),
+                }
+            )
+            continue
         direct_rows.append((worker, light, identity))
 
     good = [(w, l, i) for w, l, i in direct_rows if l.get("moduleOk") is True and i and i.get("ok") is True]
@@ -325,18 +422,18 @@ def discover(client: CdpClient, *, identity_timeout: float = 20.0, identity_cach
         w, light, identity = good[0]
         p = _direct_page(w, pages)
         if p:
-            return TargetChoice(p, w, light, identity, None, _diag(targets, pages, path="direct-worker", topology=all_topology))
-        return TargetChoice(None, None, None, None, "supported direct Worker found but WOF page association is ambiguous", _diag(targets, pages, path="direct-worker-page-ambiguous", topology=all_topology))
+            return TargetChoice(p, w, light, identity, None, _diag(targets, pages, path="direct-worker", topology=all_topology, rejected=rejected))
+        return TargetChoice(None, None, None, None, "supported direct Worker found but WOF page association is ambiguous or lacks authoritative runtime linkage", _diag(targets, pages, path="direct-worker-page-ambiguous", topology=all_topology, rejected=rejected))
     if len(good) > 1:
-        return TargetChoice(None, None, None, None, f"ambiguous supported WOF workers: {len(good)}", _diag(targets, pages, path="direct-worker-ambiguous", topology=all_topology))
+        return TargetChoice(None, None, None, None, f"ambiguous supported WOF workers: {len(good)}", _diag(targets, pages, path="direct-worker-ambiguous", topology=all_topology, rejected=rejected))
 
     page = _unique_page(pages)
     if page and len(direct_rows) == 1:
         w, light, identity = direct_rows[0]
         reason = "direct Worker found; WASM module/heap not ready" if light.get("moduleOk") is not True else str((identity or {}).get("reason") or "World 921031 identity not accepted")
-        return TargetChoice(page, w, light, identity, reason, _diag(targets, pages, path="direct-worker-incomplete", topology=all_topology))
+        return TargetChoice(page, w, light, identity, reason, _diag(targets, pages, path="direct-worker-incomplete", topology=all_topology, rejected=rejected))
     if page:
-        return TargetChoice(page, None, None, None, "WOF page found; related game Worker not yet discovered", _diag(targets, pages, path="page-only", topology=all_topology))
+        return TargetChoice(page, None, None, None, "WOF page found; related game Worker not yet discovered", _diag(targets, pages, path="page-only", topology=all_topology, rejected=rejected))
     if pages:
-        return TargetChoice(None, None, None, None, f"WOF page association ambiguous: {len(pages)} page targets", _diag(targets, pages, path="page-ambiguous", topology=all_topology))
-    return TargetChoice(None, None, None, None, "no WOF page target discovered", _diag(targets, pages, path="no-page", topology=all_topology))
+        return TargetChoice(None, None, None, None, f"WOF page association ambiguous: {len(pages)} live page targets; no unique runtime authority", _diag(targets, pages, path="page-ambiguous", topology=all_topology, rejected=rejected))
+    return TargetChoice(None, None, None, None, "no live WOF page target discovered", _diag(targets, pages, path="no-page", topology=all_topology, rejected=rejected))
