@@ -1,0 +1,93 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION",
+  "dedupKey": "alpha.v1.product-takeover.native-player-marker-renderer-anchor-qualification-v1",
+  "claimToken": "e4269802dd6ed3ea1c9854d05108494f",
+  "state": "BLOCKED",
+  "verdict": "A durable fail-closed native 1P/2P/3P marker qualification seam is exact-byte tested, but checked-in runtime evidence still lacks the direct displayed-frame renderer submission edge needed to prove the real native marker authority.",
+  "startCommit": "54826e0bf1f45f93007665914ccef981fa808123",
+  "testedCommit": "bd75c3b5f7fd20fe004fae21142a0fa19942e076",
+  "implementationCommits": [
+    "813b6e1a9843798476bf07bf66fea30a0f310377",
+    "724c0b11b6d5bc5400299473999911c2814a1148",
+    "bd75c3b5f7fd20fe004fae21142a0fa19942e076"
+  ],
+  "integrationReady": false,
+  "changedFiles": [
+    "parallel/RENDER_AUTHORITY_V2/native_player_marker_anchor_qualification.py",
+    "parallel/RENDER_AUTHORITY_V2/test_native_player_marker_anchor_qualification.py",
+    "parallel/RENDER_AUTHORITY_V2/NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION.md"
+  ],
+  "testedBlobMap": {
+    "parallel/RENDER_AUTHORITY_V2/native_player_marker_anchor_qualification.py": "dd1cf633193312d65bc241b86eb23dace0656508",
+    "parallel/RENDER_AUTHORITY_V2/test_native_player_marker_anchor_qualification.py": "1131c5c24b5558d5419b90cec24fa82b34219fef",
+    "parallel/RENDER_AUTHORITY_V2/NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION.md": "1ebbf944bdede60406da839e327ab6227b2dd72f"
+  },
+  "tests": [
+    {
+      "name": "Exact durable candidate blob readback",
+      "result": "PASS",
+      "detail": "3/3 local Git blob hashes exactly matched candidate bd75c3b5f7fd20fe004fae21142a0fa19942e076 readback."
+    },
+    {
+      "name": "P32 Python syntax",
+      "result": "PASS",
+      "detail": "python -m py_compile native_player_marker_anchor_qualification.py test_native_player_marker_anchor_qualification.py on byte-identical candidate files."
+    },
+    {
+      "name": "P32 focused native marker qualification regression",
+      "result": "PASS",
+      "detail": "python -m unittest -v test_native_player_marker_anchor_qualification.py => 7/7 PASS, covering P1/P2/P3, single/multi-object deterministic cluster, duplicate ambiguity, stale/mixed authority, generation mismatch, visual/structural-only rejection, and no-proof without causal evidence."
+    },
+    {
+      "name": "P29 analyzer immutability",
+      "result": "PASS",
+      "detail": "qualification_analyzer.py at tested candidate remains blob a412faa31ac8d946e25f72868a57ae234d92b4b2; P29 PASS/INCONCLUSIVE/REJECTED criteria were not modified."
+    },
+    {
+      "name": "Real WOF native marker displayed-frame proof",
+      "result": "NOT_RUN",
+      "detail": "Forbidden by P32 scope; no real game run was performed and fixtures are not accepted as live authority."
+    },
+    {
+      "name": "Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "No Owner YES/NO requested or inferred."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_PROVEN",
+    "detail": "Repo-side qualification behavior is proven; the real WOF 1P/2P/3P marker has not been source-traced from displayed CPS1 renderer/object submission to an exact marker object/cluster and actor generation."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": "The blocker is a missing machine causal edge, not an Owner-visible judgment."
+  },
+  "blocker": {
+    "code": "NATIVE_PLAYER_MARKER_DIRECT_RENDERER_CAUSAL_EDGE_NOT_CHECKED_IN",
+    "detail": "No checked-in source-traced pointer, direct renderer hook, or exported renderer pointer proves displayed CPS1 renderer/object submission -> exact native 1P/2P/3P marker object/cluster identity + explicit actor generation association.",
+    "ownerRequired": false,
+    "pmRequired": true,
+    "recoveryAllowedByWorker": false
+  },
+  "nextAction": "PM should schedule a successor only after an exact source-traced native-marker renderer submit hook/exported pointer is available, then run one bounded live verification through this fail-closed seam.",
+  "evidencePaths": [
+    "parallel/RENDER_AUTHORITY_V2/NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION.md",
+    "parallel/RENDER_AUTHORITY_V2/native_player_marker_anchor_qualification.py",
+    "parallel/RENDER_AUTHORITY_V2/test_native_player_marker_anchor_qualification.py",
+    "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js",
+    "parallel/RENDER_AUTHORITY_V2/qualification_analyzer.py",
+    "parallel/RENDER_AUTHORITY_V2/RENDER_OBJECT_SOURCE_LONG_QUALIFICATION.md"
+  ],
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "alphaLiveMoved": false,
+  "promotionPerformed": false,
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
