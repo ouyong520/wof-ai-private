@@ -5,6 +5,9 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.first-owner-gate.permanent-launcher-gate-mode-v2",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.first-owner-gate.permanent-launcher-gate-mode-v2.json",
   "claimToken": "9923cadcc689bfde33a0b4f5474a3461981e4b98eee49be9",
-  "state": "ACTIVE",
-  "startCommit": "0c107d5f9b70ff813fa9155394b49d8dd2cfaa0c"
+  "state": "COMPLETE",
+  "startCommit": "0c107d5f9b70ff813fa9155394b49d8dd2cfaa0c",
+  "implementationCommit": "a861ba4d0e3c58501e0b54f872a788325e80be90",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P2_PERMANENT_LAUNCHER_GATE_MODE_SUBRESULT.md",
+  "resultCommit": "19f16bd64ad0acd28999da236deba9848e67c07b"
 }
