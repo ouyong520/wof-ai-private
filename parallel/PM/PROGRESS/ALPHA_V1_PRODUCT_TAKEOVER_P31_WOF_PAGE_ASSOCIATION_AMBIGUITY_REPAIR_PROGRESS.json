@@ -5,7 +5,7 @@
   "claimToken": "VEkVz7A8-x51yPL_-F9ctvlyf_LBDuuTmp09V7W3aYE",
   "claimStateAtCheckpoint": "ACTIVE",
   "workState": "SELF_CHECK",
-  "overallPercent": 68,
+  "overallPercent": 72,
   "implementationState": "DONE",
   "selfCheckState": "IN_PROGRESS",
   "resultPublicationState": "NOT_STARTED",
@@ -14,7 +14,9 @@
   "lastKnownGoodCommit": null,
   "implementationCommits": [
     "88a6e855c04ea8e461ae1a8c072270aa02749a80",
-    "7dc35e490ec6d2e9d0b604c0be80dde1921c9352"
+    "7dc35e490ec6d2e9d0b604c0be80dde1921c9352",
+    "074f16b19e0ebebb5aef57a6fcf52cde4a864130",
+    "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731"
   ],
   "completed": [
     "read P31 START prompt, dispatch, AGENTS, product governance, dedup/progress/result protocols",
@@ -24,13 +26,14 @@
     "localized the live blocker to parallel/PYLAUNCH/wof_launcher/discovery_v2.py direct Page/Worker association fallback",
     "implemented exact targetId deduplication with conflicting duplicate rejection rather than order selection",
     "implemented stale/unattachable Page and Worker rejection before association",
-    "implemented deterministic parentId/parentFrameId authority convergence with conflict fail-closed behavior",
+    "preserved the established deterministic authority hierarchy: valid parentId first, then unique parentFrameId, then browser-context/runtime gameSurface evidence",
     "restricted multi-page fallback to runtime gameSurface/browser-context evidence; URL/title hints are diagnostics only and cannot select among pages",
-    "added focused P31 fixtures for authoritative two-page selection, conflict rejection, stale rejection, unresolved ambiguity, and order invariance",
-    "persisted exact implementation candidate on worker/p31-wof-page-association-ambiguity-repair at 7dc35e490ec6d2e9d0b604c0be80dde1921c9352 before terminal-significant tests"
+    "added focused P31 fixtures for authoritative two-page selection, parentId precedence, duplicate/conflicting target rejection, stale rejection, unresolved ambiguity, and order invariance",
+    "read back existing parentFrame authority tests before testing and corrected the candidate to preserve parentId-over-parentFrame semantics",
+    "persisted replacement exact candidate on worker/p31-wof-page-association-ambiguity-repair at 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731 before terminal-significant tests"
   ],
   "remaining": [
-    "run focused self-check against exact durable candidate 7dc35e490ec6d2e9d0b604c0be80dde1921c9352 without real game",
+    "run focused self-check against exact durable candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731 without real game",
     "if focused tests pass, publish pre-terminal READY_TO_PUBLISH checkpoint",
     "publish RESULT, close canonical/stage claims, and publish terminal PROGRESS"
   ],
@@ -38,11 +41,11 @@
     {
       "name": "P31 exact-candidate focused discovery tests",
       "result": "IN_PROGRESS",
-      "detail": "Will run only against durable candidate 7dc35e490ec6d2e9d0b604c0be80dde1921c9352; real WOF remains NOT_RUN."
+      "detail": "Final test provenance is reset to replacement candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731; no result from the superseded 7dc35e490ec6d2e9d0b604c0be80dde1921c9352 candidate is being reused."
     }
   ],
   "blocker": null,
-  "nextAction": "Materialize the exact candidate files and run focused deterministic discovery tests against 7dc35e490ec6d2e9d0b604c0be80dde1921c9352.",
+  "nextAction": "Run focused deterministic discovery tests against exact durable candidate 423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
   "realWofAcceptance": "NOT_RUN",
@@ -50,6 +53,10 @@
   "visibleProof": "NOT_PROVEN",
   "alphaLiveMoved": false,
   "candidateBranch": "worker/p31-wof-page-association-ambiguity-repair",
-  "candidateCommit": "7dc35e490ec6d2e9d0b604c0be80dde1921c9352",
-  "updatedAtUtc": "2026-09-05T15:57:54Z"
+  "candidateCommit": "423c9c6c4a54ff4abd701e1dcd8c170cc4e9d731",
+  "candidateFileBlobs": {
+    "parallel/PYLAUNCH/wof_launcher/discovery_v2.py": "518c290aed5f1a06a4b981a11160ee1d95693a56",
+    "parallel/PYLAUNCH/tests/test_p31_page_association_authority.py": "6e898ae26e8eaff96c95de00b8e02b7634085d47"
+  },
+  "updatedAtUtc": "2026-09-05T16:00:29Z"
 }
