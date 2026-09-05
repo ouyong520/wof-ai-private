@@ -58,7 +58,14 @@ class FakeAlphaRuntime(AlphaRuntimeManager):
         self._projection._state = "PROVED_LIVE_PROCESS_AUTHORITY"
     def _load_manifest(self): return {"packageVersion": "field-self-check"}
     def _page_install(self, client, page_id, pair_nonce):
-        self.calls.append(("page", page_id)); return {"session": "1" * 32, "channel": "WOF_ALPHA_" + "1" * 32, "pairGeneration": 1, "pairNonce": pair_nonce}
+        self.calls.append(("page", page_id)); return {
+            "session": "1" * 32,
+            "channel": "WOF_ALPHA_" + "1" * 32,
+            "pairGeneration": 1,
+            "pairNonce": pair_nonce,
+            "canonicalOverlayCapable": True,
+            "canonicalOverlayStatus": {"bound": False},
+        }
     def _worker_install(self, client, worker_id, pair, identity, runtime_epoch):
         self.calls.append(("worker", worker_id)); return {"running": True, "identity": dict(identity), "readOnly": True, "ramWrites": 0, "inputInjection": False}
     def _evaluate(self, client, target_id, expression, *, await_promise=False, timeout=12.0):

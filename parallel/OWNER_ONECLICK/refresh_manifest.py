@@ -454,7 +454,7 @@ def generate_manifest(root: Path, source: str, slice_a_commit: str | None = None
             "sourceCommit": commit,
             "sliceARuntimeCommit": slice_a["commit"],
             "sliceARuntimeFiles": slice_a["files"],
-            "sliceAProvenanceOnly": bool(slice_a.get("provenanceOnly")),
+            **({"sliceAProvenanceOnly": True} if canonical_candidate else {}),
             "mode": "owner-visible-production-top-overlay-v1",
             "selectedNormalPath": "production-top-overlay",
             "productionOverlaySource": PRODUCTION_OVERLAY_SOURCE,
@@ -548,6 +548,17 @@ def render_manifest(manifest: dict) -> str:
     return json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
 
 
+def _auto_candidate_mode(source: str, output: Path, explicit: bool) -> bool:
+    if explicit or output.resolve() == DEFAULT_MANIFEST.resolve():
+        return explicit
+    commit = resolve_commit(ROOT, source)
+    try:
+        _blob_at(ROOT, commit, "parallel/PYLAUNCH/wof_launcher/canonical_runtime_coordinator.py")
+    except ManifestError:
+        return False
+    return True
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="从一个明确 immutable git commit 确定性生成 Owner One-Click package manifest")
     parser.add_argument("--source", default="HEAD", help="固定 package source commit/ref；默认 HEAD")
@@ -572,10 +583,11 @@ def main(argv: list[str] | None = None) -> int:
             verify_worktree_payload(ROOT, existing, canonical_candidate=candidate_mode)
             print("PACKAGE MANIFEST PASS：" f"{existing['packageVersion']} source={existing['sourceCommit']} sliceA={generated['components']['renderAuthorityV3']['sliceARuntimeCommit']} files={len(existing['files'])}")
             return 0
-        generated = generate_manifest(ROOT, args.source, args.slice_a_commit, canonical_candidate=args.canonical_candidate)
+        candidate_mode = _auto_candidate_mode(args.source, args.output, args.canonical_candidate)
+        generated = generate_manifest(ROOT, args.source, args.slice_a_commit, canonical_candidate=candidate_mode)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(render_manifest(generated), encoding="utf-8")
-        verify_worktree_payload(ROOT, generated, canonical_candidate=args.canonical_candidate)
+        verify_worktree_payload(ROOT, generated, canonical_candidate=candidate_mode)
         print("PACKAGE MANIFEST REFRESHED：" f"{generated['packageVersion']} source={generated['sourceCommit']} sliceA={generated['components']['renderAuthorityV3']['sliceARuntimeCommit']} files={len(generated['files'])}")
         return 0
     except ManifestError as exc:

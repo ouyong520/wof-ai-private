@@ -1,0 +1,71 @@
+name: Alpha P15 Canonical Convergence
+
+on:
+  push:
+    paths:
+      - '.github/workflows/alpha-p15-canonical-convergence.yml'
+      - 'parallel/PYLAUNCH/wof_launcher/alpha_runtime.py'
+      - 'parallel/PYLAUNCH/wof_launcher/canonical_runtime_coordinator.py'
+      - 'parallel/PYLAUNCH/wof_launcher/canonical_actor_generation_registry.py'
+      - 'parallel/PYLAUNCH/wof_launcher/canonical_overlay_runtime_bridge.py'
+      - 'parallel/PYLAUNCH/wof_launcher/render_object_anchor.py'
+      - 'parallel/PYLAUNCH/tests/test_canonical_product_convergence_p15.py'
+      - 'parallel/PYLAUNCH/tests/test_field_recovery.py'
+      - 'product/alpha/wof_alpha_field_adapter.js'
+      - 'product/alpha/canonical_semantic_spatial_decoupling_selfcheck.mjs'
+      - 'parallel/OWNER_ONECLICK/refresh_manifest.py'
+      - 'parallel/OWNER_ONECLICK/test_package.py'
+      - 'parallel/OWNER_ONECLICK/CANDIDATES/ALPHA_V1_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  focused-p15:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install focused Python dependencies
+        run: python -m pip install --disable-pip-version-check -q -r parallel/PYLAUNCH/requirements.txt
+      - name: Canonical lifecycle and suppression fixture
+        working-directory: parallel/PYLAUNCH
+        run: python -m unittest discover -s tests -p 'test_canonical_product_convergence_p15.py' -v
+      - name: Semantic-only projection-unproved fixture
+        run: node product/alpha/canonical_semantic_spatial_decoupling_selfcheck.mjs
+      - name: Touched Python and JS syntax
+        run: |
+          python -m py_compile \
+            parallel/PYLAUNCH/wof_launcher/alpha_runtime.py \
+            parallel/PYLAUNCH/wof_launcher/canonical_runtime_coordinator.py \
+            parallel/PYLAUNCH/wof_launcher/canonical_actor_generation_registry.py \
+            parallel/PYLAUNCH/wof_launcher/canonical_overlay_runtime_bridge.py \
+            parallel/PYLAUNCH/wof_launcher/render_object_anchor.py \
+            parallel/OWNER_ONECLICK/refresh_manifest.py \
+            parallel/OWNER_ONECLICK/test_package.py \
+            parallel/PYLAUNCH/tests/test_canonical_product_convergence_p15.py \
+            parallel/PYLAUNCH/tests/test_field_recovery.py
+          node --check product/alpha/wof_alpha_field_adapter.js
+          node --check product/alpha/canonical_semantic_spatial_decoupling_selfcheck.mjs
+      - name: Pinned canonical candidate integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          CANDIDATE='parallel/OWNER_ONECLICK/CANDIDATES/ALPHA_V1_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE.json'
+          SOURCE="$(python - "$CANDIDATE" <<'PY'
+          import json
+          import sys
+          with open(sys.argv[1], encoding='utf-8') as f:
+              print(json.load(f)['sourceCommit'])
+          PY
+          )"
+          python parallel/OWNER_ONECLICK/refresh_manifest.py \
+            --canonical-candidate \
+            --source "$SOURCE" \
+            --output "$CANDIDATE" \
+            --check

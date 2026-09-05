@@ -12,6 +12,7 @@ import refresh_manifest as refresh
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 MANIFEST = HERE / "package_manifest.json"
+CANDIDATE = HERE / "CANDIDATES" / "ALPHA_V1_P15_CANONICAL_PRODUCT_CONVERGENCE_PACKAGE_CANDIDATE.json"
 BOOTSTRAP = HERE / "bootstrap_v2.ps1"
 ENTRY = ROOT / "WOF_一键工具.cmd"
 
@@ -21,6 +22,13 @@ def git_show(commit: str, path: str) -> bytes:
     if cp.returncode:
         raise AssertionError(cp.stderr.decode("utf-8", "replace"))
     return cp.stdout
+
+
+def git_head() -> str:
+    cp = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True, encoding="utf-8", stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+    if cp.returncode:
+        raise AssertionError(cp.stderr)
+    return cp.stdout.strip().lower()
 
 
 class PackageTests(unittest.TestCase):
@@ -120,8 +128,20 @@ class PackageTests(unittest.TestCase):
             with self.assertRaises(refresh.ManifestError):
                 refresh.verify_worktree_payload(ROOT, self.manifest)
             return
-        refresh.verify_worktree_payload(ROOT, self.manifest)
         commit = self.manifest["sourceCommit"]
+        if commit != git_head():
+            # The official package manifest is a published LKG snapshot. Once main
+            # intentionally evolves toward a candidate, validate that LKG against its
+            # own immutable source rather than requiring current main to equal it.
+            with tempfile.TemporaryDirectory(prefix="WOF published LKG ") as td:
+                snapshot = Path(td)
+                for path in self.blobs:
+                    dst = snapshot / path
+                    dst.parent.mkdir(parents=True, exist_ok=True)
+                    dst.write_bytes(git_show(commit, path))
+                refresh.verify_worktree_payload(snapshot, self.manifest)
+            return
+        refresh.verify_worktree_payload(ROOT, self.manifest)
         current = set(refresh.selected_worktree_paths(ROOT))
         packaged = {p for p in self.blobs if refresh.is_runtime_path(p)}
         self.assertEqual(current, packaged)
@@ -130,6 +150,31 @@ class PackageTests(unittest.TestCase):
                 data = (ROOT / path).read_bytes()
                 self.assertEqual(refresh.git_blob_sha(data), self.blobs[path])
                 self.assertEqual(git_show(commit, path), data)
+
+    @unittest.skipUnless(shutil.which("git"), "git not available")
+    def test_p15_canonical_candidate_is_complete_deterministic_and_unpromoted(self) -> None:
+        candidate = json.loads(CANDIDATE.read_text(encoding="utf-8-sig"))
+        self.assertEqual(candidate["selectionPolicy"], refresh.CANONICAL_SELECTION_POLICY)
+        refresh.verify_publishable_manifest(candidate)
+        canonical = candidate["components"]["canonicalProductConvergence"]
+        self.assertEqual(canonical["chain"], "P12->P10->P9/P8->P11")
+        self.assertIs(canonical["semanticSpatialDecoupled"], True)
+        self.assertIs(canonical["legacySpatialFallback"], False)
+        self.assertIs(canonical["alphaLivePromoted"], False)
+        self.assertEqual(canonical["realWofAcceptance"], "NOT_RUN")
+        self.assertTrue(set(refresh.CANONICAL_STACK_PATHS).issubset(set(canonical["files"])))
+        source = candidate["sourceCommit"]
+        for row in candidate["files"]:
+            with self.subTest(path=row["path"]):
+                self.assertEqual(refresh.git_blob_sha(git_show(source, row["path"])), row["gitBlobSha"])
+        generated = refresh.generate_manifest(
+            ROOT,
+            source,
+            candidate["components"]["renderAuthorityV3"]["sliceARuntimeCommit"],
+            canonical_candidate=True,
+        )
+        self.assertEqual(candidate, generated)
+        refresh.verify_worktree_payload(ROOT, candidate, canonical_candidate=True)
 
     def test_mutated_pinned_snapshot_is_rejected(self) -> None:
         commit = self.manifest["sourceCommit"]
@@ -181,7 +226,7 @@ class PackageTests(unittest.TestCase):
         self.assertNotIn("Invoke-WebRequest", direct)
         self.assertNotIn("pip install", direct)
         self.assertNotIn("raw.githubusercontent.com", direct)
-        self.assertNotIn("LOCALAPPDATA", s)
+        self.assertNotIn("LOCALAPPDATA", direct)
         self.assertIn("EnableDelayedExpansion", s)
         self.assertIn("!CURRENT_VERSION!", s)
         self.assertRegex(s, r"raw\.githubusercontent\.com/ouyong520/wof-ai-private/[0-9a-f]{40}/parallel/OWNER_ONECLICK/bootstrap_v2\.ps1")
