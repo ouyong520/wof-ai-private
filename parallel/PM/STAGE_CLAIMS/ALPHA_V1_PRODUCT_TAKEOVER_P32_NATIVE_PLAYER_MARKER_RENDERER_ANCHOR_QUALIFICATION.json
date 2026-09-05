@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P32_NATIVE_PLAYER_MARKER_RENDERER_ANCHOR_QUALIFICATION",
+  "dedupKey": "alpha.v1.product-takeover.native-player-marker-renderer-anchor-qualification-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.native-player-marker-renderer-anchor-qualification-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.native-player-marker-renderer-anchor-qualification-v1.json",
+  "claimToken": "e4269802dd6ed3ea1c9854d05108494f",
+  "state": "ACTIVE",
+  "startCommit": "54826e0bf1f45f93007665914ccef981fa808123"
+}
