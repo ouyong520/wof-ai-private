@@ -1,0 +1,98 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P18_MAINTAINED_HUD_CANONICAL_DRAW_ACKNOWLEDGEMENT",
+  "dedupKey": "alpha.v1.product-takeover.maintained-hud-canonical-draw-acknowledgement-v1",
+  "claimToken": "d2244a0d1f358021e44b09011bfd3c90b593506e4a866f74",
+  "state": "COMPLETE",
+  "verdict": "P18 is repository-ready: the maintained WebGL HUD now records a bounded acknowledgement only after the canonical enemy-label or player-danger native draw primitive completes, exposes that ledger through a read-only HUD evidence API, and provides a fail-closed CDP collector that writes P17-compatible ALPHA_CANONICAL_DRAW_EVIDENCE.json. Draw acknowledgement is implementation/runtime evidence only; visibleProof remains NOT_PROVEN.",
+  "startCommit": "5b00a23c4347555eb236a05f295f3ab15bc1b6c3",
+  "implementationCommits": [
+    "b018d27643d157d47a82ed54a0023770a727b600",
+    "519a27d6cf1e91545c6495812b1472c876d0e565"
+  ],
+  "integrationReady": true,
+  "changedFiles": [
+    "product/alpha/wof_alpha_hud.js",
+    "product/alpha/maintained_hud_canonical_draw_evidence_selfcheck.mjs",
+    "parallel/PYLAUNCH/wof_launcher/canonical_draw_evidence.py",
+    "parallel/PYLAUNCH/tests/test_alpha_p18_canonical_draw_evidence.py"
+  ],
+  "tests": [
+    {
+      "name": "HUD JavaScript parse",
+      "result": "PASS",
+      "detail": "node --check passed for wof_alpha_hud.js and maintained_hud_canonical_draw_evidence_selfcheck.mjs."
+    },
+    {
+      "name": "Maintained HUD canonical draw acknowledgement focused self-check",
+      "result": "PASS",
+      "detail": "Synthetic maintained WebGL fixture proved ingest creates zero acknowledgements; enemy label and player danger rows appear only after their native draw primitives complete; exact authority/native/drawing-buffer metadata is retained; renderer mismatch suppresses; rebind/revoke resets evidence generation; ledger is bounded to 128; fixed TEST and P5 direct-P1 draws do not enter the canonical ledger."
+    },
+    {
+      "name": "CDP collector Python compile",
+      "result": "PASS",
+      "detail": "canonical_draw_evidence.py and test_alpha_p18_canonical_draw_evidence.py compile successfully."
+    },
+    {
+      "name": "Fake-CDP collector focused self-check",
+      "result": "PASS",
+      "detail": "5 unittest cases passed: exact page/World/authority/runtime/renderer identity is accepted and atomically written; runtime and renderer mismatch fail closed; page URL mismatch is rejected before attach; HUD API missing is explicit; an empty exact snapshot remains NO_CANONICAL_DRAW. Output schema/version/identity are compatible with the completed P17 read_p18 contract."
+    },
+    {
+      "name": "real-WOF / Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Deliberately not run in P18. A maintained WebGL primitive invocation does not prove pixels were visibly correct on screen, so visibleProof remains NOT_PROVEN."
+    }
+  ],
+  "productProof": {
+    "status": "PROVEN",
+    "classification": "IMPLEMENTATION_PROOF",
+    "detail": "Focused fixtures prove the maintained primitive acknowledgement boundary, bounded/resettable ledger, read-only HUD API, exact-identity CDP collection, atomic snapshot persistence, P17 evidence-contract compatibility, and fail-closed proof boundary. They do not prove real-WOF visibility."
+  },
+  "productProofBoundary": "P9/P8 canonical authority + draw intents -> maintained labelTex/warningTex WebGL native draw completion -> bounded 128-entry canonical draw ledger -> read-only WOFALPHAHUD.canonicalDrawEvidence() -> explicit accepted page-target CDP read -> P17-compatible ALPHA_CANONICAL_DRAW_EVIDENCE.json. Screenshot/world projection/legacy spatial paths never authorize ledger rows; visibleProof is always NOT_PROVEN.",
+  "ownerGate": {
+    "required": true,
+    "question": "After PM refreshes the final selected candidate to include P15 + P16 + P17 + P18, run the P17 final acceptance command once and visually confirm the overlay follows the correct actors in normal WOF play.",
+    "reason": "P18 proves maintained draw primitive execution under exact canonical identity, but it cannot establish final on-screen visibility or actor-follow correctness without Owner visual confirmation."
+  },
+  "blocker": null,
+  "nextAction": "PM should refresh the final candidate with P15/P16/P17/P18 without moving alpha-live, then use P17 one-command final acceptance. Treat P18 CANONICAL_DRAW_ACKNOWLEDGED only as the final automatic draw-evidence gate before Owner visual confirmation.",
+  "drawEvidence": {
+    "hudSchema": "wof-alpha-maintained-hud-canonical-draw-evidence-v1",
+    "hudVersion": "wof-alpha-maintained-hud-canonical-draw-acknowledgement-v1",
+    "collectorSchema": "wof-alpha-canonical-draw-evidence-v1",
+    "collectorVersion": 1,
+    "ledgerLimit": 128,
+    "defaultOutput": "~/Documents/WOF_RESULTS/ALPHA_CANONICAL_DRAW_EVIDENCE.json",
+    "acceptedStates": [
+      "NO_CANONICAL_DRAW",
+      "CANONICAL_DRAW_ACKNOWLEDGED",
+      "STALE_OR_MISMATCH",
+      "HUD_API_MISSING"
+    ],
+    "visibleProof": "NOT_PROVEN"
+  },
+  "evidencePaths": [
+    "product/alpha/wof_alpha_hud.js",
+    "product/alpha/maintained_hud_canonical_draw_evidence_selfcheck.mjs",
+    "parallel/PYLAUNCH/wof_launcher/canonical_draw_evidence.py",
+    "parallel/PYLAUNCH/tests/test_alpha_p18_canonical_draw_evidence.py",
+    "~/Documents/WOF_RESULTS/ALPHA_CANONICAL_DRAW_EVIDENCE.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "screenshotProductionCoordinates": false,
+    "worldProjectionProductionCoordinates": false,
+    "guessedAddresses": false,
+    "alphaLiveMoved": false,
+    "p15PackageRuntimeTouched": false,
+    "w3Touched": false,
+    "visibleProof": "NOT_PROVEN"
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "dispatchManifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_CANONICAL_FINALIZATION_P15_P17_P18_LONG_3_WORKER_V1.json",
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P18_MAINTAINED_HUD_CANONICAL_DRAW_ACKNOWLEDGEMENT_RESULT.md",
+  "completedAtUtc": "2026-09-05T08:26:18Z"
+}
