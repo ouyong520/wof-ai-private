@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P19_FINAL_CANONICAL_CANDIDATE_REBUILD_ATTESTATION",
+  "dedupKey": "alpha.v1.product-takeover.final-canonical-candidate-rebuild-attestation-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.final-canonical-candidate-rebuild-attestation-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.final-canonical-candidate-rebuild-attestation-v1.json",
+  "claimToken": "3e28a1bd02b7616eeb5fa68eb4284c25",
+  "state": "ACTIVE",
+  "startCommit": "ff30d9d5cbb6e0a1964161e7ab8b6166d7e3a422"
+}
