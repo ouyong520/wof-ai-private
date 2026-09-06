@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC_HARNESS",
+  "dedupKey": "alpha.v1.product-takeover.bounded-zero-click-live-diagnostic-harness-v2",
+  "effectiveDedupKey": "alpha.v1.product-takeover.bounded-zero-click-live-diagnostic-harness-v2",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.bounded-zero-click-live-diagnostic-harness-v2.json",
+  "claimToken": "9b45b04fc8f5e86849c08c07dcf0dc07",
+  "state": "ACTIVE",
+  "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b"
+}
