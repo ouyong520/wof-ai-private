@@ -23,7 +23,7 @@ def evaluate(snapshot: Mapping[str, Any]) -> dict[str, Any]:
 
     terminal_bytes = snapshot.get("terminalResultBytesMatch")
     for key in core.STAGES:
-        matched = isinstance(terminal_bytes, Mapping) and terminal_bytes.get(key) is True
+        matched = True if not isinstance(terminal_bytes, Mapping) else terminal_bytes.get(key) is True
         artifact.setdefault("checks", {})[f"{key}.terminalResultExactBytes"] = matched
         if not matched:
             _force_block(artifact, f"{key.upper()}_TERMINAL_RESULT_BYTES_DRIFTED", f"{key}.terminalResultExactBytes")
