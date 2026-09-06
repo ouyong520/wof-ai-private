@@ -1,0 +1,116 @@
+{
+  "schema": "wof-alpha-p47-bounded-owner-diagnostic-readiness-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P47_BOUNDED_OWNER_DIAGNOSTIC_READINESS_GATE",
+  "dedupKey": "alpha.v1.product-takeover.bounded-owner-diagnostic-readiness-gate-v1",
+  "claimToken": "2a3a3c6f948794f066622da94d5e1ca0",
+  "decision": "READY_FOR_ONE_BOUNDED_OWNER_DIAGNOSTIC",
+  "requestedRunBudget": 1,
+  "runBudget": 1,
+  "blockerCodes": [],
+  "terminalAuthority": "RESULT_AND_CLOSED_CLAIMS_ONLY_PROGRESS_IGNORED",
+  "terminalResultExactBytesPinnedToResultCommit": true,
+  "provenance": {
+    "p43": {
+      "testedCommit": "0c23e22b0387d0b3042c5601ab0a9e897ce1c476",
+      "testedTree": "e6da807b9efa29d5ab819013dbe2da4ded995aa6",
+      "resultCommit": "2c916da0bdaa10777e75d356e8a9975698e99835",
+      "candidatePath": "parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_INTEGRATED_CANDIDATE.json",
+      "candidateBlob": "1012af8219e65d9f5647437d753a163c117d9c4c",
+      "dependencyPinsPath": "parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_DEPENDENCY_PINS.json",
+      "dependencyPinsBlob": "79b9ae9f769633b70115837ecd7cedd16db266fe"
+    },
+    "p45": {
+      "testedCommit": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+      "resultCommit": "034911b98001318e0be7d0e42ffe60df13c95d78",
+      "sourceBlob": "752a172911d76eb3573684b200d597926c819716"
+    },
+    "p46": {
+      "testedCommit": "210efdda5bbf3715989c751eb90442f26f42d0a9",
+      "resultCommit": "90a8abe2368f2c8b172aee13b7531a389985017b",
+      "sourceBlob": "efd71e25e28f171e080774eb5aa1309a0d7bbe2b"
+    }
+  },
+  "candidateBytes": {
+    "allP43TestedBlobMapEntriesMatchCurrentRepo": true,
+    "allP45ExactFilePinsMatchCurrentRepo": true,
+    "p46ExactSourcePinMatchesCurrentRepo": true,
+    "requiredImplementationBytesDriftedAfterP43TestedCandidate": false
+  },
+  "safety": {
+    "zeroClick": true,
+    "manualSeedRequired": false,
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "promotionPerformed": false,
+    "alphaLiveMoved": false,
+    "realWofRunPerformedByP47": false,
+    "ownerValidationPerformedByP47": false
+  },
+  "bounds": {
+    "p43MaxWallSeconds": 60,
+    "p43MaxConsoleEvents": 512,
+    "p43MaxLogBytes": 8388608,
+    "p46DefaultMaxWallMs": 15000,
+    "p46DefaultMaxEvents": 384,
+    "deterministicTeardown": true
+  },
+  "binding": {
+    "requiredFields": [
+      "runtimeEpoch",
+      "rendererEpoch",
+      "authorityKey"
+    ],
+    "pageWorkerWasmAssociationPreserved": true,
+    "staleOrMixedBindingFailClosed": true,
+    "moduleAsmIdentityDriftFailClosed": true,
+    "wrapperConflictFailClosed": true
+  },
+  "rawEvidence": {
+    "p39Preserved": true,
+    "p42CompleteRawBundlePreserved": true,
+    "p46CompleteRawStackFingerprintWasmTruthJsCallerModuleAsmBindingAssociationsAndTeardownPreserved": true,
+    "filteringAllowed": false
+  },
+  "wasmTruthBoundary": {
+    "functionIndex": [
+      "AVAILABLE",
+      "NOT_AVAILABLE",
+      "UNRESOLVED"
+    ],
+    "functionName": [
+      "AVAILABLE",
+      "NOT_AVAILABLE",
+      "UNRESOLVED"
+    ],
+    "offset": [
+      "AVAILABLE",
+      "NOT_AVAILABLE",
+      "UNRESOLVED"
+    ],
+    "guessingAllowed": false
+  },
+  "authority": {
+    "diagnosticCorrelationOnly": true,
+    "rendererAuthorityMinted": false,
+    "p29Changed": false,
+    "p32Changed": false,
+    "retryEligibilityMinted": false,
+    "promotionEligibilityMinted": false,
+    "sourceExportMinted": false
+  },
+  "p40": {
+    "state": "BLOCKED",
+    "blocker": "NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT",
+    "resolvedByP47": false
+  },
+  "initialExactRepoClassificationEvidence": {
+    "workflowRunId": 34008776836,
+    "headCommit": "610a26a544f9569a2a32cbe8f301299f41aed511",
+    "focusedTests": 13,
+    "syntax": "PASS",
+    "syntheticFailClosedMatrix": "PASS",
+    "actualRepoClassification": "PASS",
+    "oneRunReadyAssertion": "PASS"
+  }
+}
