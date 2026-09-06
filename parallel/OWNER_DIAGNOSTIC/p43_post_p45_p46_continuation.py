@@ -97,6 +97,8 @@ def dependency_pins() -> dict[str, Any]:
             "selectionByTiming": False,
             "selectionByOrder": False,
             "selectionByNearest": False,
+            "guessedWasmSymbol": False,
+            "guessedWasmOffset": False,
         },
     }
 
@@ -172,18 +174,17 @@ def exact_p45_module(args: Any, p45_root: Path) -> Iterator[Any]:
     """
     pylaunch = (args.source_checkout.expanduser().resolve() / "parallel" / "PYLAUNCH").resolve()
     added = str(pylaunch)
-    sys.path.insert(0, added)
-    package = importlib.import_module("wof_launcher")
-    package_file = getattr(package, "__file__", None)
-    if not isinstance(package_file, str) or pylaunch not in Path(package_file).resolve().parents:
-        raise ContinuationError(
-            f"wof_launcher package is not bound to explicit source checkout: {package_file!r}"
-        )
-    importlib.import_module("wof_launcher.cdp")
-
     names = ("wof_launcher.auto_baseline_hud", "wof_launcher.live_diagnostic_staging")
     saved = {name: sys.modules.get(name) for name in names}
+    sys.path.insert(0, added)
     try:
+        package = importlib.import_module("wof_launcher")
+        package_file = getattr(package, "__file__", None)
+        if not isinstance(package_file, str) or pylaunch not in Path(package_file).resolve().parents:
+            raise ContinuationError(
+                f"wof_launcher package is not bound to explicit source checkout: {package_file!r}"
+            )
+        importlib.import_module("wof_launcher.cdp")
         p39_path = p45_root / "parallel" / "PYLAUNCH" / "wof_launcher" / "auto_baseline_hud.py"
         p45_path = p45_root / P45_SOURCE_REL
         _load_module_from_path("wof_launcher.auto_baseline_hud", p39_path)
@@ -300,8 +301,8 @@ def _p45_snapshot(staging: Any, readout: Any) -> dict[str, Any]:
 
 
 def _p46_start_expression(binding: Mapping[str, Any]) -> str:
-    return """(()=>{
-const binding=BINDING;
+    template = """(()=>{
+const binding=__P43_BINDING_JSON__;
 const current=window.__WOF_P45_LIVE_DIAGNOSTIC_BINDING_V1;
 if(!current||current.runtimeEpoch!==binding.runtimeEpoch||current.rendererEpoch!==binding.rendererEpoch||current.authorityKey!==binding.authorityKey)throw new Error('P43 P46 requires exact P45 diagnostic binding');
 try{window.__WOF_P43_P46_CALLSITE_PROBE_V1__?.stop?.('P43_P46_REBIND');}catch(_){}
@@ -313,25 +314,27 @@ window.__WOF_P43_P46_START_IDENTITY_V1__={Module:window.Module??null,ModuleAsm:(
 const probe=api.createProbe({root:window,gl:window.I_fdC8Q,bindingProvider:()=>window.__WOF_P45_LIVE_DIAGNOSTIC_BINDING_V1,strictModuleIdentity:true});
 window.__WOF_P43_P46_CALLSITE_PROBE_V1__=probe;
 return probe.start(binding);
-})()""".replace("BINDING", json.dumps(dict(binding), separators=(",", ":")))
+})()"""
+    return template.replace("__P43_BINDING_JSON__", json.dumps(dict(binding), separators=(",", ":")))
 
 
 def _p46_stop_expression(binding: Mapping[str, Any], reason: str) -> str:
-    return """(()=>{
-const expected=BINDING;
+    template = """(()=>{
+const expected=__P43_BINDING_JSON__;
 const p=window.__WOF_P43_P46_CALLSITE_PROBE_V1__;
 const start=window.__WOF_P43_P46_START_IDENTITY_V1__;
 if(!p)return{present:false,reason:'P46_LIVE_INSTANCE_MISSING'};
 const current=window.__WOF_P45_LIVE_DIAGNOSTIC_BINDING_V1;
 if(!current||current.runtimeEpoch!==expected.runtimeEpoch||current.rendererEpoch!==expected.rendererEpoch||current.authorityKey!==expected.authorityKey){try{p.reject('STALE_OR_MIXED_AUTHORITY_BINDING');}catch(_){}}
 const currentAsm=(window.Module&&(typeof window.Module==='object'||typeof window.Module==='function'))?(window.Module.asm??null):null;
-if(start&&(window.Module??null)!==start.Module||start&&currentAsm!==start.ModuleAsm){try{p.reject('MODULE_OR_ASM_IDENTITY_CHANGED');}catch(_){}}
-let stop=null;try{stop=p.stop(REASON);}catch(ex){stop={error:String(ex&&ex.stack||ex)}}
+if((start&&(window.Module??null)!==start.Module)||(start&&currentAsm!==start.ModuleAsm)){try{p.reject('MODULE_OR_ASM_IDENTITY_CHANGED');}catch(_){}}
+let stop=null;try{stop=p.stop(__P43_REASON_JSON__);}catch(ex){stop={error:String(ex&&ex.stack||ex)}}
 let bundle=null;try{bundle=p.result();}catch(ex){return{present:true,stop,error:String(ex&&ex.stack||ex),bundle:null}}
 try{delete window.__WOF_P43_P46_CALLSITE_PROBE_V1__;}catch(_){}
 try{delete window.__WOF_P43_P46_START_IDENTITY_V1__;}catch(_){}
 return{present:true,stop,bundle};
-})()""".replace("BINDING", json.dumps(dict(binding), separators=(",", ":"))).replace("REASON", json.dumps(str(reason)))
+})()"""
+    return template.replace("__P43_BINDING_JSON__", json.dumps(dict(binding), separators=(",", ":"))).replace("__P43_REASON_JSON__", json.dumps(str(reason)))
 
 
 def _start_p46(client: Any, page_target_id: str, p46_source: str, binding: Mapping[str, Any]) -> dict[str, Any]:
