@@ -1,0 +1,40 @@
+name: Alpha P45 live diagnostic staging
+
+on:
+  push:
+    paths:
+      - 'parallel/PYLAUNCH/wof_launcher/live_diagnostic_staging.py'
+      - 'parallel/PYLAUNCH/tests/test_alpha_p45_live_diagnostic_staging.py'
+      - 'parallel/PYLAUNCH/tests/test_alpha_p39_auto_baseline_hud.py'
+      - 'parallel/RENDER_AUTHORITY_V2/gstyphoon_renderer_submit_correlation_probe.js'
+      - 'parallel/RENDER_AUTHORITY_V2/test_gstyphoon_renderer_submit_correlation_probe.mjs'
+      - '.github/workflows/alpha-p45-live-diagnostic-staging.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  focused-self-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Python syntax
+        run: python -m py_compile parallel/PYLAUNCH/wof_launcher/live_diagnostic_staging.py parallel/PYLAUNCH/tests/test_alpha_p45_live_diagnostic_staging.py
+      - name: P45 focused integration tests
+        env:
+          PYTHONPATH: parallel/PYLAUNCH
+        run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_alpha_p45_live_diagnostic_staging.py' -v
+      - name: P39 unchanged regression
+        env:
+          PYTHONPATH: parallel/PYLAUNCH
+        run: python -m unittest discover -s parallel/PYLAUNCH/tests -p 'test_alpha_p39_auto_baseline_hud.py' -v
+      - name: P42 unchanged regression
+        run: node parallel/RENDER_AUTHORITY_V2/test_gstyphoon_renderer_submit_correlation_probe.mjs
