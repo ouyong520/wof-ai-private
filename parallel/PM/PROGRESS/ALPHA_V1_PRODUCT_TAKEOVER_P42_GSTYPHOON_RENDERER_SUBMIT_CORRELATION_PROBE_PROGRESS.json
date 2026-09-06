@@ -4,31 +4,40 @@
   "dedupKey": "alpha.v1.product-takeover.gstyphoon-renderer-submit-correlation-probe-v1",
   "claimToken": "4c6507b7655c540e4a4fcbd28efdc2cb",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 5,
-  "implementationState": "NOT_STARTED",
-  "selfCheckState": "NOT_RUN",
+  "workState": "IMPLEMENTING",
+  "overallPercent": 48,
+  "implementationState": "CORE_PROBE_DURABLE",
+  "selfCheckState": "NONTERMINAL_LOCAL_PASS",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b",
-  "lastKnownGoodCommit": null,
-  "implementationCommits": [],
+  "lastKnownGoodCommit": "dd890e539dbd3f2512c7ea975791fd91669bf8dc",
+  "implementationCommits": [
+    "dd890e539dbd3f2512c7ea975791fd91669bf8dc"
+  ],
   "completed": [
     "latest-main and P42 prompt/dispatch preflight complete",
-    "canonical dedup-v2 claim acquired and exact-token readback verified",
-    "stage claim acquired and exact-token readback verified"
+    "canonical and stage claims exact-token verified",
+    "P36/P37/P39/P40 terminal authority and current maintained WebGL/P39 integration inspected",
+    "core bounded read-only renderer correlation probe committed",
+    "nonterminal local synthetic self-check reached 6/6 PASS before durable-candidate final rerun"
   ],
   "remaining": [
-    "inspect P36/P37/P39/P40 terminal authority and current renderer/runtime hooks",
-    "implement bounded read-only renderer submit correlation probe",
-    "add deterministic focused tests",
-    "materialize durable tested candidate and run final focused self-check",
+    "commit deterministic focused test and probe documentation",
+    "fresh-read exact durable candidate bytes and rerun terminal-significant focused self-check",
+    "record candidate tree/blob map and READY_TO_PUBLISH checkpoint",
     "publish terminal RESULT and close both claims"
   ],
-  "tests": [],
+  "tests": [
+    {
+      "name": "P42 local synthetic development self-check",
+      "result": "PASS",
+      "detail": "6/6 PASS; nonterminal only because final test must be rerun against fresh-read durable Git candidate bytes."
+    }
+  ],
   "blocker": null,
-  "nextAction": "Inspect terminal authority plus WebGL/WASM hook code and implement the isolated diagnostic probe.",
+  "nextAction": "Commit the focused deterministic test and mapping-contract documentation, then bind final self-check to the exact durable candidate.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:18:00Z"
+  "updatedAtUtc": "2026-09-06T01:23:30Z"
 }
