@@ -1,0 +1,33 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P47_BOUNDED_OWNER_DIAGNOSTIC_READINESS_GATE",
+  "dedupKey": "alpha.v1.product-takeover.bounded-owner-diagnostic-readiness-gate-v1",
+  "claimToken": "2a3a3c6f948794f066622da94d5e1ca0",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 10,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "58d467b8cfa1a76d1ed83b2966ba7b699636bb23",
+  "lastKnownGoodCommit": null,
+  "implementationCommits": [],
+  "completed": [
+    "Fresh-read main at 58d467b8cfa1a76d1ed83b2966ba7b699636bb23.",
+    "Fresh-read P43/P45/P46 terminal RESULT provenance and matching COMPLETE canonical/stage claims.",
+    "Acquired and re-read exclusive P47 canonical and stage claims with exact matching claimToken."
+  ],
+  "remaining": [
+    "Fresh-read exact P43 integrated candidate and dependency pins from tested candidate and current main.",
+    "Implement deterministic read-only P47 readiness gate and machine-readable readiness artifact.",
+    "Materialize durable exact tested candidate and run focused deterministic tests only.",
+    "Publish terminal RESULT, close canonical/stage claims, and publish terminal progress."
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "Read exact P43 candidate/tree/blob/dependency-pin evidence and required implementation blob map before implementing the gate.",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "updatedAtUtc": "2026-09-06T03:06:00Z"
+}
