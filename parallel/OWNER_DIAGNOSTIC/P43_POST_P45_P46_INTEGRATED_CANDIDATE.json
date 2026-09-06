@@ -1,0 +1,63 @@
+{
+  "schema": "wof-p43-post-p45-p46-integrated-candidate-v1",
+  "version": 1,
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC_HARNESS",
+  "claimToken": "9b45b04fc8f5e86849c08c07dcf0dc07",
+  "state": "FROZEN_FOR_EXACT_BYTE_TEST",
+  "candidateIdentityPolicy": "The containing Git commit/tree is the durable candidate identity and is recorded externally in P43 PROGRESS/RESULT to avoid self-reference.",
+  "entrypoint": "parallel/OWNER_DIAGNOSTIC/WOF_ALPHA_P43_BOUNDED_DIAGNOSTIC.cmd",
+  "finalOrchestrator": "parallel/OWNER_DIAGNOSTIC/p43_post_p45_p46_continuation.py",
+  "dependencies": {
+    "p45TestedCommit": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+    "p45SourceBlob": "752a172911d76eb3573684b200d597926c819716",
+    "p39TestedCommit": "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05",
+    "p42TestedCommit": "7b523187a955179b04155b758847c82aaf569a0d",
+    "p42ProbeBlob": "32b9c50e8a72de1a097b8ce5dc91b69bdcef0219",
+    "p46TestedCommit": "210efdda5bbf3715989c751eb90442f26f42d0a9",
+    "p46ProbeBlob": "efd71e25e28f171e080774eb5aa1309a0d7bbe2b"
+  },
+  "testedBlobMap": {
+    "parallel/OWNER_DIAGNOSTIC/p43_bounded_zero_click_live_diagnostic.py": "2c3a76ba7eac1a3ea9293a1490b28d17d22afae6",
+    "parallel/OWNER_DIAGNOSTIC/p43_bounded_zero_click_live_diagnostic_entry.py": "592363a61c4d5002c9396a71b1484c2b177cb4b4",
+    "parallel/OWNER_DIAGNOSTIC/p43_bounded_zero_click_live_diagnostic_final.py": "46817b2f71131ac9cd5c6bf22eb7fd31418d131c",
+    "parallel/OWNER_DIAGNOSTIC/p43_post_p45_p46_continuation.py": "c0aa45035b6ccfde091c5e1978f27d9bdb3fc1e9",
+    "parallel/OWNER_DIAGNOSTIC/WOF_ALPHA_P43_BOUNDED_DIAGNOSTIC.cmd": "4164119df08770716479e0766acbb6999684593e",
+    "parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_DEPENDENCY_PINS.json": "79b9ae9f769633b70115837ecd7cedd16db266fe",
+    "parallel/OWNER_DIAGNOSTIC/P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC.md": "a206d4bdb6294cc89e46b993fc4304c88bb66a2c",
+    "parallel/OWNER_DIAGNOSTIC/test_p43_bounded_zero_click_live_diagnostic.py": "0a06cdb88218760d2aa8c00a7b16d7c5465dd2cb",
+    "parallel/OWNER_DIAGNOSTIC/test_p43_bounded_zero_click_live_diagnostic_entry.py": "c3ec10acb6320982316b3abb1fab9b39fa4b447e",
+    "parallel/OWNER_DIAGNOSTIC/test_p43_bounded_zero_click_live_diagnostic_final.py": "ce377d4d36c0bb3ba3da03c837fc4e1befa2afaf",
+    "parallel/OWNER_DIAGNOSTIC/test_p43_post_p45_p46_continuation.py": "a69760eeb7bd44af0b9871a9408090365f25de20",
+    ".github/workflows/alpha-p43-post-p45-p46-convergence.yml": "9b6aa203687d6173ac64db2c60a1d24b605e97be"
+  },
+  "composition": {
+    "installOrder": ["P45_P39", "P45_P42", "P46"],
+    "webglWrapperStackTopToBottom": ["P46", "P45_P42", "ORIGINAL_RUNTIME_WEBGL"],
+    "teardownOrder": ["P46", "P45_P42_AND_P39"],
+    "p45RuntimeReboundByP43": false,
+    "rawP42Filtering": false,
+    "rawP46Filtering": false,
+    "guessedWasmSymbol": false,
+    "guessedWasmOffset": false
+  },
+  "authorityBoundary": {
+    "rendererSourceProofMinted": false,
+    "p29PassMinted": false,
+    "p32QualificationMinted": false,
+    "p36CriteriaChanged": false,
+    "retryEligibilityMinted": false,
+    "promotionEligibilityMinted": false,
+    "p40BlockerResolved": false
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "zeroClick": true,
+    "manualSeedRequired": false,
+    "installPerformed": false,
+    "realGameRun": false,
+    "promotionPerformed": false,
+    "alphaLiveMoved": false
+  }
+}
