@@ -1,0 +1,35 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P44_HISTORICAL_GSTYPHOON_RENDERER_SUBMIT_EXPORT_ARCHAEOLOGY",
+  "dedupKey": "alpha.v1.product-takeover.historical-gstyphoon-renderer-submit-export-archaeology-v1",
+  "claimToken": "c47b83f2d17549ff9ec2c6a4bdb0a8ed",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 8,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "4f57103cdcca22d954148183a1a40907a42a263d",
+  "lastKnownGoodCommit": "2be53c9688bd78f1cc5edf9702cd938c6bd5b42d",
+  "implementationCommits": [],
+  "completed": [
+    "Read P44 START prompt, dispatch, root AGENTS/product governance, dedup/progress/result protocols",
+    "Read P36/P37/P39/P40 terminal authority and P42/P43 START/progress state",
+    "Canonical v2 claim created and exact-token readback verified",
+    "Stage claim created and exact-token readback verified"
+  ],
+  "remaining": [
+    "Search full Git history and historical blobs for direct renderer submit/export predecessors",
+    "Inspect exact target commits 6eeebf4a00ce7751ce9ba6008982e8136d1c4290 and d30a071c668c716cd8d9b5d02932808c76c7a3a7",
+    "Classify retained candidates and document exact commit/path/blob/symbol/semantics",
+    "Create durable report candidate and perform exact-byte self-check/readback",
+    "Publish terminal RESULT and close claims"
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "Perform bounded full-history/source archaeology and retain exact evidence for every plausible renderer-source candidate.",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "updatedAtUtc": "2026-09-06T01:26:00Z"
+}
