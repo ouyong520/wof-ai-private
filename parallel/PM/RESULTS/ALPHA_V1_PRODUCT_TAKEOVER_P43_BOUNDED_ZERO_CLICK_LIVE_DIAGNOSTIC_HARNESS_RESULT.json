@@ -1,0 +1,167 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC_HARNESS",
+  "dedupKey": "alpha.v1.product-takeover.bounded-zero-click-live-diagnostic-harness-v2",
+  "claimToken": "9b45b04fc8f5e86849c08c07dcf0dc07",
+  "state": "COMPLETE",
+  "verdict": "Exact-byte-tested P43 now consumes the terminal P45 P39/P42 staging seam and exact P46 WASM/WebGL call-site probe in one fail-closed zero-click bounded diagnostic harness, preserving complete raw binding/stack/fingerprint/Module/teardown evidence without changing renderer authority or running the real game.",
+  "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b",
+  "testedCommit": "0c23e22b0387d0b3042c5601ab0a9e897ce1c476",
+  "testedTree": "e6da807b9efa29d5ab819013dbe2da4ded995aa6",
+  "testedCandidateMetadata": {
+    "path": "parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_INTEGRATED_CANDIDATE.json",
+    "gitBlobSha": "1012af8219e65d9f5647437d753a163c117d9c4c"
+  },
+  "implementationCommits": [
+    "3960107ada295f3eee1add72b6077919abeec949",
+    "883bb9776843591bf7873ffabed65d6b42ce842a",
+    "d6cb6ee4ba1a94d2c62c79d2e651cad2c02634e6",
+    "4c36e511b7d96f0eb2adb24c1ad6196f93f4e27d",
+    "c4b2c4a233df02e213a628f4b68618f38046bef8",
+    "b3494abce7d3a3064b32bca47e5dead65d01d918",
+    "cea3bafb3b480062588b7e058720566cb94210ed",
+    "cf1c11f5e9abd17097e65fa007b5b40cd1ed48da",
+    "73075db1fee1d0436b788bb15ac6938ae97eb89a",
+    "ff550316354ebfe84dea19276131862ffb14400f",
+    "a074ccb3bf556ef3b6780a72fcb7b6db2fbd1503",
+    "60e5c46fbf16dfce91d04831037bff33df4ff539",
+    "cf51103cef96f2edf03415ac6563330a1055d0f9",
+    "8fc5041205e1798171997043caf10a8ed7596957",
+    "472532e095f2603c613fe7c8046f5289e38621f4",
+    "9e5e9c26f93dd89e85626b7d451c741c43dd74cf",
+    "9e08cc835748facf01b059be777b321218bda38e",
+    "c3891a108da94e21a489f2bae815f8de81896db4",
+    "c6f2f2a69049f0013b0b45de247021d207a2bdad",
+    "da09491112403ab3a38728ba7fd07c93971a66e9",
+    "0c23e22b0387d0b3042c5601ab0a9e897ce1c476"
+  ],
+  "integrationReady": true,
+  "integrationScope": "ONE_LATER_PM_AUTHORIZED_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC",
+  "changedFiles": [
+    "parallel/OWNER_DIAGNOSTIC/p43_bounded_zero_click_live_diagnostic.py",
+    "parallel/OWNER_DIAGNOSTIC/p43_bounded_zero_click_live_diagnostic_entry.py",
+    "parallel/OWNER_DIAGNOSTIC/p43_bounded_zero_click_live_diagnostic_final.py",
+    "parallel/OWNER_DIAGNOSTIC/p43_post_p45_p46_continuation.py",
+    "parallel/OWNER_DIAGNOSTIC/WOF_ALPHA_P43_BOUNDED_DIAGNOSTIC.cmd",
+    "parallel/OWNER_DIAGNOSTIC/P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC.md",
+    "parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_DEPENDENCY_PINS.json",
+    "parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_INTEGRATED_CANDIDATE.json",
+    "parallel/OWNER_DIAGNOSTIC/test_p43_bounded_zero_click_live_diagnostic.py",
+    "parallel/OWNER_DIAGNOSTIC/test_p43_bounded_zero_click_live_diagnostic_entry.py",
+    "parallel/OWNER_DIAGNOSTIC/test_p43_bounded_zero_click_live_diagnostic_final.py",
+    "parallel/OWNER_DIAGNOSTIC/test_p43_post_p45_p46_continuation.py",
+    ".github/workflows/alpha-p43-post-p45-p46-convergence.yml"
+  ],
+  "dependencyPins": {
+    "p45": {
+      "testedCommit": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+      "sourceGitBlobSha": "752a172911d76eb3573684b200d597926c819716",
+      "p39TestedCommit": "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05",
+      "p42TestedCommit": "7b523187a955179b04155b758847c82aaf569a0d",
+      "p42ProbeGitBlobSha": "32b9c50e8a72de1a097b8ce5dc91b69bdcef0219"
+    },
+    "p46": {
+      "testedCommit": "210efdda5bbf3715989c751eb90442f26f42d0a9",
+      "probeGitBlobSha": "efd71e25e28f171e080774eb5aa1309a0d7bbe2b"
+    }
+  },
+  "composition": {
+    "installOrder": ["P45_P39", "P45_P42", "P46"],
+    "webglWrapperStackTopToBottom": ["P46", "P45_P42", "ORIGINAL_RUNTIME_WEBGL"],
+    "teardownOrder": ["P46", "P45_P42_AND_P39"],
+    "p45RuntimeReboundByP43": false,
+    "rawP42Filtering": false,
+    "rawP46Filtering": false
+  },
+  "receiptContract": {
+    "preservesExactCandidatePackageManifestAttestationProvenancePointer": true,
+    "preservesAllPageTargetsAndAuthoritativePageWorkerWasmAssociation": true,
+    "preservesP16P9P17Gates": true,
+    "preservesP36RawDiscoveryCandidatesRejectionsEventsProducerAndP32Result": true,
+    "preservesP39VisibleHiddenLostStaleAmbiguousReacquire": true,
+    "preservesP42CompleteRawBundleBindingSealAndTeardown": true,
+    "preservesP46CompleteRawStackFingerprintWasmTruthJsCallerModuleAsmBindingAssociationsAndTeardown": true,
+    "preservesConsoleRuntimeStagingLogsAndRawExceptions": true,
+    "preservesChronologicalGateTimeline": true,
+    "answersFirstFailingGateAndPassedBeforeFirstFailure": true
+  },
+  "p46TruthBoundary": {
+    "rawStack": ["AVAILABLE", "NOT_AVAILABLE"],
+    "normalizedFingerprint": ["AVAILABLE", "NOT_AVAILABLE"],
+    "wasmFunctionIndex": ["AVAILABLE", "NOT_AVAILABLE", "UNRESOLVED"],
+    "wasmFunctionName": ["AVAILABLE", "NOT_AVAILABLE", "UNRESOLVED"],
+    "wasmOffset": ["AVAILABLE", "NOT_AVAILABLE", "UNRESOLVED"],
+    "jsSemanticRoleGuessed": false,
+    "wasmSymbolGuessed": false,
+    "wasmOffsetGuessed": false
+  },
+  "authorityBoundary": {
+    "authorityEligible": false,
+    "mappingOnly": true,
+    "createsNativeMarkerSourceExport": false,
+    "emitsRendererAuthorityProof": false,
+    "changesP29Acceptance": false,
+    "changesP32Qualification": false,
+    "changesP36AuthorityContract": false,
+    "changesP39Authority": false,
+    "changesP42Authority": false,
+    "changesP46Authority": false,
+    "p40BlockerResolved": false,
+    "p40Blocker": "NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT"
+  },
+  "tests": [
+    {
+      "name": "P43 exact frozen candidate syntax and focused regression",
+      "result": "PASS",
+      "detail": "GitHub Actions run 34007010311 on exact candidate 0c23e22b0387d0b3042c5601ab0a9e897ce1c476: Python syntax PASS; 29/29 P43 core/P45/P46 focused regressions PASS."
+    },
+    {
+      "name": "P43 exact frozen candidate testedBlobMap readback",
+      "result": "PASS",
+      "detail": "Run 34007010311 fresh-read every final candidate testedBlobMap entry from HEAD and matched the pinned Git blob identities, including the final continuation, entrypoint, tests, dependency pins, documentation and convergence workflow."
+    },
+    {
+      "name": "P43 no-live/no-promotion/no-direct-source contract scan",
+      "result": "PASS",
+      "detail": "Run 34007010311 confirmed the continuation does not create either native renderer-submit source global and preserves the exact P45/P46 install/teardown contract."
+    },
+    {
+      "name": "Real WOF bounded live diagnostic",
+      "result": "NOT_RUN",
+      "detail": "Explicitly outside P43 worker authority. No real game run, Owner visual acceptance, promotion, or alpha-live movement occurred."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_PROVEN",
+    "detail": "P43 proves only the exact-byte-tested repository-side bounded diagnostic harness. It does not prove the real native 1P/2P/3P displayed renderer source or resolve P40; only a later separately authorized bounded live run may produce that runtime evidence."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM may use tested candidate 0c23e22b0387d0b3042c5601ab0a9e897ce1c476 for one separately authorized bounded zero-click live diagnostic and preserve the resulting P45/P46/P36/P32 receipt; do not infer renderer authority before that evidence exists.",
+  "evidencePaths": [
+    "parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_INTEGRATED_CANDIDATE.json",
+    "parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_DEPENDENCY_PINS.json",
+    "parallel/OWNER_DIAGNOSTIC/p43_post_p45_p46_continuation.py",
+    "parallel/OWNER_DIAGNOSTIC/p43_bounded_zero_click_live_diagnostic_final.py",
+    "parallel/OWNER_DIAGNOSTIC/WOF_ALPHA_P43_BOUNDED_DIAGNOSTIC.cmd",
+    "parallel/OWNER_DIAGNOSTIC/test_p43_post_p45_p46_continuation.py",
+    ".github/workflows/alpha-p43-post-p45-p46-convergence.yml",
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC_HARNESS_PROGRESS.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "zeroClick": true,
+    "manualSeedRequired": false,
+    "installPerformed": false,
+    "realWofRun": false,
+    "promotionPerformed": false,
+    "alphaLiveMoved": false
+  },
+  "completedAtUtc": "2026-09-06T02:42:00Z"
+}
