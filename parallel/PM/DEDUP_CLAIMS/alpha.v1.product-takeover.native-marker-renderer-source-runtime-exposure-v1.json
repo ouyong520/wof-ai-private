@@ -8,6 +8,13 @@
   "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P40_NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE_START_PROMPT.md",
   "owner": "chatgpt-gpt-5.6-sol-p40-worker",
   "claimToken": "a58fd0faf728d91dade9dd6390b27d3e",
-  "state": "ACTIVE",
-  "startCommit": "1ea361b7eeb747b031c8db81b78a561efafcd919"
+  "state": "BLOCKED",
+  "startCommit": "1ea361b7eeb747b031c8db81b78a561efafcd919",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P40_NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE_RESULT.json",
+  "resultCommit": "d9bc9c4558f03af5085da228d4eb839a55aaba83",
+  "testedCommit": "5a3b9bce01e794e030974a94f7511a39fa56e818",
+  "blocker": {
+    "code": "NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT",
+    "detail": "Checked-in maintained runtime has no source-traced/exported per-object gstyphoon CPS1 displayed submit carrying exact 1P/2P/3P+DOWN identity, explicit actor generation, native 384x224 x/y, displayedFrameId/submissionId/frameGeneration, and runtimeEpoch/rendererEpoch/authorityKey into the P36 source surface."
+  }
 }
