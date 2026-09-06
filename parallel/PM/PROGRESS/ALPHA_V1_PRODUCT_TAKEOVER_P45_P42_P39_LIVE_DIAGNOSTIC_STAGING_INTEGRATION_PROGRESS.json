@@ -4,32 +4,37 @@
   "dedupKey": "alpha.v1.product-takeover.p42-p39-live-diagnostic-staging-integration-v1",
   "claimToken": "30baf98b0c5ff885c8b0b66d9d76e8ec",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 10,
-  "implementationState": "NOT_STARTED",
+  "workState": "IN_PROGRESS",
+  "overallPercent": 62,
+  "implementationState": "IMPLEMENTED",
   "selfCheckState": "NOT_RUN",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "228466cb6ab24fd56b93b96c996e7fffa0103919",
-  "lastKnownGoodCommit": "228466cb6ab24fd56b93b96c996e7fffa0103919",
-  "implementationCommits": [],
+  "lastKnownGoodCommit": "05a042fa86a1e3871f92c4f79c2fb2f07e475881",
+  "implementationCommits": [
+    "5860860b5652553338989d9b1316f2fa6f314e0d",
+    "05a042fa86a1e3871f92c4f79c2fb2f07e475881"
+  ],
   "completed": [
-    "Fresh main preflight completed.",
-    "P39 terminal COMPLETE authority read and exact tested commit confirmed as ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05 with UNVERIFIED_AUTO_BASELINE classification.",
-    "P42 terminal COMPLETE authority read and exact tested commit confirmed as 7b523187a955179b04155b758847c82aaf569a0d with BOUNDED_LIVE_DIAGNOSTIC_MAPPING_ONLY scope.",
-    "Canonical and stage dedup-v2 claims acquired and exact token verified."
+    "Fresh main preflight completed and exact dedup-v2 ownership verified.",
+    "P39 terminal COMPLETE authority fixed to testedCommit ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05 and UNVERIFIED_AUTO_BASELINE.",
+    "P42 terminal COMPLETE authority fixed to testedCommit 7b523187a955179b04155b758847c82aaf569a0d and BOUNDED_LIVE_DIAGNOSTIC_MAPPING_ONLY.",
+    "Inspected maintained AlphaRuntime/P39/P42 interfaces and kept production PAGE_SOURCES/WORKER_SOURCES and canonical authority code untouched.",
+    "Added default-off P45 staging wrapper. Gate-on deterministically binds P39 before P42; gate-off delegates maintained Alpha runtime without diagnostic construction/injection.",
+    "Pinned exact accepted Git blobs for the P39 runtime bridge/dependencies and P42 probe; drift fails closed before injection.",
+    "Added exact runtimeEpoch + authorityKey + diagnostic-only rendererEpoch binding, per-hook P42 freshness provider, complete raw P42 result pass-through, P39 lifecycle readout, seal/teardown preservation, and explicit zero-click/non-authority labels.",
+    "Added focused synthetic tests for gate-off invariance, injection order, raw-bundle preservation, P39 visible/hidden/lost/stale/ambiguous/reacquire state, stale/mixed binding rejection, seal/teardown, and authority non-promotion."
   ],
   "remaining": [
-    "Inspect maintained Alpha staging/runtime injection surfaces and exact P39/P42 tested source bytes.",
-    "Implement explicit bounded P45 gate with deterministic P39/P42 injection order and fail-closed runtime identity binding.",
-    "Expose P39 tracker/HUD state and complete P42 raw bundle/seal/teardown readout without filtering candidates.",
-    "Add focused exact-byte tests for gate-off invariance, authority boundary, zero-click behavior, raw bundle preservation, and stale/mixed identity rejection.",
-    "Create durable tested candidate, run terminal-significant focused self-checks, publish RESULT, and close both claims."
+    "Materialize terminal-significant tested candidate with a focused CI/self-check surface.",
+    "Run P45 focused Python tests plus unchanged P39 and P42 regressions on exact candidate bytes.",
+    "Fresh-read implementation/source hashes and claims after tests; publish terminal RESULT and close both claims if all gates pass."
   ],
   "tests": [],
   "blocker": null,
-  "nextAction": "Inspect the maintained staging injection entrypoints plus exact P39 and P42 accepted source interfaces before coding the narrow P45 integration bridge.",
+  "nextAction": "Create the focused exact-candidate CI gate, then run P45 + P39 + P42 regressions before any terminal publication.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:56:29Z"
+  "updatedAtUtc": "2026-09-06T02:10:00Z"
 }
