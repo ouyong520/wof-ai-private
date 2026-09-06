@@ -3,13 +3,13 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P47_BOUNDED_OWNER_DIAGNOSTIC_READINESS_GATE",
   "dedupKey": "alpha.v1.product-takeover.bounded-owner-diagnostic-readiness-gate-v1",
   "claimToken": "2a3a3c6f948794f066622da94d5e1ca0",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "IN_PROGRESS",
-  "overallPercent": 90,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "COMPLETE",
+  "overallPercent": 100,
   "implementationState": "COMPLETE",
   "selfCheckState": "PASS",
-  "resultPublicationState": "NOT_STARTED",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "PUBLISHED",
+  "claimCloseState": "CLOSED",
   "startCommit": "58d467b8cfa1a76d1ed83b2966ba7b699636bb23",
   "lastKnownGoodCommit": "f0634c81f0efb54819cef10e0c4cf8567cd5ca9a",
   "implementationCommits": [
@@ -22,20 +22,17 @@
   "completed": [
     "Fresh-read main and acquired/re-read exclusive P47 dedup-v2 canonical/stage claims.",
     "Fresh-read P43/P45/P46 terminal RESULT and matching COMPLETE claims; terminal RESULT is the gate authority and PROGRESS is intentionally not consumed by the evaluator.",
-    "Verified exact P43 tested commit 0c23e22b0387d0b3042c5601ab0a9e897ce1c476, tested tree e6da807b9efa29d5ab819013dbe2da4ded995aa6, candidate blob 1012af8219e65d9f5647437d753a163c117d9c4c, and dependency pins blob 79b9ae9f769633b70115837ecd7cedd16db266fe.",
-    "Verified every P43 testedBlobMap path, every P45 exact-file pin, and the P46 exact source pin still match current Git bytes; required implementation bytes did not drift after the P43 tested candidate.",
-    "Implemented fail-closed deterministic read-only P47 evaluator with exact terminal RESULT byte pinning, exact runBudget=1 guard, safety/bounds/binding/raw-evidence/WASM-truth/authority checks, and machine-readable artifact.",
-    "Verified zero-click/zero-manual-seed, read-only, RAM writes 0, no input injection, P43 wall/event/log bounds, P46 wall/event bounds, deterministic teardown, exact runtimeEpoch/rendererEpoch/authorityKey binding, exact Page/Worker/WASM association preservation, and complete P39/P42/P46 raw evidence preservation.",
-    "Verified stale/mixed binding, Module/Module.asm drift, wrapper replacement/teardown conflict, missing terminal authority, claim mismatch, tree/blob/pin drift, unsafe movement, budget mismatch, WASM guessing, and evidence loss all fail closed.",
-    "Materialized durable tested candidate f0634c81f0efb54819cef10e0c4cf8567cd5ca9a with tree d09993d70aa3cf961ecb59bc31d3835450f6a669 and exact P47 tested blobs.",
-    "Focused exact-candidate workflow run 34008815136 job 101420862796 completed success at exact head f0634c81f0efb54819cef10e0c4cf8567cd5ca9a: syntax PASS, 13 focused tests PASS, actual repo classification PASS, exact one-run READY assertion PASS.",
-    "Classification is READY_FOR_ONE_BOUNDED_OWNER_DIAGNOSTIC with runBudget=1 while P40 remains BLOCKED by NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT and no renderer/retry/promotion/source-export authority is minted."
+    "Verified exact P43 tested commit/tree/candidate/dependency pins and verified required P43/P45/P46 implementation bytes did not drift after the P43 tested candidate.",
+    "Implemented deterministic fail-closed P47 readiness evaluator, exact terminal RESULT byte pinning, exact runBudget=1 guard, focused synthetic matrix, workflow gate, documentation, and machine-readable readiness artifact.",
+    "Verified zero-click/zero-manual-seed, read-only, RAM writes 0, no input injection, bounded runtime/event/log limits, deterministic teardown, exact runtimeEpoch/rendererEpoch/authorityKey binding, exact Page/Worker/WASM association, and complete P39/P42/P46 raw evidence preservation.",
+    "Verified stale/mixed binding, Module/Module.asm drift, wrapper conflict, missing/stale RESULT, claim mismatch, tree/blob/pin mismatch, unsafe movement, budget mismatch, WASM guessing, and evidence loss all fail closed.",
+    "Materialized durable exact tested candidate f0634c81f0efb54819cef10e0c4cf8567cd5ca9a with tree d09993d70aa3cf961ecb59bc31d3835450f6a669 and seven exact P47 tested blobs.",
+    "Focused exact-candidate workflow run 34008815136 job 101420862796 completed success at exact head f0634c81f0efb54819cef10e0c4cf8567cd5ca9a with 13 focused tests and strict actual-repo READY assertion.",
+    "Published terminal RESULT at commit e825e146ebac6b4758340af4393947f7acdcdacd with READY_FOR_ONE_BOUNDED_OWNER_DIAGNOSTIC and runBudget=1.",
+    "Closed canonical and stage claims COMPLETE against tested commit f0634c81f0efb54819cef10e0c4cf8567cd5ca9a and RESULT commit e825e146ebac6b4758340af4393947f7acdcdacd.",
+    "P40 remains BLOCKED by NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT; P47 did not alter P29/P32 or mint renderer/retry/promotion/source-export authority."
   ],
-  "remaining": [
-    "Publish terminal RESULT for exact tested candidate.",
-    "Close canonical and stage claims against the RESULT commit.",
-    "Publish terminal 100% PROGRESS and fresh-read final authority."
-  ],
+  "remaining": [],
   "tests": [
     {
       "workflowRunId": 34008815136,
@@ -44,13 +41,15 @@
       "conclusion": "success",
       "focusedTests": 13,
       "syntax": "PASS",
+      "syntheticFailClosedMatrix": "PASS",
       "actualRepoClassification": "PASS",
+      "exactTerminalResultBytes": "PASS",
       "oneRunReadyAssertion": "PASS"
     }
   ],
   "blocker": null,
-  "nextAction": "Publish terminal RESULT, close both P47 claims, then publish terminal PROGRESS.",
-  "terminalResultPath": null,
+  "nextAction": "NONE",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P47_BOUNDED_OWNER_DIAGNOSTIC_READINESS_GATE_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T03:20:00Z"
+  "updatedAtUtc": "2026-09-06T03:25:00Z"
 }
