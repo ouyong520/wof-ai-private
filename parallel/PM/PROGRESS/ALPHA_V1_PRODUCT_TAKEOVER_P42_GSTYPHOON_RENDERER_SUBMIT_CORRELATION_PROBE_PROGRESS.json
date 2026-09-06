@@ -4,11 +4,11 @@
   "dedupKey": "alpha.v1.product-takeover.gstyphoon-renderer-submit-correlation-probe-v1",
   "claimToken": "4c6507b7655c540e4a4fcbd28efdc2cb",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
-  "overallPercent": 94,
+  "workState": "PUBLISHING",
+  "overallPercent": 96,
   "implementationState": "DONE_DURABLE_TESTED_CANDIDATE",
   "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
-  "resultPublicationState": "PENDING",
+  "resultPublicationState": "IN_PROGRESS",
   "claimCloseState": "PENDING",
   "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b",
   "lastKnownGoodCommit": "7b523187a955179b04155b758847c82aaf569a0d",
@@ -33,7 +33,8 @@
     "bounded read-only WebGL renderer correlation probe implemented",
     "deterministic focused test and mapping-contract documentation committed",
     "GitHub fresh readback matched all three exact local Git blob identities",
-    "terminal-significant Node syntax + deterministic self-check passed on bytes matching tested candidate 7b523187a955179b04155b758847c82aaf569a0d"
+    "terminal-significant Node syntax + deterministic self-check passed on exact tested candidate bytes",
+    "READY_TO_PUBLISH checkpoint recorded"
   ],
   "remaining": [
     "publish RESULT.json and RESULT.md",
@@ -44,17 +45,17 @@
     {
       "name": "P42 exact-candidate JavaScript syntax check",
       "result": "PASS",
-      "detail": "node --check gstyphoon_renderer_submit_correlation_probe.js on local bytes whose git blob hash exactly matched GitHub candidate blob 32b9c50e8a72de1a097b8ce5dc91b69bdcef0219."
+      "detail": "node --check gstyphoon_renderer_submit_correlation_probe.js; local bytes matched GitHub candidate blob 32b9c50e8a72de1a097b8ce5dc91b69bdcef0219."
     },
     {
       "name": "P42 exact-candidate deterministic renderer correlation self-check",
       "result": "PASS",
-      "detail": "6/6 PASS on local JS/test bytes exactly matching GitHub candidate blobs 32b9c50e8a72de1a097b8ce5dc91b69bdcef0219 and fd8b2eb861543cda454e16b965d75389e00dda86; covers bounded capture/teardown, draw/state metadata, typed-array payload/hash/offset, texture/range observation, P39 diagnostic correlation, mixed-binding rejection, ambiguity preservation, and proof-boundary non-impersonation."
+      "detail": "6/6 PASS on exact candidate-equivalent JS/test bytes; bounded capture/teardown, draw/state metadata, typed-array payload/hash/offset, texture/range observation, P39 diagnostic correlation, mixed-binding rejection, ambiguity preservation, and proof-boundary non-impersonation covered."
     },
     {
       "name": "P42 durable candidate exact-byte readback",
       "result": "PASS",
-      "detail": "GitHub candidate commit 7b523187a955179b04155b758847c82aaf569a0d tree a1333a0e90ec7e56a55565ee5298df981a92da4a fresh-read the recorded three blob identities; local git hash-object matched all three."
+      "detail": "Candidate commit 7b523187a955179b04155b758847c82aaf569a0d tree a1333a0e90ec7e56a55565ee5298df981a92da4a matched the recorded three blob identities."
     },
     {
       "name": "Real WOF live diagnostic",
@@ -63,8 +64,8 @@
     }
   ],
   "blocker": null,
-  "nextAction": "Publish terminal COMPLETE result for the exact tested diagnostic candidate and close both claims.",
-  "terminalResultPath": null,
+  "nextAction": "Publish terminal COMPLETE result, close both exact-token claims, then write TERMINAL progress.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:24:56Z"
+  "updatedAtUtc": "2026-09-06T01:26:30Z"
 }
