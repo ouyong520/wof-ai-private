@@ -4,10 +4,10 @@
   "dedupKey": "alpha.v1.product-takeover.bounded-zero-click-live-diagnostic-harness-v2",
   "claimToken": "9b45b04fc8f5e86849c08c07dcf0dc07",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "SELF_CHECK",
-  "overallPercent": 92,
+  "workState": "READY_TO_PUBLISH",
+  "overallPercent": 97,
   "implementationState": "POST_P45_P46_INTEGRATED_CANDIDATE_FROZEN",
-  "selfCheckState": "FINAL_EXACT_BYTE_CI_RUNNING",
+  "selfCheckState": "PASS_EXACT_DURABLE_CANDIDATE",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b",
@@ -45,40 +45,39 @@
     "p46TestedCommit": "210efdda5bbf3715989c751eb90442f26f42d0a9"
   },
   "completed": [
-    "Reattached the original P43 claim under the unchanged exact claimToken and reconciled PM-reconstructed stale progress.",
-    "Consumed exact P45 tested staging bytes through an attach-only P39->P42 diagnostic seam; P43 does not call P45 runtime ensure_running and does not duplicate P39/P42 implementation.",
-    "Integrated exact P46 tested probe bytes above the P45/P42 WebGL wrapper and enforced deterministic install order P45/P39 -> P45/P42 -> P46 with LIFO teardown P46 -> P45/P42/P39.",
-    "P46 readout preserves complete raw stacks, normalized fingerprints, AVAILABLE/NOT_AVAILABLE/UNRESOLVED WASM truth states, JS caller identity, Module/asm identity, exact binding, object/state associations and teardown conflicts without semantic selection or guessed symbol/offset.",
-    "Unified P45 P39/P42, P46, existing P36/P32/P9/P16/P17, raw logs/errors and first-failing-gate chronology into the stable P43 receipt while keeping readOnly=true, ramWrites=0, inputInjection=false, installPerformed=false and alpha-live safety readback.",
-    "Initial convergence CI detected and rejected an unsafe JavaScript placeholder replacement bug; the implementation was corrected rather than bypassing the check.",
-    "Post-fix nonterminal CI run 34006908940 passed Python syntax, 29/29 focused regressions, exact upstream Git-blob checks and no-live/no-authority contract scan.",
-    "Frozen durable final integrated candidate commit 0c23e22b0387d0b3042c5601ab0a9e897ce1c476 tree e6da807b9efa29d5ab819013dbe2da4ded995aa6 with exact candidate metadata blob 1012af8219e65d9f5647437d753a163c117d9c4c."
+    "Reattached and continued the original P43 claim under exact claimToken 9b45b04fc8f5e86849c08c07dcf0dc07 without recovery or duplicate ownership.",
+    "Consumed exact P45 tested staging through its attach-only P39->P42 seam; no duplicate P39/P42 implementation and no maintained runtime rebind by P43.",
+    "Integrated exact P46 above P45/P42 with deterministic wrapper order and LIFO teardown, preserving complete raw stack/fingerprint/WASM truth states/JS caller/Module+asm identity/binding/associations/teardown evidence.",
+    "Unified P45/P46 evidence with existing P16/P9/P36/P32/P17/log/error/timeline receipt and preserved firstFailingGate plus passedBeforeFirstFailure semantics.",
+    "Frozen durable exact candidate 0c23e22b0387d0b3042c5601ab0a9e897ce1c476 tree e6da807b9efa29d5ab819013dbe2da4ded995aa6 and candidate metadata blob 1012af8219e65d9f5647437d753a163c117d9c4c.",
+    "Terminal-significant GitHub Actions run 34007010311 on exact frozen candidate PASS: Python syntax PASS; 29/29 focused regressions PASS; final candidate testedBlobMap readback PASS; no-live/no-promotion/no-direct-source contract scan PASS.",
+    "No implementation bytes changed after exact-candidate terminal test."
   ],
   "remaining": [
-    "Wait for and fresh-read the terminal-significant convergence CI triggered by exact frozen candidate 0c23e22b0387d0b3042c5601ab0a9e897ce1c476.",
-    "If exact candidate CI passes, checkpoint READY_TO_PUBLISH, publish the two terminal RESULT artifacts, close the existing canonical/stage claims, and publish terminal PROGRESS.",
-    "If exact candidate CI fails, fail closed, repair implementation, freeze a new candidate and rerun affected terminal checks."
+    "Publish exactly the P43 terminal RESULT JSON and Markdown with WORKER_RESULT searchable commit prefix.",
+    "Close the existing canonical and stage claims with the same exact token.",
+    "Publish terminal PROGRESS agreeing with RESULT and closed claims."
   ],
   "tests": [
     {
-      "name": "Post-fix P43 P45/P46 convergence pre-freeze CI",
+      "name": "P43 terminal exact-byte integrated candidate CI",
       "result": "PASS",
-      "detail": "GitHub Actions run 34006908940 on c3891a108da94e21a489f2bae815f8de81896db4: Python syntax PASS; 29/29 focused tests PASS; exact P45/P46 dependency Git blobs PASS; no-live/no-promotion/no-direct-source contract scan PASS. This is supporting pre-freeze evidence, not the terminal candidate proof."
+      "detail": "GitHub Actions run 34007010311 executed against exact candidate 0c23e22b0387d0b3042c5601ab0a9e897ce1c476: syntax PASS; all 29 focused tests PASS; exact final testedBlobMap readback PASS; no-live/no-promotion/no-direct-renderer-source contract scan PASS."
     },
     {
-      "name": "P43 terminal exact-byte integrated candidate CI",
-      "result": "NOT_RUN",
-      "detail": "Candidate 0c23e22b0387d0b3042c5601ab0a9e897ce1c476 is frozen and its CI run is pending/fresh-read not yet complete at this checkpoint."
+      "name": "P43 post-fix pre-freeze convergence CI",
+      "result": "PASS",
+      "detail": "Supporting run 34006908940 on c3891a108da94e21a489f2bae815f8de81896db4 also passed before the frozen candidate was created."
     },
     {
       "name": "Real WOF bounded live diagnostic",
       "result": "NOT_RUN",
-      "detail": "Explicitly forbidden by P43 continuation authority; no game launch, Owner visual acceptance, promotion, or alpha-live movement is part of this worker terminalization."
+      "detail": "Explicitly outside P43 authority. No real game launch, Owner visual acceptance, promotion, or alpha-live movement occurred."
     }
   ],
   "blocker": null,
-  "nextAction": "Fresh-read the exact-candidate CI for 0c23e22b0387d0b3042c5601ab0a9e897ce1c476 and terminalize only if it passes without implementation-byte changes.",
+  "nextAction": "Publish terminal P43 RESULT, close the two existing exact-token claims, and write terminal PROGRESS without modifying implementation bytes.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T02:39:30Z"
+  "updatedAtUtc": "2026-09-06T02:41:00Z"
 }
