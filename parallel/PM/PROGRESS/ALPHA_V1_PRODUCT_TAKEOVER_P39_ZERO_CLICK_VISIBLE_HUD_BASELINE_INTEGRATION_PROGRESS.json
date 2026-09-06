@@ -4,29 +4,36 @@
   "dedupKey": "alpha.v1.product-takeover.zero-click-visible-hud-baseline-integration-v1",
   "claimToken": "af435a4eb64b05cb535cadf98868125f",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 5,
-  "implementationState": "NOT_STARTED",
+  "workState": "IMPLEMENTING",
+  "overallPercent": 50,
+  "implementationState": "CORE_IMPLEMENTED_TESTS_PENDING",
   "selfCheckState": "NOT_RUN",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "d5f176c6856b05c599b16fa830e8f6a4b41632bc",
-  "lastKnownGoodCommit": null,
-  "implementationCommits": [],
+  "lastKnownGoodCommit": "5fcafa15b91bc80d57cc099e3aa1bfa97bfbb5ac",
+  "implementationCommits": [
+    "4407e94426d41ef173677da0caf55763a6c18f20",
+    "d52a8cebfc99cb8d952e60532cc04fb007bdd226",
+    "5fcafa15b91bc80d57cc099e3aa1bfa97bfbb5ac"
+  ],
   "completed": [
-    "dedup-v2 canonical claim created and exact-token verified",
-    "stage claim created and exact-token verified"
+    "dedup-v2 canonical and stage claims exact-token verified",
+    "read P37 tested implementation/result plus maintained Alpha HUD and production P1 staging seam",
+    "added strict P37 diagnostic adapter that reuses P37 tracker and P37 native-to-viewport mapping without copying detection heuristics",
+    "added explicit staging-only visible extension that wraps the maintained HUD draw callback and restores it on gate close/dispose",
+    "added Python staging bridge that injects only P37/P39 diagnostic sources after maintained HUD exists; production HUD source list remains untouched"
   ],
   "remaining": [
-    "read P37/P36/P30 and maintained HUD/staging implementation authority",
-    "implement gated UNVERIFIED_AUTO_BASELINE HUD integration without changing production authority semantics",
-    "create durable tested candidate and run focused deterministic self-checks",
+    "add focused deterministic adapter/visible/staging tests",
+    "create durable exact tested candidate after test code is complete",
+    "fresh exact-candidate self-check and source-blob readback",
     "publish terminal RESULT artifacts and close claims"
   ],
   "tests": [],
   "blocker": null,
-  "nextAction": "Read the exact P37 tested implementation/result plus maintained Alpha HUD and staging integration seams.",
+  "nextAction": "Add the focused P39 deterministic self-checks, then freeze a durable candidate commit and test the exact candidate bytes.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T00:57:50.064280Z"
+  "updatedAtUtc": "2026-09-06T01:09:00Z"
 }
