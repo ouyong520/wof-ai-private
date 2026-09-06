@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.product-takeover.one-bounded-owner-live-diagnostic-execution-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.one-bounded-owner-live-diagnostic-execution-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P48_ONE_BOUNDED_OWNER_LIVE_DIAGNOSTIC_EXECUTION",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P48_ONE_BOUNDED_OWNER_LIVE_DIAGNOSTIC_EXECUTION_START_PROMPT.md",
+  "owner": "GPT-5.6-Sol-worker-P48",
+  "claimToken": "323849cea9b1d5b97e4d08d49732ddf4",
+  "state": "ACTIVE",
+  "startCommit": "8c297959f516ccd51dbe334b77a87a8f629e9c66"
+}
