@@ -26,6 +26,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install launcher test dependency
+        run: python -m pip install websocket-client
       - name: Python syntax
         run: python -m py_compile parallel/PYLAUNCH/wof_launcher/live_diagnostic_staging.py parallel/PYLAUNCH/tests/test_alpha_p45_live_diagnostic_staging.py
       - name: P45 focused integration tests
