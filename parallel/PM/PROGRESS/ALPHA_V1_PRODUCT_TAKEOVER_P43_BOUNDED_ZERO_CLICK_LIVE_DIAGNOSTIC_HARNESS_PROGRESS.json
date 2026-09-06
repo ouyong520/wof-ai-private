@@ -4,10 +4,10 @@
   "dedupKey": "alpha.v1.product-takeover.bounded-zero-click-live-diagnostic-harness-v2",
   "claimToken": "9b45b04fc8f5e86849c08c07dcf0dc07",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "INTERRUPTED",
-  "overallPercent": 72,
-  "implementationState": "HARNESS_AND_P42_INTEGRATION_PUBLISHED_P45_P46_CONVERGENCE_PENDING",
-  "selfCheckState": "NONTERMINAL_LOCAL_FIXTURE_PREFLIGHT_PASS",
+  "workState": "IMPLEMENTING",
+  "overallPercent": 74,
+  "implementationState": "POST_P45_P46_CONTINUATION_RECONCILED",
+  "selfCheckState": "NONTERMINAL_LOCAL_FIXTURE_PREFLIGHT_PASS_TERMINAL_RERUN_PENDING",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b",
@@ -26,21 +26,21 @@
     "a074ccb3bf556ef3b6780a72fcb7b6db2fbd1503"
   ],
   "completed": [
-    "Canonical and stage P43 claims remain ACTIVE with exact claimToken 9b45b04fc8f5e86849c08c07dcf0dc07.",
-    "Published isolated bounded zero-click live diagnostic harness, entrypoint, final fail-closed wrapper, docs and focused tests under parallel/OWNER_DIAGNOSTIC.",
-    "Published exact P42 integration and stable raw receipt/archive support.",
-    "Published fail-closed exact-candidate/dedicated-venv preflight before P42 execution.",
-    "P45 is now terminal COMPLETE and provides maintained default-off P39/P42 staging integration.",
-    "P46 is now terminal COMPLETE and provides exact-byte-tested WASM/WebGL call-site fingerprint mapping evidence.",
-    "PM published parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P43_POST_P45_P46_CONTINUATION_PROMPT.md directing same-token convergence."
+    "Fresh continuation main readback observed 1d7f3edba131cb6794011903c447210fca1cfffa.",
+    "Canonical and stage P43 claims fresh-read ACTIVE with unchanged exact claimToken 9b45b04fc8f5e86849c08c07dcf0dc07.",
+    "Reconciled PM-reconstructed stale PROGRESS with all published P43 implementation commits through a074ccb3bf556ef3b6780a72fcb7b6db2fbd1503.",
+    "Existing P43 bounded harness, stable raw receipt/archive, exact candidate/source preflight, dedicated-venv enforcement and fail-closed P42-era integration are durable.",
+    "Fresh-read P45 terminal COMPLETE tested candidate 3dac7a9e2cbe4a23c3de44eb15cf45f19b136149; continuation will consume its maintained default-off P39->P42 staging wrapper instead of duplicating P39/P42 integration.",
+    "Fresh-read P46 terminal COMPLETE tested commit 210efdda5bbf3715989c751eb90442f26f42d0a9 and exact probe blob efd71e25e28f171e080774eb5aa1309a0d7bbe2b.",
+    "Existing nonterminal local deterministic fixture preflight remains 11/11 PASS; terminal-significant exact-byte regression remains pending after continuation integration."
   ],
   "remaining": [
-    "Reattach the existing P43 worker to the same claim/token; do not create a new claim or recovery.",
-    "Consume exact P45 rather than duplicating its staging integration.",
-    "Integrate exact P46 raw call-site bundle into the same bounded P43 orchestration with deterministic wrapper/LIFO teardown semantics.",
-    "Update P43 receipt/archive so P39/P42/P46 raw evidence and exact runtimeEpoch/rendererEpoch/authorityKey are preserved in one session.",
-    "Freeze one durable exact integrated P43 candidate with dependency pins and fresh tree/blob readback.",
-    "Run terminal-significant focused regression against those exact bytes, then publish RESULT and close both claims."
+    "Consume exact P45 maintained staging wrapper from P43 rather than standalone P39/P42 reinjection.",
+    "Integrate exact P46 probe with deterministic wrapper-stack/LIFO composition and preserve complete raw call-site bundle/binding/teardown/truth states.",
+    "Add focused deterministic continuation regressions for P45+P46 composition, stale/mixed binding, Module/asm drift and teardown conflicts.",
+    "Freeze durable exact integrated P43 candidate and fresh-read tree/blob/dependency pins.",
+    "Run terminal-significant focused regression once against exact durable candidate bytes.",
+    "Publish terminal RESULT, checkpoint terminal progress and close the existing canonical/stage claims."
   ],
   "tests": [
     {
@@ -51,17 +51,17 @@
     {
       "name": "P43 final exact-byte P45/P46 convergence regression",
       "result": "NOT_RUN",
-      "detail": "No durable P43 candidate containing the post-P45/P46 convergence exists yet."
+      "detail": "Pending final integrated candidate freeze."
     },
     {
       "name": "Real WOF bounded live diagnostic",
       "result": "NOT_RUN",
-      "detail": "No Owner live run is authorized before P43 terminal convergence and PM readiness review."
+      "detail": "Explicitly forbidden by continuation authority."
     }
   ],
   "blocker": null,
-  "nextAction": "Reattach the original P43 worker using parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P43_POST_P45_P46_CONTINUATION_PROMPT.md and the same exact claimToken; reconcile this PM reconstruction before implementation.",
+  "nextAction": "Integrate exact P45 staging and exact P46 call-site probe into the existing P43 orchestration, then freeze and test one durable exact integrated candidate.",
   "terminalResultPath": null,
-  "writerRole": "PM_RECONSTRUCTION",
-  "updatedAtUtc": "2026-09-06T02:16:30Z"
+  "writerRole": "WORKER",
+  "updatedAtUtc": "2026-09-06T02:26:00Z"
 }
