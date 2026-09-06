@@ -1,0 +1,162 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P39_ZERO_CLICK_VISIBLE_HUD_BASELINE_INTEGRATION",
+  "dedupKey": "alpha.v1.product-takeover.zero-click-visible-hud-baseline-integration-v1",
+  "claimToken": "af435a4eb64b05cb535cadf98868125f",
+  "state": "COMPLETE",
+  "classification": "UNVERIFIED_AUTO_BASELINE",
+  "verdict": "Exact-byte-tested P39 staging integration now consumes the accepted P37 zero-click tracker, presents fresh unambiguous P1/P2/P3 diagnostic badges through the maintained Alpha HUD draw chain, preserves native 384x224 top-left positive-down orientation, hides stale/lost/ambiguous player markers fail-closed, and restores the exact pre-existing HUD callback when the diagnostic gate closes. Production authority bytes and semantics remain unchanged.",
+  "startCommit": "d5f176c6856b05c599b16fa830e8f6a4b41632bc",
+  "testedCommit": "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05",
+  "testedTree": "bab2d24f285fad4a0774f18d008031d25b848ce6",
+  "implementationCommits": [
+    "4407e94426d41ef173677da0caf55763a6c18f20",
+    "d52a8cebfc99cb8d952e60532cc04fb007bdd226",
+    "5fcafa15b91bc80d57cc099e3aa1bfa97bfbb5ac",
+    "4c51f29b0865fdb26905df472033c04a2d1462e9",
+    "922e2001333ac868ee987fc92ff052ae4856b04c",
+    "05d4736a45ce5405a67159f623cb55c2d6903fbc",
+    "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"
+  ],
+  "integrationReady": true,
+  "integrationScope": "DIAGNOSTIC_STAGING_VISIBLE_BASELINE_ONLY",
+  "retryEligible": false,
+  "changedFiles": [
+    "product/alpha/wof_alpha_auto_baseline_hud_adapter.js",
+    "product/alpha/wof_alpha_auto_baseline_visible_hud.js",
+    "product/alpha/auto_baseline_hud_adapter_selfcheck.mjs",
+    "product/alpha/auto_baseline_visible_hud_selfcheck.mjs",
+    "parallel/PYLAUNCH/wof_launcher/auto_baseline_hud.py",
+    "parallel/PYLAUNCH/tests/test_alpha_p39_auto_baseline_hud.py"
+  ],
+  "testedBlobMap": {
+    "product/alpha/wof_alpha_auto_baseline_hud_adapter.js": "933f35389bfbd3337bde31906707919fd7a3f626",
+    "product/alpha/wof_alpha_auto_baseline_visible_hud.js": "97b1ed594722a8539f21c76f7e44ec01e460ef26",
+    "product/alpha/auto_baseline_hud_adapter_selfcheck.mjs": "64e9d9bfb9f4cc04cae5c310da53fe04e8bee28d",
+    "product/alpha/auto_baseline_visible_hud_selfcheck.mjs": "317cb492070ee63f6603ad2f9d06580ecb6e12bc",
+    "parallel/PYLAUNCH/wof_launcher/auto_baseline_hud.py": "05a1a6e8632f62dac6ff9bedf8897b3f2df6e685",
+    "parallel/PYLAUNCH/tests/test_alpha_p39_auto_baseline_hud.py": "b29e11517b67632dcacfdebdabc6087800396d19"
+  },
+  "p37Reuse": {
+    "testedCommit": "64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530",
+    "candidateSourceBlob": "2a0094b3588d4a27c8c7a6f9940b8a3b1941f8c4",
+    "acceptedTestedSourceBlob": "2a0094b3588d4a27c8c7a6f9940b8a3b1941f8c4",
+    "reuseMode": "DIRECT_CREATE_BASELINE_TRACKER_AND_MAP_NATIVE_TO_VIEWPORT",
+    "heuristicsCopied": false
+  },
+  "productionByteInvariance": {
+    "product/alpha/wof_alpha_hud.js": "f6f176294a4fe4a77b21c02abae6ba2d37681b70",
+    "parallel/PYLAUNCH/wof_launcher/production_p1_overlay.py": "32312651c983d23714b71018505e3e43fb1990ae",
+    "diagnosticSourcesAddedToProductionHudSources": false,
+    "gateClosedBehavior": "EXACT_PRIOR_MAINTAINED_HUD_CALLBACK_RESTORED"
+  },
+  "tests": [
+    {
+      "name": "P39 adapter exact-candidate deterministic self-check",
+      "result": "PASS",
+      "detail": "6/6 PASS: gate-off inert; automatic P1/P2/P3; native coordinate mapping; right/down remain increasing X/Y with no viewport Y inversion; lost/stale hide and automatic reacquire visibility; ambiguity and authority impersonation fail closed; no P37 heuristic copy."
+    },
+    {
+      "name": "P39 visible maintained-HUD draw-chain exact-candidate self-check",
+      "result": "PASS",
+      "detail": "3/3 PASS: explicit gate only; maintained HUD callback executes first and exact prior callback object is restored on gate close; P1/P2/P3 AUTO badges carry exact UNVERIFIED_AUTO_BASELINE; lost/ambiguous plans leave no player marker."
+    },
+    {
+      "name": "P39 staging bridge exact-candidate unittest",
+      "result": "PASS",
+      "detail": "4/4 PASS: injects only P37/P39 sources after maintained HUD exists; no click/manual seed; production HUD source tuple remains independent; renderer authority, coordinate, or safety boundary violation is rejected."
+    },
+    {
+      "name": "syntax and compile checks",
+      "result": "PASS",
+      "detail": "node --check passed for both P39 JS sources and python -m py_compile passed for auto_baseline_hud.py."
+    },
+    {
+      "name": "GitHub exact candidate blob readback",
+      "result": "PASS",
+      "detail": "Fresh GitHub readback at ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05 matched local git hash-object identities for tested P39 bytes; P37 source blob matched its accepted tested blob; maintained HUD and production overlay blobs were unchanged."
+    },
+    {
+      "name": "real WOF / Owner visual acceptance",
+      "result": "NOT_RUN",
+      "detail": "Outside P39 Worker authority. No real game or Owner visual run was performed."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_PROVEN",
+    "detail": "P39 proves only deterministic diagnostic/staging visibility semantics. Real WOF tracking correctness and displayed renderer/object causal authority remain unproven until the separately authorized bounded live verification; P39 cannot create rendererSourceProof or P29/P32/P36 authority."
+  },
+  "zeroClickContract": {
+    "startupAutomaticAfterExplicitStagingGate": true,
+    "manualAvatarClickRequired": false,
+    "manualPortraitSeedRequired": false,
+    "manualSeedRequired": false,
+    "manualPlayerSelectionRequired": false,
+    "automaticPlayers": ["P1", "P2", "P3"],
+    "automaticReacquire": true
+  },
+  "coordinateContract": {
+    "nativeWidth": 384,
+    "nativeHeight": 224,
+    "origin": "TOP_LEFT",
+    "xPositive": "RIGHT",
+    "yPositive": "DOWN",
+    "up": "LOWER_NATIVE_Y",
+    "down": "HIGHER_NATIVE_Y",
+    "viewportYInversion": false,
+    "mappingOwnedBy": "P37_MAP_NATIVE_TO_VIEWPORT"
+  },
+  "visibilityContract": {
+    "visibleClassification": "UNVERIFIED_AUTO_BASELINE",
+    "trackedObservedOnly": true,
+    "staleHides": true,
+    "lostHides": true,
+    "ambiguitySuppressesPlayerMarkers": true,
+    "automaticReacquireCanBecomeVisible": true,
+    "maintainedHudCallbackWrappedOnlyWhileGateEnabled": true,
+    "maintainedHudCallbackRestoredOnGateClose": true,
+    "pointerInteraction": "NONE"
+  },
+  "authorityBoundary": {
+    "rendererSourceProof": null,
+    "p29Pass": false,
+    "p32NativeMarkerQualification": false,
+    "p36RendererSourceTrace": false,
+    "p34RetryReadiness": false,
+    "promotionEligibility": false,
+    "productAuthority": "NONE_DIAGNOSTIC_ONLY"
+  },
+  "claimClosure": {
+    "canonicalState": "COMPLETE",
+    "stageState": "COMPLETE",
+    "testedCommit": "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05",
+    "claimTokenMatched": true
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "P41 may capture P39 status/tracks/HUD visibility as UNVERIFIED_AUTO_BASELINE correlation during a separately authorized bounded live run after the required P39/P40 integration candidate is materialized; P39 itself must not authorize retry, renderer authority, or promotion.",
+  "evidencePaths": [
+    "product/alpha/wof_alpha_auto_baseline_hud_adapter.js",
+    "product/alpha/wof_alpha_auto_baseline_visible_hud.js",
+    "product/alpha/auto_baseline_hud_adapter_selfcheck.mjs",
+    "product/alpha/auto_baseline_visible_hud_selfcheck.mjs",
+    "parallel/PYLAUNCH/wof_launcher/auto_baseline_hud.py",
+    "parallel/PYLAUNCH/tests/test_alpha_p39_auto_baseline_hud.py",
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P39_ZERO_CLICK_VISIBLE_HUD_BASELINE_INTEGRATION_PROGRESS.json",
+    "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.zero-click-visible-hud-baseline-integration-v1.json",
+    "parallel/PM/STAGE_CLAIMS/ALPHA_V1_PRODUCT_TAKEOVER_P39_ZERO_CLICK_VISIBLE_HUD_BASELINE_INTEGRATION.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  },
+  "realWofRun": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "promotionPerformed": false,
+  "alphaLiveMoved": false
+}
