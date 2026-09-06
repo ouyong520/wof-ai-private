@@ -62,7 +62,7 @@ class AutoBaselineHud:
             "promotionEligibility": False,
             "productAuthority": "NONE_DIAGNOSTIC_ONLY",
             "visiblePlayers": [],
-            **SAFETY,
+            "safety": dict(SAFETY),
             **extra,
         }
 
@@ -84,7 +84,8 @@ class AutoBaselineHud:
         eligibility = remote.get("authorityEligibility")
         if not isinstance(eligibility, dict) or any(eligibility.get(k) is not False for k in ("p29Pass", "p32NativeMarkerQualification", "p36RendererSourceTrace", "p34RetryReadiness", "promotion")):
             raise AutoBaselineHudError("P39 authority eligibility must remain false")
-        if remote.get("readOnly") is not True or remote.get("ramWrites") != 0 or remote.get("inputInjection") is not False:
+        safety = remote.get("safety")
+        if not isinstance(safety, dict) or safety.get("readOnly") is not True or safety.get("ramWrites") != 0 or safety.get("inputInjection") is not False:
             raise AutoBaselineHudError("P39 safety boundary invalid")
         return dict(remote)
 
