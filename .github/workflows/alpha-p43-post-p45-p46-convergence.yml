@@ -1,0 +1,66 @@
+name: Alpha P43 Post-P45 P46 Convergence
+
+on:
+  push:
+    paths:
+      - 'parallel/OWNER_DIAGNOSTIC/p43_bounded_zero_click_live_diagnostic.py'
+      - 'parallel/OWNER_DIAGNOSTIC/p43_bounded_zero_click_live_diagnostic_entry.py'
+      - 'parallel/OWNER_DIAGNOSTIC/p43_bounded_zero_click_live_diagnostic_final.py'
+      - 'parallel/OWNER_DIAGNOSTIC/p43_post_p45_p46_continuation.py'
+      - 'parallel/OWNER_DIAGNOSTIC/test_p43_bounded_zero_click_live_diagnostic.py'
+      - 'parallel/OWNER_DIAGNOSTIC/test_p43_bounded_zero_click_live_diagnostic_entry.py'
+      - 'parallel/OWNER_DIAGNOSTIC/test_p43_bounded_zero_click_live_diagnostic_final.py'
+      - 'parallel/OWNER_DIAGNOSTIC/test_p43_post_p45_p46_continuation.py'
+      - 'parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_DEPENDENCY_PINS.json'
+      - '.github/workflows/alpha-p43-post-p45-p46-convergence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Exact candidate Python syntax
+        working-directory: parallel/OWNER_DIAGNOSTIC
+        run: |
+          python -m py_compile \
+            p43_bounded_zero_click_live_diagnostic.py \
+            p43_bounded_zero_click_live_diagnostic_entry.py \
+            p43_bounded_zero_click_live_diagnostic_final.py \
+            p43_post_p45_p46_continuation.py \
+            test_p43_bounded_zero_click_live_diagnostic.py \
+            test_p43_bounded_zero_click_live_diagnostic_entry.py \
+            test_p43_bounded_zero_click_live_diagnostic_final.py \
+            test_p43_post_p45_p46_continuation.py
+
+      - name: P43 core and continuation focused regression
+        working-directory: parallel/OWNER_DIAGNOSTIC
+        run: |
+          python -m unittest -v \
+            test_p43_bounded_zero_click_live_diagnostic \
+            test_p43_bounded_zero_click_live_diagnostic_entry \
+            test_p43_bounded_zero_click_live_diagnostic_final \
+            test_p43_post_p45_p46_continuation
+
+      - name: Explicit no-live no-promotion contract scan
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('parallel/OWNER_DIAGNOSTIC/p43_post_p45_p46_continuation.py').read_text()
+          assert '__WOF_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_V1__' not in p
+          assert 'WOFNativeMarkerRendererSubmitSourceV1' not in p
+          assert 'P45_P39", "P45_P42", "P46' in p
+          assert 'P46", "P45_P42_AND_P39' in p
+          print('P43 continuation contract scan PASS')
+          PY
