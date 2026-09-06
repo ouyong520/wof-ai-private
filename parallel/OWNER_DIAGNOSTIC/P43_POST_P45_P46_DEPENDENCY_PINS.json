@@ -1,0 +1,74 @@
+{
+  "schema": "wof-p43-post-p45-p46-dependency-pins-v1",
+  "version": 1,
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC_HARNESS",
+  "claimToken": "9b45b04fc8f5e86849c08c07dcf0dc07",
+  "continuationPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P43_POST_P45_P46_CONTINUATION_PROMPT.md",
+  "p45": {
+    "testedCommit": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+    "sourcePath": "parallel/PYLAUNCH/wof_launcher/live_diagnostic_staging.py",
+    "sourceGitBlobSha": "752a172911d76eb3573684b200d597926c819716",
+    "p39TestedCommit": "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05",
+    "p42TestedCommit": "7b523187a955179b04155b758847c82aaf569a0d",
+    "exactFiles": {
+      "parallel/PYLAUNCH/wof_launcher/live_diagnostic_staging.py": "752a172911d76eb3573684b200d597926c819716",
+      "parallel/PYLAUNCH/wof_launcher/auto_baseline_hud.py": "05a1a6e8632f62dac6ff9bedf8897b3f2df6e685",
+      "parallel/AUTO_MARKER_BASELINE/native_marker_auto_acquisition_baseline.js": "2a0094b3588d4a27c8c7a6f9940b8a3b1941f8c4",
+      "product/alpha/wof_alpha_auto_baseline_hud_adapter.js": "933f35389bfbd3337bde31906707919fd7a3f626",
+      "product/alpha/wof_alpha_auto_baseline_visible_hud.js": "97b1ed594722a8539f21c76f7e44ec01e460ef26",
+      "parallel/RENDER_AUTHORITY_V2/gstyphoon_renderer_submit_correlation_probe.js": "32b9c50e8a72de1a097b8ce5dc91b69bdcef0219"
+    },
+    "consumptionMode": "EXACT_ATTACH_ONLY_STAGING_SEAM",
+    "runtimeRebindByP43": false
+  },
+  "p46": {
+    "testedCommit": "210efdda5bbf3715989c751eb90442f26f42d0a9",
+    "sourcePath": "parallel/RENDER_AUTHORITY_V2/wasm_webgl_callsite_fingerprint_probe.js",
+    "sourceGitBlobSha": "efd71e25e28f171e080774eb5aa1309a0d7bbe2b",
+    "truthStates": [
+      "AVAILABLE",
+      "NOT_AVAILABLE",
+      "UNRESOLVED"
+    ],
+    "strictModuleIdentity": true
+  },
+  "composition": {
+    "installOrder": [
+      "P45_P39",
+      "P45_P42",
+      "P46"
+    ],
+    "webglWrapperStackTopToBottom": [
+      "P46",
+      "P45_P42",
+      "ORIGINAL_RUNTIME_WEBGL"
+    ],
+    "teardownOrder": [
+      "P46",
+      "P45_P42_AND_P39"
+    ],
+    "selectionByTiming": false,
+    "selectionByOrder": false,
+    "selectionByNearest": false,
+    "guessedWasmSymbol": false,
+    "guessedWasmOffset": false
+  },
+  "authorityBoundary": {
+    "rendererSourceProofMinted": false,
+    "p29PassMinted": false,
+    "p32QualificationMinted": false,
+    "p36CriteriaChanged": false,
+    "promotionEligibilityMinted": false
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "zeroClick": true,
+    "manualSeedRequired": false,
+    "realGameRun": false,
+    "promotionPerformed": false,
+    "alphaLiveMoved": false,
+    "installPerformed": false
+  }
+}
