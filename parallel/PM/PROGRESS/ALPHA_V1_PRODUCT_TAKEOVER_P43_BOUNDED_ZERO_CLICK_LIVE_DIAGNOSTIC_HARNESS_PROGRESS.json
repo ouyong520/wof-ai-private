@@ -4,30 +4,39 @@
   "dedupKey": "alpha.v1.product-takeover.bounded-zero-click-live-diagnostic-harness-v2",
   "claimToken": "9b45b04fc8f5e86849c08c07dcf0dc07",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 5,
-  "implementationState": "NOT_STARTED",
-  "selfCheckState": "NOT_RUN",
+  "workState": "IMPLEMENTING",
+  "overallPercent": 28,
+  "implementationState": "AUTHORITY_CHAIN_READ_COMPLETE",
+  "selfCheckState": "LOCAL_FIXTURE_PREFLIGHT_PASS",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b",
-  "lastKnownGoodCommit": "14c209ce3d5d841454261d6b661f544238a194f7",
+  "lastKnownGoodCommit": "eb72311520941ca74bc934b7ee42db67cb0297db",
   "implementationCommits": [],
   "completed": [
     "Fresh main/dedup preflight completed",
-    "Canonical v2 claim created and exact-token readback verified",
-    "Stage claim created and exact-token readback verified"
+    "Canonical v2 claim and stage claim created and exact-token readback verified",
+    "Read P30/P31/P36/P37/P39/P40/P42 authority and P21/P28/P38 staging/provenance paths",
+    "Confirmed P42 is a separate ACTIVE worker lane; P43 will archive it if present or record P42_CORRELATION_PROBE_NOT_PRESENT",
+    "Designed fail-closed exact metadata/source binding, gate ledger, raw P36/P32 preservation, P39 diagnostic state capture, P42 compatibility capture, bounded raw-log/console capture and deterministic teardown",
+    "Local deterministic preflight passed 11 focused pure-fixture checks before repository publication"
   ],
   "remaining": [
-    "Read relevant terminal authorities and maintained runtime/staging/candidate/log code paths",
-    "Implement bounded zero-click live diagnostic harness",
-    "Create durable tested candidate and run focused self-checks",
+    "Publish isolated P43 harness/entrypoint/docs/tests",
+    "Create durable implementation candidate and fresh-read exact bytes",
+    "Run terminal-significant focused regression on exact durable candidate bytes",
     "Publish terminal RESULT and close claims"
   ],
-  "tests": [],
+  "tests": [
+    {
+      "name": "P43 local deterministic fixture preflight",
+      "result": "PASS",
+      "detail": "11/11 PASS covering exact candidate SHA/blob binding, fail-closed mismatch, gate first-failure chronology, P16 association/runtime identity, P17 exact decision preservation, P39 stale/lost/ambiguous/reacquire state, P42 present/absent, explicit actor-generation pairing, bounded raw-log capture, human receipt consistency, and P36 source rejection-reason contract. Terminal-significant tests will be rerun from exact durable Git bytes."
+    }
+  ],
   "blocker": null,
-  "nextAction": "Inspect authoritative P29/P30/P31/P32/P36/P37/P39/P40 results and existing P21/P28/runtime/staging harness code before implementation.",
+  "nextAction": "Publish isolated parallel/OWNER_DIAGNOSTIC P43 implementation and tests, then bind a durable tested commit/tree before final focused self-check.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:17:00Z"
+  "updatedAtUtc": "2026-09-06T01:24:00Z"
 }
