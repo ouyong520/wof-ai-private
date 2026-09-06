@@ -1,0 +1,140 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P45_P42_P39_LIVE_DIAGNOSTIC_STAGING_INTEGRATION",
+  "dedupKey": "alpha.v1.product-takeover.p42-p39-live-diagnostic-staging-integration-v1",
+  "claimToken": "30baf98b0c5ff885c8b0b66d9d76e8ec",
+  "state": "COMPLETE",
+  "verdict": "Maintained Alpha now has a default-off staging diagnostic wrapper that deterministically injects exact P39 then P42 and emits one bound zero-click P39/P42 diagnostic readout without changing production authority semantics.",
+  "startCommit": "228466cb6ab24fd56b93b96c996e7fffa0103919",
+  "implementationCommits": [
+    "5860860b5652553338989d9b1316f2fa6f314e0d",
+    "05a042fa86a1e3871f92c4f79c2fb2f07e475881",
+    "50ada8c85a62c9406e829ffa1f7b35c40d19e10a",
+    "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149"
+  ],
+  "testedCandidateCommit": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+  "integrationReady": true,
+  "changedFiles": [
+    "parallel/PYLAUNCH/wof_launcher/live_diagnostic_staging.py",
+    "parallel/PYLAUNCH/tests/test_alpha_p45_live_diagnostic_staging.py",
+    ".github/workflows/alpha-p45-live-diagnostic-staging.yml"
+  ],
+  "tests": [
+    {
+      "name": "Python syntax",
+      "result": "PASS",
+      "detail": "GitHub Actions run 34005760019 compiled the P45 staging runtime and focused test module successfully."
+    },
+    {
+      "name": "P45 focused staging integration",
+      "result": "PASS",
+      "detail": "GitHub Actions run 34005760019: 6/6 PASS covering gate-off invariance, deterministic P39->P42 injection, full raw-bundle pass-through, P39 lifecycle state, stale/mixed binding rejection, and seal/teardown without authority promotion."
+    },
+    {
+      "name": "P39 unchanged regression",
+      "result": "PASS",
+      "detail": "GitHub Actions run 34005760019: 4/4 PASS against the unchanged P39 bridge."
+    },
+    {
+      "name": "P42 unchanged regression",
+      "result": "PASS",
+      "detail": "GitHub Actions run 34005760019: 6/6 PASS against the unchanged P42 renderer correlation probe."
+    },
+    {
+      "name": "real WOF / Owner-visible bounded diagnostic",
+      "result": "NOT_RUN",
+      "detail": "P45 explicitly forbids running the real game; the next bounded live diagnostic remains P43 ownership."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_PROVEN",
+    "detail": "Repository-side staging integration and exact-candidate synthetic/regression behavior are proven; no real-WOF or Owner-visible mapping claim was made."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "P43 should instantiate the P45 staging wrapper with its explicit gate enabled for the next single bounded live diagnostic and persist the returned unfiltered P39/P42 readout.",
+  "evidencePaths": [
+    "parallel/PYLAUNCH/wof_launcher/live_diagnostic_staging.py",
+    "parallel/PYLAUNCH/tests/test_alpha_p45_live_diagnostic_staging.py",
+    ".github/workflows/alpha-p45-live-diagnostic-staging.yml",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P39_ZERO_CLICK_VISIBLE_HUD_BASELINE_INTEGRATION_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P45_P42_P39_LIVE_DIAGNOSTIC_STAGING_INTEGRATION_RESULT.md"
+  ],
+  "upstreamAuthority": {
+    "p39TestedCommit": "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05",
+    "p39Classification": "UNVERIFIED_AUTO_BASELINE",
+    "p39RuntimeBlob": "05a1a6e8632f62dac6ff9bedf8897b3f2df6e685",
+    "p42TestedCommit": "7b523187a955179b04155b758847c82aaf569a0d",
+    "p42Classification": "BOUNDED_LIVE_DIAGNOSTIC_MAPPING_ONLY",
+    "p42ProbeBlob": "32b9c50e8a72de1a097b8ce5dc91b69bdcef0219"
+  },
+  "stagingContract": {
+    "schema": "wof-alpha-p45-live-diagnostic-staging-v1",
+    "gate": "WOF_ALPHA_P45_LIVE_DIAGNOSTIC_STAGING=1",
+    "gateDefault": "OFF",
+    "gateOffBehavior": "Exact delegation to maintained AlphaRuntimeManager; no P39 construction, source read, CDP attach, or P42 injection.",
+    "injectionOrder": [
+      "P39_AUTO_BASELINE_HUD",
+      "P42_RAW_CORRELATION_PROBE"
+    ],
+    "zeroClick": true,
+    "manualSeedRequired": false,
+    "manualAvatarSelectionRequired": false,
+    "bindingFields": [
+      "runtimeEpoch",
+      "rendererEpoch",
+      "authorityKey"
+    ],
+    "rendererEpochSemantics": "P45_DIAGNOSTIC_SESSION_ONLY; productionRendererAuthority=false",
+    "p39Readout": [
+      "P1/P2/P3 tracker/HUD status",
+      "visiblePlayers",
+      "hiddenPlayers",
+      "lostPlayers",
+      "stale",
+      "ambiguous",
+      "reacquireCountByPlayer"
+    ],
+    "p42Readout": [
+      "probe state",
+      "complete rawBundle",
+      "sealReason",
+      "teardown"
+    ],
+    "rawBundleFiltering": false
+  },
+  "authorityBoundary": {
+    "rendererSourceProofMinted": false,
+    "p29PassMinted": false,
+    "p32QualifiedMinted": false,
+    "p36DirectSourceMinted": false,
+    "retryEligibilityMinted": false,
+    "promotionEligibilityMinted": false,
+    "productionAuthoritySemanticsChanged": false
+  },
+  "scopeIsolation": {
+    "p43HarnessOwnershipTouched": false,
+    "p29CriteriaChanged": false,
+    "p32CriteriaChanged": false,
+    "p36CriteriaChanged": false,
+    "realGameRun": false,
+    "promotionPerformed": false,
+    "alphaLiveMoved": false
+  },
+  "ci": {
+    "successfulRunId": 34005760019,
+    "successfulHeadSha": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+    "initialRunId": 34005701323,
+    "initialFailure": "CI environment lacked websocket-client before test import; workflow dependency was added and the exact replacement candidate passed all focused regressions."
+  },
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false
+  }
+}
