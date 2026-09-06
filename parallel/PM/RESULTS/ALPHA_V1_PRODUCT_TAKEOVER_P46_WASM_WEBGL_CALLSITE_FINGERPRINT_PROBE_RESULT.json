@@ -1,0 +1,115 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P46_WASM_WEBGL_CALLSITE_FINGERPRINT_PROBE",
+  "dedupKey": "alpha.v1.product-takeover.wasm-webgl-callsite-fingerprint-probe-v1",
+  "claimToken": "6930698179d1f1e02d89285338a66f88",
+  "state": "COMPLETE",
+  "verdict": "Exact-byte-tested P46 now provides a bounded read-only WASM/WebGL call-site fingerprint probe that captures raw stacks, deterministic call-site fingerprints, browser-exposed WASM frame facts, JS caller identity, Module/asm identity, and exact buffer/setup-to-draw associations without creating renderer authority.",
+  "startCommit": "ec7b3e61c4666768d0772a66bc159176e3f2b8c9",
+  "testedCommit": "210efdda5bbf3715989c751eb90442f26f42d0a9",
+  "testedTree": "98b81df25e3c32eb7d5fdde612f020a16ad4fea6",
+  "implementationCommits": [
+    "8a6029235f32af229930f76c216c62568577cee3",
+    "dfcd39375189b755be8a9de3ae27f6943887d715",
+    "210efdda5bbf3715989c751eb90442f26f42d0a9"
+  ],
+  "integrationReady": true,
+  "integrationScope": "BOUNDED_LIVE_DIAGNOSTIC_CALLSITE_MAPPING_ONLY",
+  "authorityEligible": false,
+  "mappingOnly": true,
+  "p40BlockerResolved": false,
+  "parentBlocker": "NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT",
+  "changedFiles": [
+    "parallel/RENDER_AUTHORITY_V2/wasm_webgl_callsite_fingerprint_probe.js",
+    "parallel/RENDER_AUTHORITY_V2/test_wasm_webgl_callsite_fingerprint_probe.mjs",
+    "parallel/RENDER_AUTHORITY_V2/WASM_WEBGL_CALLSITE_FINGERPRINT_PROBE.md"
+  ],
+  "testedBlobMap": {
+    "parallel/RENDER_AUTHORITY_V2/wasm_webgl_callsite_fingerprint_probe.js": "efd71e25e28f171e080774eb5aa1309a0d7bbe2b",
+    "parallel/RENDER_AUTHORITY_V2/test_wasm_webgl_callsite_fingerprint_probe.mjs": "990b4e7c0419d568ee645828f8791f985e773bc0",
+    "parallel/RENDER_AUTHORITY_V2/WASM_WEBGL_CALLSITE_FINGERPRINT_PROBE.md": "fcfa5f9dc6898d40f83b62a34922f0769dac1311"
+  },
+  "diagnosticBundle": {
+    "schema": "wof-wasm-webgl-callsite-fingerprint-probe-v1",
+    "captures": [
+      "bounded raw JavaScript stack text at successful draw/buffer/attrib WebGL boundaries",
+      "deterministic normalized FNV1A64 call-site fingerprint over non-probe stack frames plus exact boundary method",
+      "browser-exposed wasm-function index/name/hex offset when present, otherwise explicit NOT_AVAILABLE or UNRESOLVED",
+      "observed JS caller frame/function identity with import/wrapper semantic role left UNRESOLVED",
+      "exact Module and Module.asm runtime object identity and relationship",
+      "monotonic event sequence and drawSubmissionSequence",
+      "exact runtimeEpoch/rendererEpoch/authorityKey binding",
+      "buffer upload/setup and vertex-attrib setup association to draws through exact object/attrib-state identity only"
+    ],
+    "bounded": true,
+    "deterministicTeardown": true,
+    "semanticRendererSelectionMade": false,
+    "authorityEligible": false
+  },
+  "tests": [
+    {
+      "name": "P46 exact-candidate JavaScript syntax check",
+      "result": "PASS",
+      "detail": "node --check passed on local probe bytes whose Git blob SHA exactly matched candidate blob efd71e25e28f171e080774eb5aa1309a0d7bbe2b."
+    },
+    {
+      "name": "P46 exact-candidate deterministic call-site self-check",
+      "result": "PASS",
+      "detail": "7/7 PASS on local code/test bytes whose Git blob SHAs exactly matched candidate blobs efd71e25e28f171e080774eb5aa1309a0d7bbe2b and 990b4e7c0419d568ee645828f8791f985e773bc0. Covered raw/normalized stack evidence, WASM AVAILABLE/NOT_AVAILABLE/UNRESOLVED truth states, exact object/state association, stale binding rejection, Module/asm drift rejection, bounds, teardown, and proof-boundary non-impersonation."
+    },
+    {
+      "name": "P46 durable candidate exact-byte readback",
+      "result": "PASS",
+      "detail": "Candidate 210efdda5bbf3715989c751eb90442f26f42d0a9 tree 98b81df25e3c32eb7d5fdde612f020a16ad4fea6 fresh-read all three recorded Git blob identities before terminal publication."
+    },
+    {
+      "name": "Real WOF bounded live diagnostic",
+      "result": "NOT_RUN",
+      "detail": "Explicitly outside P46 Worker authority. No real game run, Owner YES/NO, promotion, P43/P45 modification, or alpha-live movement occurred."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_PROVEN",
+    "detail": "P46 proves only the exact-byte-tested repo-side call-site mapping toolchain. It does not prove which live gstyphoon/WASM renderer function submits the native player marker and does not resolve the P40 missing direct source export blocker."
+  },
+  "authorityBoundary": {
+    "createsNativeMarkerSourceExport": false,
+    "emitsRendererAuthorityProof": false,
+    "changesP29Acceptance": false,
+    "changesP32Qualification": false,
+    "changesP36AuthorityContract": false,
+    "changesP39TrackerHudSemantics": false,
+    "changesP42CorrelationSemantics": false,
+    "touchesP43Harness": false,
+    "touchesP45StagingIntegration": false,
+    "forbiddenSelectionUsed": false,
+    "guessedWasmSymbol": false,
+    "guessedWasmOffset": false
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM may consume exact tested P46 commit 210efdda5bbf3715989c751eb90442f26f42d0a9 in a later authorized diagnostic integration, preserving raw stacks and NOT_AVAILABLE/UNRESOLVED truth states; only later real-runtime evidence may justify a source-mapping successor.",
+  "evidencePaths": [
+    "parallel/RENDER_AUTHORITY_V2/wasm_webgl_callsite_fingerprint_probe.js",
+    "parallel/RENDER_AUTHORITY_V2/test_wasm_webgl_callsite_fingerprint_probe.mjs",
+    "parallel/RENDER_AUTHORITY_V2/WASM_WEBGL_CALLSITE_FINGERPRINT_PROBE.md",
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P46_WASM_WEBGL_CALLSITE_FINGERPRINT_PROBE_PROGRESS.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P40_NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE_RESULT.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE_RESULT.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "ownerSelectionRequired": false,
+    "manualSeedRequired": false,
+    "realWofRun": false,
+    "promotionPerformed": false,
+    "alphaLiveMoved": false
+  },
+  "completedAtUtc": "2026-09-06T02:03:16Z"
+}
