@@ -1,0 +1,119 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P40_NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE",
+  "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-source-runtime-exposure-v1",
+  "claimToken": "a58fd0faf728d91dade9dd6390b27d3e",
+  "state": "BLOCKED",
+  "verdict": "Fresh source tracing proved the checked-in maintained runtime has no truthful per-object gstyphoon CPS1 displayed-submit export/hook capable of feeding the P36 native-marker source surface, so P40 preserved fail-closed absence instead of fabricating renderer authority.",
+  "startCommit": "1ea361b7eeb747b031c8db81b78a561efafcd919",
+  "testedCommit": "5a3b9bce01e794e030974a94f7511a39fa56e818",
+  "testedTree": "4ebd86fb0e58f07fe774401ab42a0d3c65241760",
+  "implementationCommits": [],
+  "integrationReady": false,
+  "changedFiles": [
+    "parallel/RENDER_AUTHORITY_V2/NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE_P40.md"
+  ],
+  "candidateReadback": {
+    "state": "PASS",
+    "candidateCommit": "5a3b9bce01e794e030974a94f7511a39fa56e818",
+    "treeSha": "4ebd86fb0e58f07fe774401ab42a0d3c65241760",
+    "candidateImplementationBytesChangedAfterTest": false,
+    "blobMap": {
+      "parallel/RENDER_AUTHORITY_V2/NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE_P40.md": "ac820e9aded5678cd105e8d6759ea22d57cab31e"
+    }
+  },
+  "sourceTraceReadback": {
+    "pageBootstrapBlob": "5aed15ff14aa39d95eade187cefb63dbd00848e6",
+    "maintainedHudBlob": "f6f176294a4fe4a77b21c02abae6ba2d37681b70",
+    "realWorkerBlob": "c3ffa748b334f4124466d553b72ff29f8fb5b3d2",
+    "p36ObserverBlob": "c188d1b34fe45c295a24a1dd012a9b671e604bfb",
+    "pageBoundary": "generic WebGL drawArrays callback only; no exact native marker semantic identity or actor-generation association",
+    "workerBoundary": "HEAP/ROM/CPS RAM/world-projection observation only; no source-traced/exported per-object CPS1 native marker submit",
+    "p36SurfaceProduced": false
+  },
+  "tests": [
+    {
+      "name": "Exact durable candidate readback",
+      "result": "PASS",
+      "detail": "Candidate commit 5a3b9bce01e794e030974a94f7511a39fa56e818 tree 4ebd86fb0e58f07fe774401ab42a0d3c65241760 fresh-read the P40 source-trace artifact as blob ac820e9aded5678cd105e8d6759ea22d57cab31e."
+    },
+    {
+      "name": "Maintained Page/Worker/WASM direct source eligibility audit",
+      "result": "PASS",
+      "detail": "Fresh trace confirmed only generic page WebGL draw hooking and Worker HEAP/ROM/CPS RAM/world-projection observation; no qualifying SOURCE_TRACED_POINTER, DIRECT_RENDER_HOOK, or EXPORTED_RENDERER_POINTER for exact displayed native marker submits is checked in."
+    },
+    {
+      "name": "Unique exact runtime source exposure and P36 discovery",
+      "result": "FAIL",
+      "detail": "The required producer/export is absent, so P36 correctly remains fail-closed rather than receiving a synthesized source."
+    },
+    {
+      "name": "P1/P2/P3 actor-generation and native 384x224 displayed-submit event emission",
+      "result": "NOT_RUN",
+      "detail": "Cannot be truthfully exercised repo-side because the direct semantic renderer submit source is the missing edge; fixture events are not accepted as proof that the checked-in runtime exposes it."
+    },
+    {
+      "name": "Zero-click and forbidden-fallback boundary",
+      "result": "PASS",
+      "detail": "No Owner selection/manual seed path and no HEAP/pixel/screenshot/OCR/template/nearest/list-order/timing/world-projection/guessed-offset authority adapter was added."
+    },
+    {
+      "name": "Real WOF native marker verification",
+      "result": "NOT_RUN",
+      "detail": "Forbidden by P40 scope; no real game run was performed."
+    },
+    {
+      "name": "Promotion / alpha-live movement",
+      "result": "NOT_RUN",
+      "detail": "P40 has no promotion authority and did not move alpha-live."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_PROVEN",
+    "detail": "P40 proves the repo-side source exposure is absent and fail-closed. It does not prove any real WOF native marker renderer authority, native marker coordinates, or Owner-visible behavior."
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": "The blocker is a missing machine/source causal edge, not an Owner-visible judgment."
+  },
+  "blocker": {
+    "code": "NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT",
+    "detail": "Checked-in maintained runtime has no source-traced/exported per-object gstyphoon CPS1 displayed submit carrying exact 1P/2P/3P+DOWN identity, explicit actor generation, native 384x224 x/y, displayedFrameId/submissionId/frameGeneration, and runtimeEpoch/rendererEpoch/authorityKey into the P36 source surface.",
+    "ownerRequired": false,
+    "pmRequired": true,
+    "recoveryAllowedByWorker": false
+  },
+  "parentBlocker": "NATIVE_PLAYER_MARKER_DIRECT_RENDERER_CAUSAL_EDGE_NOT_CHECKED_IN",
+  "nextAction": "PM should schedule a successor only after a checked-in or runtime-verifiable source mapping/export exists for the actual gstyphoon per-object displayed CPS1 renderer submit; generic WebGL, HEAP, pixel, projection, order, timing, or guessed-offset evidence must not substitute.",
+  "evidencePaths": [
+    "parallel/RENDER_AUTHORITY_V2/NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE_P40.md",
+    "parallel/RENDER_AUTHORITY_V2/NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_TRACE.md",
+    "parallel/RENDER_AUTHORITY_V2/native_marker_renderer_submit_source_trace_worker.js",
+    "parallel/RENDER_AUTHORITY_V2/wof_render_authority_capture_worker.js",
+    "product/alpha/wof_alpha_bootstrap.user.js",
+    "product/alpha/wof_alpha_hud.js",
+    "product/alpha/wof_alpha_real_worker.js"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "ownerSelectionRequired": false,
+    "manualSeedRequired": false,
+    "screenshotProductionCoordinates": false,
+    "pixelAuthorityUsed": false,
+    "worldProjectionAuthorityUsed": false,
+    "guessedOffsetsUsed": false,
+    "rendererSourceProofFabricated": false,
+    "syntheticPass": false,
+    "alphaLiveMoved": false
+  },
+  "realWofAcceptance": "NOT_RUN",
+  "ownerVisualAcceptance": "NOT_RUN",
+  "visibleProof": "NOT_PROVEN",
+  "promotionPerformed": false,
+  "alphaLiveMoved": false,
+  "resultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P40_NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE_RESULT.md",
+  "completedAtUtc": "2026-09-06T01:08:00Z"
+}
