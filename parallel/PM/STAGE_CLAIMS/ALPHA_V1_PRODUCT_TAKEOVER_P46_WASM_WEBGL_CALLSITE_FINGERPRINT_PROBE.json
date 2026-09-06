@@ -5,6 +5,9 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.wasm-webgl-callsite-fingerprint-probe-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.wasm-webgl-callsite-fingerprint-probe-v1.json",
   "claimToken": "6930698179d1f1e02d89285338a66f88",
-  "state": "ACTIVE",
-  "startCommit": "ec7b3e61c4666768d0772a66bc159176e3f2b8c9"
+  "state": "COMPLETE",
+  "startCommit": "ec7b3e61c4666768d0772a66bc159176e3f2b8c9",
+  "testedCommit": "210efdda5bbf3715989c751eb90442f26f42d0a9",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P46_WASM_WEBGL_CALLSITE_FINGERPRINT_PROBE_RESULT.json",
+  "resultCommit": "90a8abe2368f2c8b172aee13b7531a389985017b"
 }

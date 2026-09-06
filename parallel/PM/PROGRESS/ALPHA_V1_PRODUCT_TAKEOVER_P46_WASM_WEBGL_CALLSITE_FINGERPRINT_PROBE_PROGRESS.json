@@ -3,13 +3,13 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P46_WASM_WEBGL_CALLSITE_FINGERPRINT_PROBE",
   "dedupKey": "alpha.v1.product-takeover.wasm-webgl-callsite-fingerprint-probe-v1",
   "claimToken": "6930698179d1f1e02d89285338a66f88",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
-  "overallPercent": 94,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
   "implementationState": "DONE",
   "selfCheckState": "PASS",
-  "resultPublicationState": "NOT_STARTED",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "DONE",
+  "claimCloseState": "DONE",
   "startCommit": "ec7b3e61c4666768d0772a66bc159176e3f2b8c9",
   "lastKnownGoodCommit": "210efdda5bbf3715989c751eb90442f26f42d0a9",
   "testedCandidateCommit": "210efdda5bbf3715989c751eb90442f26f42d0a9",
@@ -26,46 +26,43 @@
   ],
   "completed": [
     "dedup preflight and verified canonical/stage ownership",
-    "inspected P40 blocker evidence and exact P42 diagnostic capture contract",
-    "implemented bounded raw JS stack capture and deterministic normalized call-site fingerprints at draw/buffer/attrib WebGL boundaries",
-    "implemented exact browser-exposed WASM function index/name/offset preservation with NOT_AVAILABLE/UNRESOLVED fail-closed semantics",
-    "implemented JS caller frame and exact Module/Module.asm object identity capture",
-    "implemented exact runtimeEpoch/rendererEpoch/authorityKey binding and Module/asm drift rejection",
-    "implemented buffer upload/setup to draw association only through exact object/attrib-state identity",
-    "published focused deterministic tests and diagnostic authority-boundary documentation",
-    "fresh-read durable candidate tree and exact Git blob identities",
-    "terminal-significant exact-byte syntax check and deterministic self-check passed"
+    "implemented bounded raw JS stack capture and deterministic normalized WebGL call-site fingerprints",
+    "implemented exact browser-exposed WASM index/name/offset preservation with NOT_AVAILABLE/UNRESOLVED semantics",
+    "implemented observed JS caller identity and exact Module/Module.asm identity capture",
+    "implemented exact runtimeEpoch/rendererEpoch/authorityKey and Module/asm mixed-runtime rejection",
+    "implemented exact buffer-object and vertex-attrib-state association without timing/order/nearest selection",
+    "published deterministic focused tests and authority-boundary documentation",
+    "fresh-read durable tested candidate 210efdda5bbf3715989c751eb90442f26f42d0a9 tree 98b81df25e3c32eb7d5fdde612f020a16ad4fea6",
+    "exact-byte syntax check and deterministic self-check passed 7/7",
+    "published RESULT.md and RESULT.json in WORKER_RESULT commit 90a8abe2368f2c8b172aee13b7531a389985017b",
+    "closed canonical and stage claims with exact tested/result provenance"
   ],
-  "remaining": [
-    "publish terminal RESULT.md and RESULT.json",
-    "close canonical/stage claims with tested/result provenance",
-    "publish terminal PROGRESS checkpoint"
-  ],
+  "remaining": [],
   "tests": [
     {
       "name": "P46 exact-candidate JavaScript syntax check",
       "result": "PASS",
-      "detail": "node --check passed on local bytes whose Git blob SHA exactly matched durable candidate blob efd71e25e28f171e080774eb5aa1309a0d7bbe2b."
+      "detail": "node --check passed on local probe bytes whose Git blob SHA exactly matched candidate blob efd71e25e28f171e080774eb5aa1309a0d7bbe2b."
     },
     {
-      "name": "P46 exact-candidate deterministic self-check",
+      "name": "P46 exact-candidate deterministic call-site self-check",
       "result": "PASS",
-      "detail": "7/7 PASS on local code/test bytes whose Git blob SHAs exactly matched candidate blobs efd71e25e28f171e080774eb5aa1309a0d7bbe2b and 990b4e7c0419d568ee645828f8791f985e773bc0."
+      "detail": "7/7 PASS on code/test bytes whose Git blob SHAs exactly matched candidate blobs efd71e25e28f171e080774eb5aa1309a0d7bbe2b and 990b4e7c0419d568ee645828f8791f985e773bc0."
     },
     {
       "name": "P46 durable candidate exact-byte readback",
       "result": "PASS",
-      "detail": "Candidate 210efdda5bbf3715989c751eb90442f26f42d0a9 tree 98b81df25e3c32eb7d5fdde612f020a16ad4fea6 fresh-read all three recorded blob identities before terminal publication."
+      "detail": "Candidate 210efdda5bbf3715989c751eb90442f26f42d0a9 tree 98b81df25e3c32eb7d5fdde612f020a16ad4fea6 fresh-read all three recorded Git blob identities."
     },
     {
       "name": "Real WOF bounded live diagnostic",
       "result": "NOT_RUN",
-      "detail": "Explicitly outside P46 Worker authority; no real game run, Owner interaction, promotion, or alpha-live movement occurred."
+      "detail": "Outside P46 Worker authority; no real game run, Owner interaction, promotion, P43/P45 modification, or alpha-live movement occurred."
     }
   ],
   "blocker": null,
-  "nextAction": "publish terminal COMPLETE result for exact tested candidate 210efdda5bbf3715989c751eb90442f26f42d0a9 and close both claims",
-  "terminalResultPath": null,
+  "nextAction": "PM may consume exact tested P46 commit 210efdda5bbf3715989c751eb90442f26f42d0a9 in a later authorized bounded diagnostic integration without promoting this evidence to renderer authority",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P46_WASM_WEBGL_CALLSITE_FINGERPRINT_PROBE_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T02:02:30Z"
+  "updatedAtUtc": "2026-09-06T02:04:16Z"
 }
