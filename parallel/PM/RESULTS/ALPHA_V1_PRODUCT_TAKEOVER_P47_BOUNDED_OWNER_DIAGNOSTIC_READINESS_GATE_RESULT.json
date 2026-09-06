@@ -1,0 +1,137 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P47_BOUNDED_OWNER_DIAGNOSTIC_READINESS_GATE",
+  "dedupKey": "alpha.v1.product-takeover.bounded-owner-diagnostic-readiness-gate-v1",
+  "claimToken": "2a3a3c6f948794f066622da94d5e1ca0",
+  "state": "COMPLETE",
+  "outcome": "COMPLETE",
+  "readinessDecision": "READY_FOR_ONE_BOUNDED_OWNER_DIAGNOSTIC",
+  "runBudget": 1,
+  "testedCommit": "f0634c81f0efb54819cef10e0c4cf8567cd5ca9a",
+  "testedTree": "d09993d70aa3cf961ecb59bc31d3835450f6a669",
+  "testedBlobMap": {
+    ".github/workflows/alpha-p47-bounded-owner-diagnostic-readiness.yml": "6e52e3a8a2a4775cc6787fcce28a391791128d50",
+    "parallel/OWNER_DIAGNOSTIC/p47_bounded_owner_diagnostic_readiness_gate.py": "a4d7d19dba767c9e60c66767aaeccc751d6409cc",
+    "parallel/OWNER_DIAGNOSTIC/p47_bounded_owner_diagnostic_readiness_gate_final.py": "f773db09938f353b8ab1dc26c77dade7d3e7853e",
+    "parallel/OWNER_DIAGNOSTIC/test_p47_bounded_owner_diagnostic_readiness_gate.py": "f86010624702140062e6eb91094567c11f18d19d",
+    "parallel/OWNER_DIAGNOSTIC/test_p47_terminal_result_bytes.py": "d9e502d6642efe047ed6c55477b72c709a51daac",
+    "parallel/OWNER_DIAGNOSTIC/P47_BOUNDED_OWNER_DIAGNOSTIC_READINESS.md": "d2f21993d8e97239c657a17a7178f9e61bc4b019",
+    "parallel/OWNER_DIAGNOSTIC/P47_BOUNDED_OWNER_DIAGNOSTIC_READINESS.json": "3223bf1928384d8958bf677f1c49506fcfef8c40"
+  },
+  "readinessArtifact": {
+    "path": "parallel/OWNER_DIAGNOSTIC/P47_BOUNDED_OWNER_DIAGNOSTIC_READINESS.json",
+    "gitBlobSha": "3223bf1928384d8958bf677f1c49506fcfef8c40"
+  },
+  "terminalAuthority": "RESULT_AND_CLOSED_CLAIMS_ONLY_PROGRESS_IGNORED",
+  "terminalResultExactBytesPinnedToResultCommit": true,
+  "terminalInputs": {
+    "p43": {
+      "state": "COMPLETE",
+      "testedCommit": "0c23e22b0387d0b3042c5601ab0a9e897ce1c476",
+      "resultCommit": "2c916da0bdaa10777e75d356e8a9975698e99835"
+    },
+    "p45": {
+      "state": "COMPLETE",
+      "testedCommit": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+      "resultCommit": "034911b98001318e0be7d0e42ffe60df13c95d78"
+    },
+    "p46": {
+      "state": "COMPLETE",
+      "testedCommit": "210efdda5bbf3715989c751eb90442f26f42d0a9",
+      "resultCommit": "90a8abe2368f2c8b172aee13b7531a389985017b"
+    }
+  },
+  "exactCandidate": {
+    "p43TestedCommit": "0c23e22b0387d0b3042c5601ab0a9e897ce1c476",
+    "p43TestedTree": "e6da807b9efa29d5ab819013dbe2da4ded995aa6",
+    "candidatePath": "parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_INTEGRATED_CANDIDATE.json",
+    "candidateBlob": "1012af8219e65d9f5647437d753a163c117d9c4c",
+    "dependencyPinsPath": "parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_DEPENDENCY_PINS.json",
+    "dependencyPinsBlob": "79b9ae9f769633b70115837ecd7cedd16db266fe",
+    "p45TestedCommit": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+    "p45PinnedSourceBlob": "752a172911d76eb3573684b200d597926c819716",
+    "p46TestedCommit": "210efdda5bbf3715989c751eb90442f26f42d0a9",
+    "p46PinnedSourceBlob": "efd71e25e28f171e080774eb5aa1309a0d7bbe2b"
+  },
+  "requiredImplementationBytesDriftedAfterP43TestedCandidate": false,
+  "safety": {
+    "zeroClick": true,
+    "manualSeedRequired": false,
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "realWofRunPerformed": false,
+    "ownerLiveValidationPerformed": false,
+    "promotionPerformed": false,
+    "alphaLiveMoved": false
+  },
+  "bounds": {
+    "p43MaxWallSeconds": 60,
+    "p43MaxConsoleEvents": 512,
+    "p43MaxLogBytes": 8388608,
+    "p46DefaultMaxWallMs": 15000,
+    "p46DefaultMaxEvents": 384,
+    "deterministicTeardown": true
+  },
+  "binding": {
+    "requiredFields": [
+      "runtimeEpoch",
+      "rendererEpoch",
+      "authorityKey"
+    ],
+    "pageWorkerWasmAssociationPreserved": true,
+    "staleOrMixedBindingFailClosed": true,
+    "moduleAsmIdentityDriftFailClosed": true,
+    "wrapperConflictFailClosed": true
+  },
+  "rawEvidence": {
+    "p39Preserved": true,
+    "p42CompleteRawBundlePreserved": true,
+    "p46CompleteRawStackFingerprintWasmTruthJsCallerModuleAsmBindingAssociationsAndTeardownPreserved": true,
+    "filteringAllowed": false
+  },
+  "wasmTruthBoundary": {
+    "functionIndex": [
+      "AVAILABLE",
+      "NOT_AVAILABLE",
+      "UNRESOLVED"
+    ],
+    "functionName": [
+      "AVAILABLE",
+      "NOT_AVAILABLE",
+      "UNRESOLVED"
+    ],
+    "offset": [
+      "AVAILABLE",
+      "NOT_AVAILABLE",
+      "UNRESOLVED"
+    ],
+    "guessingAllowed": false
+  },
+  "authority": {
+    "diagnosticCorrelationOnly": true,
+    "rendererAuthorityMinted": false,
+    "p29Changed": false,
+    "p32Changed": false,
+    "retryEligibilityMinted": false,
+    "promotionEligibilityMinted": false,
+    "sourceExportMinted": false
+  },
+  "p40": {
+    "state": "BLOCKED",
+    "blocker": "NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT",
+    "resolvedByP47": false
+  },
+  "tests": {
+    "workflowRunId": 34008815136,
+    "workflowJobId": 101420862796,
+    "headCommit": "f0634c81f0efb54819cef10e0c4cf8567cd5ca9a",
+    "conclusion": "success",
+    "focusedTests": 13,
+    "syntax": "PASS",
+    "syntheticFailClosedMatrix": "PASS",
+    "actualRepoClassification": "PASS",
+    "exactTerminalResultBytes": "PASS",
+    "oneRunReadyAssertion": "PASS"
+  }
+}
