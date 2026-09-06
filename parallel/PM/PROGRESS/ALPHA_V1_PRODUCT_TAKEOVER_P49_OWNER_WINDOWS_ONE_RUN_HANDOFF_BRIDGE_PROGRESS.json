@@ -5,27 +5,34 @@
   "claimToken": "1c24ba8679c4cccbbde6d1d20fbbbbc9",
   "claimStateAtCheckpoint": "ACTIVE",
   "workState": "IN_PROGRESS",
-  "overallPercent": 10,
-  "implementationState": "NOT_STARTED_AUTHORITY_PREFLIGHT",
-  "selfCheckState": "PENDING",
-  "resultPublicationState": "NOT_PUBLISHED",
+  "overallPercent": 82,
+  "implementationState": "EXACT_BYTE_TESTED_CANDIDATE_FROZEN",
+  "selfCheckState": "PASS_11_OF_11",
+  "resultPublicationState": "PENDING",
   "claimCloseState": "OPEN",
   "startCommit": "c9a3c8e05a71015a8e3bfd576524cc9350d73c4b",
+  "lastKnownGoodCommit": "fad9780dc7a542027ba622e2b010a63b2f085eee",
+  "testedCommit": "fad9780dc7a542027ba622e2b010a63b2f085eee",
+  "testedTree": "bff564e47ce12e175eaa47944e62dfe2f92f0b8d",
+  "permitIdentity": "1bd5cf49c34ff458fce0be40476bee2adb61ed5105b8484cd872d7722f1738c0",
   "runBudget": 1,
   "runStarted": false,
   "runBudgetConsumed": false,
   "remainingRunBudget": 1,
   "completed": [
-    "Fresh-read origin/main at c9a3c8e05a71015a8e3bfd576524cc9350d73c4b, CURRENT_DISPATCH revision 34, and P49 START_PROMPT.",
-    "Dedup-v2 fresh-check found no P49 canonical claim, stage claim, PROGRESS, RESULT, or P49 worker terminal commit.",
-    "Acquired a new normal exclusive P49 canonical claim and matching stage claim; no recovery claim and no P50 were created."
+    "Fresh-read origin/main, CURRENT_DISPATCH revision 34, P49 START_PROMPT, and confirmed no durable P49 worker state before acquiring a new normal exclusive canonical/stage claim.",
+    "Fresh-read P47 RESULT and closed claims; readiness remains READY_FOR_ONE_BOUNDED_OWNER_DIAGNOSTIC.",
+    "Fresh-read P48 RESULT and closed claims; runStarted=false, runBudgetConsumed=false, remainingRunBudget=1, retryAttempted=false; no later RUN_STARTED commit was observed.",
+    "Verified exact P43 candidate/dependency/entrypoint blobs, P45/P46 source blobs, and P38 source/pointer/provenance pins with no promotion or alpha-live movement.",
+    "Implemented the Owner Windows one-run .cmd + PowerShell/Python fail-closed bridge, machine-readable one-run permit, Owner instructions, and focused deterministic tests.",
+    "Focused deterministic tests PASS 11/11 plus Python syntax checks; no real WOF, real P43 invocation, Owner visual acceptance, RAM write, input injection, promotion, or alpha-live movement occurred.",
+    "Frozen exact tested bundle at fad9780dc7a542027ba622e2b010a63b2f085eee / tree bff564e47ce12e175eaa47944e62dfe2f92f0b8d and fresh-read all six candidate blobs exactly."
   ],
   "remaining": [
-    "Fresh-read P47/P48 terminal authority and prove the one-run budget remains unconsumed.",
-    "Verify exact P43/P45/P46/P38 bytes and dependency pins.",
-    "Implement and deterministic-test the fail-closed Owner-Windows handoff bundle without a live invocation.",
-    "Freeze exact tested bundle bytes, publish RESULT, close both claims, and publish terminal progress."
+    "Publish terminal RESULT.",
+    "Close canonical and stage P49 claims.",
+    "Publish terminal PROGRESS 100% and final WORKER_RESULT commit."
   ],
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T06:43:00Z"
+  "updatedAtUtc": "2026-09-06T06:56:00Z"
 }
