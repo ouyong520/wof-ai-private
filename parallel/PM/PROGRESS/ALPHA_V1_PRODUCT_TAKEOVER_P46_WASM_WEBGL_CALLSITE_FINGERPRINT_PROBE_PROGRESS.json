@@ -1,0 +1,34 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P46_WASM_WEBGL_CALLSITE_FINGERPRINT_PROBE",
+  "dedupKey": "alpha.v1.product-takeover.wasm-webgl-callsite-fingerprint-probe-v1",
+  "claimToken": "6930698179d1f1e02d89285338a66f88",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 5,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "ec7b3e61c4666768d0772a66bc159176e3f2b8c9",
+  "lastKnownGoodCommit": "6015f729d51315555a99551df346b8b0466ea413",
+  "implementationCommits": [],
+  "completed": [
+    "dedup preflight completed",
+    "canonical claim acquired and verified",
+    "stage claim acquired and verified"
+  ],
+  "remaining": [
+    "inspect P42 WebGL hook/probe surfaces and runtime identity helpers",
+    "implement bounded call-site fingerprint probe and exact-state association",
+    "add deterministic focused tests and documentation",
+    "create durable tested candidate and run terminal-significant self-check",
+    "publish RESULT and close claims"
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "inspect exact P42 implementation and existing WebGL hook surfaces before writing isolated P46 files",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "updatedAtUtc": "2026-09-06T01:56:09Z"
+}
