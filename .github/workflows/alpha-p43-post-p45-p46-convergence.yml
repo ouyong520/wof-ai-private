@@ -12,6 +12,7 @@ on:
       - 'parallel/OWNER_DIAGNOSTIC/test_p43_bounded_zero_click_live_diagnostic_final.py'
       - 'parallel/OWNER_DIAGNOSTIC/test_p43_post_p45_p46_continuation.py'
       - 'parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_DEPENDENCY_PINS.json'
+      - 'parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_INTEGRATED_CANDIDATE.json'
       - '.github/workflows/alpha-p43-post-p45-p46-convergence.yml'
   workflow_dispatch:
 
@@ -52,6 +53,25 @@ jobs:
             test_p43_bounded_zero_click_live_diagnostic_entry \
             test_p43_bounded_zero_click_live_diagnostic_final \
             test_p43_post_p45_p46_continuation
+
+      - name: Exact final candidate blob readback when present
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          p = Path('parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_INTEGRATED_CANDIDATE.json')
+          if not p.exists():
+              print('final candidate metadata not frozen yet; nonterminal preflight')
+              raise SystemExit(0)
+          raw = json.loads(p.read_text())
+          assert raw['schema'] == 'wof-p43-post-p45-p46-integrated-candidate-v1'
+          for rel, wanted in raw['testedBlobMap'].items():
+              actual = subprocess.check_output(['git', 'rev-parse', f'HEAD:{rel}'], text=True).strip()
+              assert actual == wanted, f'{rel}: expected={wanted} actual={actual}'
+          assert raw['dependencies']['p45TestedCommit'] == '3dac7a9e2cbe4a23c3de44eb15cf45f19b136149'
+          assert raw['dependencies']['p46TestedCommit'] == '210efdda5bbf3715989c751eb90442f26f42d0a9'
+          print('P43 final candidate exact blob readback PASS')
+          PY
 
       - name: Explicit no-live no-promotion contract scan
         run: |
