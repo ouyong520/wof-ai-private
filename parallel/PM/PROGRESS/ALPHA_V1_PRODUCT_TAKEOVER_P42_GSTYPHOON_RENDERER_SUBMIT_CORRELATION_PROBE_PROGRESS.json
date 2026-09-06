@@ -3,13 +3,13 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE",
   "dedupKey": "alpha.v1.product-takeover.gstyphoon-renderer-submit-correlation-probe-v1",
   "claimToken": "4c6507b7655c540e4a4fcbd28efdc2cb",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "PUBLISHING",
-  "overallPercent": 96,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
   "implementationState": "DONE_DURABLE_TESTED_CANDIDATE",
   "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
-  "resultPublicationState": "IN_PROGRESS",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "DONE",
+  "claimCloseState": "DONE",
   "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b",
   "lastKnownGoodCommit": "7b523187a955179b04155b758847c82aaf569a0d",
   "implementationCommits": [
@@ -26,6 +26,11 @@
       "parallel/RENDER_AUTHORITY_V2/GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE.md": "5d3fc54e0c5ceda48b1a9c0d48950d8c33b3ce14"
     }
   },
+  "resultCommit": "f28231827d35ac1161fee27a25595ea4c961a539",
+  "claimCloseCommits": {
+    "canonical": "f11d7996c027c3c14ed061775954122aadf88374",
+    "stage": "c06c814c176d394fe7c16c3165d116b86e21115a"
+  },
   "completed": [
     "latest-main and P42 prompt/dispatch preflight complete",
     "canonical and stage claims exact-token verified",
@@ -33,39 +38,36 @@
     "bounded read-only WebGL renderer correlation probe implemented",
     "deterministic focused test and mapping-contract documentation committed",
     "GitHub fresh readback matched all three exact local Git blob identities",
-    "terminal-significant Node syntax + deterministic self-check passed on exact tested candidate bytes",
-    "READY_TO_PUBLISH checkpoint recorded"
+    "terminal-significant syntax and deterministic self-check passed on exact tested candidate bytes",
+    "RESULT.json and RESULT.md published in WORKER_RESULT COMPLETE commit f28231827d35ac1161fee27a25595ea4c961a539",
+    "canonical and stage claims closed COMPLETE with exact matching claimToken and result authority"
   ],
-  "remaining": [
-    "publish RESULT.json and RESULT.md",
-    "close canonical and stage claims with matching result authority",
-    "write terminal PROGRESS checkpoint"
-  ],
+  "remaining": [],
   "tests": [
     {
       "name": "P42 exact-candidate JavaScript syntax check",
       "result": "PASS",
-      "detail": "node --check gstyphoon_renderer_submit_correlation_probe.js; local bytes matched GitHub candidate blob 32b9c50e8a72de1a097b8ce5dc91b69bdcef0219."
+      "detail": "node --check passed on probe bytes matching GitHub candidate blob 32b9c50e8a72de1a097b8ce5dc91b69bdcef0219."
     },
     {
       "name": "P42 exact-candidate deterministic renderer correlation self-check",
       "result": "PASS",
-      "detail": "6/6 PASS on exact candidate-equivalent JS/test bytes; bounded capture/teardown, draw/state metadata, typed-array payload/hash/offset, texture/range observation, P39 diagnostic correlation, mixed-binding rejection, ambiguity preservation, and proof-boundary non-impersonation covered."
+      "detail": "6/6 PASS on exact candidate-equivalent JS/test bytes; covers bounded capture/teardown, draw/state metadata, typed-array payload/hash/offset, texture/range observation, P39 diagnostic correlation, mixed-binding rejection, ambiguity preservation, and proof-boundary non-impersonation."
     },
     {
       "name": "P42 durable candidate exact-byte readback",
       "result": "PASS",
-      "detail": "Candidate commit 7b523187a955179b04155b758847c82aaf569a0d tree a1333a0e90ec7e56a55565ee5298df981a92da4a matched the recorded three blob identities."
+      "detail": "Candidate 7b523187a955179b04155b758847c82aaf569a0d tree a1333a0e90ec7e56a55565ee5298df981a92da4a matched all three recorded Git blob identities."
     },
     {
-      "name": "Real WOF live diagnostic",
+      "name": "Real WOF bounded live diagnostic",
       "result": "NOT_RUN",
-      "detail": "Explicitly forbidden by P42 Worker scope."
+      "detail": "Explicitly outside P42 Worker authority; P40 blocker remains unresolved pending later live mapping evidence."
     }
   ],
   "blocker": null,
-  "nextAction": "Publish terminal COMPLETE result, close both exact-token claims, then write TERMINAL progress.",
+  "nextAction": "PM should consume exact P42 tested candidate and integrate it with the separately authorized P43 bounded live diagnostic harness; preserve the complete raw P42 bundle during the later live run.",
   "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:26:30Z"
+  "updatedAtUtc": "2026-09-06T01:29:00Z"
 }
