@@ -3,13 +3,13 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC_HARNESS",
   "dedupKey": "alpha.v1.product-takeover.bounded-zero-click-live-diagnostic-harness-v2",
   "claimToken": "9b45b04fc8f5e86849c08c07dcf0dc07",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
-  "overallPercent": 97,
-  "implementationState": "POST_P45_P46_INTEGRATED_CANDIDATE_FROZEN",
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
+  "implementationState": "COMPLETE_POST_P45_P46_CONVERGED",
   "selfCheckState": "PASS_EXACT_DURABLE_CANDIDATE",
-  "resultPublicationState": "NOT_STARTED",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "DONE",
+  "claimCloseState": "DONE",
   "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b",
   "lastKnownGoodCommit": "0c23e22b0387d0b3042c5601ab0a9e897ce1c476",
   "implementationCommits": [
@@ -45,39 +45,40 @@
     "p46TestedCommit": "210efdda5bbf3715989c751eb90442f26f42d0a9"
   },
   "completed": [
-    "Reattached and continued the original P43 claim under exact claimToken 9b45b04fc8f5e86849c08c07dcf0dc07 without recovery or duplicate ownership.",
-    "Consumed exact P45 tested staging through its attach-only P39->P42 seam; no duplicate P39/P42 implementation and no maintained runtime rebind by P43.",
-    "Integrated exact P46 above P45/P42 with deterministic wrapper order and LIFO teardown, preserving complete raw stack/fingerprint/WASM truth states/JS caller/Module+asm identity/binding/associations/teardown evidence.",
-    "Unified P45/P46 evidence with existing P16/P9/P36/P32/P17/log/error/timeline receipt and preserved firstFailingGate plus passedBeforeFirstFailure semantics.",
-    "Frozen durable exact candidate 0c23e22b0387d0b3042c5601ab0a9e897ce1c476 tree e6da807b9efa29d5ab819013dbe2da4ded995aa6 and candidate metadata blob 1012af8219e65d9f5647437d753a163c117d9c4c.",
-    "Terminal-significant GitHub Actions run 34007010311 on exact frozen candidate PASS: Python syntax PASS; 29/29 focused regressions PASS; final candidate testedBlobMap readback PASS; no-live/no-promotion/no-direct-source contract scan PASS.",
-    "No implementation bytes changed after exact-candidate terminal test."
+    "Continued the original P43 v2 successor under the unchanged exact claimToken without creating or recovering a claim.",
+    "Reconciled stale PM-reconstructed PROGRESS with all durable P43 implementation history before continuation work.",
+    "Consumed exact P45 terminal-tested staging as an attach-only P39->P42 seam; P43 does not duplicate P39/P42 and does not rebind the maintained Alpha runtime.",
+    "Integrated exact P46 terminal-tested WASM/WebGL call-site probe above P45/P42 with deterministic wrapper composition and LIFO teardown.",
+    "Preserved P46 raw stack, normalized fingerprint, AVAILABLE/NOT_AVAILABLE/UNRESOLVED WASM function index/name/offset truth, JS caller identity, Module/asm identity, exact binding, setup-to-draw associations and teardown conflicts without guessed symbols/offsets or semantic selection.",
+    "Unified exact P45/P46 evidence with existing P16/P9/P36/P32/P17/raw log/error/gate chronology and firstFailingGate/passedBeforeFirstFailure receipt semantics.",
+    "Frozen and exact-byte-tested durable candidate 0c23e22b0387d0b3042c5601ab0a9e897ce1c476 tree e6da807b9efa29d5ab819013dbe2da4ded995aa6.",
+    "Terminal-significant CI run 34007010311 PASS on exact frozen candidate: syntax PASS; 29/29 focused regressions PASS; final testedBlobMap readback PASS; no-live/no-promotion/no-direct-source contract scan PASS.",
+    "Published terminal RESULT JSON+Markdown atomically in result commit 2c916da0bdaa10777e75d356e8a9975698e99835 using required WORKER_RESULT prefix.",
+    "Closed canonical claim and stage claim as COMPLETE with the same exact claimToken, testedCommit and resultCommit.",
+    "No implementation byte changed after exact-candidate terminal test; no real WOF run, install, promotion, input injection, RAM write, or alpha-live move occurred."
   ],
-  "remaining": [
-    "Publish exactly the P43 terminal RESULT JSON and Markdown with WORKER_RESULT searchable commit prefix.",
-    "Close the existing canonical and stage claims with the same exact token.",
-    "Publish terminal PROGRESS agreeing with RESULT and closed claims."
-  ],
+  "remaining": [],
   "tests": [
     {
       "name": "P43 terminal exact-byte integrated candidate CI",
       "result": "PASS",
-      "detail": "GitHub Actions run 34007010311 executed against exact candidate 0c23e22b0387d0b3042c5601ab0a9e897ce1c476: syntax PASS; all 29 focused tests PASS; exact final testedBlobMap readback PASS; no-live/no-promotion/no-direct-renderer-source contract scan PASS."
+      "detail": "GitHub Actions run 34007010311 on exact candidate 0c23e22b0387d0b3042c5601ab0a9e897ce1c476: Python syntax PASS; 29/29 focused tests PASS; exact final candidate testedBlobMap readback PASS; no-live/no-promotion/no-direct-renderer-source contract scan PASS."
     },
     {
-      "name": "P43 post-fix pre-freeze convergence CI",
+      "name": "P43 exact upstream dependency identity",
       "result": "PASS",
-      "detail": "Supporting run 34006908940 on c3891a108da94e21a489f2bae815f8de81896db4 also passed before the frozen candidate was created."
+      "detail": "Final focused regression fresh-read exact P45/P39/P42 and P46 dependency Git blobs from their terminal-tested commits; P45=3dac7a9e2cbe4a23c3de44eb15cf45f19b136149 and P46=210efdda5bbf3715989c751eb90442f26f42d0a9."
     },
     {
       "name": "Real WOF bounded live diagnostic",
       "result": "NOT_RUN",
-      "detail": "Explicitly outside P43 authority. No real game launch, Owner visual acceptance, promotion, or alpha-live movement occurred."
+      "detail": "Explicitly outside P43 worker authority. Terminal COMPLETE is repository-side harness readiness only."
     }
   ],
   "blocker": null,
-  "nextAction": "Publish terminal P43 RESULT, close the two existing exact-token claims, and write terminal PROGRESS without modifying implementation bytes.",
-  "terminalResultPath": null,
+  "nextAction": "PM may separately authorize one bounded zero-click live diagnostic using exact P43 tested candidate 0c23e22b0387d0b3042c5601ab0a9e897ce1c476; P40 remains blocked until truthful live renderer-submit source evidence exists.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC_HARNESS_RESULT.json",
+  "terminalResultCommit": "2c916da0bdaa10777e75d356e8a9975698e99835",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T02:41:00Z"
+  "updatedAtUtc": "2026-09-06T02:44:00Z"
 }
