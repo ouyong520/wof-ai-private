@@ -8,6 +8,12 @@
   "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P48_ONE_BOUNDED_OWNER_LIVE_DIAGNOSTIC_EXECUTION_START_PROMPT.md",
   "owner": "GPT-5.6-Sol-worker-P48",
   "claimToken": "323849cea9b1d5b97e4d08d49732ddf4",
-  "state": "ACTIVE",
-  "startCommit": "8c297959f516ccd51dbe334b77a87a8f629e9c66"
+  "state": "COMPLETE",
+  "startCommit": "8c297959f516ccd51dbe334b77a87a8f629e9c66",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P48_ONE_BOUNDED_OWNER_LIVE_DIAGNOSTIC_EXECUTION_RESULT.json",
+  "resultCommit": "89c8777025156f3704170006cf5c6f617cb4d14d",
+  "resultOutcome": "BLOCKED_PRE_RUN",
+  "runStarted": false,
+  "runBudgetConsumed": false,
+  "remainingRunBudget": 1
 }
