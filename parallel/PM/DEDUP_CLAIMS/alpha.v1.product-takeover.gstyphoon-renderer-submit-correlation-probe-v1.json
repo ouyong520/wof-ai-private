@@ -1,0 +1,13 @@
+{
+  "schema": "wof-pm-dedup-claim-v2",
+  "dedupProtocol": "v2",
+  "dedupKey": "alpha.v1.product-takeover.gstyphoon-renderer-submit-correlation-probe-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.gstyphoon-renderer-submit-correlation-probe-v1",
+  "dedupMode": "exclusive",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE",
+  "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE_START_PROMPT.md",
+  "owner": "GPT-5.6-Sol-worker-P42",
+  "claimToken": "4c6507b7655c540e4a4fcbd28efdc2cb",
+  "state": "ACTIVE",
+  "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b"
+}
