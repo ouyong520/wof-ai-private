@@ -4,11 +4,11 @@
   "dedupKey": "alpha.v1.product-takeover.zero-click-visible-hud-baseline-integration-v1",
   "claimToken": "af435a4eb64b05cb535cadf98868125f",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "SELF_CHECK",
-  "overallPercent": 85,
+  "workState": "READY_TO_PUBLISH",
+  "overallPercent": 95,
   "implementationState": "DONE_CANDIDATE_BOUND",
-  "selfCheckState": "READY_FOR_FRESH_EXACT_CANDIDATE",
-  "resultPublicationState": "NOT_STARTED",
+  "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
+  "resultPublicationState": "PENDING",
   "claimCloseState": "PENDING",
   "startCommit": "d5f176c6856b05c599b16fa830e8f6a4b41632bc",
   "lastKnownGoodCommit": "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05",
@@ -25,28 +25,30 @@
   ],
   "completed": [
     "dedup-v2 canonical and stage claims exact-token verified",
-    "read P37 tested implementation/result plus maintained Alpha HUD and production P1 staging seam",
-    "strict P37 diagnostic adapter reuses P37 createBaselineTracker and mapNativeToViewport without copying detection heuristics",
-    "explicit staging-only visible extension wraps maintained HUD draw callback only while enabled and restores the exact callback on gate close/dispose",
-    "Python staging bridge injects only P37/P39 diagnostic sources after maintained HUD exists; production HUD source list remains untouched",
-    "focused adapter/visible/staging tests committed",
-    "durable candidate commit/tree frozen and fresh source blob readback matched local git object hashes",
-    "P37 source blob in candidate equals accepted P37 tested blob 2a0094b3588d4a27c8c7a6f9940b8a3b1941f8c4",
-    "maintained HUD blob f6f176294a4fe4a77b21c02abae6ba2d37681b70 and production P1 overlay blob 32312651c983d23714b71018505e3e43fb1990ae remain unchanged"
+    "P37 exact tested source reused without heuristic duplication",
+    "strict diagnostic adapter, visible maintained-HUD draw-chain extension, and explicit staging bridge implemented",
+    "production authority surfaces left byte-identical when diagnostic gate is closed",
+    "durable candidate commit/tree frozen and exact source blobs fresh-read back",
+    "final exact-byte adapter self-check PASS 6/6",
+    "final exact-byte visible HUD self-check PASS 3/3",
+    "final exact-byte staging bridge unittest PASS 4/4",
+    "JS syntax checks and Python compile PASS",
+    "classification remains UNVERIFIED_AUTO_BASELINE with rendererSourceProof=null and all P29/P32/P36/P34/promotion eligibility false"
   ],
   "remaining": [
-    "rerun terminal-significant exact-candidate focused self-check after this PROGRESS binding",
     "publish terminal RESULT md/json",
-    "close canonical/stage claims and publish terminal PROGRESS"
+    "close canonical/stage claims with exact tested commit",
+    "publish terminal PROGRESS"
   ],
   "tests": [
-    {"name":"pre-bind adapter self-check","result":"PASS 6/6","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"},
-    {"name":"pre-bind visible HUD self-check","result":"PASS 3/3","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"},
-    {"name":"pre-bind staging bridge unittest","result":"PASS 4/4","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"}
+    {"name":"node product/alpha/auto_baseline_hud_adapter_selfcheck.mjs","result":"PASS 6/6","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"},
+    {"name":"node product/alpha/auto_baseline_visible_hud_selfcheck.mjs","result":"PASS 3/3","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"},
+    {"name":"python -m unittest -v parallel/PYLAUNCH/tests/test_alpha_p39_auto_baseline_hud.py","result":"PASS 4/4","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"},
+    {"name":"node --check adapter + visible source; python -m py_compile staging bridge","result":"PASS","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"}
   ],
   "blocker": null,
-  "nextAction": "Run the final exact-byte focused suite against candidate ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05, then publish terminal RESULT and close claims.",
-  "terminalResultPath": null,
+  "nextAction": "Publish terminal RESULT, close exact-token claims, then mark PROGRESS terminal.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P39_ZERO_CLICK_VISIBLE_HUD_BASELINE_INTEGRATION_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:18:00Z"
+  "updatedAtUtc": "2026-09-06T01:21:00Z"
 }
