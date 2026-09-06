@@ -3,13 +3,13 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P39_ZERO_CLICK_VISIBLE_HUD_BASELINE_INTEGRATION",
   "dedupKey": "alpha.v1.product-takeover.zero-click-visible-hud-baseline-integration-v1",
   "claimToken": "af435a4eb64b05cb535cadf98868125f",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
-  "overallPercent": 95,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "TERMINAL",
+  "overallPercent": 100,
   "implementationState": "DONE_CANDIDATE_BOUND",
   "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
-  "resultPublicationState": "PENDING",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "COMPLETE",
+  "claimCloseState": "COMPLETE",
   "startCommit": "d5f176c6856b05c599b16fa830e8f6a4b41632bc",
   "lastKnownGoodCommit": "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05",
   "testedCandidateCommit": "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05",
@@ -23,8 +23,12 @@
     "05d4736a45ce5405a67159f623cb55c2d6903fbc",
     "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"
   ],
+  "resultCommits": [
+    "d1de0a6b197fcffd7501b3430901ed69ca570d32",
+    "10222415b840d452af7c286b8cd4f22ed6b2a432"
+  ],
   "completed": [
-    "dedup-v2 canonical and stage claims exact-token verified",
+    "dedup-v2 canonical and stage claims exact-token verified and closed COMPLETE",
     "P37 exact tested source reused without heuristic duplication",
     "strict diagnostic adapter, visible maintained-HUD draw-chain extension, and explicit staging bridge implemented",
     "production authority surfaces left byte-identical when diagnostic gate is closed",
@@ -33,22 +37,22 @@
     "final exact-byte visible HUD self-check PASS 3/3",
     "final exact-byte staging bridge unittest PASS 4/4",
     "JS syntax checks and Python compile PASS",
-    "classification remains UNVERIFIED_AUTO_BASELINE with rendererSourceProof=null and all P29/P32/P36/P34/promotion eligibility false"
+    "classification remains UNVERIFIED_AUTO_BASELINE with rendererSourceProof=null and all P29/P32/P36/P34/promotion eligibility false",
+    "terminal RESULT markdown/json published and fresh-read back",
+    "no real WOF run, no promotion, no alpha-live move"
   ],
-  "remaining": [
-    "publish terminal RESULT md/json",
-    "close canonical/stage claims with exact tested commit",
-    "publish terminal PROGRESS"
-  ],
+  "remaining": [],
   "tests": [
     {"name":"node product/alpha/auto_baseline_hud_adapter_selfcheck.mjs","result":"PASS 6/6","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"},
     {"name":"node product/alpha/auto_baseline_visible_hud_selfcheck.mjs","result":"PASS 3/3","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"},
     {"name":"python -m unittest -v parallel/PYLAUNCH/tests/test_alpha_p39_auto_baseline_hud.py","result":"PASS 4/4","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"},
-    {"name":"node --check adapter + visible source; python -m py_compile staging bridge","result":"PASS","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"}
+    {"name":"node --check adapter + visible source; python -m py_compile staging bridge","result":"PASS","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"},
+    {"name":"GitHub exact candidate/authority blob readback","result":"PASS","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"}
   ],
   "blocker": null,
-  "nextAction": "Publish terminal RESULT, close exact-token claims, then mark PROGRESS terminal.",
+  "nextAction": "PM/P41 may consume this P39 output only as UNVERIFIED_AUTO_BASELINE visible correlation in a separately authorized bounded live run; P39 does not authorize renderer authority, retry, or promotion.",
   "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P39_ZERO_CLICK_VISIBLE_HUD_BASELINE_INTEGRATION_RESULT.json",
+  "terminalResultMdPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P39_ZERO_CLICK_VISIBLE_HUD_BASELINE_INTEGRATION_RESULT.md",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:21:00Z"
+  "updatedAtUtc": "2026-09-06T01:26:00Z"
 }
