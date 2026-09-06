@@ -8,27 +8,46 @@ from typing import Any, Mapping
 import p47_bounded_owner_diagnostic_readiness_gate as core
 
 
+def _force_block(artifact: dict[str, Any], code: str, check_name: str) -> None:
+    blockers = list(artifact.get("blockerCodes") or [])
+    if code not in blockers:
+        blockers.append(code)
+    artifact["blockerCodes"] = blockers
+    artifact.setdefault("checks", {})[check_name] = False
+    artifact["decision"] = core.BLOCKED
+    artifact["runBudget"] = 0
+
+
 def evaluate(snapshot: Mapping[str, Any]) -> dict[str, Any]:
     artifact = core.evaluate(snapshot)
+
+    terminal_bytes = snapshot.get("terminalResultBytesMatch")
+    for key in core.STAGES:
+        matched = isinstance(terminal_bytes, Mapping) and terminal_bytes.get(key) is True
+        artifact.setdefault("checks", {})[f"{key}.terminalResultExactBytes"] = matched
+        if not matched:
+            _force_block(artifact, f"{key.upper()}_TERMINAL_RESULT_BYTES_DRIFTED", f"{key}.terminalResultExactBytes")
+
     requested = snapshot.get("requestedRunBudget", 1)
     if requested != 1:
-        blockers = list(artifact.get("blockerCodes") or [])
-        if "RUN_BUDGET_NOT_EXACTLY_ONE" not in blockers:
-            blockers.append("RUN_BUDGET_NOT_EXACTLY_ONE")
-        artifact["blockerCodes"] = blockers
-        artifact["checks"]["runBudget.requestedExactlyOne"] = False
-        artifact["decision"] = core.BLOCKED
-        artifact["runBudget"] = 0
+        _force_block(artifact, "RUN_BUDGET_NOT_EXACTLY_ONE", "runBudget.requestedExactlyOne")
     else:
-        artifact["checks"]["runBudget.requestedExactlyOne"] = True
+        artifact.setdefault("checks", {})["runBudget.requestedExactlyOne"] = True
         artifact["runBudget"] = 1 if artifact.get("decision") == core.READY else 0
     artifact["requestedRunBudget"] = requested
     return artifact
 
 
 def collect(repo_root: Path) -> dict[str, Any]:
+    repo_root = repo_root.resolve()
     snapshot = core.collect(repo_root)
     snapshot["requestedRunBudget"] = 1
+    exact: dict[str, bool] = {}
+    for key, spec in core.STAGES.items():
+        head_bytes = core._run(repo_root, "show", f"HEAD:{spec['result']}")
+        result_commit_bytes = core._run(repo_root, "show", f"{spec['resultCommit']}:{spec['result']}")
+        exact[key] = head_bytes == result_commit_bytes
+    snapshot["terminalResultBytesMatch"] = exact
     return snapshot
 
 
