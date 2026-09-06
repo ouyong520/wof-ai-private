@@ -38,7 +38,7 @@ shift
 shift
 shift
 
-"%PY%" "%HERE%p43_bounded_zero_click_live_diagnostic_entry.py" ^
+"%PY%" "%HERE%p43_bounded_zero_click_live_diagnostic_final.py" ^
   --repo-root "%REPO%" ^
   --source-checkout "%SOURCE_CHECKOUT%" ^
   --source-commit "%SOURCE_COMMIT%" ^
