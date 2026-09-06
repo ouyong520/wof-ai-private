@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P49_OWNER_WINDOWS_ONE_RUN_HANDOFF_BRIDGE",
+  "dedupKey": "alpha.v1.product-takeover.owner-windows-one-run-handoff-bridge-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.owner-windows-one-run-handoff-bridge-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.owner-windows-one-run-handoff-bridge-v1.json",
+  "claimToken": "1c24ba8679c4cccbbde6d1d20fbbbbc9",
+  "state": "ACTIVE",
+  "startCommit": "c9a3c8e05a71015a8e3bfd576524cc9350d73c4b"
+}
