@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE",
+  "dedupKey": "alpha.v1.product-takeover.gstyphoon-renderer-submit-correlation-probe-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.gstyphoon-renderer-submit-correlation-probe-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.gstyphoon-renderer-submit-correlation-probe-v1.json",
+  "claimToken": "4c6507b7655c540e4a4fcbd28efdc2cb",
+  "state": "ACTIVE",
+  "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b"
+}
