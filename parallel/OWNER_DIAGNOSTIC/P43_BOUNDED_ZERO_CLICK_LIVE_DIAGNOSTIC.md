@@ -2,13 +2,14 @@
 
 P43 is a **diagnostic harness only** for one later, separately authorized bounded WOF run. This worker task does not run the game.
 
-The harness is deliberately fail-closed and preserves existing authority boundaries:
+The final P43 continuation consumes terminal-tested P45 and P46 rather than duplicating them:
 
-- P29/P32/P36 acceptance criteria are not modified.
-- P37/P39 data is always labelled `UNVERIFIED_AUTO_BASELINE` and never becomes renderer authority or production coordinates.
-- P42 exact tested probe bytes are pinned to tested commit `7b523187a955179b04155b758847c82aaf569a0d` / blob `32b9c50e8a72de1a097b8ce5dc91b69bdcef0219`. When exact P16 binding and those bytes are locally available, P43 automatically loads, starts, stops, and archives P42 as diagnostic correlation evidence only (`authorityEligible=false`). Otherwise the receipt records `P42_CORRELATION_PROBE_NOT_PRESENT` with the exact reason.
-- No click, avatar selection, manual seed, input injection, RAM write, promotion, or `alpha-live` movement is performed.
-- No package install, PATH edit, site-packages edit, or global environment mutation is allowed.
+- exact P45 tested candidate `3dac7a9e2cbe4a23c3de44eb15cf45f19b136149` supplies the maintained default-off P39 → P42 staging integration;
+- exact P46 tested commit `210efdda5bbf3715989c751eb90442f26f42d0a9` / probe blob `efd71e25e28f171e080774eb5aa1309a0d7bbe2b` supplies bounded WASM/WebGL call-site evidence;
+- exact P39/P42 dependencies remain P45-owned and are consumed through P45's staging readout, not reimplemented by P43;
+- P29/P32/P36 authority criteria are unchanged and P40 remains blocked by `NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT`.
+
+No click, avatar selection, manual seed, input injection, RAM write, install, promotion, or `alpha-live` movement is performed.
 
 ## Exact invocation contract
 
@@ -16,7 +17,7 @@ Use `WOF_ALPHA_P43_BOUNDED_DIAGNOSTIC.cmd`. It refuses Python fallback and runs 
 
 `%LOCALAPPDATA%\WOF Alpha Current Main\venv\Scripts\python.exe`
 
-Required inputs are explicit. There is **no implicit HEAD**:
+Required inputs are explicit; there is **no implicit HEAD**:
 
 1. metadata repository root;
 2. existing clean exact source checkout;
@@ -27,56 +28,78 @@ Required inputs are explicit. There is **no implicit HEAD**:
 7. existing browser WebSocket debugger URL;
 8. output directory.
 
-Optional arguments are passed through to the Python harness, including:
+Optional inputs include `--p16-evidence`, `--p17-bundle`, `--runtime-log`, repeated `--staging-log`, and `--duration <0.1..60>`.
 
-- `--p16-evidence <path>`
-- `--p17-bundle <path>`
-- `--runtime-log <path>`
-- repeated `--staging-log <path>`
-- `--duration <0.1..60>` (default 15 seconds)
+The source checkout HEAD must exactly equal `sourceCommit` and be clean. Candidate, attestation, manifest, pointer, and provenance are read from the explicit `metadataCommit`, SHA-256/Git-blob verified, and copied verbatim into `raw/candidate_binding/` after the binding gate passes.
 
-The source checkout HEAD must equal the explicit `sourceCommit` and must be clean. Candidate, attestation, rebuild manifest, pointer, and provenance bytes are read from the explicit `metadataCommit`, SHA-256 verified, Git-blob hashed, and cross-bound to the explicit source/package before browser observation begins. The accepted raw bytes are then copied verbatim into `raw/candidate_binding/` with their source path, SHA-256, Git blob, size, and metadata commit recorded.
+## Exact P45 consumption
+
+P43 materializes only the terminal-tested P45 diagnostic bytes into the run output directory and verifies each Git blob before use. It loads P45's exact `P45LiveDiagnosticStagingRuntime` plus exact P39 implementation bytes, then invokes only P45's attach-only diagnostic install/readout/teardown seam against the already P16-bound Page.
+
+P43 deliberately does **not** call P45's normal `ensure_running()` path and does not ask P45 to recreate or rebind the maintained Alpha runtime. P45 therefore remains the owner of P39/P42 staging semantics while P43 remains the owner of bounded orchestration.
+
+The P45 readout is preserved without filtering and contains:
+
+- exact `runtimeEpoch` / `rendererEpoch` / `authorityKey` binding;
+- P39 `UNVERIFIED_AUTO_BASELINE` P1/P2/P3 tracker/HUD status;
+- visible/hidden/lost/stale/ambiguous/reacquire lifecycle state;
+- complete P42 `wof-gstyphoon-renderer-correlation-probe-v1` raw bundle;
+- P42 seal reason and teardown state.
+
+## Exact P46 composition
+
+P46 is injected only after P45 has installed P39 and P42. The deterministic WebGL wrapper stack is:
+
+`P46 → P45/P42 → original runtime WebGL method`
+
+P46's tested wrapper calls its captured lower wrapper/original first and then records its call-site evidence. Teardown is strict LIFO:
+
+`P46 stop/readback → P45 P42/P39 stop/readback`
+
+P46 restores a method only when its own exact wrapper is still at the top; external replacement is preserved as a teardown conflict rather than overwritten.
+
+The P46 raw artifact keeps the complete bounded call-site bundle, including:
+
+- raw JavaScript stack text;
+- normalized call-site fingerprint;
+- observed WASM function index/name/offset when exposed;
+- explicit `NOT_AVAILABLE` / `UNRESOLVED` truth states when the browser does not expose those facts;
+- JS wrapper/import caller identity with semantic role left `UNRESOLVED` unless observed;
+- Module and Module.asm identity/relationship at start and per event;
+- event sequence, draw submission sequence, buffer events and vertex-attrib setup events;
+- exact object/state associations only;
+- mapping assessment and teardown conflicts.
+
+Stale/mixed binding and Module/Module.asm identity drift fail closed. P43 never guesses a WASM symbol or offset and never promotes timing/order/nearest correlation into authority.
 
 ## Evidence captured
 
-Each run writes a machine-readable `P43_DIAGNOSTIC_RECEIPT.json` plus `P43_DIAGNOSTIC_RECEIPT.md`, and bounded raw artifacts under `raw/`.
+Each run writes `P43_DIAGNOSTIC_RECEIPT.json`, `P43_DIAGNOSTIC_RECEIPT.md`, and bounded raw artifacts. The final receipt preserves:
 
-The receipt contains:
+- exact source/package/candidate/manifest/attestation/pointer/provenance identity and raw bytes;
+- all Page targets and authoritative Page/Worker/WASM association;
+- P16, P9, P36/P32 and P17 gate state;
+- shared `runtimeEpoch` / `rendererEpoch` / `authorityKey` diagnostics binding;
+- P36 raw source discovery, candidate rejection reasons, direct renderer-submit bundle, producer result and unchanged P32 qualifier result;
+- exact P45 P39/P42 readout and complete P42 raw correlation bundle;
+- exact P46 raw call-site bundle and teardown;
+- browser/page console events, supplied runtime/staging logs, exceptions, chronological event/gate timelines;
+- `firstFailingGate` plus every gate already successful before that failure;
+- exact P45/P46 dependency materialization hashes and Git blobs;
+- safety readback including unchanged `alpha-live` refs.
 
-- exact source/metadata commit + tree;
-- exact candidate/attestation/manifest/pointer/provenance raw bytes plus path, SHA-256, Git blob, package version and runtime pins;
-- every Page target returned by CDP and the P31 authoritative Page/Worker/WASM association diagnostics;
-- P16, live P9/P8/HUD seam, and P17 gate states;
-- runtimeEpoch / rendererEpoch / authorityKey when P16 supplies them;
-- P36 raw source discovery, every discovered candidate with exact rejection reasons, raw direct renderer-submit bundle/events, deterministic teardown reason, P36 producer output, and the unchanged P32 qualifier result embedded in each producer result;
-- P37/P39 P1/P2/P3 state, visible/hidden, stale, lost, ambiguous and reacquire fields, always under `UNVERIFIED_AUTO_BASELINE`;
-- P42 raw correlation bundle and artifact hash/path after deterministic P43 teardown when exact P42 can run, otherwise `P42_CORRELATION_PROBE_NOT_PRESENT`;
-- browser/page console + exception events, supplied runtime/staging logs, full harness exception strings/tracebacks, event chronology, gate-transition chronology, first failing gate, and gates that had already passed before it;
-- bounded teardown and safety readback.
-
-P43 keeps collecting independent diagnostics after a fail-closed gate when doing so remains safe and bounded. It never converts `FAILED_EVIDENCE_MISMATCH` into a generic answer: the receipt retains the exact gate and exact underlying reason.
-
-The stable receipt wrapper deliberately does **not** persist a hash of the receipt inside the receipt itself (which would be self-referential and unstable). It prints the final receipt SHA-256 after the final JSON bytes are written; P42 and all raw evidence artifacts retain normal hash/path records inside the receipt.
+The stable receipt does not embed its own hash. Its SHA-256 is printed after final JSON bytes are written.
 
 ## Gate interpretation
 
-The diagnostic gate sequence is observable rather than promotive:
-
-`CANDIDATE_BINDING → DEDICATED_RUNTIME_ENVIRONMENT → BROWSER_ENDPOINT → PAGE_WORKER_WASM_ASSOCIATION → P16_GATE → P9_GATE → P36_SOURCE_GATE → P36_PRODUCER_P32_GATE → P17_GATE → ALPHA_LIVE_SAFETY`
-
-The human receipt directly answers:
+The converged chronology includes the original P43 gates plus P45/P46 setup and LIFO teardown. It is designed to answer directly:
 
 > Which gate failed first, and which earlier gates had already succeeded?
 
-A P17 automatic decision is preserved verbatim. A P36 source absence, stale/mixed binding, ambiguity, producer rejection, or unchanged-P32 rejection remains its own exact failure/blocker reason.
+A P45 stale binding, P46 Module/asm drift, P46 wrapper conflict, P36 source absence, unchanged-P32 rejection, or P17 decision remains its own raw gate reason; none is collapsed into a generic evidence mismatch.
 
-## Boundedness
+## Authority boundary
 
-- live observation duration is capped at 60 seconds;
-- P36 keeps its own existing 96-event / 15-second bounds;
-- P42 keeps its exact tested bounded limits, including its 15-second default wall limit and deterministic teardown;
-- browser console capture is capped at 512 events;
-- each copied runtime/staging log is capped to the final 8 MiB, with source byte count and truncation offset recorded;
-- every CDP session, the P36 observer, and any P42 live probe created by P43 are deterministically torn down.
+P39/P42/P46 evidence is diagnostic only. P43 does not create `__WOF_NATIVE_MARKER_RENDERER_SUBMIT_SOURCE_V1__` or `WOFNativeMarkerRendererSubmitSourceV1`, does not mint `rendererSourceProof`, P29 PASS, P32 qualification, retry eligibility, or promotion eligibility, and does not turn screenshot/OCR/template/timing/order/nearest/guessed-WASM evidence into authority.
 
-This is implementation proof only. Real-WOF acceptance, Owner visual acceptance, promotion, and `alpha-live` movement remain outside P43.
+This terminal harness work proves repository-side orchestration only. Real-WOF acceptance, Owner visual acceptance, promotion, source mapping, and resolution of P40 all remain outside P43.
