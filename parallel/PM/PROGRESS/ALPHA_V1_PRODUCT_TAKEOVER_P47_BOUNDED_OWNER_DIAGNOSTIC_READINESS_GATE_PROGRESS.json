@@ -4,30 +4,33 @@
   "dedupKey": "alpha.v1.product-takeover.bounded-owner-diagnostic-readiness-gate-v1",
   "claimToken": "2a3a3c6f948794f066622da94d5e1ca0",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 10,
-  "implementationState": "NOT_STARTED",
+  "workState": "IN_PROGRESS",
+  "overallPercent": 45,
+  "implementationState": "IN_PROGRESS",
   "selfCheckState": "NOT_RUN",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "58d467b8cfa1a76d1ed83b2966ba7b699636bb23",
-  "lastKnownGoodCommit": null,
+  "lastKnownGoodCommit": "0c23e22b0387d0b3042c5601ab0a9e897ce1c476",
   "implementationCommits": [],
   "completed": [
-    "Fresh-read main at 58d467b8cfa1a76d1ed83b2966ba7b699636bb23.",
-    "Fresh-read P43/P45/P46 terminal RESULT provenance and matching COMPLETE canonical/stage claims.",
-    "Acquired and re-read exclusive P47 canonical and stage claims with exact matching claimToken."
+    "Fresh-read main and acquired/re-read exclusive P47 dedup-v2 canonical/stage claims.",
+    "Fresh-read P43/P45/P46 terminal RESULT and matching COMPLETE claims; terminal RESULT is the gate authority and PROGRESS is not consumed by the gate.",
+    "Fresh-read exact P43 tested candidate 0c23e22b0387d0b3042c5601ab0a9e897ce1c476 tree e6da807b9efa29d5ab819013dbe2da4ded995aa6, integrated candidate blob 1012af8219e65d9f5647437d753a163c117d9c4c, and dependency pins blob 79b9ae9f769633b70115837ecd7cedd16db266fe.",
+    "Compared P43 tested candidate to current main: no required candidate/P45/P46 implementation or dependency-pin path changed; only PM claim/result/progress/dispatch plus P47 paths changed.",
+    "Fresh-read pinned P43 implementation safety/bounds: zero-click/read-only/no RAM writes/no input injection, MAX_CONSOLE_EVENTS=512, MAX_LOG_BYTES=8388608, duration hard-capped at 60 seconds, explicit bounded teardown.",
+    "Fresh-read P45 binding/raw P39/P42 contract and P46 AVAILABLE/NOT_AVAILABLE/UNRESOLVED truth boundary with stale binding/Module.asm/wrapper-conflict fail-closed tests and no renderer-authority minting."
   ],
   "remaining": [
-    "Fresh-read exact P43 integrated candidate and dependency pins from tested candidate and current main.",
-    "Implement deterministic read-only P47 readiness gate and machine-readable readiness artifact.",
-    "Materialize durable exact tested candidate and run focused deterministic tests only.",
+    "Implement deterministic P47 readiness evaluator and machine-readable artifact.",
+    "Add focused synthetic tests for terminal-result precedence, missing/stale/mismatched result/claim/candidate/tree/blob/pin failures, unsafe promotion/alpha-live flags, and exact runBudget behavior.",
+    "Materialize durable exact tested candidate and run exact-byte focused self-check.",
     "Publish terminal RESULT, close canonical/stage claims, and publish terminal progress."
   ],
   "tests": [],
   "blocker": null,
-  "nextAction": "Read exact P43 candidate/tree/blob/dependency-pin evidence and required implementation blob map before implementing the gate.",
+  "nextAction": "Implement the read-only readiness evaluator with exact provenance constants and fail-closed checks.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T03:06:00Z"
+  "updatedAtUtc": "2026-09-06T03:10:00Z"
 }
