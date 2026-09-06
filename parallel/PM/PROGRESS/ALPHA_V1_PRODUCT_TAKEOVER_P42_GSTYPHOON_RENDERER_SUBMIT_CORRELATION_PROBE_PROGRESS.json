@@ -4,40 +4,67 @@
   "dedupKey": "alpha.v1.product-takeover.gstyphoon-renderer-submit-correlation-probe-v1",
   "claimToken": "4c6507b7655c540e4a4fcbd28efdc2cb",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "IMPLEMENTING",
-  "overallPercent": 48,
-  "implementationState": "CORE_PROBE_DURABLE",
-  "selfCheckState": "NONTERMINAL_LOCAL_PASS",
-  "resultPublicationState": "NOT_STARTED",
+  "workState": "READY_TO_PUBLISH",
+  "overallPercent": 94,
+  "implementationState": "DONE_DURABLE_TESTED_CANDIDATE",
+  "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
+  "resultPublicationState": "PENDING",
   "claimCloseState": "PENDING",
   "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b",
-  "lastKnownGoodCommit": "dd890e539dbd3f2512c7ea975791fd91669bf8dc",
+  "lastKnownGoodCommit": "7b523187a955179b04155b758847c82aaf569a0d",
   "implementationCommits": [
-    "dd890e539dbd3f2512c7ea975791fd91669bf8dc"
+    "dd890e539dbd3f2512c7ea975791fd91669bf8dc",
+    "36229cac1e575bf3b247cc72027b59f321e3aa1b",
+    "7b523187a955179b04155b758847c82aaf569a0d"
   ],
+  "testedCandidate": {
+    "commit": "7b523187a955179b04155b758847c82aaf569a0d",
+    "tree": "a1333a0e90ec7e56a55565ee5298df981a92da4a",
+    "blobMap": {
+      "parallel/RENDER_AUTHORITY_V2/gstyphoon_renderer_submit_correlation_probe.js": "32b9c50e8a72de1a097b8ce5dc91b69bdcef0219",
+      "parallel/RENDER_AUTHORITY_V2/test_gstyphoon_renderer_submit_correlation_probe.mjs": "fd8b2eb861543cda454e16b965d75389e00dda86",
+      "parallel/RENDER_AUTHORITY_V2/GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE.md": "5d3fc54e0c5ceda48b1a9c0d48950d8c33b3ce14"
+    }
+  },
   "completed": [
     "latest-main and P42 prompt/dispatch preflight complete",
     "canonical and stage claims exact-token verified",
-    "P36/P37/P39/P40 terminal authority and current maintained WebGL/P39 integration inspected",
-    "core bounded read-only renderer correlation probe committed",
-    "nonterminal local synthetic self-check reached 6/6 PASS before durable-candidate final rerun"
+    "P36/P37/P39/P40 terminal authority and maintained WebGL/P39 integration inspected",
+    "bounded read-only WebGL renderer correlation probe implemented",
+    "deterministic focused test and mapping-contract documentation committed",
+    "GitHub fresh readback matched all three exact local Git blob identities",
+    "terminal-significant Node syntax + deterministic self-check passed on bytes matching tested candidate 7b523187a955179b04155b758847c82aaf569a0d"
   ],
   "remaining": [
-    "commit deterministic focused test and probe documentation",
-    "fresh-read exact durable candidate bytes and rerun terminal-significant focused self-check",
-    "record candidate tree/blob map and READY_TO_PUBLISH checkpoint",
-    "publish terminal RESULT and close both claims"
+    "publish RESULT.json and RESULT.md",
+    "close canonical and stage claims with matching result authority",
+    "write terminal PROGRESS checkpoint"
   ],
   "tests": [
     {
-      "name": "P42 local synthetic development self-check",
+      "name": "P42 exact-candidate JavaScript syntax check",
       "result": "PASS",
-      "detail": "6/6 PASS; nonterminal only because final test must be rerun against fresh-read durable Git candidate bytes."
+      "detail": "node --check gstyphoon_renderer_submit_correlation_probe.js on local bytes whose git blob hash exactly matched GitHub candidate blob 32b9c50e8a72de1a097b8ce5dc91b69bdcef0219."
+    },
+    {
+      "name": "P42 exact-candidate deterministic renderer correlation self-check",
+      "result": "PASS",
+      "detail": "6/6 PASS on local JS/test bytes exactly matching GitHub candidate blobs 32b9c50e8a72de1a097b8ce5dc91b69bdcef0219 and fd8b2eb861543cda454e16b965d75389e00dda86; covers bounded capture/teardown, draw/state metadata, typed-array payload/hash/offset, texture/range observation, P39 diagnostic correlation, mixed-binding rejection, ambiguity preservation, and proof-boundary non-impersonation."
+    },
+    {
+      "name": "P42 durable candidate exact-byte readback",
+      "result": "PASS",
+      "detail": "GitHub candidate commit 7b523187a955179b04155b758847c82aaf569a0d tree a1333a0e90ec7e56a55565ee5298df981a92da4a fresh-read the recorded three blob identities; local git hash-object matched all three."
+    },
+    {
+      "name": "Real WOF live diagnostic",
+      "result": "NOT_RUN",
+      "detail": "Explicitly forbidden by P42 Worker scope."
     }
   ],
   "blocker": null,
-  "nextAction": "Commit the focused deterministic test and mapping-contract documentation, then bind final self-check to the exact durable candidate.",
+  "nextAction": "Publish terminal COMPLETE result for the exact tested diagnostic candidate and close both claims.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:23:30Z"
+  "updatedAtUtc": "2026-09-06T01:24:56Z"
 }
