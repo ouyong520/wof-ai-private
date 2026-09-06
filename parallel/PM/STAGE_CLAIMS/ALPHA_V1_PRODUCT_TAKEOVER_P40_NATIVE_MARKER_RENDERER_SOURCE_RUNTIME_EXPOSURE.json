@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P40_NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE",
+  "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-source-runtime-exposure-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.native-marker-renderer-source-runtime-exposure-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.native-marker-renderer-source-runtime-exposure-v1.json",
+  "claimToken": "a58fd0faf728d91dade9dd6390b27d3e",
+  "state": "ACTIVE",
+  "startCommit": "1ea361b7eeb747b031c8db81b78a561efafcd919"
+}
