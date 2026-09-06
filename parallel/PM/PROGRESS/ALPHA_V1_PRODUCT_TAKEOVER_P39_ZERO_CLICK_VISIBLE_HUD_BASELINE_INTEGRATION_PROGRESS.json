@@ -1,0 +1,32 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P39_ZERO_CLICK_VISIBLE_HUD_BASELINE_INTEGRATION",
+  "dedupKey": "alpha.v1.product-takeover.zero-click-visible-hud-baseline-integration-v1",
+  "claimToken": "af435a4eb64b05cb535cadf98868125f",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 5,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "d5f176c6856b05c599b16fa830e8f6a4b41632bc",
+  "lastKnownGoodCommit": null,
+  "implementationCommits": [],
+  "completed": [
+    "dedup-v2 canonical claim created and exact-token verified",
+    "stage claim created and exact-token verified"
+  ],
+  "remaining": [
+    "read P37/P36/P30 and maintained HUD/staging implementation authority",
+    "implement gated UNVERIFIED_AUTO_BASELINE HUD integration without changing production authority semantics",
+    "create durable tested candidate and run focused deterministic self-checks",
+    "publish terminal RESULT artifacts and close claims"
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "Read the exact P37 tested implementation/result plus maintained Alpha HUD and staging integration seams.",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "updatedAtUtc": "2026-09-06T00:57:50.064280Z"
+}
