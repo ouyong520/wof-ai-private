@@ -1,0 +1,28 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_GSTYPHOON_MAPPING_ONE_BOUNDED_OWNER_LIVE_DIAGNOSTIC_V1",
+  "repository": "ouyong520/wof-ai-private",
+  "pmOwned": true,
+  "workerCapacityTotal": 3,
+  "lanes": [
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P48_ONE_BOUNDED_OWNER_LIVE_DIAGNOSTIC_EXECUTION",
+      "dedupKey": "alpha.v1.product-takeover.one-bounded-owner-live-diagnostic-execution-v1",
+      "mode": "NEW_OWNER_RUN",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P48_ONE_BOUNDED_OWNER_LIVE_DIAGNOSTIC_EXECUTION_START_PROMPT.md"
+    }
+  ],
+  "idleSlots": 2,
+  "idleReason": "P48 is the only evidence-producing next step. Analysis, qualification, or source-repair successors must wait for the exact live receipt.",
+  "terminalInputs": {
+    "P47": "READY_FOR_ONE_BOUNDED_OWNER_DIAGNOSTIC:f0634c81f0efb54819cef10e0c4cf8567cd5ca9a",
+    "P43": "COMPLETE:0c23e22b0387d0b3042c5601ab0a9e897ce1c476",
+    "P45": "COMPLETE:3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+    "P46": "COMPLETE:210efdda5bbf3715989c751eb90442f26f42d0a9",
+    "P40": "BLOCKED:NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT"
+  },
+  "ownerRunAuthorized": true,
+  "ownerRunBudget": 1,
+  "promotionAuthorized": false,
+  "alphaLiveMoveAuthorized": false
+}
