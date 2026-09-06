@@ -2,17 +2,17 @@
   "schema": "wof-alpha-current-dispatch-v1",
   "pmOwned": true,
   "repository": "ouyong520/wof-ai-private",
-  "dispatchId": "ALPHA_V1_GSTYPHOON_MAPPING_LIVE_DIAGNOSTIC_LONG_3_WORKER_V2",
-  "manifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_GSTYPHOON_MAPPING_LIVE_DIAGNOSTIC_LONG_3_WORKER_V2.json",
-  "manifestAuthorityCommit": "a60cd5fbc34d4a70bfcd6711ef06b560512b17fd",
-  "manifestSha256": "76061b4b7f04929c1bd68735f1b3b44c38c26a237d0d8ab6c3ef622e3360dd01",
-  "updatedAtUtc": "2026-09-06T01:47:00Z",
-  "revision": 30,
+  "dispatchId": "ALPHA_V1_GSTYPHOON_MAPPING_P43_REATTACH_CONVERGENCE_LONG_3_WORKER_V1",
+  "manifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_GSTYPHOON_MAPPING_P43_REATTACH_CONVERGENCE_LONG_3_WORKER_V1.json",
+  "manifestAuthorityCommit": "18ee3599105a2c579a81461508ba4f622171be4e",
+  "manifestSha256": "e4f54dda449154c642067933f1f896637703f4e27132845bac565e0bf549e4ca",
+  "updatedAtUtc": "2026-09-06T02:17:30Z",
+  "revision": 31,
   "previousDispatch": {
-    "dispatchId": "ALPHA_V1_GSTYPHOON_MAPPING_LIVE_DIAGNOSTIC_LONG_3_WORKER_V1",
-    "manifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_GSTYPHOON_MAPPING_LIVE_DIAGNOSTIC_LONG_3_WORKER_V1.json",
-    "manifestAuthorityCommit": "7cdf4d014e95efd8aa0d49fbd0d7e815ede5329f",
-    "manifestSha256": "6db463ec0e2ba00db2fcab5741b5b434030a01f5ad1880472e8ee6e1eac10210",
-    "revision": 29
+    "dispatchId": "ALPHA_V1_GSTYPHOON_MAPPING_LIVE_DIAGNOSTIC_LONG_3_WORKER_V2",
+    "manifestPath": "parallel/PM/DISPATCH_MANIFESTS/ALPHA_V1_GSTYPHOON_MAPPING_LIVE_DIAGNOSTIC_LONG_3_WORKER_V2.json",
+    "manifestAuthorityCommit": "a60cd5fbc34d4a70bfcd6711ef06b560512b17fd",
+    "manifestSha256": "76061b4b7f04929c1bd68735f1b3b44c38c26a237d0d8ab6c3ef622e3360dd01",
+    "revision": 30
   }
 }
