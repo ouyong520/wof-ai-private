@@ -3,62 +3,75 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P45_P42_P39_LIVE_DIAGNOSTIC_STAGING_INTEGRATION",
   "dedupKey": "alpha.v1.product-takeover.p42-p39-live-diagnostic-staging-integration-v1",
   "claimToken": "30baf98b0c5ff885c8b0b66d9d76e8ec",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
-  "overallPercent": 94,
-  "implementationState": "IMPLEMENTED",
-  "selfCheckState": "PASS",
-  "resultPublicationState": "PENDING",
-  "claimCloseState": "PENDING",
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "COMPLETE",
+  "overallPercent": 100,
+  "implementationState": "DONE_CANDIDATE_READBACK_BOUND",
+  "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
+  "resultPublicationState": "COMPLETE",
+  "claimCloseState": "COMPLETE",
   "startCommit": "228466cb6ab24fd56b93b96c996e7fffa0103919",
-  "lastKnownGoodCommit": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+  "lastKnownGoodCommit": "034911b98001318e0be7d0e42ffe60df13c95d78",
   "testedCandidateCommit": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+  "resultCommit": "034911b98001318e0be7d0e42ffe60df13c95d78",
   "implementationCommits": [
     "5860860b5652553338989d9b1316f2fa6f314e0d",
     "05a042fa86a1e3871f92c4f79c2fb2f07e475881",
     "50ada8c85a62c9406e829ffa1f7b35c40d19e10a",
     "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149"
   ],
+  "testedCandidateBlobMap": {
+    "parallel/PYLAUNCH/wof_launcher/live_diagnostic_staging.py": "752a172911d76eb3573684b200d597926c819716",
+    "parallel/PYLAUNCH/tests/test_alpha_p45_live_diagnostic_staging.py": "8699977d08f19191d09624f2206a63609fb03698",
+    ".github/workflows/alpha-p45-live-diagnostic-staging.yml": "4da9ca9bb897092573dc25f6d92526148de07a61",
+    "parallel/PYLAUNCH/wof_launcher/auto_baseline_hud.py": "05a1a6e8632f62dac6ff9bedf8897b3f2df6e685",
+    "parallel/RENDER_AUTHORITY_V2/gstyphoon_renderer_submit_correlation_probe.js": "32b9c50e8a72de1a097b8ce5dc91b69bdcef0219"
+  },
   "completed": [
-    "Fresh main preflight and dedup-v2 ownership verification completed.",
-    "P39 terminal COMPLETE source remains exact at testedCommit ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05 / auto_baseline_hud.py blob 05a1a6e8632f62dac6ff9bedf8897b3f2df6e685.",
-    "P42 terminal COMPLETE source remains exact at testedCommit 7b523187a955179b04155b758847c82aaf569a0d / probe blob 32b9c50e8a72de1a097b8ce5dc91b69bdcef0219.",
-    "Default-off P45 staging wrapper implemented without modifying maintained production Alpha runtime, P29/P32/P36 criteria, P43 harness assets, promotion flow, or alpha-live.",
-    "Gate-on deterministic order is P39_AUTO_BASELINE_HUD then P42_RAW_CORRELATION_PROBE; exact accepted blobs are pinned before injection.",
-    "Readout includes P39 zero-click P1/P2/P3 status plus visible/hidden/lost/stale/ambiguous/reacquire, and complete P42 raw result/state/seal/teardown under exact runtimeEpoch + diagnostic rendererEpoch + authorityKey binding.",
-    "P39 remains UNVERIFIED_AUTO_BASELINE; P42 remains BOUNDED_LIVE_DIAGNOSTIC_MAPPING_ONLY; all P29/P32/P36/retry/promotion authority eligibility stays false.",
-    "Exact-candidate GitHub Actions run 34005760019 passed Python syntax, P45 focused tests 6/6, unchanged P39 regression 4/4, and unchanged P42 regression 6/6."
+    "Acquired and exact-token verified P45 canonical/stage dedup-v2 claims.",
+    "Verified P39 terminal COMPLETE testedCommit ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05 and preserved UNVERIFIED_AUTO_BASELINE.",
+    "Verified P42 terminal COMPLETE testedCommit 7b523187a955179b04155b758847c82aaf569a0d and preserved BOUNDED_LIVE_DIAGNOSTIC_MAPPING_ONLY.",
+    "Implemented default-off maintained-Alpha staging wrapper with exact-byte pins and deterministic P39 then P42 injection.",
+    "Implemented same-run zero-click P39 P1/P2/P3 lifecycle plus full unfiltered P42 raw bundle/state/seal/teardown under runtimeEpoch + diagnostic rendererEpoch + authorityKey.",
+    "Kept rendererSourceProof/P29/P32/P36/retry/promotion authority unminted and production authority semantics unchanged.",
+    "Exact-candidate GitHub Actions run 34005760019 passed Python syntax, P45 6/6, unchanged P39 4/4, unchanged P42 6/6.",
+    "Fresh-read candidate implementation blobs and unchanged accepted P39/P42 source blobs.",
+    "Closed canonical and stage claims COMPLETE with testedCommit 3dac7a9e2cbe4a23c3de44eb15cf45f19b136149.",
+    "Published RESULT.md and RESULT.json together at 034911b98001318e0be7d0e42ffe60df13c95d78 with exact WORKER_RESULT ... COMPLETE prefix.",
+    "Fresh-read both terminal result artifacts and verified the terminal commit message.",
+    "Bound both claims to resultCommit 034911b98001318e0be7d0e42ffe60df13c95d78."
   ],
-  "remaining": [
-    "Close canonical/stage claims with exact tested candidate metadata.",
-    "Publish exactly two terminal RESULT artifacts using WORKER_RESULT fast-feedback protocol.",
-    "Write final terminal progress checkpoint."
-  ],
+  "remaining": [],
   "tests": [
     {
-      "name": "P45 focused integration tests",
+      "name": "P45 focused integration",
       "result": "PASS",
-      "detail": "GitHub Actions run 34005760019: 6/6 PASS."
+      "evidence": "GitHub Actions run 34005760019; 6/6 PASS"
     },
     {
       "name": "P39 unchanged regression",
       "result": "PASS",
-      "detail": "GitHub Actions run 34005760019: 4/4 PASS."
+      "evidence": "GitHub Actions run 34005760019; 4/4 PASS"
     },
     {
       "name": "P42 unchanged regression",
       "result": "PASS",
-      "detail": "GitHub Actions run 34005760019: 6/6 PASS."
+      "evidence": "GitHub Actions run 34005760019; 6/6 PASS"
     },
     {
-      "name": "real WOF / Owner-visible live diagnostic",
+      "name": "terminal result protocol",
+      "result": "PASS",
+      "evidence": "RESULT.md + RESULT.json commit 034911b98001318e0be7d0e42ffe60df13c95d78 uses exact WORKER_RESULT prefix"
+    },
+    {
+      "name": "real WOF / Owner-visible bounded diagnostic",
       "result": "NOT_RUN",
-      "detail": "P45 scope explicitly forbids running the real game; P43 owns the next bounded live diagnostic."
+      "evidence": "P45 scope forbids real-game execution; P43 retains bounded live diagnostic ownership"
     }
   ],
   "blocker": null,
-  "nextAction": "Close both P45 claims, publish terminal RESULT artifacts, and mark progress terminal COMPLETE.",
+  "nextAction": "P43 should consume P45 with WOF_ALPHA_P45_LIVE_DIAGNOSTIC_STAGING=1 for the next single bounded live diagnostic and persist the unfiltered combined readout.",
   "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P45_P42_P39_LIVE_DIAGNOSTIC_STAGING_INTEGRATION_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T02:12:00Z"
+  "updatedAtUtc": "2026-09-06T02:14:00Z"
 }
