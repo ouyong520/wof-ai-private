@@ -1,0 +1,124 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE",
+  "dedupKey": "alpha.v1.product-takeover.gstyphoon-renderer-submit-correlation-probe-v1",
+  "claimToken": "4c6507b7655c540e4a4fcbd28efdc2cb",
+  "state": "COMPLETE",
+  "verdict": "Exact-byte-tested P42 now provides a bounded zero-click read-only WebGL/gstyphoon renderer-submit correlation probe that preserves raw draw/buffer/shader/texture/frame context plus P37/P39 diagnostic correlation without creating renderer authority or resolving the P40 blocker.",
+  "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b",
+  "testedCommit": "7b523187a955179b04155b758847c82aaf569a0d",
+  "testedTree": "a1333a0e90ec7e56a55565ee5298df981a92da4a",
+  "implementationCommits": [
+    "dd890e539dbd3f2512c7ea975791fd91669bf8dc",
+    "36229cac1e575bf3b247cc72027b59f321e3aa1b",
+    "7b523187a955179b04155b758847c82aaf569a0d"
+  ],
+  "integrationReady": true,
+  "integrationScope": "BOUNDED_LIVE_DIAGNOSTIC_MAPPING_ONLY",
+  "authorityEligible": false,
+  "mappingOnly": true,
+  "p40BlockerResolved": false,
+  "parentBlocker": "NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT",
+  "changedFiles": [
+    "parallel/RENDER_AUTHORITY_V2/gstyphoon_renderer_submit_correlation_probe.js",
+    "parallel/RENDER_AUTHORITY_V2/test_gstyphoon_renderer_submit_correlation_probe.mjs",
+    "parallel/RENDER_AUTHORITY_V2/GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE.md"
+  ],
+  "testedBlobMap": {
+    "parallel/RENDER_AUTHORITY_V2/gstyphoon_renderer_submit_correlation_probe.js": "32b9c50e8a72de1a097b8ce5dc91b69bdcef0219",
+    "parallel/RENDER_AUTHORITY_V2/test_gstyphoon_renderer_submit_correlation_probe.mjs": "fd8b2eb861543cda454e16b965d75389e00dda86",
+    "parallel/RENDER_AUTHORITY_V2/GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE.md": "5d3fc54e0c5ceda48b1a9c0d48950d8c33b3ce14"
+  },
+  "diagnosticBundle": {
+    "schema": "wof-gstyphoon-renderer-correlation-probe-v1",
+    "captures": [
+      "drawArrays/drawElements exact arguments and monotonic submission sequence",
+      "program identity and attached shader type/source/hash identity",
+      "ARRAY/ELEMENT buffer identity and observable size",
+      "indexed buffer range/base offset and size when observed",
+      "enabled vertex attribute buffer/size/type/normalized/stride/offset/divisor",
+      "active texture and texture-unit bindings observed through real hook calls",
+      "viewport/scissor/scissor-enable state",
+      "rAF-derived or explicit frame sequence/identity without guessed unavailable frame ids",
+      "buffer/texture CPU typed-array payload type/hash/raw bounded bytes/source offsets and ranges",
+      "exact runtimeEpoch/rendererEpoch/authorityKey binding",
+      "P37/P39 UNVERIFIED_AUTO_BASELINE P1/P2/P3 x/y as diagnostic-only correlation"
+    ],
+    "bounded": true,
+    "deterministicTeardown": true,
+    "candidateSelectionMade": false,
+    "semanticTextureBankGuessed": false,
+    "authorityEligible": false
+  },
+  "tests": [
+    {
+      "name": "P42 exact-candidate JavaScript syntax check",
+      "result": "PASS",
+      "detail": "node --check passed on probe bytes whose Git blob identity matched candidate blob 32b9c50e8a72de1a097b8ce5dc91b69bdcef0219."
+    },
+    {
+      "name": "P42 exact-candidate deterministic renderer correlation self-check",
+      "result": "PASS",
+      "detail": "6/6 PASS on bytes matching the durable candidate: bounded capture and teardown; draw/state metadata and CPU payload hash/offset; texture/range observation; P39 diagnostic correlation; stale/mixed binding rejection; ambiguity preservation; proof-boundary non-impersonation."
+    },
+    {
+      "name": "P42 durable candidate exact-byte readback",
+      "result": "PASS",
+      "detail": "Candidate 7b523187a955179b04155b758847c82aaf569a0d tree a1333a0e90ec7e56a55565ee5298df981a92da4a fresh-read all three recorded Git blob identities before the terminal-significant rerun."
+    },
+    {
+      "name": "Real WOF bounded live diagnostic",
+      "result": "NOT_RUN",
+      "detail": "Explicitly outside P42 Worker authority. No real game run, Owner YES/NO, promotion, or alpha-live movement occurred."
+    }
+  ],
+  "productProof": {
+    "status": "NOT_PROVEN",
+    "detail": "P42 proves only the repo-side bounded diagnostic mapping toolchain on exact tested bytes. It does not identify or prove the actual native 1P/2P/3P displayed renderer submit source; P40 remains BLOCKED until later real-runtime evidence supports one truthful exact source mapping."
+  },
+  "authorityBoundary": {
+    "createsNativeMarkerSourceExport": false,
+    "emitsRendererAuthorityProof": false,
+    "changesP29Acceptance": false,
+    "changesP32Qualification": false,
+    "changesP36AuthorityContract": false,
+    "changesP37Detection": false,
+    "changesP39HudSemantics": false,
+    "visualCorrelationIsProductionCoordinate": false,
+    "forbiddenCandidateSelection": [
+      "PIXEL",
+      "SCREENSHOT",
+      "OCR",
+      "TEMPLATE",
+      "NEAREST_ONLY",
+      "TIMING_ONLY",
+      "ORDER_ONLY",
+      "GUESSED_OFFSET"
+    ]
+  },
+  "ownerGate": {
+    "required": false,
+    "question": null,
+    "reason": null
+  },
+  "blocker": null,
+  "nextAction": "PM should integrate this exact P42 diagnostic probe with the separately authorized P43 bounded live diagnostic harness and preserve its raw bundle during one later live run; only evidence from that run may justify a future exact source-mapping successor.",
+  "evidencePaths": [
+    "parallel/RENDER_AUTHORITY_V2/gstyphoon_renderer_submit_correlation_probe.js",
+    "parallel/RENDER_AUTHORITY_V2/test_gstyphoon_renderer_submit_correlation_probe.mjs",
+    "parallel/RENDER_AUTHORITY_V2/GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE.md",
+    "parallel/PM/PROGRESS/ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE_PROGRESS.json",
+    "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P40_NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE_RESULT.json"
+  ],
+  "safety": {
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "ownerSelectionRequired": false,
+    "manualSeedRequired": false,
+    "realWofRun": false,
+    "promotionPerformed": false,
+    "alphaLiveMoved": false
+  },
+  "completedAtUtc": "2026-09-06T01:27:30Z"
+}
