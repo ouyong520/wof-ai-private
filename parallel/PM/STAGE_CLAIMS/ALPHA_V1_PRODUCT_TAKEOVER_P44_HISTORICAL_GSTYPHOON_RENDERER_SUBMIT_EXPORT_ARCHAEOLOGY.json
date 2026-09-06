@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P44_HISTORICAL_GSTYPHOON_RENDERER_SUBMIT_EXPORT_ARCHAEOLOGY",
+  "dedupKey": "alpha.v1.product-takeover.historical-gstyphoon-renderer-submit-export-archaeology-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.historical-gstyphoon-renderer-submit-export-archaeology-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.historical-gstyphoon-renderer-submit-export-archaeology-v1.json",
+  "claimToken": "c47b83f2d17549ff9ec2c6a4bdb0a8ed",
+  "state": "ACTIVE",
+  "startCommit": "4f57103cdcca22d954148183a1a40907a42a263d"
+}
