@@ -1,0 +1,33 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_ZERO_CLICK_VISIBLE_LIVE_BRIDGE_LONG_3_WORKER_V1",
+  "repository": "ouyong520/wof-ai-private",
+  "pmOwned": true,
+  "createdAtUtc": "2026-09-06T00:47:00Z",
+  "workerCapacity": 3,
+  "stages": [
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P39_ZERO_CLICK_VISIBLE_HUD_BASELINE_INTEGRATION",
+      "dedupKey": "alpha.v1.product-takeover.zero-click-visible-hud-baseline-integration-v1",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P39_ZERO_CLICK_VISIBLE_HUD_BASELINE_INTEGRATION_START_PROMPT.md"
+    },
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P40_NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE",
+      "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-source-runtime-exposure-v1",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P40_NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE_START_PROMPT.md"
+    },
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P41_BOUNDED_ZERO_CLICK_LIVE_VERIFICATION_HARNESS",
+      "dedupKey": "alpha.v1.product-takeover.bounded-zero-click-live-verification-harness-v1",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P41_BOUNDED_ZERO_CLICK_LIVE_VERIFICATION_HARNESS_START_PROMPT.md"
+    }
+  ],
+  "acceptedInputs": {
+    "P36": "162e50b6c65fd1d3901ad694854563b686b2ce22",
+    "P37": "64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530",
+    "P38": "3e9ae7e725e3dd32d1172866fef11d3ff89e163f",
+    "mainAtDispatchPrewrite": "c1440ba5570a51994ff8996edc8d474d47beb98d"
+  },
+  "ownerRetryAuthorized": false,
+  "promotionAuthorized": false
+}
