@@ -1,0 +1,35 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_GSTYPHOON_MAPPING_LIVE_DIAGNOSTIC_LONG_3_WORKER_V1",
+  "repository": "ouyong520/wof-ai-private",
+  "pmOwned": true,
+  "workerSlots": 3,
+  "lanes": [
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE",
+      "dedupKey": "alpha.v1.product-takeover.gstyphoon-renderer-submit-correlation-probe-v1",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE_START_PROMPT.md",
+      "stateAtDispatch": "ACTIVE"
+    },
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC_HARNESS",
+      "dedupKey": "alpha.v1.product-takeover.bounded-zero-click-live-diagnostic-harness-v2",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC_HARNESS_START_PROMPT.md",
+      "stateAtDispatch": "ACTIVE"
+    },
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P44_HISTORICAL_GSTYPHOON_RENDERER_SUBMIT_EXPORT_ARCHAEOLOGY",
+      "dedupKey": "alpha.v1.product-takeover.historical-gstyphoon-renderer-submit-export-archaeology-v1",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P44_HISTORICAL_GSTYPHOON_RENDERER_SUBMIT_EXPORT_ARCHAEOLOGY_START_PROMPT.md",
+      "stateAtDispatch": "DISPATCHED"
+    }
+  ],
+  "constraints": {
+    "zeroClick": true,
+    "manualSeed": false,
+    "realGameRunByWorkers": false,
+    "promotion": false,
+    "alphaLiveMove": false
+  },
+  "updatedAtUtc": "2026-09-06T00:55:00Z"
+}
