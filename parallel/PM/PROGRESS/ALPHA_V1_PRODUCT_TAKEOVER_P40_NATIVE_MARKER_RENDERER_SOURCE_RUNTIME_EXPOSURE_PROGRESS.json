@@ -3,13 +3,13 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P40_NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE",
   "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-source-runtime-exposure-v1",
   "claimToken": "a58fd0faf728d91dade9dd6390b27d3e",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH_BLOCKED",
-  "overallPercent": 92,
+  "claimStateAtCheckpoint": "BLOCKED",
+  "workState": "BLOCKED",
+  "overallPercent": 100,
   "implementationState": "BLOCKED_NO_TRUTHFUL_DIRECT_RENDERER_SOURCE",
   "selfCheckState": "PASS_FAIL_CLOSED_SOURCE_TRACE",
-  "resultPublicationState": "READY",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "DURABLE",
+  "claimCloseState": "CLOSED_BLOCKED",
   "startCommit": "1ea361b7eeb747b031c8db81b78a561efafcd919",
   "lastKnownGoodCommit": "5a3b9bce01e794e030974a94f7511a39fa56e818",
   "candidateCommit": "5a3b9bce01e794e030974a94f7511a39fa56e818",
@@ -26,12 +26,11 @@
     "Confirmed the maintained Worker discovers HEAP/ROM/CPS RAM and world/projection state but exposes no source-traced/exported per-object CPS1 native marker submit hook.",
     "Confirmed P36 already fails closed on absent/ambiguous direct source and explicitly forbids synthesizing the missing gstyphoon renderer pointer/export.",
     "Preserved both authorized P36 source surface names as absent rather than relabeling HEAP, pixels, projection, order, timing or guessed offsets as authority.",
-    "Published durable fail-closed source-trace candidate 5a3b9bce01e794e030974a94f7511a39fa56e818 and fresh-read exact blob ac820e9aded5678cd105e8d6759ea22d57cab31e."
+    "Published durable fail-closed source-trace candidate 5a3b9bce01e794e030974a94f7511a39fa56e818 and fresh-read exact blob ac820e9aded5678cd105e8d6759ea22d57cab31e.",
+    "Published terminal BLOCKED RESULT at commit d9bc9c4558f03af5085da228d4eb839a55aaba83 and fresh-read the machine result from main.",
+    "Closed stage and canonical claims to BLOCKED with the same claimToken, resultCommit, testedCommit, and exact blocker."
   ],
-  "remaining": [
-    "Publish terminal BLOCKED RESULT with exact blocker and durable candidate evidence.",
-    "Fresh-read terminal RESULT, then close stage and canonical claims and publish final PROGRESS."
-  ],
+  "remaining": [],
   "tests": [
     {
       "name": "exact durable candidate readback",
@@ -40,17 +39,17 @@
     },
     {
       "name": "maintained Page/Worker/WASM direct source audit",
-      "result": "PASS_BLOCKER_CONFIRMED",
+      "result": "PASS",
       "detail": "Fresh source trace found only generic page WebGL drawArrays hooking plus Worker HEAP/ROM/CPS RAM/world-projection paths; no qualifying SOURCE_TRACED_POINTER, DIRECT_RENDER_HOOK or EXPORTED_RENDERER_POINTER for exact displayed native marker submits exists in checked-in runtime."
     },
     {
       "name": "unique exact runtime source exposure and P36 discovery",
-      "result": "BLOCKED",
-      "detail": "No truthful producer/export is present; P36 must and does remain fail-closed on absence."
+      "result": "FAIL",
+      "detail": "No truthful producer/export is present; P36 correctly remains fail-closed on absence."
     },
     {
       "name": "P1/P2/P3 actor-generation + native 384x224 displayed-submit event emission",
-      "result": "BLOCKED_NOT_RUN",
+      "result": "NOT_RUN",
       "detail": "Cannot be truthfully exercised repo-side because the direct semantic renderer submit source is the missing edge; fixtures are not accepted as proof of a checked-in source."
     },
     {
@@ -71,8 +70,9 @@
     "pmRequired": true,
     "recoveryAllowedByWorker": false
   },
-  "nextAction": "Publish terminal BLOCKED result. A successor requires the actual running renderer's source-traced per-object submit export/hook (or checked-in source mapping that proves it); do not use generic WebGL/HEAP/pixel evidence as replacement authority.",
+  "nextAction": "PM should schedule a successor only after a checked-in or runtime-verifiable source mapping/export exists for the actual gstyphoon per-object displayed CPS1 renderer submit; do not substitute generic WebGL, HEAP, pixel, projection, order, timing, or guessed-offset evidence.",
   "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P40_NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE_RESULT.json",
+  "terminalResultCommit": "d9bc9c4558f03af5085da228d4eb839a55aaba83",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:06:40Z"
+  "updatedAtUtc": "2026-09-06T01:10:00Z"
 }
