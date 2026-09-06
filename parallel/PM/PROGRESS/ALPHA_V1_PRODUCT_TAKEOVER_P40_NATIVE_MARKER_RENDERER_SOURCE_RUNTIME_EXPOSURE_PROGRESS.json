@@ -4,29 +4,75 @@
   "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-source-runtime-exposure-v1",
   "claimToken": "a58fd0faf728d91dade9dd6390b27d3e",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 8,
-  "implementationState": "NOT_STARTED",
-  "selfCheckState": "NOT_RUN",
-  "resultPublicationState": "NOT_STARTED",
+  "workState": "READY_TO_PUBLISH_BLOCKED",
+  "overallPercent": 92,
+  "implementationState": "BLOCKED_NO_TRUTHFUL_DIRECT_RENDERER_SOURCE",
+  "selfCheckState": "PASS_FAIL_CLOSED_SOURCE_TRACE",
+  "resultPublicationState": "READY",
   "claimCloseState": "PENDING",
   "startCommit": "1ea361b7eeb747b031c8db81b78a561efafcd919",
-  "lastKnownGoodCommit": null,
+  "lastKnownGoodCommit": "5a3b9bce01e794e030974a94f7511a39fa56e818",
+  "candidateCommit": "5a3b9bce01e794e030974a94f7511a39fa56e818",
+  "candidateTree": "4ebd86fb0e58f07fe774401ab42a0d3c65241760",
+  "candidateBlobMap": {
+    "parallel/RENDER_AUTHORITY_V2/NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE_P40.md": "ac820e9aded5678cd105e8d6759ea22d57cab31e"
+  },
   "implementationCommits": [],
   "completed": [
     "Read authoritative P40 START_PROMPT, dispatch, repository governance, dedup-v2 protocol, progress protocol, terminal result protocol and P36 terminal RESULT.",
-    "Verified no pre-existing P40 canonical claim or stage claim on fresh main.",
-    "Created and fresh-read canonical and stage claims with exact matching claimToken a58fd0faf728d91dade9dd6390b27d3e."
+    "Created and fresh-read canonical and stage claims with exact matching claimToken a58fd0faf728d91dade9dd6390b27d3e.",
+    "Reverse-traced maintained Page bootstrap, HUD WebGL draw hook, Worker/WASM discovery and P36 source observer on fresh main.",
+    "Confirmed the maintained HUD hook is only generic WebGL drawArrays callback authority and cannot identify exact native marker objects or actor generations.",
+    "Confirmed the maintained Worker discovers HEAP/ROM/CPS RAM and world/projection state but exposes no source-traced/exported per-object CPS1 native marker submit hook.",
+    "Confirmed P36 already fails closed on absent/ambiguous direct source and explicitly forbids synthesizing the missing gstyphoon renderer pointer/export.",
+    "Preserved both authorized P36 source surface names as absent rather than relabeling HEAP, pixels, projection, order, timing or guessed offsets as authority.",
+    "Published durable fail-closed source-trace candidate 5a3b9bce01e794e030974a94f7511a39fa56e818 and fresh-read exact blob ac820e9aded5678cd105e8d6759ea22d57cab31e."
   ],
   "remaining": [
-    "Reverse-trace checked-in Page/Worker/WASM renderer submit path and source metadata against P36/P29/P32 authority.",
-    "Implement the smallest truthful read-only direct runtime source exposure only if a source-traced hook/export/pointer exists; otherwise preserve absence and identify the narrowest blocker.",
-    "Create durable tested candidate, run focused self-check against exact candidate bytes, publish RESULT and close claims."
+    "Publish terminal BLOCKED RESULT with exact blocker and durable candidate evidence.",
+    "Fresh-read terminal RESULT, then close stage and canonical claims and publish final PROGRESS."
   ],
-  "tests": [],
-  "blocker": null,
-  "nextAction": "Inspect P36 observer contract plus current renderer/runtime/WebGL/WASM bridge source surfaces and locate one truthful direct displayed renderer-submit edge.",
-  "terminalResultPath": null,
+  "tests": [
+    {
+      "name": "exact durable candidate readback",
+      "result": "PASS",
+      "detail": "Candidate commit 5a3b9bce01e794e030974a94f7511a39fa56e818 tree 4ebd86fb0e58f07fe774401ab42a0d3c65241760 fresh-read the P40 source-trace artifact as blob ac820e9aded5678cd105e8d6759ea22d57cab31e."
+    },
+    {
+      "name": "maintained Page/Worker/WASM direct source audit",
+      "result": "PASS_BLOCKER_CONFIRMED",
+      "detail": "Fresh source trace found only generic page WebGL drawArrays hooking plus Worker HEAP/ROM/CPS RAM/world-projection paths; no qualifying SOURCE_TRACED_POINTER, DIRECT_RENDER_HOOK or EXPORTED_RENDERER_POINTER for exact displayed native marker submits exists in checked-in runtime."
+    },
+    {
+      "name": "unique exact runtime source exposure and P36 discovery",
+      "result": "BLOCKED",
+      "detail": "No truthful producer/export is present; P36 must and does remain fail-closed on absence."
+    },
+    {
+      "name": "P1/P2/P3 actor-generation + native 384x224 displayed-submit event emission",
+      "result": "BLOCKED_NOT_RUN",
+      "detail": "Cannot be truthfully exercised repo-side because the direct semantic renderer submit source is the missing edge; fixtures are not accepted as proof of a checked-in source."
+    },
+    {
+      "name": "zero-click and forbidden-fallback boundary",
+      "result": "PASS",
+      "detail": "No Owner selection/manual seed path and no HEAP/pixel/screenshot/OCR/template/nearest/order/timing/guessed-offset authority adapter was added."
+    },
+    {
+      "name": "real WOF / promotion / alpha-live",
+      "result": "NOT_RUN",
+      "detail": "Forbidden by P40 scope; no real game, promotion, or alpha-live movement was performed."
+    }
+  ],
+  "blocker": {
+    "code": "NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT",
+    "detail": "Checked-in maintained runtime has no source-traced/exported per-object gstyphoon CPS1 displayed submit that carries exact 1P/2P/3P+DOWN identity, actor generation, native 384x224 x/y, displayed frame/submission generation, and runtimeEpoch/rendererEpoch/authorityKey into the P36 source surface.",
+    "ownerRequired": false,
+    "pmRequired": true,
+    "recoveryAllowedByWorker": false
+  },
+  "nextAction": "Publish terminal BLOCKED result. A successor requires the actual running renderer's source-traced per-object submit export/hook (or checked-in source mapping that proves it); do not use generic WebGL/HEAP/pixel evidence as replacement authority.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P40_NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T00:58:24Z"
+  "updatedAtUtc": "2026-09-06T01:06:40Z"
 }
