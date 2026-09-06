@@ -1,0 +1,38 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_GSTYPHOON_MAPPING_LIVE_DIAGNOSTIC_LONG_2_WORKER_V1",
+  "repository": "ouyong520/wof-ai-private",
+  "workerCapacity": 3,
+  "requestedParallelWorkers": 2,
+  "lanes": [
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE",
+      "dedupKey": "alpha.v1.product-takeover.gstyphoon-renderer-submit-correlation-probe-v1",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE_START_PROMPT.md",
+      "role": "GSTYPHOON_RENDERER_SUBMIT_CORRELATION_DIAGNOSTIC"
+    },
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC_HARNESS",
+      "dedupKey": "alpha.v1.product-takeover.bounded-zero-click-live-diagnostic-harness-v2",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC_HARNESS_START_PROMPT.md",
+      "role": "BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC_HARNESS"
+    }
+  ],
+  "authority": {
+    "p36TestedCommit": "162e50b6c65fd1d3901ad694854563b686b2ce22",
+    "p37TestedCommit": "64d5c3d2c1c84fffc7d9f59e701ec37fd1c68530",
+    "p39TestedCommit": "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05",
+    "p40State": "BLOCKED",
+    "p40TestedCommit": "5a3b9bce01e794e030974a94f7511a39fa56e818",
+    "p40Blocker": "NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT"
+  },
+  "safety": {
+    "zeroClick": true,
+    "readOnly": true,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "realGameRunByWorkers": false,
+    "promotion": false,
+    "alphaLiveMove": false
+  }
+}
