@@ -5,6 +5,15 @@
   "effectiveDedupKey": "alpha.v1.product-takeover.owner-windows-one-run-handoff-bridge-v1",
   "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.owner-windows-one-run-handoff-bridge-v1.json",
   "claimToken": "1c24ba8679c4cccbbde6d1d20fbbbbc9",
-  "state": "ACTIVE",
-  "startCommit": "c9a3c8e05a71015a8e3bfd576524cc9350d73c4b"
+  "state": "COMPLETE",
+  "startCommit": "c9a3c8e05a71015a8e3bfd576524cc9350d73c4b",
+  "testedCommit": "fad9780dc7a542027ba622e2b010a63b2f085eee",
+  "testedTree": "bff564e47ce12e175eaa47944e62dfe2f92f0b8d",
+  "permitIdentity": "1bd5cf49c34ff458fce0be40476bee2adb61ed5105b8484cd872d7722f1738c0",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P49_OWNER_WINDOWS_ONE_RUN_HANDOFF_BRIDGE_RESULT.json",
+  "resultCommit": "639165bfd73f71a99313a0e6048ce673723dfb14",
+  "resultOutcome": "COMPLETE",
+  "runStarted": false,
+  "runBudgetConsumed": false,
+  "remainingRunBudget": 1
 }
