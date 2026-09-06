@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P39_ZERO_CLICK_VISIBLE_HUD_BASELINE_INTEGRATION",
+  "dedupKey": "alpha.v1.product-takeover.zero-click-visible-hud-baseline-integration-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.zero-click-visible-hud-baseline-integration-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.zero-click-visible-hud-baseline-integration-v1.json",
+  "claimToken": "af435a4eb64b05cb535cadf98868125f",
+  "state": "ACTIVE",
+  "startCommit": "d5f176c6856b05c599b16fa830e8f6a4b41632bc"
+}
