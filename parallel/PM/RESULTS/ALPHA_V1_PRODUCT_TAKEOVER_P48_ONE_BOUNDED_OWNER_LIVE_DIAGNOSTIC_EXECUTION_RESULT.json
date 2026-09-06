@@ -1,0 +1,143 @@
+{
+  "schema": "wof-alpha-worker-result-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P48_ONE_BOUNDED_OWNER_LIVE_DIAGNOSTIC_EXECUTION",
+  "dedupKey": "alpha.v1.product-takeover.one-bounded-owner-live-diagnostic-execution-v1",
+  "claimToken": "323849cea9b1d5b97e4d08d49732ddf4",
+  "state": "COMPLETE",
+  "outcome": "BLOCKED_PRE_RUN",
+  "verdict": "P48 completed its authorized preflight truthfully but did not start the real Owner live diagnostic because the connected worker context has no authorized Owner Windows execution/filesystem/browser-debugger channel with which to fresh-read the required local checkout, managed interpreter, or existing browser WebSocket target. The one-run budget remains unconsumed and no retry was attempted.",
+  "startCommit": "8c297959f516ccd51dbe334b77a87a8f629e9c66",
+  "runBudget": 1,
+  "runStarted": false,
+  "runBudgetConsumed": false,
+  "remainingRunBudget": 1,
+  "retryAttempted": false,
+  "firstFailingGate": {
+    "gate": "OWNER_RUNTIME_EXECUTION_CHANNEL_PREFLIGHT",
+    "status": "FAIL_CLOSED",
+    "code": "OWNER_WINDOWS_EXECUTION_CHANNEL_NOT_CONNECTED",
+    "detail": "The worker can read/write the authorized GitHub repository but cannot execute commands or inspect files/processes/browser-debugger targets on the real Owner Windows machine. P43 forbids guessing or substituting these local inputs, so WOF_ALPHA_P43_BOUNDED_DIAGNOSTIC.cmd was not started."
+  },
+  "passedBeforeFirstFailure": [
+    "FRESH_MAIN_READ",
+    "P47_TERMINAL_RESULT_READY",
+    "P47_CANONICAL_CLAIM_CLOSED",
+    "P47_STAGE_CLAIM_CLOSED",
+    "P48_RUN_BUDGET_AVAILABLE",
+    "P48_EXCLUSIVE_CANONICAL_CLAIM_ACQUIRED",
+    "P48_EXCLUSIVE_STAGE_CLAIM_ACQUIRED",
+    "P43_EXACT_CANDIDATE_BYTES_VERIFIED",
+    "P45_EXACT_PIN_VERIFIED",
+    "P46_EXACT_PIN_VERIFIED",
+    "P38_FINAL_CANDIDATE_POINTER_PROVENANCE_VERIFIED"
+  ],
+  "authority": {
+    "p47TestedCommit": "f0634c81f0efb54819cef10e0c4cf8567cd5ca9a",
+    "p47ResultCommit": "e825e146ebac6b4758340af4393947f7acdcdacd",
+    "p47ReadinessDecision": "READY_FOR_ONE_BOUNDED_OWNER_DIAGNOSTIC",
+    "p47CanonicalClaimCloseCommit": "2bffd3677769a27f5ecf379dcd6e7fd0b364646f",
+    "p47StageClaimCloseCommit": "2aea7e12aad93e552fe638d61f0a1ffaa7fd6196",
+    "p43TestedCommit": "0c23e22b0387d0b3042c5601ab0a9e897ce1c476",
+    "p43TestedTree": "e6da807b9efa29d5ab819013dbe2da4ded995aa6",
+    "p45TestedCommit": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+    "p46TestedCommit": "210efdda5bbf3715989c751eb90442f26f42d0a9"
+  },
+  "exactBytePreflight": {
+    "p43CandidatePath": "parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_INTEGRATED_CANDIDATE.json",
+    "p43CandidateBlob": "1012af8219e65d9f5647437d753a163c117d9c4c",
+    "p43DependencyPinsPath": "parallel/OWNER_DIAGNOSTIC/P43_POST_P45_P46_DEPENDENCY_PINS.json",
+    "p43DependencyPinsBlob": "79b9ae9f769633b70115837ecd7cedd16db266fe",
+    "p43EntrypointPath": "parallel/OWNER_DIAGNOSTIC/WOF_ALPHA_P43_BOUNDED_DIAGNOSTIC.cmd",
+    "p43EntrypointBlob": "4164119df08770716479e0766acbb6999684593e",
+    "p45SourceBlob": "752a172911d76eb3573684b200d597926c819716",
+    "p46SourceBlob": "efd71e25e28f171e080774eb5aa1309a0d7bbe2b",
+    "p47ToDispatchImplementationDrift": false,
+    "p47ToDispatchCompareBase": "f0634c81f0efb54819cef10e0c4cf8567cd5ca9a",
+    "p47ToDispatchCompareHead": "8c297959f516ccd51dbe334b77a87a8f629e9c66",
+    "p47ToDispatchChangedImplementationFiles": []
+  },
+  "candidateBindingPreflight": {
+    "sourceCommit": "82b0b09ecd902f502ae5509bcb3ee5a713f43fee",
+    "sourceTree": "e5dba33a2cd579826704d3f78ec2587ee2305a5a",
+    "packageVersion": "2026.09.05.82b0b09ecd90",
+    "metadataCommit": "107850cb8409dd3f2f1135022375114f96469035",
+    "pointerPath": "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED_POINTER.json",
+    "pointerGitBlobSha": "48c6ca920a1b2ed93314e01bcfcd4c005521b367",
+    "pointerSha256": "a2e676f8f08316ebbe50a6b032bde06159562615af66ad03c28f20d6a2ac7330",
+    "provenancePath": "parallel/OWNER_ONECLICK/CANDIDATES/P38_ACCEPTED_REPAIR_INTEGRATED_PROVENANCE.json",
+    "provenanceGitBlobSha": "3d1af5e3ba9d23472519d97e178f244fb4ea775a",
+    "candidateSha256": "53e4e2f2ad4c6c697b64d628b21576f341b3839bea8e2409057c0372fac56449",
+    "attestationSha256": "5fdb606ee2aeb747a8bcda64c8009bb8d704820bcfa0000d1fd099c20fa6b68e",
+    "manifestSha256": "1761fc613ccd84f2e7dc7bfe629113f2d2d07e4871996adc92260696d4cf906c",
+    "pointerState": "READY",
+    "alphaLiveMoved": false,
+    "promotionPerformed": false
+  },
+  "ownerLocalPreflight": {
+    "metadataRepoRoot": "UNRESOLVED_NO_OWNER_FILESYSTEM_CHANNEL",
+    "sourceCheckout": "UNRESOLVED_NO_OWNER_FILESYSTEM_CHANNEL",
+    "sourceCheckoutHeadAndCleanliness": "NOT_CHECKED_PRE_RUN",
+    "managedInterpreter": "%LOCALAPPDATA%\\WOF Alpha Current Main\\venv\\Scripts\\python.exe",
+    "managedInterpreterExistence": "NOT_CHECKED_PRE_RUN",
+    "browserWebSocketDebuggerUrl": "UNRESOLVED_NO_OWNER_BROWSER_DEBUGGER_CHANNEL",
+    "outputDirectory": "UNRESOLVED_NO_OWNER_FILESYSTEM_CHANNEL",
+    "invocationPerformed": false
+  },
+  "priorP48BudgetCheck": {
+    "priorP48TerminalResultPresentBeforeClaim": false,
+    "priorP48LiveRunCommitPresentBeforeClaim": false,
+    "priorP48ReceiptObservedBeforeClaim": false,
+    "budgetAlreadyConsumed": false
+  },
+  "receipt": {
+    "status": "NOT_CREATED_PRE_RUN",
+    "receiptPath": null,
+    "receiptSha256": null,
+    "humanReceiptPath": null,
+    "rawBundlePaths": [],
+    "reason": "Live diagnostic never started, so no P43 receipt or same-run raw evidence exists."
+  },
+  "sameRunEvidence": {
+    "pageWorkerWasmAssociation": "NOT_CAPTURED_PRE_RUN",
+    "runtimeEpoch": "NOT_CAPTURED_PRE_RUN",
+    "rendererEpoch": "NOT_CAPTURED_PRE_RUN",
+    "authorityKey": "NOT_CAPTURED_PRE_RUN",
+    "p39": "NOT_CAPTURED_PRE_RUN",
+    "p42": "NOT_CAPTURED_PRE_RUN",
+    "p46": "NOT_CAPTURED_PRE_RUN",
+    "p36": "NOT_CAPTURED_PRE_RUN",
+    "p32": "NOT_CAPTURED_PRE_RUN",
+    "runtimeConsoleStagingLogs": "NOT_CAPTURED_PRE_RUN"
+  },
+  "evidenceClassification": "PRE_RUN_INFRASTRUCTURE_BLOCKER_NO_LIVE_EVIDENCE",
+  "p46TruthBoundary": {
+    "functionIndex": "NOT_CAPTURED_PRE_RUN",
+    "functionName": "NOT_CAPTURED_PRE_RUN",
+    "offset": "NOT_CAPTURED_PRE_RUN",
+    "guessedSymbolOrOffset": false
+  },
+  "p40": {
+    "state": "BLOCKED",
+    "blocker": "NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT",
+    "changedByP48": false
+  },
+  "safety": {
+    "zeroClick": true,
+    "manualSeedRequired": false,
+    "readOnlyDiagnosticRun": true,
+    "realDiagnosticRunStarted": false,
+    "ramWrites": 0,
+    "inputInjection": false,
+    "installPerformed": false,
+    "automaticRetry": false,
+    "promotionPerformed": false,
+    "alphaLiveMoved": false,
+    "rendererSourceProofMinted": false,
+    "sourceExportCreated": false,
+    "p29Changed": false,
+    "p32Changed": false,
+    "p40Changed": false
+  },
+  "nextAction": "A separately authorized execution context with direct access to the real Owner Windows filesystem/processes/browser debugger must fresh-read the existing exact source checkout, managed interpreter and browser WebSocket target before any live invocation. This P48 record does not authorize a retry or consume the one-run budget.",
+  "completedAtUtc": "2026-09-06T05:25:00Z"
+}
