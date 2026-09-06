@@ -1,0 +1,35 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P45_P42_P39_LIVE_DIAGNOSTIC_STAGING_INTEGRATION",
+  "dedupKey": "alpha.v1.product-takeover.p42-p39-live-diagnostic-staging-integration-v1",
+  "claimToken": "30baf98b0c5ff885c8b0b66d9d76e8ec",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 10,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "228466cb6ab24fd56b93b96c996e7fffa0103919",
+  "lastKnownGoodCommit": "228466cb6ab24fd56b93b96c996e7fffa0103919",
+  "implementationCommits": [],
+  "completed": [
+    "Fresh main preflight completed.",
+    "P39 terminal COMPLETE authority read and exact tested commit confirmed as ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05 with UNVERIFIED_AUTO_BASELINE classification.",
+    "P42 terminal COMPLETE authority read and exact tested commit confirmed as 7b523187a955179b04155b758847c82aaf569a0d with BOUNDED_LIVE_DIAGNOSTIC_MAPPING_ONLY scope.",
+    "Canonical and stage dedup-v2 claims acquired and exact token verified."
+  ],
+  "remaining": [
+    "Inspect maintained Alpha staging/runtime injection surfaces and exact P39/P42 tested source bytes.",
+    "Implement explicit bounded P45 gate with deterministic P39/P42 injection order and fail-closed runtime identity binding.",
+    "Expose P39 tracker/HUD state and complete P42 raw bundle/seal/teardown readout without filtering candidates.",
+    "Add focused exact-byte tests for gate-off invariance, authority boundary, zero-click behavior, raw bundle preservation, and stale/mixed identity rejection.",
+    "Create durable tested candidate, run terminal-significant focused self-checks, publish RESULT, and close both claims."
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "Inspect the maintained staging injection entrypoints plus exact P39 and P42 accepted source interfaces before coding the narrow P45 integration bridge.",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "updatedAtUtc": "2026-09-06T01:56:29Z"
+}
