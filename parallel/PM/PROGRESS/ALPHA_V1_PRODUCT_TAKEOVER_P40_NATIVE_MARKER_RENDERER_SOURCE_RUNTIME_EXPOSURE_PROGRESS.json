@@ -1,0 +1,32 @@
+{
+  "schema": "wof-alpha-worker-progress-v1",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P40_NATIVE_MARKER_RENDERER_SOURCE_RUNTIME_EXPOSURE",
+  "dedupKey": "alpha.v1.product-takeover.native-marker-renderer-source-runtime-exposure-v1",
+  "claimToken": "a58fd0faf728d91dade9dd6390b27d3e",
+  "claimStateAtCheckpoint": "ACTIVE",
+  "workState": "CLAIMED",
+  "overallPercent": 8,
+  "implementationState": "NOT_STARTED",
+  "selfCheckState": "NOT_RUN",
+  "resultPublicationState": "NOT_STARTED",
+  "claimCloseState": "PENDING",
+  "startCommit": "1ea361b7eeb747b031c8db81b78a561efafcd919",
+  "lastKnownGoodCommit": null,
+  "implementationCommits": [],
+  "completed": [
+    "Read authoritative P40 START_PROMPT, dispatch, repository governance, dedup-v2 protocol, progress protocol, terminal result protocol and P36 terminal RESULT.",
+    "Verified no pre-existing P40 canonical claim or stage claim on fresh main.",
+    "Created and fresh-read canonical and stage claims with exact matching claimToken a58fd0faf728d91dade9dd6390b27d3e."
+  ],
+  "remaining": [
+    "Reverse-trace checked-in Page/Worker/WASM renderer submit path and source metadata against P36/P29/P32 authority.",
+    "Implement the smallest truthful read-only direct runtime source exposure only if a source-traced hook/export/pointer exists; otherwise preserve absence and identify the narrowest blocker.",
+    "Create durable tested candidate, run focused self-check against exact candidate bytes, publish RESULT and close claims."
+  ],
+  "tests": [],
+  "blocker": null,
+  "nextAction": "Inspect P36 observer contract plus current renderer/runtime/WebGL/WASM bridge source surfaces and locate one truthful direct displayed renderer-submit edge.",
+  "terminalResultPath": null,
+  "writerRole": "WORKER",
+  "updatedAtUtc": "2026-09-06T00:58:24Z"
+}
