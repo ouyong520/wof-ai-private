@@ -4,32 +4,36 @@
   "dedupKey": "alpha.v1.product-takeover.historical-gstyphoon-renderer-submit-export-archaeology-v1",
   "claimToken": "c47b83f2d17549ff9ec2c6a4bdb0a8ed",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 8,
-  "implementationState": "NOT_STARTED",
+  "workState": "ARCHAEOLOGY_IN_PROGRESS",
+  "overallPercent": 48,
+  "implementationState": "REPORT_RESEARCH_IN_PROGRESS",
   "selfCheckState": "NOT_RUN",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "4f57103cdcca22d954148183a1a40907a42a263d",
-  "lastKnownGoodCommit": "2be53c9688bd78f1cc5edf9702cd938c6bd5b42d",
+  "lastKnownGoodCommit": "b62bbb36cb6e3a8810cd8f67600d411f0b519640",
   "implementationCommits": [],
   "completed": [
     "Read P44 START prompt, dispatch, root AGENTS/product governance, dedup/progress/result protocols",
-    "Read P36/P37/P39/P40 terminal authority and P42/P43 START/progress state",
-    "Canonical v2 claim created and exact-token readback verified",
-    "Stage claim created and exact-token readback verified"
+    "Read P36/P37/P39/P40 terminal authority and P42/P43 ownership/authority state",
+    "Canonical and stage v2 claims exact-token verified",
+    "Swept reachable Git commit history by gstyphoon/renderer/WebGL/WASM/object/sprite/pointer/export/queue/frame/CPS1 keyword families",
+    "Inspected required 6eeebf4 and d30a071 historical tracker commits and exact blobs",
+    "Inspected old WebGL game-frame/draw hooks at 1ab83add, 60e7bd35 and 441ca4a2",
+    "Inspected WASM Module/HEAP resolution at 50081ce2 and W3 structural renderer-candidate capture at 204fda7f/5ee09a72",
+    "Inspected P1/P2/P3 CPS player-object structural evidence at 25fde12c",
+    "No historical direct gstyphoon/CPS1 per-object displayed-submit export has been found so far"
   ],
   "remaining": [
-    "Search full Git history and historical blobs for direct renderer submit/export predecessors",
-    "Inspect exact target commits 6eeebf4a00ce7751ce9ba6008982e8136d1c4290 and d30a071c668c716cd8d9b5d02932808c76c7a3a7",
-    "Classify retained candidates and document exact commit/path/blob/symbol/semantics",
-    "Create durable report candidate and perform exact-byte self-check/readback",
-    "Publish terminal RESULT and close claims"
+    "Finish targeted inspection of strongest historical glue/renderer-object candidates and confirm negative direct-source finding",
+    "Classify retained candidates with exact commit/path/blob/symbol/semantics and authority dimensions",
+    "Create durable archaeology report candidate and perform exact-byte readback/self-check",
+    "Publish terminal COMPLETE RESULT and close claims"
   ],
   "tests": [],
   "blocker": null,
-  "nextAction": "Perform bounded full-history/source archaeology and retain exact evidence for every plausible renderer-source candidate.",
+  "nextAction": "Finish the negative-source proof inventory, write the exact archaeology report, bind it to a durable candidate, then terminal-publish COMPLETE.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:26:00Z"
+  "updatedAtUtc": "2026-09-06T01:31:00Z"
 }
