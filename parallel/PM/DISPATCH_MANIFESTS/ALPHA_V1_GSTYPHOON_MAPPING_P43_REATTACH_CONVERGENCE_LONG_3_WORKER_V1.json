@@ -1,0 +1,26 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_GSTYPHOON_MAPPING_P43_REATTACH_CONVERGENCE_LONG_3_WORKER_V1",
+  "repository": "ouyong520/wof-ai-private",
+  "pmOwned": true,
+  "workerCapacityTotal": 3,
+  "lanes": [
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P43_BOUNDED_ZERO_CLICK_LIVE_DIAGNOSTIC_HARNESS",
+      "dedupKey": "alpha.v1.product-takeover.bounded-zero-click-live-diagnostic-harness-v2",
+      "mode": "REATTACH_EXISTING_ACTIVE_CLAIM",
+      "claimToken": "9b45b04fc8f5e86849c08c07dcf0dc07",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P43_POST_P45_P46_CONTINUATION_PROMPT.md"
+    }
+  ],
+  "idleWorkerSlots": 2,
+  "terminalInputs": {
+    "P45": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+    "P46": "210efdda5bbf3715989c751eb90442f26f42d0a9",
+    "P40": "BLOCKED:NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT"
+  },
+  "ownerRunAuthorized": false,
+  "promotionAuthorized": false,
+  "alphaLiveMoveAuthorized": false,
+  "nextDecisionAfter": "P43_TERMINAL_CONVERGENCE"
+}
