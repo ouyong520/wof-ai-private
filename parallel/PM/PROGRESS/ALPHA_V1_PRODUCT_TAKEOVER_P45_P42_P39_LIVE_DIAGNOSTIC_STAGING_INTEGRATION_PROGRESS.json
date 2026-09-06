@@ -4,37 +4,61 @@
   "dedupKey": "alpha.v1.product-takeover.p42-p39-live-diagnostic-staging-integration-v1",
   "claimToken": "30baf98b0c5ff885c8b0b66d9d76e8ec",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "IN_PROGRESS",
-  "overallPercent": 62,
+  "workState": "READY_TO_PUBLISH",
+  "overallPercent": 94,
   "implementationState": "IMPLEMENTED",
-  "selfCheckState": "NOT_RUN",
-  "resultPublicationState": "NOT_STARTED",
+  "selfCheckState": "PASS",
+  "resultPublicationState": "PENDING",
   "claimCloseState": "PENDING",
   "startCommit": "228466cb6ab24fd56b93b96c996e7fffa0103919",
-  "lastKnownGoodCommit": "05a042fa86a1e3871f92c4f79c2fb2f07e475881",
+  "lastKnownGoodCommit": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+  "testedCandidateCommit": "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
   "implementationCommits": [
     "5860860b5652553338989d9b1316f2fa6f314e0d",
-    "05a042fa86a1e3871f92c4f79c2fb2f07e475881"
+    "05a042fa86a1e3871f92c4f79c2fb2f07e475881",
+    "50ada8c85a62c9406e829ffa1f7b35c40d19e10a",
+    "3dac7a9e2cbe4a23c3de44eb15cf45f19b136149"
   ],
   "completed": [
-    "Fresh main preflight completed and exact dedup-v2 ownership verified.",
-    "P39 terminal COMPLETE authority fixed to testedCommit ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05 and UNVERIFIED_AUTO_BASELINE.",
-    "P42 terminal COMPLETE authority fixed to testedCommit 7b523187a955179b04155b758847c82aaf569a0d and BOUNDED_LIVE_DIAGNOSTIC_MAPPING_ONLY.",
-    "Inspected maintained AlphaRuntime/P39/P42 interfaces and kept production PAGE_SOURCES/WORKER_SOURCES and canonical authority code untouched.",
-    "Added default-off P45 staging wrapper. Gate-on deterministically binds P39 before P42; gate-off delegates maintained Alpha runtime without diagnostic construction/injection.",
-    "Pinned exact accepted Git blobs for the P39 runtime bridge/dependencies and P42 probe; drift fails closed before injection.",
-    "Added exact runtimeEpoch + authorityKey + diagnostic-only rendererEpoch binding, per-hook P42 freshness provider, complete raw P42 result pass-through, P39 lifecycle readout, seal/teardown preservation, and explicit zero-click/non-authority labels.",
-    "Added focused synthetic tests for gate-off invariance, injection order, raw-bundle preservation, P39 visible/hidden/lost/stale/ambiguous/reacquire state, stale/mixed binding rejection, seal/teardown, and authority non-promotion."
+    "Fresh main preflight and dedup-v2 ownership verification completed.",
+    "P39 terminal COMPLETE source remains exact at testedCommit ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05 / auto_baseline_hud.py blob 05a1a6e8632f62dac6ff9bedf8897b3f2df6e685.",
+    "P42 terminal COMPLETE source remains exact at testedCommit 7b523187a955179b04155b758847c82aaf569a0d / probe blob 32b9c50e8a72de1a097b8ce5dc91b69bdcef0219.",
+    "Default-off P45 staging wrapper implemented without modifying maintained production Alpha runtime, P29/P32/P36 criteria, P43 harness assets, promotion flow, or alpha-live.",
+    "Gate-on deterministic order is P39_AUTO_BASELINE_HUD then P42_RAW_CORRELATION_PROBE; exact accepted blobs are pinned before injection.",
+    "Readout includes P39 zero-click P1/P2/P3 status plus visible/hidden/lost/stale/ambiguous/reacquire, and complete P42 raw result/state/seal/teardown under exact runtimeEpoch + diagnostic rendererEpoch + authorityKey binding.",
+    "P39 remains UNVERIFIED_AUTO_BASELINE; P42 remains BOUNDED_LIVE_DIAGNOSTIC_MAPPING_ONLY; all P29/P32/P36/retry/promotion authority eligibility stays false.",
+    "Exact-candidate GitHub Actions run 34005760019 passed Python syntax, P45 focused tests 6/6, unchanged P39 regression 4/4, and unchanged P42 regression 6/6."
   ],
   "remaining": [
-    "Materialize terminal-significant tested candidate with a focused CI/self-check surface.",
-    "Run P45 focused Python tests plus unchanged P39 and P42 regressions on exact candidate bytes.",
-    "Fresh-read implementation/source hashes and claims after tests; publish terminal RESULT and close both claims if all gates pass."
+    "Close canonical/stage claims with exact tested candidate metadata.",
+    "Publish exactly two terminal RESULT artifacts using WORKER_RESULT fast-feedback protocol.",
+    "Write final terminal progress checkpoint."
   ],
-  "tests": [],
+  "tests": [
+    {
+      "name": "P45 focused integration tests",
+      "result": "PASS",
+      "detail": "GitHub Actions run 34005760019: 6/6 PASS."
+    },
+    {
+      "name": "P39 unchanged regression",
+      "result": "PASS",
+      "detail": "GitHub Actions run 34005760019: 4/4 PASS."
+    },
+    {
+      "name": "P42 unchanged regression",
+      "result": "PASS",
+      "detail": "GitHub Actions run 34005760019: 6/6 PASS."
+    },
+    {
+      "name": "real WOF / Owner-visible live diagnostic",
+      "result": "NOT_RUN",
+      "detail": "P45 scope explicitly forbids running the real game; P43 owns the next bounded live diagnostic."
+    }
+  ],
   "blocker": null,
-  "nextAction": "Create the focused exact-candidate CI gate, then run P45 + P39 + P42 regressions before any terminal publication.",
-  "terminalResultPath": null,
+  "nextAction": "Close both P45 claims, publish terminal RESULT artifacts, and mark progress terminal COMPLETE.",
+  "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P45_P42_P39_LIVE_DIAGNOSTIC_STAGING_INTEGRATION_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T02:10:00Z"
+  "updatedAtUtc": "2026-09-06T02:12:00Z"
 }
