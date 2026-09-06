@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P46_WASM_WEBGL_CALLSITE_FINGERPRINT_PROBE",
+  "dedupKey": "alpha.v1.product-takeover.wasm-webgl-callsite-fingerprint-probe-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.wasm-webgl-callsite-fingerprint-probe-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.wasm-webgl-callsite-fingerprint-probe-v1.json",
+  "claimToken": "6930698179d1f1e02d89285338a66f88",
+  "state": "ACTIVE",
+  "startCommit": "ec7b3e61c4666768d0772a66bc159176e3f2b8c9"
+}
