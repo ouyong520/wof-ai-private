@@ -4,31 +4,39 @@
   "dedupKey": "alpha.v1.product-takeover.wasm-webgl-callsite-fingerprint-probe-v1",
   "claimToken": "6930698179d1f1e02d89285338a66f88",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "CLAIMED",
-  "overallPercent": 5,
-  "implementationState": "NOT_STARTED",
+  "workState": "IMPLEMENTING",
+  "overallPercent": 45,
+  "implementationState": "IN_PROGRESS",
   "selfCheckState": "NOT_RUN",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "ec7b3e61c4666768d0772a66bc159176e3f2b8c9",
-  "lastKnownGoodCommit": "6015f729d51315555a99551df346b8b0466ea413",
-  "implementationCommits": [],
+  "lastKnownGoodCommit": "8a6029235f32af229930f76c216c62568577cee3",
+  "implementationCommits": [
+    "8a6029235f32af229930f76c216c62568577cee3"
+  ],
   "completed": [
-    "dedup preflight completed",
-    "canonical claim acquired and verified",
-    "stage claim acquired and verified"
+    "dedup preflight and verified canonical/stage ownership",
+    "inspected P40 blocker evidence and exact P42 diagnostic capture contract",
+    "added isolated bounded WebGL call-site probe with raw stack capture, deterministic normalized fingerprints, explicit wasm NOT_AVAILABLE/UNRESOLVED handling, JS caller frames, Module/Module.asm object identity, exact binding checks, and deterministic teardown",
+    "added exact buffer-object and vertex-attrib-state association metadata without semantic selection"
   ],
   "remaining": [
-    "inspect P42 WebGL hook/probe surfaces and runtime identity helpers",
-    "implement bounded call-site fingerprint probe and exact-state association",
-    "add deterministic focused tests and documentation",
-    "create durable tested candidate and run terminal-significant self-check",
+    "publish deterministic focused test coverage",
+    "publish P46 diagnostic contract documentation",
+    "create durable tested candidate and run terminal-significant self-check on exact bytes",
     "publish RESULT and close claims"
   ],
-  "tests": [],
+  "tests": [
+    {
+      "name": "workspace-only P46 syntax/self-check draft",
+      "result": "PASS",
+      "detail": "Local nonterminal draft check passed before Git publication; it is not final test provenance."
+    }
+  ],
   "blocker": null,
-  "nextAction": "inspect exact P42 implementation and existing WebGL hook surfaces before writing isolated P46 files",
+  "nextAction": "publish the focused synthetic regression and contract documentation, then freeze a durable candidate for exact-byte testing",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:56:09Z"
+  "updatedAtUtc": "2026-09-06T02:00:51Z"
 }
