@@ -1,0 +1,26 @@
+{
+  "schema": "wof-alpha-dispatch-manifest-v1",
+  "dispatchId": "ALPHA_V1_GSTYPHOON_MAPPING_BOUNDED_DIAGNOSTIC_READINESS_LONG_3_WORKER_V1",
+  "repository": "ouyong520/wof-ai-private",
+  "pmOwned": true,
+  "workerCapacityTotal": 3,
+  "lanes": [
+    {
+      "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P47_BOUNDED_OWNER_DIAGNOSTIC_READINESS_GATE",
+      "dedupKey": "alpha.v1.product-takeover.bounded-owner-diagnostic-readiness-gate-v1",
+      "mode": "NEW",
+      "startPrompt": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P47_BOUNDED_OWNER_DIAGNOSTIC_READINESS_GATE_START_PROMPT.md"
+    }
+  ],
+  "idleSlots": 2,
+  "idleReason": "P47 is the only non-speculative next step. Additional candidate/QA/source-analysis workers would depend on or duplicate the same readiness decision.",
+  "terminalInputs": {
+    "P43": "COMPLETE:0c23e22b0387d0b3042c5601ab0a9e897ce1c476",
+    "P45": "COMPLETE:3dac7a9e2cbe4a23c3de44eb15cf45f19b136149",
+    "P46": "COMPLETE:210efdda5bbf3715989c751eb90442f26f42d0a9",
+    "P40": "BLOCKED:NATIVE_PLAYER_MARKER_DISPLAYED_SUBMIT_SOURCE_EXPORT_NOT_PRESENT"
+  },
+  "ownerRunAuthorized": false,
+  "promotionAuthorized": false,
+  "alphaLiveMoveAuthorized": false
+}
