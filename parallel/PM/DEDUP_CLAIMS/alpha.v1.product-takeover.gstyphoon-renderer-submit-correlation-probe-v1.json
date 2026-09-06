@@ -8,6 +8,9 @@
   "promptPath": "parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE_START_PROMPT.md",
   "owner": "GPT-5.6-Sol-worker-P42",
   "claimToken": "4c6507b7655c540e4a4fcbd28efdc2cb",
-  "state": "ACTIVE",
-  "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b"
+  "state": "COMPLETE",
+  "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b",
+  "testedCommit": "7b523187a955179b04155b758847c82aaf569a0d",
+  "resultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P42_GSTYPHOON_RENDERER_SUBMIT_CORRELATION_PROBE_RESULT.json",
+  "resultCommit": "f28231827d35ac1161fee27a25595ea4c961a539"
 }
