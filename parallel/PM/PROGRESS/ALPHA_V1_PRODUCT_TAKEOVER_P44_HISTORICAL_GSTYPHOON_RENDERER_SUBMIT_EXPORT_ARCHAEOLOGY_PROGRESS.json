@@ -3,15 +3,15 @@
   "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P44_HISTORICAL_GSTYPHOON_RENDERER_SUBMIT_EXPORT_ARCHAEOLOGY",
   "dedupKey": "alpha.v1.product-takeover.historical-gstyphoon-renderer-submit-export-archaeology-v1",
   "claimToken": "c47b83f2d17549ff9ec2c6a4bdb0a8ed",
-  "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "READY_TO_PUBLISH",
-  "overallPercent": 92,
+  "claimStateAtCheckpoint": "COMPLETE",
+  "workState": "COMPLETE",
+  "overallPercent": 100,
   "implementationState": "DONE_CANDIDATE_READBACK_BOUND",
   "selfCheckState": "PASS_FRESH_EXACT_CANDIDATE",
-  "resultPublicationState": "PENDING",
-  "claimCloseState": "PENDING",
+  "resultPublicationState": "COMPLETE",
+  "claimCloseState": "COMPLETE",
   "startCommit": "4f57103cdcca22d954148183a1a40907a42a263d",
-  "lastKnownGoodCommit": "a08c98f144af8f7dc47034165086fca91557a626",
+  "lastKnownGoodCommit": "26f25110fb6b064748798e47d40df277ba76d1a3",
   "implementationCommits": [
     "a08c98f144af8f7dc47034165086fca91557a626"
   ],
@@ -19,6 +19,7 @@
   "testedCandidateBlobMap": {
     "parallel/RENDER_AUTHORITY_V2/HISTORICAL_GSTYPHOON_RENDERER_SUBMIT_EXPORT_ARCHAEOLOGY_P44.md": "aef3b59efa88a81874ac662d776df911fabbf198"
   },
+  "resultCommit": "26f25110fb6b064748798e47d40df277ba76d1a3",
   "completed": [
     "Read P44 START prompt, dispatch, root AGENTS/product governance, dedup/progress/result protocols",
     "Read P36/P37/P39/P40 terminal authority and P42/P43 ownership/authority state",
@@ -31,13 +32,12 @@
     "Classified all retained strongest candidates as CORRELATION_ONLY, STRUCTURAL_ONLY, or NOT_ELIGIBLE; DIRECT_SOURCE_CANDIDATE none found",
     "Created durable archaeology report candidate at a08c98f144af8f7dc47034165086fca91557a626",
     "Fresh-read candidate report blob aef3b59efa88a81874ac662d776df911fabbf198 and verified required target commits/classifications/blocker",
-    "Fresh-read candidate commit and verified its only changed file is the P44 archaeology report"
+    "Fresh-read candidate commit and verified its only changed file is the P44 archaeology report",
+    "Published exact terminal RESULT.md and RESULT.json together at 26f25110fb6b064748798e47d40df277ba76d1a3 with required WORKER_RESULT prefix",
+    "Fresh-read both terminal result artifacts and verified result commit message",
+    "Closed canonical and stage claims with exact claim token and bound both to testedCommit/resultCommit"
   ],
-  "remaining": [
-    "Publish terminal COMPLETE RESULT.md and RESULT.json",
-    "Close canonical and stage claims with matching token",
-    "Publish final terminal progress checkpoint"
-  ],
+  "remaining": [],
   "tests": [
     {
       "name": "fresh exact report readback",
@@ -58,11 +58,21 @@
       "name": "scope isolation",
       "result": "PASS",
       "evidence": "tested candidate commit changes only parallel/RENDER_AUTHORITY_V2/HISTORICAL_GSTYPHOON_RENDERER_SUBMIT_EXPORT_ARCHAEOLOGY_P44.md"
+    },
+    {
+      "name": "terminal result protocol",
+      "result": "PASS",
+      "evidence": "RESULT.md and RESULT.json published in commit 26f25110fb6b064748798e47d40df277ba76d1a3 with exact WORKER_RESULT ... COMPLETE prefix"
+    },
+    {
+      "name": "real WOF runtime",
+      "result": "NOT_RUN",
+      "evidence": "P44 is historical-source archaeology only and explicitly forbids running the real game"
     }
   ],
   "blocker": null,
-  "nextAction": "Publish terminal COMPLETE result for the completed historical-search task, then close exact-token claims.",
+  "nextAction": "PM should treat historical-repository direct-source recovery as exhausted; accept only new actual gstyphoon renderer call-site/export evidence rather than reclassifying historical pixel/WebGL/HEAP/world-state paths.",
   "terminalResultPath": "parallel/PM/RESULTS/ALPHA_V1_PRODUCT_TAKEOVER_P44_HISTORICAL_GSTYPHOON_RENDERER_SUBMIT_EXPORT_ARCHAEOLOGY_RESULT.json",
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:37:00Z"
+  "updatedAtUtc": "2026-09-06T01:39:00Z"
 }
