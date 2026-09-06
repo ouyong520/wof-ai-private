@@ -1,0 +1,10 @@
+{
+  "schema": "wof-pm-stage-claim-v2",
+  "stageId": "ALPHA_V1_PRODUCT_TAKEOVER_P47_BOUNDED_OWNER_DIAGNOSTIC_READINESS_GATE",
+  "dedupKey": "alpha.v1.product-takeover.bounded-owner-diagnostic-readiness-gate-v1",
+  "effectiveDedupKey": "alpha.v1.product-takeover.bounded-owner-diagnostic-readiness-gate-v1",
+  "canonicalClaimPath": "parallel/PM/DEDUP_CLAIMS/alpha.v1.product-takeover.bounded-owner-diagnostic-readiness-gate-v1.json",
+  "claimToken": "2a3a3c6f948794f066622da94d5e1ca0",
+  "state": "ACTIVE",
+  "startCommit": "58d467b8cfa1a76d1ed83b2966ba7b699636bb23"
+}
