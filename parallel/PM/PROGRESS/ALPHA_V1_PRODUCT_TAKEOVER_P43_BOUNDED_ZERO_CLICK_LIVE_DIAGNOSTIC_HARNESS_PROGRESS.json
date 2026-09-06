@@ -4,39 +4,64 @@
   "dedupKey": "alpha.v1.product-takeover.bounded-zero-click-live-diagnostic-harness-v2",
   "claimToken": "9b45b04fc8f5e86849c08c07dcf0dc07",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "IMPLEMENTING",
-  "overallPercent": 28,
-  "implementationState": "AUTHORITY_CHAIN_READ_COMPLETE",
-  "selfCheckState": "LOCAL_FIXTURE_PREFLIGHT_PASS",
+  "workState": "INTERRUPTED",
+  "overallPercent": 72,
+  "implementationState": "HARNESS_AND_P42_INTEGRATION_PUBLISHED_P45_P46_CONVERGENCE_PENDING",
+  "selfCheckState": "NONTERMINAL_LOCAL_FIXTURE_PREFLIGHT_PASS",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "8b4eb90c17161b820ca0846481d54a2cb658256b",
-  "lastKnownGoodCommit": "eb72311520941ca74bc934b7ee42db67cb0297db",
-  "implementationCommits": [],
+  "lastKnownGoodCommit": "a074ccb3bf556ef3b6780a72fcb7b6db2fbd1503",
+  "implementationCommits": [
+    "3960107ada295f3eee1add72b6077919abeec949",
+    "883bb9776843591bf7873ffabed65d6b42ce842a",
+    "d6cb6ee4ba1a94d2c62c79d2e651cad2c02634e6",
+    "4c36e511b7d96f0eb2adb24c1ad6196f93f4e27d",
+    "c4b2c4a233df02e213a628f4b68618f38046bef8",
+    "b3494abce7d3a3064b32bca47e5dead65d01d918",
+    "cea3bafb3b480062588b7e058720566cb94210ed",
+    "cf1c11f5e9abd17097e65fa007b5b40cd1ed48da",
+    "73075db1fee1d0436b788bb15ac6938ae97eb89a",
+    "ff550316354ebfe84dea19276131862ffb14400f",
+    "a074ccb3bf556ef3b6780a72fcb7b6db2fbd1503"
+  ],
   "completed": [
-    "Fresh main/dedup preflight completed",
-    "Canonical v2 claim and stage claim created and exact-token readback verified",
-    "Read P30/P31/P36/P37/P39/P40/P42 authority and P21/P28/P38 staging/provenance paths",
-    "Confirmed P42 is a separate ACTIVE worker lane; P43 will archive it if present or record P42_CORRELATION_PROBE_NOT_PRESENT",
-    "Designed fail-closed exact metadata/source binding, gate ledger, raw P36/P32 preservation, P39 diagnostic state capture, P42 compatibility capture, bounded raw-log/console capture and deterministic teardown",
-    "Local deterministic preflight passed 11 focused pure-fixture checks before repository publication"
+    "Canonical and stage P43 claims remain ACTIVE with exact claimToken 9b45b04fc8f5e86849c08c07dcf0dc07.",
+    "Published isolated bounded zero-click live diagnostic harness, entrypoint, final fail-closed wrapper, docs and focused tests under parallel/OWNER_DIAGNOSTIC.",
+    "Published exact P42 integration and stable raw receipt/archive support.",
+    "Published fail-closed exact-candidate/dedicated-venv preflight before P42 execution.",
+    "P45 is now terminal COMPLETE and provides maintained default-off P39/P42 staging integration.",
+    "P46 is now terminal COMPLETE and provides exact-byte-tested WASM/WebGL call-site fingerprint mapping evidence.",
+    "PM published parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P43_POST_P45_P46_CONTINUATION_PROMPT.md directing same-token convergence."
   ],
   "remaining": [
-    "Publish isolated P43 harness/entrypoint/docs/tests",
-    "Create durable implementation candidate and fresh-read exact bytes",
-    "Run terminal-significant focused regression on exact durable candidate bytes",
-    "Publish terminal RESULT and close claims"
+    "Reattach the existing P43 worker to the same claim/token; do not create a new claim or recovery.",
+    "Consume exact P45 rather than duplicating its staging integration.",
+    "Integrate exact P46 raw call-site bundle into the same bounded P43 orchestration with deterministic wrapper/LIFO teardown semantics.",
+    "Update P43 receipt/archive so P39/P42/P46 raw evidence and exact runtimeEpoch/rendererEpoch/authorityKey are preserved in one session.",
+    "Freeze one durable exact integrated P43 candidate with dependency pins and fresh tree/blob readback.",
+    "Run terminal-significant focused regression against those exact bytes, then publish RESULT and close both claims."
   ],
   "tests": [
     {
       "name": "P43 local deterministic fixture preflight",
       "result": "PASS",
-      "detail": "11/11 PASS covering exact candidate SHA/blob binding, fail-closed mismatch, gate first-failure chronology, P16 association/runtime identity, P17 exact decision preservation, P39 stale/lost/ambiguous/reacquire state, P42 present/absent, explicit actor-generation pairing, bounded raw-log capture, human receipt consistency, and P36 source rejection-reason contract. Terminal-significant tests will be rerun from exact durable Git bytes."
+      "detail": "Existing worker checkpoint recorded 11/11 local fixture PASS before repository publication; this remains nonterminal evidence only."
+    },
+    {
+      "name": "P43 final exact-byte P45/P46 convergence regression",
+      "result": "NOT_RUN",
+      "detail": "No durable P43 candidate containing the post-P45/P46 convergence exists yet."
+    },
+    {
+      "name": "Real WOF bounded live diagnostic",
+      "result": "NOT_RUN",
+      "detail": "No Owner live run is authorized before P43 terminal convergence and PM readiness review."
     }
   ],
   "blocker": null,
-  "nextAction": "Publish isolated parallel/OWNER_DIAGNOSTIC P43 implementation and tests, then bind a durable tested commit/tree before final focused self-check.",
+  "nextAction": "Reattach the original P43 worker using parallel/PM/ALPHA_V1_PRODUCT_TAKEOVER_P43_POST_P45_P46_CONTINUATION_PROMPT.md and the same exact claimToken; reconcile this PM reconstruction before implementation.",
   "terminalResultPath": null,
-  "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:24:00Z"
+  "writerRole": "PM_RECONSTRUCTION",
+  "updatedAtUtc": "2026-09-06T02:16:30Z"
 }
