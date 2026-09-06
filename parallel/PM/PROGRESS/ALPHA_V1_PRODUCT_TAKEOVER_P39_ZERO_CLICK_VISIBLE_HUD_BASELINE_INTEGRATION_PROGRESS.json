@@ -4,36 +4,49 @@
   "dedupKey": "alpha.v1.product-takeover.zero-click-visible-hud-baseline-integration-v1",
   "claimToken": "af435a4eb64b05cb535cadf98868125f",
   "claimStateAtCheckpoint": "ACTIVE",
-  "workState": "IMPLEMENTING",
-  "overallPercent": 50,
-  "implementationState": "CORE_IMPLEMENTED_TESTS_PENDING",
-  "selfCheckState": "NOT_RUN",
+  "workState": "SELF_CHECK",
+  "overallPercent": 85,
+  "implementationState": "DONE_CANDIDATE_BOUND",
+  "selfCheckState": "READY_FOR_FRESH_EXACT_CANDIDATE",
   "resultPublicationState": "NOT_STARTED",
   "claimCloseState": "PENDING",
   "startCommit": "d5f176c6856b05c599b16fa830e8f6a4b41632bc",
-  "lastKnownGoodCommit": "5fcafa15b91bc80d57cc099e3aa1bfa97bfbb5ac",
+  "lastKnownGoodCommit": "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05",
+  "testedCandidateCommit": "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05",
+  "testedCandidateTree": "bab2d24f285fad4a0774f18d008031d25b848ce6",
   "implementationCommits": [
     "4407e94426d41ef173677da0caf55763a6c18f20",
     "d52a8cebfc99cb8d952e60532cc04fb007bdd226",
-    "5fcafa15b91bc80d57cc099e3aa1bfa97bfbb5ac"
+    "5fcafa15b91bc80d57cc099e3aa1bfa97bfbb5ac",
+    "4c51f29b0865fdb26905df472033c04a2d1462e9",
+    "922e2001333ac868ee987fc92ff052ae4856b04c",
+    "05d4736a45ce5405a67159f623cb55c2d6903fbc",
+    "ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"
   ],
   "completed": [
     "dedup-v2 canonical and stage claims exact-token verified",
     "read P37 tested implementation/result plus maintained Alpha HUD and production P1 staging seam",
-    "added strict P37 diagnostic adapter that reuses P37 tracker and P37 native-to-viewport mapping without copying detection heuristics",
-    "added explicit staging-only visible extension that wraps the maintained HUD draw callback and restores it on gate close/dispose",
-    "added Python staging bridge that injects only P37/P39 diagnostic sources after maintained HUD exists; production HUD source list remains untouched"
+    "strict P37 diagnostic adapter reuses P37 createBaselineTracker and mapNativeToViewport without copying detection heuristics",
+    "explicit staging-only visible extension wraps maintained HUD draw callback only while enabled and restores the exact callback on gate close/dispose",
+    "Python staging bridge injects only P37/P39 diagnostic sources after maintained HUD exists; production HUD source list remains untouched",
+    "focused adapter/visible/staging tests committed",
+    "durable candidate commit/tree frozen and fresh source blob readback matched local git object hashes",
+    "P37 source blob in candidate equals accepted P37 tested blob 2a0094b3588d4a27c8c7a6f9940b8a3b1941f8c4",
+    "maintained HUD blob f6f176294a4fe4a77b21c02abae6ba2d37681b70 and production P1 overlay blob 32312651c983d23714b71018505e3e43fb1990ae remain unchanged"
   ],
   "remaining": [
-    "add focused deterministic adapter/visible/staging tests",
-    "create durable exact tested candidate after test code is complete",
-    "fresh exact-candidate self-check and source-blob readback",
-    "publish terminal RESULT artifacts and close claims"
+    "rerun terminal-significant exact-candidate focused self-check after this PROGRESS binding",
+    "publish terminal RESULT md/json",
+    "close canonical/stage claims and publish terminal PROGRESS"
   ],
-  "tests": [],
+  "tests": [
+    {"name":"pre-bind adapter self-check","result":"PASS 6/6","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"},
+    {"name":"pre-bind visible HUD self-check","result":"PASS 3/3","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"},
+    {"name":"pre-bind staging bridge unittest","result":"PASS 4/4","candidate":"ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05"}
+  ],
   "blocker": null,
-  "nextAction": "Add the focused P39 deterministic self-checks, then freeze a durable candidate commit and test the exact candidate bytes.",
+  "nextAction": "Run the final exact-byte focused suite against candidate ac5387f00d8c2382dcf3ed435ffcfa0acc1a2f05, then publish terminal RESULT and close claims.",
   "terminalResultPath": null,
   "writerRole": "WORKER",
-  "updatedAtUtc": "2026-09-06T01:09:00Z"
+  "updatedAtUtc": "2026-09-06T01:18:00Z"
 }
