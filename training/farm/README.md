@@ -30,10 +30,17 @@ Transport / Recorder / PYLAUNCH / OneClick
 WinKawaks Collector code/contracts/results
 ```
 
-There is still no PPO/SB3/RL, route search, dataset expansion, or 2/4/8/10-worker
-orchestration in this module. Programmatic input remains inside the emulator/core
+There is still no PPO/SB3/RL, route search, or policy authority in this module.
+Programmatic input remains inside the emulator/core
 API only; there is no OS/global keyboard, SendInput, Browser input, focus
 automation, or WinKawaks input path.
+
+The R1 fleet runtime is now implemented in `training/farm/fleet.py`. It adds
+source-owned worker lifecycle/orchestration, in-memory savestate/action
+experiments, per-worker health/resource telemetry, and parent-serialized
+publication through the existing V11 exporter. The checked-in `--fake` mode is
+fixture-only; real 1 -> 2 -> 4 -> 8 -> 10 WOF proof still requires the existing
+external legal ROM and Stable-Retro/FBNeo gates. See `R1_FLEET.md`.
 
 Project-wide provenance rules remain governed by
 `RUNTIME_DATA_SOURCE_BOUNDARIES.md`.

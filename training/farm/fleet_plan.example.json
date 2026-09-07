@@ -1,0 +1,40 @@
+{
+  "schema": "wof-training-farm-savestate-fork-plan-v1",
+  "forkSetId": "fleet-action-experiment-v1",
+  "root": {"rootId": "fleet-reset-root", "expectedSavestateSha256": null},
+  "repetitions": 2,
+  "branches": [
+    {
+      "branchId": "neutral-8f",
+      "horizonFrames": 8,
+      "actions": [
+        {"frames": 8, "inputs": [
+          {"player": 0, "pressed": []},
+          {"player": 1, "pressed": []},
+          {"player": 2, "pressed": []},
+          {"player": 3, "pressed": []}
+        ]}
+      ],
+      "metadata": {"label": "neutral control branch; no gameplay semantics asserted"}
+    },
+    {
+      "branchId": "button0-4f-neutral-4f",
+      "horizonFrames": 8,
+      "actions": [
+        {"frames": 4, "inputs": [
+          {"player": 0, "pressed": [0]},
+          {"player": 1, "pressed": []},
+          {"player": 2, "pressed": []},
+          {"player": 3, "pressed": []}
+        ]},
+        {"frames": 4, "inputs": [
+          {"player": 0, "pressed": []},
+          {"player": 1, "pressed": []},
+          {"player": 2, "pressed": []},
+          {"player": 3, "pressed": []}
+        ]}
+      ],
+      "metadata": {"label": "explicit core-button branch; no semantic mapping asserted"}
+    }
+  ]
+}

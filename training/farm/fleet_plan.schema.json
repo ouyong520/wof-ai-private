@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WOF Training Farm fleet action experiment plan",
+  "$ref": "savestate-fork-plan.schema.json"
+}
