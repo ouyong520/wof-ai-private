@@ -41,10 +41,14 @@ external ROM + pinned Stable-Retro/FBNeo gate is satisfied.
 - Existing Training Farm suite under the dedicated WOF Python 3.13.6 venv: 91/92 PASS; the sole failure is the pre-existing Windows path-separator assertion in `test_windows_oneclick_bootstrap.py`.
 - Collector V12 cross-repo ingestion contract: PASS against a fleet-produced exporter record (`READY`, `capture_export_stream=PASS`); result remained `sourceNamespace=stable-retro-fbneo`, `readOnly=true`, `writesGameMemory=false`, `inputInjection=false`.
 - Real WOF fleet proof: NOT RUN. No legal ROM was selected and no one-shot live budget was consumed.
+- Current real-runtime preflight: the dedicated Alpha venv is Python 3.13.6 but intentionally has no `stable-retro` package; it was not repurposed. `WOF_ROM_PATH` is also unset. A future Training Farm venv must be project-scoped and use the pinned R0.1 requirement only after the Owner provides/selects the legal external ROM.
 
 ## Next action
 
-Run the focused implementation/repository checks after any remote drift, commit
-and push this coherent fleet slice. Then continue Alpha safe diagnosis and
-prepare the real Training Farm run only when a legal external ROM/runtime is
-available; do not relabel the fixture proof as real 10训.
+The coherent fleet slice is pushed. Continue Alpha safe diagnosis and keep
+Collector on the maintained V12 path. The next real Training Farm action is
+Owner-required only when a legal external ROM is selected; then create/use a
+separate project-scoped Training Farm venv, install the pinned requirement
+without touching the Alpha venv, run current-source R0.2/R0.4 gates, and only
+then execute 1 -> 2 -> 4 -> 8 -> 10. Do not relabel the fixture proof as real
+10训.
